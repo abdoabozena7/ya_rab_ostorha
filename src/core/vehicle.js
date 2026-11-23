@@ -5,6 +5,13 @@ const approach = (a, b, amount) => a + clamp(b - a, -amount, amount);
 const fixedPathGeometry = new WeakMap();
 const immutablePaths = new WeakSet();
 
+export function markImmutablePath(path) {
+  for (let i = 0; i < path.length; i++) Object.freeze(path[i]);
+  Object.freeze(path);
+  immutablePaths.add(path);
+  return path;
+}
+
 export function hasImmutablePathPoints(path) {
   if (immutablePaths.has(path)) return true;
   if (!Object.isFrozen(path)) return false;
@@ -46,32 +53,51 @@ export function vehicleProbe(body, speed) {
   return { x: body.x, z: body.z, heading: body.heading, speed, steer: body.steer,
     maxSpeed: body.maxSpeed, spec: body.spec, type: body.type,
     length: body.length, width: body.width, radius: body.radius,
-    ...(body.arcadeSlip ? { arcadeSlip: body.arcadeSlip } : {}) };
+    ...(body.arcadeSlip ? { arcadeSlip: body.arcadeSlip } : {}),
+    ...(body.realisticDynamics !== undefined ? { realisticDynamics: body.realisticDynamics } : {}),
+    ...(body.chaseSlipRad !== undefined ? { chaseSlipRad: body.chaseSlipRad } : {}) };
 }
 
 export function integrateVehicle(body, command, dt, out = null) {
   if (!Number.isFinite(dt) || dt < 0)
     throw new RangeError("Vehicle integration needs a nonnegative step");
   const spec = body.spec == null ? VEHICLE : { ...VEHICLE, ...body.spec };
+  const realistic = spec.realisticDynamics === true;
   const explicitDeceleration = Object.prototype.hasOwnProperty.call(command, "decelerationMps2");
   if (explicitDeceleration && (!Number.isFinite(spec.braking) || spec.braking <= 0 ||
       !Number.isFinite(command.decelerationMps2) ||
       command.decelerationMps2 <= 0 || command.decelerationMps2 > spec.braking))
     throw new RangeError("Explicit vehicle deceleration must be finite, positive and at most spec.braking");
-  const braking = explicitDeceleration ? command.decelerationMps2 : spec.braking;
+  const absSpeed = Math.abs(body.speed ?? 0);
+  const effectiveSteerRate = realistic && absSpeed > 11
+    ? spec.steerRate * clamp(1.08 - 0.011 * Math.max(0, absSpeed - 11), 0.72, 1.0)
+    : spec.steerRate;
+  const effectiveMaxSteer = realistic && absSpeed > 11
+    ? spec.maxSteer * clamp(1.0 - 0.009 * Math.max(0, absSpeed - 14), 0.74, 1.0)
+    : spec.maxSteer;
   const steer = approach(
     body.steer ?? 0,
-    clamp(Number.isFinite(command.steer) ? command.steer : 0, -spec.maxSteer, spec.maxSteer),
-    spec.steerRate * dt,
+    clamp(Number.isFinite(command.steer) ? command.steer : 0, -effectiveMaxSteer, effectiveMaxSteer),
+    effectiveSteerRate * dt,
   );
   const requested = clamp(
     Number.isFinite(command.targetSpeed) ? command.targetSpeed : 0,
     -spec.reverseSpeed,
     body.maxSpeed ?? 13.89,
   );
+  const coastingDrag = realistic &&
+    command.coasting === true &&
+    !explicitDeceleration &&
+    Math.abs(requested) < 0.05 &&
+    absSpeed > 0.2;
+  const braking = explicitDeceleration
+    ? command.decelerationMps2
+    : coastingDrag
+      ? 1.65 + 0.0018 * (body.speed ?? 0) ** 2
+      : spec.braking;
   const reversing = (body.speed ?? 0) * requested < 0;
   const target = reversing ? 0 : requested;
-  const slowing = Math.abs(target) < Math.abs(body.speed ?? 0) || reversing;
+  const slowing = Math.abs(target) < absSpeed || reversing;
   const speed = approach(
     body.speed ?? 0,
     target,
@@ -85,7 +111,19 @@ export function integrateVehicle(body, command, dt, out = null) {
   const slip = drift
     ? (body.arcadeSlip ?? 0) + (clamp(-yawRate * speed * .036, -.32, .32) - (body.arcadeSlip ?? 0)) * (1 - Math.exp(-7 * dt))
     : 0;
-  const middle = body.heading + (yawRate * dt) / 2 + beta + slip;
+  let nextChaseSlip = 0;
+  if (realistic) {
+    const latAccel = average * yawRate;
+    const targetChaseSlip = Math.abs(latAccel) > 3.8 && average > 6
+      ? clamp(-Math.sign(latAccel) * (Math.abs(latAccel) - 3.8) * 0.016, -0.14, 0.14)
+      : 0;
+    const prevChaseSlip = body.chaseSlipRad ?? 0;
+    const rawChaseSlip = prevChaseSlip + (targetChaseSlip - prevChaseSlip) * (1 - Math.exp(-8.5 * dt));
+    nextChaseSlip = Math.abs(rawChaseSlip) < 1e-12 ? 0 : rawChaseSlip;
+  }
+  const middle = realistic
+    ? body.heading + (yawRate * dt) / 2 + beta + slip + nextChaseSlip
+    : body.heading + (yawRate * dt) / 2 + beta + slip;
   const result = out ?? { ...body };
   result.x = body.x + Math.sin(middle) * average * dt;
   result.z = body.z + Math.cos(middle) * average * dt;
@@ -93,6 +131,7 @@ export function integrateVehicle(body, command, dt, out = null) {
   result.steer = steer;
   result.speed = speed;
   if (drift || body.arcadeSlip !== undefined) result.arcadeSlip = slip;
+  if (realistic) result.chaseSlipRad = nextChaseSlip;
   return result;
 }
 
@@ -182,7 +221,7 @@ export function nearestPathPoint(path, x, z, cursor, fallback = cursor) {
   return nearest;
 }
 
-export function followPath(body, path, cursor = 0, steeringOnly = false) {
+export function followPath(body, path, cursor = 0, steeringOnly = false, maxRemaining = Infinity) {
   if (path.length < 2)
     return { steer: 0, targetSpeed: 0, cursor, remaining: 0 };
   const wheelbase = body.spec?.wheelbase ?? VEHICLE.wheelbase;
@@ -221,9 +260,9 @@ export function followPath(body, path, cursor = 0, steeringOnly = false) {
   // distance in order preserves even its last bits.
   if (fixed) {
     const lengths = fixed.lengths;
-    for (let i = nearest; i < lengths.length; i++) remaining += lengths[i];
+    for (let i = nearest; i < lengths.length && remaining < maxRemaining; i++) remaining += lengths[i];
   } else {
-    for (let i = nearest; i < path.length - 1; i++) remaining += Math.hypot(
+    for (let i = nearest; i < path.length - 1 && remaining < maxRemaining; i++) remaining += Math.hypot(
       path[i + 1].x - path[i].x,
       path[i + 1].z - path[i].z,
     );

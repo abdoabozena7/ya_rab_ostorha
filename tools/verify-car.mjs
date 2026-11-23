@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { clickCityTool } from "./city-tool-button.mjs";
 import { mkdir, writeFile } from "node:fs/promises";
 import { createRequire } from "node:module";
 import { createHash } from "node:crypto";
@@ -160,7 +161,7 @@ try {
     process.exitCode = 3;
   } else {
     await capture("car-city");
-    await page.locator("#carToggleBtn").click();
+    await clickCityTool(page, "carToggleBtn");
     await page.locator('[data-car-view="cockpit"]').click();
     await page.waitForTimeout(300);
     const latencyStart = Date.now();
@@ -242,7 +243,7 @@ try {
     assert.ok(report.responsiveness.passed, JSON.stringify(report.responsiveness));
     assert.ok(report.controlResponseMs <= 300, `Control response was ${report.controlResponseMs} ms`);
     await capture("suv-in-traffic");
-    await page.locator("#carToggleBtn").click();
+    await clickCityTool(page, "carToggleBtn");
     await page.evaluate(() => { window.__carAcceptanceCity = window.sim.world; });
     await page.locator("#carImpactBayBtn").click();
     await page.waitForFunction(() => window.sim.world.environment === "vehicle"
@@ -371,7 +372,7 @@ try {
     await page.locator('[data-car-view="chase"]').click();
     await page.setViewportSize({ width: 900, height: 650 });
     if (!await page.locator("#carPanel").isVisible())
-      await page.locator("#carToggleBtn").click();
+      await clickCityTool(page, "carToggleBtn");
     await page.locator("#carPanel").evaluate((element) => { element.scrollTop = 0; });
     await capture("car-compact-panel-top");
     await page.locator("#carPanel").evaluate((element) => { element.scrollTop = element.scrollHeight; });
@@ -382,7 +383,7 @@ try {
     await capture("car-compact-cockpit-panel");
     await page.locator('[data-car-view="chase"]').click();
     await page.setViewportSize({ width: 1365, height: 900 });
-    await page.locator("#labBtn").click();
+    await clickCityTool(page, "labBtn");
     const returnedCity = await page.evaluate(() =>
       window.sim.world === window.__carAcceptanceCity);
     assert.ok(returnedCity);

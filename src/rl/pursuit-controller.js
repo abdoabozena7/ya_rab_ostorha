@@ -1,24 +1,81 @@
 import { PURSUIT_STOP } from "../core/pursuit-controls.js";
+import { PURSUIT_SCAN_TICKS } from "../signal_processing/pursuit-scanner.js";
 import { getDispatchObservation } from "./gta-pursuit-env.js";
-import { guardDispatchAction, requireDispatchScan } from "./pursuit-shield.js";
+import { selectDispatchMovement, requireDispatchScan } from "./pursuit-shield.js";
+import { planDispatchEvasion } from "./pursuit-evasion.js";
+import { PAKO_EVASIVE_CONTROL, planPakoEvasiveAction } from "./pako-evasive-control.js";
 
-export function applyFrozenDispatchAction(world, driver) {
-  if (driver?.status !== "active") return false;
+function visualCrossingBrake(visual, cameraStream, guarded) {
+  if (!cameraStream || guarded.reason || guarded.action.gear !== 1 || !guarded.action.throttle ||
+      visual?.source !== "visual-prediction" || visual.streamId !== cameraStream || !visual.available ||
+      visual.status !== "ready" || !Number.isSafeInteger(visual.frameId) ||
+      !Number.isFinite(visual.ageMs) || visual.ageMs < 0 || visual.ageMs > 650) return null;
+  const decision = visual.decision;
+  if (!decision?.brake || decision.available !== true || decision.evidenceFrameId !== visual.frameId) return null;
+  if (decision.reason === "observed-person-crossing-conflict") {
+    if (!visual.forecasts?.some(forecast => forecast.trackId === decision.trackId && forecast.qualified &&
+        forecast.conflict && forecast.label === "person")) return null;
+  } else if (decision.reason === "committed-visual-stop" || decision.reason === "awaiting-visual-clearance") {
+    // Reuse the predictor's bounded stop episode rather than reframing the
+    // slowdown itself as loss of crossing risk on the next decision.
+    const track = visual.tracks?.find(item => item.id === decision.trackId);
+    const episode = track?.stopEpisode;
+    if (track?.source !== "camera-pixels" || track.label !== "person" || track.streamId !== cameraStream ||
+        track.frameId !== visual.frameId || episode?.streamId !== cameraStream ||
+        episode.trackId !== track.id || !["stopping", "awaiting-clearance"].includes(episode.phase)) return null;
+  } else return null;
+  return { frameId: visual.frameId, streamId: cameraStream, trackId: decision.trackId, reason: decision.reason };
+}
+
+export function applyFrozenDispatchAction(world, driver, cameraStream = null) {
+  if (driver?.status !== "active" && driver?.status !== "waiting-for-scan") return false;
+  let action = null;
+  const start = performance.now();
   try {
     const scan = requireDispatchScan(world);
     if (driver.lastTick === scan.tick) return false;
-    const start = performance.now();
-    const action = driver.policy.action(getDispatchObservation(world, driver.policy.observation));
-    const guarded = guardDispatchAction(world, action);
+    action = driver.policy.action(getDispatchObservation(world, driver.policy.observation));
+    const alternate = driver.evasiveControl === PAKO_EVASIVE_CONTROL ? planPakoEvasiveAction
+      : driver.evasion ? planDispatchEvasion : null;
+    const guarded = selectDispatchMovement(world, action, alternate);
+    const cameraBrake = visualCrossingBrake(world.visualState, cameraStream, guarded);
+    const submitted = cameraBrake ? { ...guarded.action, throttle: 0, brake: 1 } : guarded.action;
     driver.inferenceMs = performance.now() - start;
-    world.command({ type: "pursuit-drive", action: guarded.action });
+    world.command({ type: "pursuit-drive", action: submitted });
+    const resumed = driver.status === "waiting-for-scan";
+    driver.status = "active";
+    driver.scanDeadline = null;
+    driver.error = driver.faultCode = null;
     driver.shieldReason = guarded.reason;
+    driver.cameraBrake = cameraBrake;
+    driver.lastDecision = { source: "policy", policyId: driver.sha256, status: driver.status,
+      requested: action, submitted, shieldReason: guarded.reason, cameraBrake,
+      planner: guarded.planner ?? null, inferenceMs: driver.inferenceMs };
     driver.lastTick = scan.tick;
     driver.decisions++;
-    return false;
+    return resumed;
   } catch (error) {
+    driver.cameraBrake = null;
+    if (error?.code === "STALE_OBSERVATION" && driver.recoverStale) {
+      if (driver.status === "active") {
+        driver.status = "waiting-for-scan";
+        driver.scanDeadline = world.tick + 3 * PURSUIT_SCAN_TICKS;
+        driver.shieldReason = null;
+        driver.lastDecision = { source: "policy", policyId: driver.sha256, status: driver.status,
+          requested: action, submitted: PURSUIT_STOP, inferenceMs: performance.now() - start,
+          fault: { code: error.code, message: error.message } };
+        world.command({ type: "pursuit-drive", action: PURSUIT_STOP });
+        return true;
+      }
+      if (world.tick < driver.scanDeadline) return false;
+    }
     driver.status = "fault";
-    driver.error = error.message;
+    driver.error = error instanceof Error ? error.message : String(error);
+    driver.faultCode = error?.code === "STALE_OBSERVATION" ? error.code : "CONTROLLER_FAULT";
+    driver.inferenceMs = performance.now() - start;
+    driver.lastDecision = { source: "policy", policyId: driver.sha256, status: "fault",
+      requested: action, submitted: PURSUIT_STOP, inferenceMs: driver.inferenceMs,
+      fault: { code: driver.faultCode, message: driver.error } };
     driver.policy = null;
     world.command({ type: "pursuit-drive", action: PURSUIT_STOP });
     return true;

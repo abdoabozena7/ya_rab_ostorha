@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { clickCityTool } from "./city-tool-button.mjs";
 import { readFile, writeFile } from "node:fs/promises";
 import { createRequire } from "node:module";
 import { createHash } from "node:crypto";
@@ -19,12 +20,12 @@ page.on("response", response => { if (response.status() >= 400) errors.push(`${r
 const shot = name => page.screenshot({ path: join(output, name) });
 
 async function resetCityForJourney() {
-  await page.locator("#settingsBtn").click();
+  await clickCityTool(page, "settingsBtn");
   await page.evaluate(() => { window.__lastPursuitWorld = window.sim.world; });
   await page.locator('#settingsForm button[type="submit"]').click();
   await page.waitForFunction(() => window.sim.world !== window.__lastPursuitWorld);
   if (await page.locator("#closeSettings").isVisible()) await page.locator("#closeSettings").click();
-  if (!await page.locator("#pursuitStyle").isVisible()) await page.locator("#streetPursuitBtn").click();
+  if (!await page.locator("#pursuitStyle").isVisible()) await clickCityTool(page, "streetPursuitBtn");
 }
 
 async function measurePursuit() {
@@ -71,7 +72,7 @@ try {
     window.__gtaBrowser = { world, scene: view.scene, player: world.player,
       actors: world.actors.slice(), statics: world.statics, distanceM: world.player.distance };
   });
-  await page.locator("#streetPursuitBtn").click();
+  await clickCityTool(page, "streetPursuitBtn");
   await page.locator("#pursuitStyle").selectOption("gta");
   await page.locator("#pursuitLevel").selectOption("5");
   assert.equal(await page.locator("#pursuitLevel").inputValue(), "5");
@@ -241,10 +242,10 @@ try {
     const { world, view } = window.sim;
     window.__labReturnCity = { world, scene: view.scene, actors: world.actors.slice() };
   });
-  await page.locator("#labBtn").click();
+  await clickCityTool(page, "labBtn");
   await page.waitForFunction(() => window.sim.world.environment === "lab");
-  await page.locator("#settingsBtn").click();
-  await page.locator("#metroPpoLab summary").click();
+  await clickCityTool(page, "settingsBtn");
+  await page.locator("#metroPpoLab > summary").click();
   assert.ok(await page.locator("#metroPpoUse").isDisabled());
   const labStatus = page.locator("#metroPpoStatus");
   assert.match(await labStatus.textContent(), /No checkpoint/);
@@ -337,9 +338,9 @@ try {
   await page.getByText(/^Checkpoint selected for City/).waitFor();
   const checkpointLabel = await labStatus.textContent();
   await page.locator("#closeSettings").click();
-  await page.locator("#labBtn").click();
+  await clickCityTool(page, "labBtn");
   await page.waitForFunction(() => window.sim.world.environment === "metro");
-  if (!await page.locator("#pursuitStyle").isVisible()) await page.locator("#streetPursuitBtn").click();
+  if (!await page.locator("#pursuitStyle").isVisible()) await clickCityTool(page, "streetPursuitBtn");
   assert.equal(await page.locator("#pursuitStyle").inputValue(), "dispatch-ppo");
   const cityModel = await page.locator("#pursuitCheckpointStatus").textContent();
   assert.ok(checkpointLabel.includes(cityModel) && await page.locator("#pursuitRunBtn").isEnabled());
@@ -376,12 +377,12 @@ try {
   await page.locator("#pursuitRestartBtn").click();
   await page.waitForFunction(() => window.sim.world.pursuit?.phase === "stopped");
   if (process.env.METRO_DENSITY_CHECK === "1") {
-    await page.locator("#settingsBtn").click();
+    await clickCityTool(page, "settingsBtn");
     await page.locator("#stressBtn").click();
     await page.waitForFunction(() => window.sim.world.capacity.traffic === 96 &&
       window.sim.world.capacity.pedestrians === 144);
     await page.locator("#closeSettings").click();
-    if (!await page.locator("#pursuitStyle").isVisible()) await page.locator("#streetPursuitBtn").click();
+    if (!await page.locator("#pursuitStyle").isVisible()) await clickCityTool(page, "streetPursuitBtn");
     await page.locator("#pursuitStyle").selectOption("dispatch");
     await page.locator("#pursuitLevel").selectOption("5");
     await page.keyboard.down("w");

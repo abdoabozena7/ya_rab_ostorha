@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { clickCityTool } from "./city-tool-button.mjs";
 import { createHash } from "node:crypto";
 import { readFile, writeFile } from "node:fs/promises";
 import { createRequire } from "node:module";
@@ -30,7 +31,7 @@ try {
   await page.waitForFunction(() => window.sim?.view.actorDiagnostics().ready);
   await page.bringToFront();
   await page.locator("#pauseBtn").click();
-  await page.locator("#settingsBtn").click();
+  await clickCityTool(page, "settingsBtn");
   await page.evaluate(() => {
     const originWorld = window.sim.world, status = document.getElementById("replayProgress");
     const samples = { intervals: [], paints: 0, progressSamples: [], retainedSource: true, longTasks: [] };
@@ -72,9 +73,9 @@ try {
   }
   report.firstStatus = await progress.textContent();
   assert.match(report.firstStatus, /^Replaying: /);
-  await page.locator("#settingsBtn").click();
+  await clickCityTool(page, "settingsBtn");
   assert.equal(await page.locator("#settingsPanel").isVisible(), false);
-  await page.locator("#settingsBtn").click();
+  await clickCityTool(page, "settingsBtn");
   await progress.scrollIntoViewIfNeeded();
   await page.screenshot({ path: join(output, "replay-in-progress.png") });
   const waitFinished = () => page.waitForFunction(text =>
@@ -98,9 +99,9 @@ try {
     noModel: await page.evaluate(() => !window.sim.world.pursuit?.frozenDriver) };
   assert.ok(report.import.exactSnapshot && report.import.noModel && report.import.retainedSource && report.import.paints > 10);
   assert.equal(report.import.ticks, saved.totalTicks);
-  await page.locator("#settingsBtn").click();
+  await clickCityTool(page, "settingsBtn");
   await page.screenshot({ path: join(output, "replay-final.png") });
-  await page.locator("#settingsBtn").click();
+  await clickCityTool(page, "settingsBtn");
   if (timed) {
     const next = structuredClone(saved);
     next.events[0].command.type = "invalid-replay-control";

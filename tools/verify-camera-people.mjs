@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { clickCityTool } from "./city-tool-button.mjs";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { createRequire } from "node:module";
 import path from "node:path";
@@ -52,7 +53,7 @@ try {
   await page.bringToFront();
   await page.waitForFunction(() => window.sim?.vehicleRig, undefined, { timeout: 60000 });
   await page.waitForTimeout(1000);
-  await page.locator("#cameraScreenToggleBtn").click();
+  await clickCityTool(page, "cameraScreenToggleBtn");
   await page.waitForFunction(() => {
     const raw = document.querySelector("#cameraRawCanvas");
     return !document.querySelector("#cameraScreen").hidden && Number(raw.dataset.frameId) > 0;
@@ -166,12 +167,12 @@ try {
       && window.sim.vision.status.result?.streamId === window.sim.vision.streamId,
     undefined, { timeout: 30000 });
     await page.locator("#cameraScreenCloseBtn").click();
-    await page.locator("#settingsBtn").click();
+    await clickCityTool(page, "settingsBtn");
     await page.locator("#settingsForm input[name=pedestrians]").focus();
     await page.keyboard.press("Home");
     await page.locator("#settingsForm button[type=submit]").click();
     await page.locator("#closeSettings").click();
-    await page.locator("#peopleToggleBtn").click();
+    await clickCityTool(page, "peopleToggleBtn");
     await page.waitForFunction(() => document.querySelector("#peopleSelect").disabled);
     const empty = await page.locator("#peopleStatus").textContent();
     assert.equal(await page.locator("#peopleFocusBtn").isDisabled(), true);
@@ -185,7 +186,7 @@ try {
     process.exitCode = 3;
   } else {
     await page.locator("#cameraScreenCloseBtn").click();
-    await page.locator("#peopleToggleBtn").click();
+    await clickCityTool(page, "peopleToggleBtn");
     const selected = await page.evaluate(() => {
       const w = window.sim.world;
       return w.actors.filter((actor) => actor.type === "pedestrian" && !actor.crossing
@@ -346,7 +347,7 @@ try {
       return { tick: window.sim.world.tick, x: p.x, z: p.z, heading: p.heading,
         speed: p.speed, distance: p.distance, body: p.body, motionMode: p.motionMode };
     }, selected);
-    await page.locator("#settingsBtn").click();
+    await clickCityTool(page, "settingsBtn");
     const downloadEvent = page.waitForEvent("download");
     await page.locator("#replayBtn").click();
     const download = await downloadEvent, replayPath = path.join(output, "public-people-replay.json");
@@ -365,13 +366,13 @@ try {
     report.people.replayVerified = true;
     await page.locator("#closeSettings").click();
     await page.locator("#pauseBtn").click();
-    await page.locator("#visionToggleBtn").click();
+    await clickCityTool(page, "visionToggleBtn");
     await page.locator("#visionCase").selectOption("cross-left");
     await page.locator("#visionRunBtn").click();
     await page.waitForFunction(() => window.sim.world.visionLab?.firstVisualBrakeS !== null
       && window.sim.world.visionLab?.firstVisualBrakeS !== undefined,
     undefined, { timeout: 20000 });
-    await page.locator("#cameraScreenToggleBtn").click();
+    await clickCityTool(page, "cameraScreenToggleBtn");
     await page.waitForFunction(() => {
       const a = document.querySelector("#cameraRawCanvas"), b = document.querySelector("#cameraAnalysisCanvas");
       return a.dataset.streamId && a.dataset.streamId === b.dataset.streamId
@@ -456,16 +457,16 @@ try {
     await shot("camera-compact-evidence.png");
     await page.setViewportSize({ width: 1365, height: 900 });
     await page.locator("#cameraScreenCloseBtn").click();
-    await page.locator("#peopleToggleBtn").click();
+    await clickCityTool(page, "peopleToggleBtn");
     assert.equal(await page.locator("#peopleMotionMode").isDisabled(), true,
       "A body diagnostic cannot overwrite the fixed physical Vision case");
     await page.locator("#peopleCloseBtn").click();
-    await page.locator("#visionToggleBtn").click();
+    await clickCityTool(page, "visionToggleBtn");
     await page.locator("#visionReturnBtn").click();
     await page.bringToFront();
     await page.waitForFunction(() => window.sim.vision.status.result?.streamId === window.sim.vision.streamId
       && window.sim.vision.status.result.frameId >= 2, undefined, { timeout: 15000 });
-    await page.locator("#cameraScreenToggleBtn").click();
+    await clickCityTool(page, "cameraScreenToggleBtn");
     await page.locator("#cameraRawCanvas").scrollIntoViewIfNeeded();
     await page.waitForFunction(() => document.querySelector("#cameraAnalysisCanvas").dataset.frameId);
     await page.waitForTimeout(300);

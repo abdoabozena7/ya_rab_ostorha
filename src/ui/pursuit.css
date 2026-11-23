@@ -98,6 +98,92 @@
   grid-column: 1 / -1;
 }
 
+.pursuit-controls .pursuit-evasion-choice {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+#pakoWorkflows {
+  grid-template-columns: 1fr;
+  margin-top: 8px;
+}
+.pursuit-panel--simple .pursuit-controls:first-of-type {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+}
+.pursuit-panel--simple:not([data-phase="running"]):not([data-phase="paused"]) #pursuitRunBtn {
+  background: #acd5b9;
+  border-color: #bddcc6;
+  color: #172a20;
+  font-weight: 700;
+}
+.pursuit-panel--simple #pursuitRunBtn:hover { background: #c9e9d1; }
+#pakoCheckpointChoice summary {
+  min-height: 32px;
+  padding: 7px 4px;
+  color: var(--pursuit-muted);
+  cursor: pointer;
+}
+#pakoCheckpointChoice input { width: 100%; }
+#pakoLabSetup { margin: 10px 0; }
+#pakoEpisodeOutcomes {
+  padding-top: 8px;
+  border-top: 1px solid #697f71;
+  color: #e4f1e7;
+}
+#settingsPanel[data-pako-workspace] :is(#pakoPause, #pakoStop, #metroPpoUse):disabled { display: none; }
+#pakoWatchLast { margin-bottom: 8px; }
+@media (max-width: 660px) {
+  .pursuit-panel.pursuit-panel--simple { top: 110px; }
+}
+
+.pako-session-limits, .pako-playback {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 8px 12px;
+}
+
+#settingsPanel[data-pako-workspace] {
+  width: min(440px, calc(100vw - 32px));
+  background: #202f2b;
+  scrollbar-color: #74918b #21322d;
+}
+
+#settingsPanel[data-pako-workspace] > :not(.drawer-head, #labScenarios),
+#settingsPanel[data-pako-workspace] #labScenarios > :not(#metroPpoLab) {
+  display: none;
+}
+
+.pako-session-limits label {
+  flex: 1 1 76px;
+  min-width: 0;
+}
+
+.pako-session-limits input, .pako-session-limits select, #pakoGhostFocus {
+  width: 100%;
+}
+
+.pako-map-view {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid #405960;
+  border-radius: 4px;
+}
+
+body[data-pako-perspective] :is(.driving-hud, #minimap, .map-label, .camera-label, #loadingStatus) {
+  visibility: hidden;
+}
+
+@media (max-width: 650px) {
+  body[data-pako-perspective] #settingsPanel[data-pako-workspace] {
+    top: auto;
+    bottom: 16px;
+    max-height: 40dvh;
+  }
+}
+
 #pursuitCheckpoint {
   min-width: 0;
   width: 100%;
@@ -361,6 +447,18 @@
 
 .pursuit-panel--cinematic > :not(#pursuitDiagnostics) {
   flex: 0 0 auto;
+}
+
+@media (min-width: 521px) {
+  .pursuit-panel:has(#pursuitDiagnostics[open]) {
+    max-height: calc(100dvh - 383px);
+  }
+}
+
+@media (min-width: 521px) and (max-height: 740px) {
+  .pursuit-panel:has(#pursuitDiagnostics[open]) {
+    max-height: calc(100dvh - 251px);
+  }
 }
 
 .pursuit-panel--cinematic header {

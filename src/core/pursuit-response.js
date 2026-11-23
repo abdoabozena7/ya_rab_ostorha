@@ -8,6 +8,8 @@ const FORWARD_CONE_COS = Math.cos(100 * Math.PI / 180);
 const CLOSE_RANGE_M = 7.2;
 const GTA_RANGE_M = 65, GTA_PROXIMITY_M = 14, GTA_CLOSE_M = 7.5;
 const GTA_FORWARD_COS = Math.cos(55 * Math.PI / 180);
+export const TACTICAL_SIGHT_RANGE_M = 110;
+const TACTICAL_EARSHOT_M = 22;
 const SEPARATION_M = 24;
 const SEARCH_TICKS = Math.round(2.5 / STEP);
 const CLEAR_TICKS = Math.round(4.5 / STEP);
@@ -15,19 +17,19 @@ const STAR_TICKS = Math.round(2.4 / STEP);
 const visibilityGeometry = new WeakMap();
 
 function staticGeometry(world) {
-  const { staticIndex } = world;
-  let geometry = visibilityGeometry.get(staticIndex);
+  const cacheKey = world.staticIndex ?? world.statics;
+  let geometry = cacheKey ? visibilityGeometry.get(cacheKey) : null;
   if (geometry) return geometry;
   const boxes = new Map();
   let reach = 0;
-  for (const body of world.statics) {
+  for (const body of world.statics ?? []) {
     const w = body.width / 2, l = body.length / 2;
     if (!(w > 0 && l > 0)) continue;
     reach = Math.max(reach, Math.hypot(w, l));
     boxes.set(body, { w, l, sin: Math.sin(body.heading ?? 0), cos: Math.cos(body.heading ?? 0) });
   }
   geometry = { boxes, reach };
-  visibilityGeometry.set(staticIndex, geometry);
+  if (cacheKey) visibilityGeometry.set(cacheKey, geometry);
   return geometry;
 }
 
@@ -52,14 +54,42 @@ function intersects(x, z, dx, dz, body, { w, l, sin, cos }) {
 function unobstructed(world, from, dx, dz, range) {
   const { boxes, reach } = staticGeometry(world);
   const midpoint = { x: from.x + dx / 2, z: from.z + dz / 2 };
+  const candidates = world.staticIndex
+    ? world.staticIndex.near(midpoint, range / 2 + reach)
+    : (world.statics ?? []);
   // The midpoint sphere encloses every intersecting footprint's centre.
-  return !world.staticIndex.near(midpoint, range / 2 + reach).some(body => {
+  return !candidates.some(body => {
     const box = boxes.get(body);
     return box && intersects(from.x, from.z, dx, dz, body, box);
   });
 }
 
-export const gtaLineClear = unobstructed;
+export function gtaLineClear(world, from, dx, dz, range) {
+  return unobstructed(world, from, dx, dz, range);
+}
+
+function gtaLocal(from, to) {
+  const dx = to.x - from.x, dz = to.z - from.z;
+  const sin = Math.sin(from.heading), cos = Math.cos(from.heading);
+  return { forward: dx * sin + dz * cos, right: dx * cos - dz * sin };
+}
+
+export function gtaInSight(world, car, player) {
+  const tactical = world.pursuit?.gta?.config?.tacticalPursuit === "gta-tactical-v1";
+  const dx = player.x - car.x, dz = player.z - car.z;
+  const dist = Math.hypot(dx, dz);
+  if (!tactical) {
+    if (dist > GTA_RANGE_M) return false;
+    const ahead = dx * Math.sin(car.heading) + dz * Math.cos(car.heading);
+    if (dist > GTA_PROXIMITY_M && ahead < dist * GTA_FORWARD_COS) return false;
+    return gtaLineClear(world, car, dx, dz, dist);
+  }
+  if (dist > TACTICAL_SIGHT_RANGE_M) return false;
+  if (!gtaLineClear(world, car, dx, dz, dist)) return false;
+  if (dist <= TACTICAL_EARSHOT_M) return true;
+  const local = gtaLocal(car, player);
+  return local.forward > -1.5 && Math.abs(Math.atan2(local.right, Math.max(0.1, local.forward))) <= 1.15;
+}
 
 export function gtaDeploymentHidden(world, from, body) {
   const radius = Math.hypot(body.width, body.length) / 2;
@@ -69,9 +99,12 @@ export function gtaDeploymentHidden(world, from, body) {
   const midpoint = { x: (from.x + body.x) / 2, z: (from.z + body.z) / 2 };
   const footprint = corners(body);
   const height = Math.max(from.height ?? 1.8, body.height ?? 0);
+  const candidates = world.staticIndex
+    ? world.staticIndex.near(midpoint, range / 2 + reach + radius)
+    : (world.statics ?? []);
   // The shadow of one convex rectangle is convex. Covering all four
   // corners with the same solid covers the space between the rays too.
-  return world.staticIndex.near(midpoint, range / 2 + reach + radius).some(cover => {
+  return candidates.some(cover => {
     const box = boxes.get(cover);
     return box && cover.height >= height && footprint.every(point =>
       intersects(from.x, from.z, point.x - from.x, point.z - from.z, cover, box));
@@ -81,6 +114,7 @@ export function gtaDeploymentHidden(world, from, body) {
 export function createPursuitResponse() {
   return {
     stage: "search", pressure: 0, clearProgress: 0, unitsInContact: 0,
+    nearestPatrolM: null, strobeIntensity: 0,
     lastSeen: null, sightedBy: new Set(), closePatrols: new Set(),
     lostAtTick: null, clearAtTick: null,
   };
@@ -91,33 +125,50 @@ export function updatePursuitResponse(world, initial = false) {
   const { player, pursuit, tick } = world;
   const r = pursuit.response;
   const gta = pursuit.variant === "gta";
+  const tactical = pursuit.gta?.config?.tacticalPursuit === "gta-tactical-v1";
   const hunt = isCityHunt(pursuit.variant) && pursuit.street;
   const arcade = pursuit.variant === "arcade" || pursuit.variant === "pack" || isCityHunt(pursuit.variant);
-  const contactRange = gta ? GTA_RANGE_M : arcade ? ARCADE_CONTACT_RANGE_M : CONTACT_RANGE_M;
+  const contactRange = gta ? (tactical ? TACTICAL_SIGHT_RANGE_M : GTA_RANGE_M)
+    : arcade ? ARCADE_CONTACT_RANGE_M : CONTACT_RANGE_M;
   const before = r.stage;
   r.sightedBy.clear();
   r.closePatrols.clear();
   let nearest = contactRange;
+  let nearestPatrolM = Infinity;
   for (const unit of pursuit.patrols) {
     if (gta && (unit.aiState === "WRECKED" || (r.dispatch && unit.health <= 0))) continue;
     const dx = player.x - unit.x, dz = player.z - unit.z;
     const range = Math.hypot(dx, dz);
+    if (gta && range < nearestPatrolM) nearestPatrolM = range;
+    if (gta) {
+      const closeProximityContact = tactical && range < 15 && gtaLineClear(world, unit, dx, dz, range);
+      if (!closeProximityContact && !gtaInSight(world, unit, player)) continue;
+      if (range < GTA_CLOSE_M) r.closePatrols.add(unit);
+      r.sightedBy.add(unit);
+      nearest = Math.min(range, nearest);
+      continue;
+    }
     if (range > contactRange) continue;
-    const close = range < (gta ? GTA_CLOSE_M : CLOSE_RANGE_M);
+    const close = range < CLOSE_RANGE_M;
     const ahead = dx * Math.sin(unit.heading) + dz * Math.cos(unit.heading);
-    const outsideCone = gta ? range > GTA_PROXIMITY_M && ahead < range * GTA_FORWARD_COS
-      : !arcade && !close && ahead < range * FORWARD_CONE_COS;
+    const outsideCone = !arcade && !close && ahead < range * FORWARD_CONE_COS;
     if (outsideCone ||
         !unobstructed(world, unit, dx, dz, range)) continue;
     if (close) r.closePatrols.add(unit);
     r.sightedBy.add(unit);
     nearest = Math.min(range, nearest);
   }
+  r.nearestPatrolM = gta && Number.isFinite(nearestPatrolM) ? nearestPatrolM : null;
   r.unitsInContact = r.sightedBy.size;
   const desired = r.unitsInContact ? clamp(
     .12 + .64 * (1 - nearest / contactRange) + .09 * (r.unitsInContact - 1), 0, 1) : 0;
   r.pressure = initial ? desired : r.pressure + clamp(desired - r.pressure, -.28 * STEP, .37 * STEP);
-  if (r.dispatch) return updateDispatchTracking(world, initial);
+  if (pursuit.gta?.config?.ruleset === "dispatch-v1" || r.dispatch || (gta && tactical)) {
+    if (tactical) {
+      r.stage = r.unitsInContact > 0 ? "contact" : (r.dispatch?.coolingDown ? "clearing" : "search");
+    }
+    return updateDispatchTracking(world, initial);
+  }
   if (r.unitsInContact) {
     r.lastSeen = Object.freeze({ x: player.x, z: player.z, heading: player.heading, speed: player.speed, tick });
     r.stage = "contact";
@@ -161,7 +212,31 @@ export function updatePursuitResponse(world, initial = false) {
   return before === "contact" ? "contact-lost" : null;
 }
 
-export function pursuitResponseSnapshot({ stage, pressure, clearProgress, unitsInContact, dispatch }) {
+export function pursuitResponseSnapshot(response) {
+  const { stage, pressure, clearProgress, unitsInContact, dispatch } = response;
+  if (dispatch?.tactical) {
+    const strobeIntensity = Number.isFinite(response.strobeIntensity)
+      ? Number(response.strobeIntensity.toFixed(3))
+      : 0;
+    return {
+      stage,
+      pressure,
+      clearProgress,
+      unitsInContact,
+      strobeIntensity,
+      nearestPatrolM: dispatch.nearestPatrolM ?? null,
+      dispatch: {
+        state: dispatch.state,
+        zoneIds: [...dispatch.zoneIds],
+        lastReportTick: dispatch.lastReportTick,
+        coolingDown: Boolean(dispatch.coolingDown),
+        hiddenInCover: Boolean(dispatch.hiddenInCover),
+        starProgress: dispatch.starProgress ?? 0,
+        nextStarDropS: dispatch.nextStarDropS ?? null,
+        minEscapeDistanceM: dispatch.minEscapeDistanceM ?? null,
+      },
+    };
+  }
   return { stage, pressure, clearProgress, unitsInContact,
     ...(dispatch ? { dispatch: { state: dispatch.state, zoneIds: [...dispatch.zoneIds],
       lastReportTick: dispatch.lastReportTick } } : {}) };

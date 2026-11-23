@@ -1,37 +1,56 @@
 import * as THREE from "three";
 import { World } from "./core/world.js";
-import { METRO_POPULATION_LIMITS, RUSH_CITY_POPULATION_LIMITS } from "./core/unified-city.js";
+import {
+  GRAND_CITY_POPULATION_LIMITS,
+  METRO_POPULATION_LIMITS,
+  RUSH_CITY_POPULATION_LIMITS,
+} from "./core/unified-city.js";
 import { FixedClock } from "./core/clock.js";
 import { WorldView } from "./render/world-view.js";
 import { createPursuitCamera } from "./render/pursuit-camera.js";
+import { createPakoPerspective } from "./render/pako-perspective.js";
+import { createPedestrianForecastView } from "./render/pedestrian-forecast-view.js";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { PLACES, LAB_PLACES } from "./core/places.js";
 import { mountPhone } from "./ui/phone.js";
 import { createBridge, createVisualClient } from "./integration/bridge.js";
 import { createPerceptionOverlay } from "./ui/perception-overlay.js";
 import { createDecisionInspector } from "./ui/decision-inspector.js";
-import { bodyOnRoad, distance } from "./core/geometry.js";
+import { bodyOnRoad, distance, isDiagonalRoad } from "./core/geometry.js";
 import { mountVehiclePanel } from "./ui/vehicle-panel.js";
 import { mountVisionPanel } from "./ui/vision-panel.js";
 import { mountCameraScreen } from "./ui/camera-screen.js";
 import { mountPeoplePanel } from "./ui/people-panel.js";
+import { mountCityPerception } from "./ui/city-perception.js";
 import { createReplayBlob, readReplayFile } from "./ui/replay-file.js";
 import { DISTRICT_CASES } from "./core/district-scenarios.js";
 import { pursuitSnapshot } from "./core/pursuit-world.js";
-import { DISPATCH_DAMAGE_FEEDBACK } from "./core/pursuit-gta.js";
+import { DISPATCH_DAMAGE_FEEDBACK, PATROL_TRAFFIC_PREVIEW } from "./core/pursuit-gta.js";
+import { AGGRESSIVE_CHASE_PRESENCE } from "./core/pako-aggressive-police.js";
+import { TACTICAL_PURSUIT_MODE } from "./core/pako-tactical-police.js";
+import { METRO_CITY_CURBS, METRO_CURB_SUPPORT } from "./core/pako-curb.js";
+import { PATROL_LATERAL_YIELD } from "./core/pako-patrol-yield.js";
 import { SURVIVAL_GIANT_PHYSICS } from "./core/pursuit-survival.js";
 import { PURSUIT_STOP } from "./core/pursuit-controls.js";
 import { PACK_DRILLS } from "./core/pack-drills.js";
 import { mountPursuitPanel } from "./ui/pursuit-panel.js";
+import { mountPursuitStrobe } from "./ui/pursuit-strobe.js";
+import { mountForecastComparison, mountRolloutPlayback } from "./ui/pako-rollouts.js";
 import { PursuitAudio } from "./ui/pursuit-audio.js";
 import { isPackPursuit, onRoadLimit, rushRoadLimit, usesRushPace } from "./core/district-behavior.js";
 import { validatePackPolicy } from "./core/pack-driving.js";
 import { freezePursuitPolicy, PursuitPpo } from "./rl/pursuit-ppo.js";
+import { PAKO_EVASIVE_CONTROL } from "./rl/pako-evasive-control.js";
 import { applyFrozenDispatchAction } from "./rl/pursuit-controller.js";
+import { PursuitDecisionTrace, finishPursuitDecision, observePursuitDecision,
+  startPursuitDecision } from "./rl/pursuit-diagnostics.js";
 import { CLEARANCE_ROUTE_CONTEXT, LEGACY_ROUTE_CONTEXT } from "./rl/pursuit-route-context.js";
 import labCurriculum from "../config/pursuit-rl-development.json";
 import labRouteCurriculum from "../config/pursuit-rl-route-development.json";
 import labClearanceCurriculum from "../config/pursuit-rl-city-route-development.json";
+import labChaseCurriculum from "../config/pursuit-rl-city-escape-focus.json";
+import pakoReleasePolicies from "../config/pako-release-policies.json";
+import { PursuitScanner, PURSUIT_SCAN_TICKS } from "./signal_processing/pursuit-scanner.js";
 
 const $ = (id) => document.getElementById(id);
 const renderer = new THREE.WebGLRenderer({
@@ -48,7 +67,7 @@ renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.shadowMap.autoUpdate = false;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 0.9;
+renderer.toneMappingExposure = 1.04;
 let viewportWidth = document.documentElement.clientWidth;
 let viewportHeight = innerHeight;
 const drivingHud = document.querySelector(".driving-hud");
@@ -57,12 +76,12 @@ const camera = new THREE.PerspectiveCamera(
   62,
   viewportWidth / viewportHeight,
   0.1,
-  500,
+  950,
 );
 const frontCamera = new THREE.PerspectiveCamera(76, 16 / 9, 0.1, 250);
 const visionCamera = new THREE.PerspectiveCamera(76, 16 / 9, 0.1, 250);
 const pursuitCamera = createPursuitCamera();
-const worlds = { metro: new World({ cityVersion: 4 }, "metro") };
+const worlds = { metro: new World({ cityVersion: 5 }, "metro") };
 const views = new Map();
 const scenePauses = new WeakMap();
 let environment = "metro", cityResumeEnvironment = "metro",
@@ -73,6 +92,7 @@ let view,
   clock = new FixedClock(),
   paused = false,
   cameraMode = "chase",
+  chaseCameraStyle = "follow",
   showCamera = true,
   lastInput = "",
   lastTime = performance.now(),
@@ -89,16 +109,29 @@ orbit.minDistance = 1.2;
 orbit.maxDistance = 12;
 let cameraSnap = true;
 let lastPursuitShot = null;
-let phone, vehiclePanel, visionPanel, visualClient, cameraScreen, peoplePanel;
+let phone, vehiclePanel, visionPanel, visualClient, cameraScreen, peoplePanel, cityPerception;
+const senseScanner = new PursuitScanner();
+const pedestrianForecastView = createPedestrianForecastView();
+let senseScan = null, senseWorld = null, senseForecasts = [];
 let selectedPersonId = null, focusedPersonId = null, cameraScreenVisible = false;
 let visionCaseId = "cross-left", visionMode = "vision-first", pendingVisionRun = false;
 let districtCaseId = "ambient", streetPursuitOpen = false, streetPursuitLevel = 3, streetPursuitStyle = "survival";
-const isDispatchStyle = style => style === "dispatch" || style === "dispatch-ppo";
+let pakoPanelOpen = false, useEvasionPreview = false, useSurveyedCurb = false;
+let pakoDriverMode = "rl", customCheckpoint = false, defaultChaseReady = false;
+const isDispatchStyle = style => style === "dispatch" || style === "dispatch-ppo" || style === "pako";
 const isGtaStyle = style => style === "gta" || isDispatchStyle(style);
 let dispatchCheckpoint = null, checkpointStatus = "";
+const formatPpoSummary = policy => policy
+  ? `${policy.updates} updates · ${policy.transitions >= 1000 ? `${(policy.transitions / 1000).toFixed(1)}k` : policy.transitions} steps · ε = 0.20`
+  : "";
 let replayLoad = null;
 const labPpoCheckpoints = new Map();
 let labPpoWorker = null;
+let labSession = null;
+const ghostPlayback = mountRolloutPlayback(document, worlds.metro.drivingRoads);
+mountForecastComparison(document);
+const perspectiveGhosts = createPakoPerspective();
+let lastPerspectiveReplay = null;
 let packDrillWorld = null, labPackCheckpoint = null, cityPackCheckpoint = null;
 let cityDriver = "vision-first", cameraStartup = null, cityCameraError = null;
 const hasCityCameraDriver = (target) => target.environment === "metro" && target.config.cityVersion >= 3;
@@ -126,6 +159,7 @@ const activeCinematic = () => world.pursuit?.response &&
   (world.pursuit.phase === "running" || (isPackPursuit(world.pursuit.variant) &&
     (world.pursuit.packLab || world.pursuit.reviewUntilTick))) ? world.pursuit : null;
 function previewVisible(pursuit = activeCinematic()) {
+  if (cityPerception?.open) return false;
   return pursuit ? pursuitPreview?.run === pursuit && pursuitPreview.show : showCamera;
 }
 function updatePreview() {
@@ -145,6 +179,16 @@ let mainCalls = 0, mainTriangles = 0;
 let lastShadowWorld = null, lastShadowTick = -1;
 let inspectionRig = null, appliedCutaway = null, appliedSensors = null;
 const isInspection = () => cameraMode === "inspection" || cameraMode === "running-gear";
+function setChaseCameraStyle(style) {
+  if (!["follow", "chasing"].includes(style)) throw new Error("Unknown chase camera style");
+  chaseCameraStyle = style;
+  if (cameraMode !== "chase") setCarView("chase");
+  const btn = $("chaseCamBtn");
+  if (btn) {
+    btn.textContent = chaseCameraStyle === "chasing" ? "Chasing cam" : "Behind car";
+    btn.setAttribute("aria-pressed", String(chaseCameraStyle === "chasing"));
+  }
+}
 function setCarView(mode) {
   if (!["chase", "cockpit", "inspection", "running-gear"].includes(mode))
     throw new Error("Unknown car camera view");
@@ -336,6 +380,11 @@ function activate(next) {
   phone?.reset();
   environment = next;
   world = worlds[next] = nextWorld;
+  senseWorld = senseScan = null;
+  senseForecasts = [];
+  if (next !== "metro") cityPerception?.show(false);
+  $("driveSenseBtn").hidden = next !== "metro";
+  document.body.toggleAttribute("data-city-focus", next === "metro");
   if (isCity(next)) cityResumeEnvironment = next;
   if (sceneTransition) paused = scenePauses.get(nextWorld) ?? false;
   if (visualClient) {
@@ -358,12 +407,16 @@ function activate(next) {
     next === "pursuit" ? (world.pursuit.packLab ? "Pursuit lab" : "Pursuit replay") : next === "egypt" ? "Egyptian district replay" :
       isCity(next) ? "City" : next === "vehicle" ? "Vehicle test bay" :
       next === "vision" ? "Visual prediction lab" : "Training lab";
-  $("labBtn").textContent = isCity(next) ? "Lab" : "Return to city";
+  const labButton = $("labBtn");
+  labButton.textContent = isCity(next) ? "Lab" : "Return to city";
+  if (isCity(next)) $("cityToolItems").insertBefore(labButton, $("inspectorBtn"));
+  else $("cityTools").before(labButton);
   $("mapLabel").textContent = isCity(next) ? "City" : next === "vehicle" ? "Vehicle bay" : "Lab";
   $("streetPursuitBtn").hidden = next !== "metro" && next !== "lab" && !world.pursuit?.packLab;
+  $("selfDrivingBtn").hidden = $("pakoBtn").hidden = next !== "metro";
   $("streetPursuitBtn").textContent = next === "lab" ? "Pursuit drills"
-    : world.pursuit?.packLab ? "Back to Lab" : "Pursuit";
-  $("streetPursuitBtn").setAttribute("aria-expanded", String(next === "metro" && streetPursuitOpen));
+    : world.pursuit?.packLab ? "Back to Lab" : "Experiments";
+  updatePursuitNavigation();
   $("visionToggleBtn").hidden = next === "metro";
   $("phoneStatus").textContent =
     hasCityCameraDriver(world) && cityDriver === "vision-first"
@@ -403,7 +456,11 @@ function activate(next) {
   ]) {
     if (name === "traffic" || name === "pedestrians")
       $("settingsForm").elements[name].max = hasCityCameraDriver(world)
-        ? (world.config.cityVersion === 4 ? RUSH_CITY_POPULATION_LIMITS : METRO_POPULATION_LIMITS)[name]
+        ? (world.config.cityVersion >= 5
+            ? GRAND_CITY_POPULATION_LIMITS
+            : world.config.cityVersion === 4
+              ? RUSH_CITY_POPULATION_LIMITS
+              : METRO_POPULATION_LIMITS)[name]
         : name === "traffic" ? 72 : 96;
     $("settingsForm").elements[name].value = world.config[name];
     if ($(name + "Output")) $(name + "Output").textContent = world.config[name];
@@ -478,20 +535,21 @@ phone = mountPhone({
   getPlaces: placesForWorld,
 });
 vehiclePanel = mountVehiclePanel({
-  toolbar: document.querySelector(".topbar nav"),
+  toolbar: $("cityToolItems"),
   onAction: carAction,
 });
 visionPanel = mountVisionPanel({
-  toolbar: document.querySelector(".topbar nav"),
+  toolbar: $("cityToolItems"),
   onAction: visionAction,
 });
 cameraScreen = mountCameraScreen({
-  navigation: document.querySelector(".topbar nav"),
+  navigation: $("cityToolItems"),
   onAction: cameraAction,
   onVisibilityChange: (visible) => {
     cameraScreenVisible = visible;
-    visualClient?.setPreviewEnabled(visible);
+    visualClient?.setPreviewEnabled(visible || cityPerception?.open);
     if (visible) {
+      cityPerception?.show(false);
       peoplePanel?.close();
       vehiclePanel.close();
       visionPanel.close();
@@ -500,8 +558,25 @@ cameraScreen = mountCameraScreen({
   },
 });
 peoplePanel = mountPeoplePanel({
-  navigation: document.querySelector(".topbar nav"),
+  navigation: $("cityToolItems"),
   onAction: peopleAction,
+});
+cityPerception = mountCityPerception($, {
+  onVisibility: visible => {
+    document.body.toggleAttribute("data-city-sense", visible);
+    visualClient?.setPreviewEnabled(visible || cameraScreenVisible);
+    if (!visible) {
+      senseWorld = senseScan = null;
+      senseForecasts = [];
+      pedestrianForecastView.update([]);
+    } else {
+      settingsOpen(false);
+      $("inspectorPanel").hidden = true;
+      $("inspectorBtn").setAttribute("aria-expanded", "false");
+    }
+    updatePreview();
+  },
+  onDetector: () => cameraAction(visualClient.enabled ? "stop" : "start"),
 });
 for (const [id, control] of [["pursuitTouchLeft", "ArrowLeft"], ["pursuitTouchRight", "ArrowRight"],
   ["pursuitTouchBrake", "Space"], ["pursuitTouchThrottle", "KeyW"], ["pursuitTouchReverse", "KeyS"]]) {
@@ -517,8 +592,13 @@ for (const [id, control] of [["pursuitTouchLeft", "ArrowLeft"], ["pursuitTouchRi
 }
 document.querySelector(".topbar nav").addEventListener("click", (event) => {
   const id = event.target.closest("button")?.id;
+  if (id) $("cityTools").open = false;
   if (id && id !== "cameraScreenToggleBtn") cameraScreen.close();
   if (id && id !== "peopleToggleBtn") peoplePanel.close();
+  if (id && $("cityToolItems").contains(event.target)) cityPerception.show(false);
+});
+document.addEventListener("click", event => {
+  if (!$("cityTools").contains(event.target)) $("cityTools").open = false;
 });
 const isEditing = (target) =>
   ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName);
@@ -530,6 +610,7 @@ addEventListener("keydown", (event) => {
     $("inspectorBtn").setAttribute("aria-expanded", "false");
   }
   if (isEditing(event.target)) return;
+  if (event.code === "Space" && event.target.closest?.("button, summary, a[href]")) return;
   if (
     ["Space", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(
       event.code,
@@ -541,6 +622,9 @@ addEventListener("keydown", (event) => {
   if (event.code === "KeyP") $("phoneToggleBtn").click();
   if (event.code === "KeyC") {
     setCarView(cameraMode === "cockpit" ? "chase" : "cockpit");
+  }
+  if (event.code === "KeyV") {
+    setChaseCameraStyle(chaseCameraStyle === "chasing" ? "follow" : "chasing");
   }
   if (event.code === "KeyI") autoToggle();
   if (event.code === "KeyE") usePursuitPower();
@@ -560,6 +644,28 @@ document.addEventListener("visibilitychange", () => {
 });
 $("aiToggleBtn").onclick = autoToggle;
 $("labBtn").onclick = () => activate(isCity(environment) ? "lab" : cityResumeEnvironment);
+function updatePursuitNavigation() {
+  $("pakoBtn").setAttribute("aria-expanded", String(environment === "metro" && streetPursuitOpen && pakoPanelOpen));
+  $("streetPursuitBtn").setAttribute("aria-expanded", String(environment === "metro" && streetPursuitOpen && !pakoPanelOpen));
+}
+$("pakoBtn").onclick = () => {
+  if (environment !== "metro") return;
+  streetPursuitOpen = !streetPursuitOpen || !pakoPanelOpen;
+  pakoPanelOpen = true;
+  updatePursuitNavigation();
+  settingsOpen(false);
+  updateUI();
+  if (streetPursuitOpen) $("pursuitLevel").focus();
+};
+$("selfDrivingBtn").onclick = () => {
+  if (environment !== "metro" || world.player.curbSupportId) return;
+  endCityPursuit();
+  cancelReplayLoad();
+  streetPursuitOpen = pakoPanelOpen = false;
+  updatePursuitNavigation();
+  if (world.mode !== "auto") autoToggle();
+  updateUI();
+};
 $("streetPursuitBtn").onclick = () => {
   if (environment === "lab") {
     packDrillWorld ??= new World({ seed: world.config.seed, speedLimit: 48,
@@ -572,11 +678,18 @@ $("streetPursuitBtn").onclick = () => {
     activate("lab");
     return;
   }
-  streetPursuitOpen = !streetPursuitOpen;
-  $("streetPursuitBtn").setAttribute("aria-expanded", String(streetPursuitOpen));
+  streetPursuitOpen = !streetPursuitOpen || pakoPanelOpen;
+  pakoPanelOpen = false;
+  if (!isGtaStyle(streetPursuitStyle)) streetPursuitLevel = Math.min(4, streetPursuitLevel);
+  updatePursuitNavigation();
   settingsOpen(false);
   updateUI();
 };
+if ($("chaseCamBtn")) {
+  $("chaseCamBtn").onclick = () =>
+    setChaseCameraStyle(chaseCameraStyle === "chasing" ? "follow" : "chasing");
+  $("chaseCamBtn").setAttribute("aria-pressed", "false");
+}
 $("cameraBtn").onclick = () => {
   const run = activeCinematic();
   if (run) pursuitPreview = { run, show: !previewVisible(run) };
@@ -589,12 +702,26 @@ $("pauseBtn").onclick = () => {
     setCarView("chase");
     paused = false;
   } else paused = canceledImport ? false : !paused;
+  if (paused && world.pursuit?.phase === "running" && world.pursuit.trace) {
+    const run = world.pursuit;
+    flushDecisionTrace(world, run);
+    run.trace.append(finishPursuitDecision(world, startPursuitDecision(world,
+      { ...currentPursuitDecision(run), paused: true })));
+  }
   keys.clear();
   touchPursuit.clear();
   $("pauseBtn").textContent = paused ? "Resume" : "Pause";
 };
-function settingsOpen(open) {
-  $("settingsPanel").hidden = !open;
+function settingsOpen(open, pako = false) {
+  const panel = $("settingsPanel");
+  panel.hidden = !open;
+  panel.toggleAttribute("data-pako-workspace", open && pako);
+  panel.setAttribute("aria-label", pako ? "PAKO Lab" : "Simulation settings");
+  $("settingsTitle").textContent = pako ? "PAKO Lab" : "Simulation settings";
+  if (open) {
+    $("metroPpoLegacyUpdate").open = !pako;
+    $("pakoLabSetup").open = !pako;
+  }
   $("settingsBtn").setAttribute("aria-expanded", String(open));
   if (open) {
     $("inGamePhone").hidden = true;
@@ -638,11 +765,14 @@ let pursuitWeights;
 const CITY_POLICY_KEY = "ya-rab-ostorha:pursuit-hunt-v1";
 let cityPracticeRun = null, savedPracticeRun = null, cityPolicyRead = false;
 const CITY_RECORD_KEY = "ya-rab-ostorha:city-survival-best-v1";
+const PAKO_RECORD_KEY = "ya-rab-ostorha:pako-survival-best-v1";
 const pursuitAudio = new PursuitAudio();
-let heardRun = null, heardEvent = 0, scoredRun = null, bestSurvivalS = null;
+let heardRun = null, heardEvent = 0, scoredRun = null, bestSurvivalS = null, pakoBestS = null;
 try {
   const value = localStorage.getItem(CITY_RECORD_KEY);
   if (value !== null && Number.isFinite(Number(value)) && Number(value) >= 0) bestSurvivalS = Number(value);
+  const pakoBest = localStorage.getItem(PAKO_RECORD_KEY);
+  if (pakoBest !== null && Number.isFinite(Number(pakoBest)) && Number(pakoBest) >= 0) pakoBestS = Number(pakoBest);
 } catch (error) {
   if (!(error instanceof DOMException)) throw error;
   console.warn("City pursuit records are available in this tab only.", error);
@@ -654,14 +784,14 @@ function usePursuitPower() {
 
 function updateSurvivalFeedback() {
   const run = world.pursuit;
-  const active = run?.survival && (run.phase === "running" || run.reviewUntilTick);
+  const active = (run?.survival || run?.cityChase) && (run.phase === "running" || run.reviewUntilTick);
   if (heardRun !== run) {
     heardRun = run;
     heardEvent = 0;
   }
   const audible = Boolean(active && !paused && !document.hidden);
   pursuitAudio.update(world, audible);
-  if (active) for (const event of run.survival.effects) {
+  if (active && run?.survival) for (const event of run.survival.effects) {
     if (event.id <= heardEvent) continue;
     heardEvent = event.id;
     if (audible) pursuitAudio.play(event);
@@ -726,13 +856,66 @@ function takeDispatchControl() {
   updateUI();
 }
 
-function stepWorld() {
-  const run = world.pursuit;
-  if (run?.phase === "running" && applyFrozenDispatchAction(world, run.frozenDriver)) updateUI();
-  world.step();
+let cityTraceSequence = 0;
+function currentPursuitDecision(run) {
+  const driver = run.frozenDriver;
+  if (driver && driver.status !== "manual") return driver.lastDecision;
+  return { source: "manual", status: "manual", requested: run.manualAction, submitted: run.manualAction };
 }
 
-async function loadDispatchCheckpoint(file, source = file?.name) {
+function flushDecisionTrace(target, run) {
+  if (!run.pendingTrace) return;
+  run.trace.append(finishPursuitDecision(target, run.pendingTrace));
+  run.pendingTrace = null;
+}
+
+function stepWorld() {
+  const run = world.pursuit;
+  const capture = run?.phase === "running" && run.trace;
+  if (run?.phase === "running") {
+    if (capture && run.pendingTrace && run.traceAction !== run.manualAction) flushDecisionTrace(world, run);
+    const cameraStream = run.cityChase && !run.pako && visualClient.enabled && visualClient.status.status === "ready"
+      ? visualClient.streamId : null;
+    const faulted = applyFrozenDispatchAction(world, run.frozenDriver, cameraStream);
+    if (capture && run.pendingTrace && run.traceAction !== run.manualAction) flushDecisionTrace(world, run);
+    if (capture && !run.pendingTrace) {
+      run.traceAction = run.manualAction;
+      run.pendingTrace = startPursuitDecision(world, currentPursuitDecision(run));
+    }
+    if (faulted) updateUI();
+  }
+  world.step();
+  const pursuitScan = world.pursuit?.phase === "running" && world.pursuit.gta?.scan;
+  if (!pursuitScan && cityPerception.open && environment === "metro" && world.tick % PURSUIT_SCAN_TICKS === 0) {
+    senseWorld = world;
+    senseScan = senseScanner.sample(world);
+  }
+  if (run?.pako && !run.pakoScored && ["escaped", "busted", "wrecked", "timeout"].includes(run.phase)) {
+    run.pakoScored = true;
+    if (run.response.dispatch.escapeEligible && run.frozenDriver?.status !== "fault" &&
+        run.metrics.survivalS > (pakoBestS ?? 0)) {
+      pakoBestS = run.metrics.survivalS;
+      try { localStorage.setItem(PAKO_RECORD_KEY, String(pakoBestS)); }
+      catch (error) {
+        if (!(error instanceof DOMException)) throw error;
+        console.warn("PAKO best time is retained in this tab only.", error);
+      }
+    }
+  }
+  if (capture) {
+    observePursuitDecision(world, run.pendingTrace);
+    if (run.phase !== "running" || world.tick - run.pendingTrace.tick >= PURSUIT_SCAN_TICKS)
+      flushDecisionTrace(world, run);
+  }
+  if (capture && run.cityChase && run.phase !== "running") updateUI();
+}
+
+function approvedPakoPolicy() {
+  return dispatchCheckpoint && pakoReleasePolicies.verified.find(entry =>
+    entry.sha256 === dispatchCheckpoint.sha256 && entry.observation === dispatchCheckpoint.policy.observation);
+}
+
+async function loadDispatchCheckpoint(file, source = file?.name, isCustom = true) {
   dispatchCheckpoint = null;
   checkpointStatus = file ? "Checking checkpoint…" : "";
   updateUI();
@@ -744,6 +927,8 @@ async function loadDispatchCheckpoint(file, source = file?.name) {
     const digest = new Uint8Array(await crypto.subtle.digest("SHA-256", bytes));
     const sha256 = [...digest].map(n => n.toString(16).padStart(2, "0")).join("");
     dispatchCheckpoint = { policy, sha256 };
+    customCheckpoint = Boolean(isCustom);
+    pakoDriverMode = "rl";
     const mapCues = policy.observation === CLEARANCE_ROUTE_CONTEXT ? " · Extended map cues" :
       policy.observation === LEGACY_ROUTE_CONTEXT ? " · Static map cues" : "";
     checkpointStatus = `${source} · ${policy.updates} updates${mapCues} · SHA-256 ${sha256.slice(0, 12)}`;
@@ -754,28 +939,50 @@ async function loadDispatchCheckpoint(file, source = file?.name) {
   return dispatchCheckpoint !== null;
 }
 
+async function loadDefaultChasePolicy() {
+  try {
+    const response = await fetch("/public/threejs/pako-chase-ppo.json");
+    if (!response.ok) return;
+    const bytes = await response.arrayBuffer();
+    const raw = JSON.parse(new TextDecoder().decode(bytes));
+    const policy = freezePursuitPolicy(raw);
+    const digest = new Uint8Array(await crypto.subtle.digest("SHA-256", bytes));
+    const sha256 = [...digest].map(n => n.toString(16).padStart(2, "0")).join("");
+    if (!dispatchCheckpoint) {
+      dispatchCheckpoint = { policy, sha256 };
+      customCheckpoint = false;
+      pakoDriverMode = "rl";
+      checkpointStatus = `Built-in RL PPO · ${formatPpoSummary(policy)} · SHA-256 ${sha256.slice(0, 12)}`;
+    }
+    if (!labPpoCheckpoints.has(raw.observation)) labPpoCheckpoints.set(raw.observation, raw);
+  } catch (error) {
+    console.warn("Default Chase PPO policy could not be preloaded:", error);
+  } finally {
+    defaultChaseReady = true;
+    updateUI();
+  }
+}
+
 function stopLabPpo(message) {
   labPpoWorker?.terminate();
   labPpoWorker = null;
+  if (labSession && ["running", "paused", "starting"].includes(labSession.status)) {
+    labSession.status = "stopped";
+    updateLabSession(message);
+  }
   showLabPpoCheckpoint(message);
 }
 
 function selectedLabPpoStage() {
   const id = $("metroPpoStage").value;
-  for (const manifest of [labCurriculum, labRouteCurriculum, labClearanceCurriculum]) {
+  for (const manifest of [labCurriculum, labRouteCurriculum, labClearanceCurriculum, labChaseCurriculum]) {
     const stage = manifest.stages.find(row => row.id === id);
-    if (stage) return { manifest, observation: stage.observation ?? "dispatch-scan-v3" };
+    if (stage) return { manifest, stage, observation: stage.observation ?? "dispatch-scan-v3" };
   }
   throw new RangeError("Choose a Metro training workload.");
 }
 
-function showLabPpoCheckpoint(message) {
-  const checkpoint = labPpoCheckpoints.get(selectedLabPpoStage().observation);
-  $("metroPpoTrain").disabled = false;
-  $("metroPpoTrain").textContent = checkpoint ? "Train another update" : "Train one update";
-  $("metroPpoStop").disabled = true;
-  $("metroPpoStage").disabled = $("metroPpoResume").disabled = false;
-  $("metroPpoUse").disabled = !checkpoint;
+function renderLabDownload(checkpoint) {
   const download = $("metroPpoDownload");
   if (download.hasAttribute("href")) {
     URL.revokeObjectURL(download.href);
@@ -784,10 +991,119 @@ function showLabPpoCheckpoint(message) {
   download.hidden = !checkpoint;
   if (checkpoint)
     download.href = URL.createObjectURL(new Blob([JSON.stringify(checkpoint) + "\n"], { type: "application/json" }));
+}
+
+function showLabPpoCheckpoint(message) {
+  const { stage, observation } = selectedLabPpoStage();
+  const checkpoint = labPpoCheckpoints.get(observation);
+  $("pakoWorkloadNote").textContent = stage.traffic >= 36 && !stage.scenario
+    ? `City chase · Level ${stage.wantedLevel} · ${stage.traffic} vehicles and ${stage.pedestrians} people. Up to ${stage.episodeSeconds} s per chase.`
+    : "Development drill. It does not establish escape performance in the City.";
+  $("metroPpoTrain").disabled = false;
+  $("metroPpoTrain").textContent = checkpoint ? "Train another update" : "Train one update";
+  $("metroPpoStop").disabled = true;
+  $("metroPpoStage").disabled = $("metroPpoResume").disabled = false;
+  $("metroPpoUse").disabled = !checkpoint;
+  renderLabDownload(checkpoint);
   $("metroPpoStatus").textContent = message ?? (checkpoint
     ? `PPO update ${checkpoint.updates} · ${checkpoint.transitions} transitions total.`
     : "No checkpoint for this workload. Start one update to collect real Metro transitions.");
+  updateLabSession();
 }
+
+function labSessionCheckpoint() {
+  const { observation, stage } = selectedLabPpoStage();
+  const checkpoint = labPpoCheckpoints.get(observation);
+  return checkpoint?.development?.stage === stage.id ? checkpoint : null;
+}
+
+function updateLabSession(message) {
+  const busy = labPpoWorker !== null, session = labSession;
+  $("pakoTrain").disabled = busy;
+  $("pakoEvaluate").disabled = busy || $("metroPpoResume").disabled || !labSessionCheckpoint();
+  $("pakoPause").disabled = !busy || !["running", "paused"].includes(session?.status);
+  $("pakoPause").textContent = session?.status === "paused" ? "Resume session" : "Pause session";
+  $("pakoStop").disabled = !busy || !["running", "paused", "starting"].includes(session?.status);
+  for (const id of ["pakoEpisodeLimit", "pakoTimeLimit", "pakoTrainingSpeed", "pakoWorldCount"]) $(id).disabled = busy;
+  if (session) {
+    const task = session.mode === "evaluate" ? "Testing" : "Training";
+    const outcome = session.lastEpisode;
+    const counts = `${session.episodes ?? 0} episodes · ${session.updates ?? 0} PPO updates · ${session.transitions ?? 0} transitions`;
+    const active = session.activeEpisode;
+    const text = message ?? `${task} ${session.status} · ${counts}${
+      active ? ` · Episode ${active.index}: ${Math.floor(active.ticks / 60)} s` : ""}${
+      session.worlds > 1 ? ` · ${session.activeWorlds ?? 0}/${session.worlds} simulation worlds · One worker` : ""}${
+      outcome ? ` · Last: ${outcome.phase}, ${outcome.collisions} contacts` : ""}${session.error ? ` · ${session.error}` : ""}`;
+    if ($("pakoSessionStatus").textContent !== text) $("pakoSessionStatus").textContent = text;
+  }
+  const summary = $("pakoEpisodeOutcomes");
+  const outcomes = session?.outcomes;
+  $("pakoWatchLast").hidden = !session?.lastEpisode;
+  summary.hidden = !outcomes || !session.episodes;
+  if (!summary.hidden)
+    summary.textContent = `${outcomes.cleanEscapes}/${session.episodes} clean escapes · ${outcomes.captured} captured · ` +
+      `${outcomes.crashed} crashed · ${outcomes.timeout} timed out · ${outcomes.escapedWithContact} escaped with contact. ` +
+      `${outcomes.contacts} ego contacts · ${outcomes.pedestrianContacts} ego / ${outcomes.ambientPedestrianContacts} ambient pedestrian contacts.`;
+}
+
+function startLabSession(mode) {
+  if (environment !== "lab" || labPpoWorker || $("metroPpoResume").disabled) return;
+  const episodeLimit = $("pakoEpisodeLimit"), timeLimit = $("pakoTimeLimit");
+  if (!episodeLimit.reportValidity() || !timeLimit.reportValidity()) return;
+  const checkpoint = labSessionCheckpoint();
+  if (mode === "evaluate" && !checkpoint) return;
+  try {
+    const worker = new Worker("/public/threejs/pursuit-lab-worker.bundle.js");
+    const sessionId = crypto.randomUUID();
+    labPpoWorker = worker;
+    labSession = { sessionId, mode, status: "starting" };
+    ghostPlayback.clear(mode);
+    for (const id of ["metroPpoTrain", "metroPpoUse", "metroPpoStage", "metroPpoResume"]) $(id).disabled = true;
+    $("metroPpoStop").disabled = true;
+    updateLabSession();
+    worker.onmessage = ({ data }) => {
+      if (worker !== labPpoWorker || data.type !== "session" || data.sessionId !== sessionId) return;
+      try {
+        if (mode === "train" && data.checkpoint) {
+          freezePursuitPolicy(data.checkpoint);
+          labPpoCheckpoints.set(data.checkpoint.observation, data.checkpoint);
+          renderLabDownload(data.checkpoint);
+        }
+        const { checkpoint: discarded, actorRecording, ...status } = data;
+        labSession = { ...labSession, ...status, activeEpisode: status.activeEpisode ?? null };
+        if (Number.isInteger(data.worlds)) ghostPlayback.setWorldCount(data.worlds);
+        if (data.lastEpisode) ghostPlayback.add(data.lastEpisode, data.lastEpisode.index ?? data.episodes, actorRecording);
+        if (["completed", "stopped", "fault"].includes(data.status)) stopLabPpo(data.error);
+        else updateLabSession();
+      } catch (error) {
+        labSession = { ...labSession, status: "fault", error: error.message };
+        stopLabPpo(`Training checkpoint rejected: ${error.message}`);
+      }
+    };
+    worker.onerror = event => {
+      if (worker !== labPpoWorker) return;
+      labSession = { ...labSession, status: "fault", error: event.message || "Worker unavailable." };
+      stopLabPpo(labSession.error);
+    };
+    worker.postMessage({ type: "session-start", sessionId, mode, checkpoint, stage: $("metroPpoStage").value,
+      maxEpisodes: episodeLimit.valueAsNumber, maxSeconds: timeLimit.valueAsNumber,
+      speed: $("pakoTrainingSpeed").value, worlds: Number($("pakoWorldCount").value) });
+  } catch (error) {
+    labSession = { mode, status: "fault", error: error.message };
+    stopLabPpo(error.message);
+  }
+}
+
+$("pakoTrain").onclick = () => startLabSession("train");
+$("pakoEvaluate").onclick = () => startLabSession("evaluate");
+$("pakoWatchLast").onclick = () => {
+  if (!ghostPlayback.watchLatest()) {
+    $("pakoSessionStatus").textContent = "Finish a City episode before starting playback.";
+  }
+};
+$("pakoPause").onclick = () => labPpoWorker?.postMessage({ type: "session-control", sessionId: labSession?.sessionId,
+  action: labSession?.status === "paused" ? "resume" : "pause" });
+$("pakoStop").onclick = () => labPpoWorker?.postMessage({ type: "session-control", sessionId: labSession?.sessionId, action: "stop" });
 
 function startLabPpo() {
   if (environment !== "lab" || labPpoWorker) return;
@@ -797,6 +1113,7 @@ function startLabPpo() {
     $("metroPpoTrain").disabled = $("metroPpoUse").disabled = true;
     $("metroPpoStage").disabled = $("metroPpoResume").disabled = true;
     $("metroPpoStop").disabled = false;
+    updateLabSession();
     $("metroPpoStatus").textContent = "Collecting Metro transitions and updating PPO…";
     worker.onerror = event => {
       if (worker === labPpoWorker) stopLabPpo(`Metro training failed: ${event.message || "worker unavailable"}.`);
@@ -808,6 +1125,7 @@ function startLabPpo() {
       try { freezePursuitPolicy(checkpoint); }
       catch (error) { return stopLabPpo(`Metro training did not yield a compatible checkpoint: ${error.message}`); }
       labPpoCheckpoints.set(checkpoint.observation, checkpoint);
+      $("pakoWorldCount").value = "1";
       const outcomes = metrics.episodes?.map(episode => `${episode.phase}, ${episode.collisions} contacts`).join(" / ")
         ?? `${metrics.phase}, ${metrics.collisions} contacts`;
       stopLabPpo(`PPO update ${checkpoint.updates} · ${checkpoint.transitions} transitions total · last: ${outcomes}.`);
@@ -839,12 +1157,17 @@ $("metroPpoResume").onchange = async event => {
     const sha256 = [...digest].map(n => n.toString(16).padStart(2, "0")).join("");
     if (checkpoint.development?.curriculumSha256 !== sha256)
       throw new Error("Checkpoint belongs to another curriculum revision.");
+    const savedWidth = checkpoint.development.worlds ?? 1;
+    if (!Number.isInteger(savedWidth) || savedWidth < 1 || savedWidth > 4)
+      throw new Error("Checkpoint has an invalid number of training worlds.");
     labPpoCheckpoints.set(checkpoint.observation, checkpoint);
+    $("pakoWorldCount").value = String(savedWidth);
     showLabPpoCheckpoint(`Loaded PPO update ${checkpoint.updates} · ${checkpoint.transitions} transitions total.`);
   } catch (error) {
     showLabPpoCheckpoint(`Resume rejected: ${error.message}`);
   } finally {
     input.value = "";
+    updateLabSession();
   }
 };
 $("metroPpoUse").onclick = async () => {
@@ -854,34 +1177,80 @@ $("metroPpoUse").onclick = async () => {
   if (await loadDispatchCheckpoint(file, "Lab checkpoint")) {
     $("pursuitCheckpoint").value = "";
     streetPursuitStyle = "dispatch-ppo";
-    $("metroPpoStatus").textContent = `Checkpoint selected for City · ${checkpointStatus}. Return to City to start a chase.`;
+    if ($("settingsPanel").hasAttribute("data-pako-workspace")) {
+      activate(cityResumeEnvironment);
+      settingsOpen(false);
+      streetPursuitOpen = pakoPanelOpen = true;
+      updatePursuitNavigation();
+      updateUI();
+      $("pursuitLevel").focus();
+    } else $("metroPpoStatus").textContent = `Checkpoint selected for City · ${checkpointStatus}. Return to City to start a chase.`;
   } else $("metroPpoStatus").textContent = checkpointStatus;
 };
 
+const pursuitStrobe = mountPursuitStrobe({ container: document.body });
 const pursuitPanel = mountPursuitPanel({
   container: $("pursuitPanelHost"),
-  onCheckpoint: loadDispatchCheckpoint,
+  onCheckpoint: file => loadDispatchCheckpoint(file, file?.name, true),
+  onDriverMode: mode => {
+    pakoDriverMode = mode === "manual" ? "manual" : "rl";
+    updateUI();
+  },
+  onCameraStyle: style => {
+    setChaseCameraStyle(style);
+    updateUI();
+  },
+  onEvasion: enabled => { useEvasionPreview = enabled; },
+  onCurbSupport: enabled => { useSurveyedCurb = enabled; },
   onRun: async (learn, useLabPolicy) => {
     const active = world;
     if (active.environment === "metro") {
+      const simple = pakoPanelOpen;
+      const simpleRl = simple && pakoDriverMode !== "manual" && Boolean(dispatchCheckpoint);
+      const release = simpleRl ? approvedPakoPolicy() : null;
+      const style = simple ? release ? "pako" : simpleRl ? "dispatch-ppo" : "dispatch" : streetPursuitStyle;
       rememberPackPractice(active);
-      const arcade = active.config.cityVersion === 4 && streetPursuitStyle === "survival";
-      const gta = active.config.cityVersion === 4 && isGtaStyle(streetPursuitStyle);
-      const frozen = active.config.cityVersion === 4 && streetPursuitStyle === "dispatch-ppo";
+      const rushCity = (active.config.cityVersion ?? 0) >= 4;
+      const pako = rushCity && style === "pako";
+      const arcade = rushCity && style === "survival";
+      const gta = rushCity && isGtaStyle(style);
+      const frozen = rushCity && (style === "dispatch-ppo" || pako);
       if (frozen && !dispatchCheckpoint) throw new Error("Load a compatible Metro PPO checkpoint to start.");
       if (!arcade && !gta && useLabPolicy && !labPackCheckpoint) throw new Error("Complete a learning run in the Lab first.");
       const checkpoint = arcade || gta ? null : useLabPolicy ? labPackCheckpoint : readCityPractice();
       active.command({ type: "street-pursuit-start", level: streetPursuitLevel,
-        ...(gta ? { variant: "gta", ...(isDispatchStyle(streetPursuitStyle)
-          ? { config: { ruleset: "dispatch-v1", damageFeedback: DISPATCH_DAMAGE_FEEDBACK } } : {}) }
+        ...(gta ? { variant: "gta", ...(isDispatchStyle(style)
+          ? { config: { ruleset: "dispatch-v1", damageFeedback: DISPATCH_DAMAGE_FEEDBACK,
+            ...(simple ? {
+              wantedLevelMax: 5,
+              maxActivePatrols: 14,
+              curbSupport: METRO_CITY_CURBS,
+              chasePresence: AGGRESSIVE_CHASE_PRESENCE,
+              tacticalPursuit: TACTICAL_PURSUIT_MODE,
+              patrolTrafficPreview: PATROL_TRAFFIC_PREVIEW,
+              patrolChainYield: PATROL_LATERAL_YIELD,
+            } : {}),
+            ...(!simple && style === "dispatch" && useSurveyedCurb ? { curbSupport: METRO_CURB_SUPPORT } : {}) } } : {}) }
           : arcade ? { variant: "survival", config: { giantPhysics: SURVIVAL_GIANT_PHYSICS } }
-            : active.config.cityVersion === 4 ? { variant: "hunt", learn: !useLabPolicy && learn,
+            : rushCity ? { variant: "hunt", learn: !useLabPolicy && learn,
           ...(checkpoint ? { checkpoint, ...(!useLabPolicy ? { localPolicy: true } : {}) } : {}) } : {}) });
-      if (frozen) active.pursuit.frozenDriver = { ...dispatchCheckpoint, status: "active", lastTick: -1, decisions: 0 };
-      if (arcade) void pursuitAudio.unlock();
+      if (simple && ![...active.pursuit.patrols].some(patrol => patrol.aiState !== "WRECKED")) {
+        active.command({ type: "street-pursuit-stop" });
+        throw new Error("No patrol could deploy here. Move to a clear street and try again.");
+      }
+      if (simple) active.pursuit.cityChase = true;
+      if (pako) active.pursuit.pako = true;
+      if (frozen) active.pursuit.frozenDriver = { ...dispatchCheckpoint, status: "active",
+        lastTick: -1, decisions: 0, recoverStale: simple || useEvasionPreview,
+        evasion: pako ? release.evasionProfile === "bounded-recovery-v1" : useEvasionPreview,
+        ...(simple ? { evasiveControl: PAKO_EVASIVE_CONTROL } : {}) };
+      if (isDispatchStyle(style)) active.pursuit.trace =
+        new PursuitDecisionTrace(`city-${Date.now()}-${++cityTraceSequence}`);
+      if (arcade || simple) void pursuitAudio.unlock();
       cityPracticeRun = active.pursuit.driver === "training" ? active.pursuit : null;
       paused = false;
       lastInput = "";
+      if (simple) cityPerception.show(true);
       updateUI();
       return true;
     }
@@ -918,12 +1287,30 @@ const pursuitPanel = mountPursuitPanel({
   },
   onRestart: () => {
     if (environment === "metro") {
-      world.command({ type: "street-pursuit-stop" });
-      touchPursuit.clear();
-      rememberPackPractice(world);
-      lastInput = "";
+      endCityPursuit();
       updateUI();
     } else if (world.pursuit) reset(world.config);
+  },
+  onOpenLab: () => {
+    activate("lab");
+    settingsOpen(true, true);
+    $("metroPpoLab").open = true;
+    $("metroPpoStage").value = `chase-level-${streetPursuitLevel}`;
+    $("pakoTrainingSpeed").value = "fast";
+    showLabPpoCheckpoint();
+    $("pakoTrain").focus();
+    $("pakoTrain").scrollIntoView({ block: "nearest" });
+  },
+  onExportTrace: () => {
+    const run = world.pursuit;
+    if (!run?.trace) return;
+    if (run.pendingTrace) flushDecisionTrace(world, run);
+    const url = URL.createObjectURL(new Blob([run.trace.toJSONL()], { type: "application/x-ndjson" }));
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${run.trace.episodeId}.jsonl`;
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
   },
   onLevel: (level) => {
     if (environment === "metro") {
@@ -949,6 +1336,20 @@ const pursuitPanel = mountPursuitPanel({
     reset({ ...world.config, pursuitCase: caseId });
   },
 });
+
+function endCityPursuit() {
+  const run = world.pursuit;
+  if (run?.phase !== "running" && !run?.reviewUntilTick) return;
+  const stopping = run.trace && !run.pendingTrace ? startPursuitDecision(world, currentPursuitDecision(run)) : null;
+  world.command({ type: "street-pursuit-stop" });
+  if (run.trace) {
+    if (run.pendingTrace) flushDecisionTrace(world, run);
+    else run.trace.append(finishPursuitDecision(world, stopping));
+  }
+  touchPursuit.clear();
+  rememberPackPractice(world);
+  lastInput = "";
+}
 for (const item of DISTRICT_CASES) {
   if (item.id === "ambient") continue;
   const option = document.createElement("option");
@@ -1172,6 +1573,10 @@ function input() {
   const editing = isEditing(document.activeElement) || isInspection() || Boolean(focusedPersonId),
     pressed = (code) => !editing && (keys.has(code) ||
       (touchPursuit.size && [...touchPursuit.values()].includes(code)));
+  // With the car facing +Z, the driving cameras' screen right is -X.
+  // Keep the plant and recorded actions unchanged; map keys at the boundary.
+  const cameraSteer = Number(pressed("KeyA") || pressed("ArrowLeft")) -
+    Number(pressed("KeyD") || pressed("ArrowRight"));
   if (world.pursuit?.reviewUntilTick) return;
   if (isPursuing()) {
     if (paused) return;
@@ -1184,10 +1589,8 @@ function input() {
     if (pressed("Space") && world.mode === "auto") world.command({ type: "mode", mode: "manual" });
     if (world.mode !== "manual") return;
     const reverse = pressed("KeyS") || pressed("ArrowDown");
-    const steer = Number(pressed("KeyD") || pressed("ArrowRight")) -
-      Number(pressed("KeyA") || pressed("ArrowLeft"));
     const command = { type: "pursuit-drive", action: {
-      steer: world.pursuit.survival ? -steer : steer,
+      steer: cameraSteer,
       throttle: Number(reverse || pressed("KeyW") || pressed("ArrowUp")),
       brake: Number(pressed("Space")), gear: reverse ? -1 : 1,
     } };
@@ -1212,11 +1615,7 @@ function input() {
     }
     return;
   }
-  const steer =
-    ((pressed("KeyD") || pressed("ArrowRight") ? 1 : 0) -
-      (pressed("KeyA") || pressed("ArrowLeft") ? 1 : 0)) *
-    0.62;
-  const command = { type: "drive", targetSpeed, steer };
+  const command = { type: "drive", targetSpeed, steer: cameraSteer * .62 };
   const signature = JSON.stringify(command);
   if (signature !== lastInput) {
     world.command(command);
@@ -1269,13 +1668,22 @@ function updateUI() {
   $("pauseBtn").textContent = paused ? "Resume" : "Pause";
   $("speedVal").textContent = Math.round(Math.abs(world.player.speed) * 3.6);
   const frozen = drivingPursuit?.frozenDriver;
+  $("selfDrivingBtn").disabled = Boolean(world.player.curbSupportId);
   $("aiToggleBtn").textContent = frozen?.status === "active" ? "PPO · Take over"
-    : frozen?.status === "fault" ? "PPO stopped"
+    : frozen?.status === "fault" ? "PPO stopped" : frozen?.status === "waiting-for-scan" ? "PPO waiting for scan"
     : world.mode === "auto" ? "Autonomous drive" : "Manual drive";
-  $("drivingHelp").textContent = frozen ? "W A S D drive · Space brake · C camera · P phone · I takes over"
-    : "W A S D drive · Space brake · C camera · P phone · I auto";
+  $("drivingHelp").textContent = frozen
+    ? "W A S D drive · Space brake · V chasing cam · C cockpit · P phone · I takes over"
+    : "W A S D drive · Space brake · V chasing cam · C cockpit · P phone · I auto";
+  if ($("chaseCamBtn")) {
+    $("chaseCamBtn").textContent = chaseCameraStyle === "chasing" ? "Chasing cam" : "Behind car";
+    $("chaseCamBtn").setAttribute("aria-pressed", String(chaseCameraStyle === "chasing"));
+  }
   $("safetyStatus").textContent = paused
     ? "Simulation paused"
+    : frozen?.status === "fault" ? `PPO stopped: ${frozen.error} · Take over with I`
+    : frozen?.status === "waiting-for-scan" ? "Braking while waiting for a fresh pursuit scan"
+    : frozen?.status === "active" && frozen.cameraBrake ? "Camera forecast: braking for a person"
     : world.destination && !world.player.path.length &&
         !(environment === "metro" && world.pursuit?.resumeTrip && !world.pursuit.tripResumed)
       ? "Destination reached"
@@ -1323,7 +1731,7 @@ function updateUI() {
     running: world.visionLab?.phase === "running" || pendingVisionRun,
     comparison: visionComparisons.get(visionComparisonKey(visionCaseId)) ?? null,
   });
-  if (cameraScreen && visualClient) updateCameraScreen();
+  if (cameraScreenVisible && visualClient) updateCameraScreen();
   const people = world.actors.filter((actor) => actor.type === "pedestrian")
     .sort((a, b) => Math.hypot(a.x - world.player.x, a.z - world.player.z)
       - Math.hypot(b.x - world.player.x, b.z - world.player.z) || a.id.localeCompare(b.id));
@@ -1341,7 +1749,8 @@ function updateUI() {
     const roadReading = onRoadLimit(world, world.player);
     const { roadId, width } = roadReading;
     const result = world.pursuit;
-    const gta = result?.phase === "running" ? result.variant === "gta" : isGtaStyle(streetPursuitStyle);
+    const pako = result?.phase === "running" ? result.cityChase === true || result.pako === true : pakoPanelOpen;
+    const gta = result?.phase === "running" ? result.variant === "gta" : pako || isGtaStyle(streetPursuitStyle);
     if (result && result.phase !== "running") rememberPackPractice(world);
     const dispatch = result?.phase === "running" && usesRushPace(result.variant);
     const limit = dispatch ? rushRoadLimit(roadReading) : roadReading.limit;
@@ -1353,26 +1762,34 @@ function updateUI() {
     if (isPursuing())
       $("tripLabel").textContent = world.pursuit.route
         ? `Pursuit · ${world.pursuit.route.id.replace(/^metro-exit-/, "").replaceAll("-", " ")}`
+        : world.pursuit.cityChase ? "Chase · live City streets"
         : world.pursuit.gta?.config.ruleset === "dispatch-v1" ? "Metro Dispatch · live City streets"
         : world.pursuit.gta ? "GTA Chase · live City streets"
         : world.pursuit.survival ? "Pursuit · live City streets" : "Pursuit · checking exits";
     else if (world.destination && !world.player.path.length && world.pursuit?.resumeTrip && !world.pursuit.tripResumed)
       $("tripLabel").textContent = "Trip paused · choose a destination";
     $("pursuitPanelHost").hidden = !streetPursuitOpen;
+    const rushCity = (world.config.cityVersion ?? 0) >= 4;
+    const metroSnapshot = result && (!pako || result.cityChase || result.pako) ? pursuitSnapshot(world) : null;
+    const metroPatrolStatus = dispatch || result?.reviewUntilTick || result?.gta ? packPatrolStatus(result) : null;
+    pursuitStrobe.update(metroSnapshot ? { ...metroSnapshot, patrolStatus: metroPatrolStatus } : null);
     pursuitPanel.update(streetPursuitOpen ? {
-      ...(result ? pursuitSnapshot(world) : { phase: "ready", metrics: {} }),
+      ...(metroSnapshot ?? { phase: "ready", metrics: {} }),
       street: true, mode: world.mode, paused,
-      cinematic: Boolean(result?.response) || (!result && world.config.cityVersion === 4),
-      arcade: world.config.cityVersion === 4,
-      cityPursuitStyle: world.config.cityVersion === 4 ? streetPursuitStyle : null,
+      cinematic: Boolean(result?.response) || (!result && rushCity),
+      arcade: rushCity,
+      cityPursuitStyle: rushCity ? streetPursuitStyle : null,
+      pako, pakoAvailable: Boolean(approvedPakoPolicy()), pakoBestS,
+      pakoDriverMode, chaseCameraStyle, customCheckpoint, ppoSummary: formatPpoSummary(dispatchCheckpoint?.policy),
       checkpointStatus, checkpointReady: dispatchCheckpoint !== null,
       frozenDriver: result?.frozenDriver,
+      trace: result?.trace,
       bestSurvivalS, soundMuted: pursuitAudio.muted, soundError: pursuitAudio.error,
-      pack: !gta && world.config.cityVersion === 4 && (!dispatch || isPackPursuit(result.variant)),
+      pack: !gta && rushCity && (!dispatch || isPackPursuit(result.variant)),
       labPolicyAvailable: Boolean(labPackCheckpoint),
       speedMps: world.player.speed,
-      dispatchWaves: world.config.cityVersion === 4,
-      patrolStatus: dispatch || result?.reviewUntilTick || result?.gta ? packPatrolStatus(result) : null,
+      dispatchWaves: rushCity,
+      patrolStatus: metroPatrolStatus,
       appliedSpeedMps: world.player.districtSources?.finalMps,
       appliedSource: world.player.districtSources?.appliedSource,
       level: result?.phase === "running" ? result.level : streetPursuitLevel,
@@ -1403,15 +1820,23 @@ function updateUI() {
     $("loadingStatus").textContent = world.pursuit.policyNote ??
       `Pursuit · ${world.config.seed} · level ${world.pursuit.level}`;
     const packLab = world.pursuit.packLab;
-    pursuitPanel.update({ ...pursuitSnapshot(world), mode: world.mode, paused,
+    const snap = pursuitSnapshot(world);
+    const patrolStatus = packLab ? packPatrolStatus(world.pursuit) : null;
+    pursuitStrobe.update({ ...snap, patrolStatus });
+    pursuitPanel.update({ ...snap, mode: world.mode, paused,
       ...(packLab ? { cinematic: true, arcade: true, cases: PACK_DRILLS,
-        speedMps: world.player.speed, patrolStatus: packPatrolStatus(world.pursuit) } : {}) });
-  } else if (environment !== "metro") pursuitPanel.update(null);
+        speedMps: world.player.speed, patrolStatus } : {}) });
+  } else if (environment !== "metro") {
+    pursuitStrobe.update(null);
+    pursuitPanel.update(null);
+  }
   drawMap();
 }
 const map = $("minimap").getContext("2d");
 function drawMap() {
-  const scale = environment === "metro" ? 1.35 : environment === "pursuit" ? 1.55 :
+  const scale = environment === "metro"
+    ? ((world.config.cityVersion ?? 0) >= 5 ? 0.78 : 1.35)
+    : environment === "pursuit" ? 1.55 :
     environment === "egypt" ? 1.4 : environment === "city" ? .93 : 2.25;
   const cx = 110 - (environment === "metro" ? world.player.x * scale : 0);
   const cz = 110 - (environment === "metro" ? world.player.z * scale : 0);
@@ -1429,19 +1854,58 @@ function drawMap() {
   };
   for (const road of world.roads)
     line(
-      road.axis === "z"
+      isDiagonalRoad(road)
         ? [
-            { x: road.fixed, z: road.min },
-            { x: road.fixed, z: road.max },
+            { x: road.x1, z: road.z1 },
+            { x: road.x2, z: road.z2 },
           ]
-        : [
-            { x: road.min, z: road.fixed },
-            { x: road.max, z: road.fixed },
-          ],
+        : road.axis === "z"
+          ? [
+              { x: road.fixed, z: road.min },
+              { x: road.fixed, z: road.max },
+            ]
+          : [
+              { x: road.min, z: road.fixed },
+              { x: road.max, z: road.fixed },
+            ],
       road.zone === "avenue" ? "#a3ad9c" : "#738075",
       road.width * scale,
     );
   if (world.player.path.length) line(world.player.path, "#a5e4bc", 1.8);
+  const escapeGoal = environment === "metro" && world.pursuit?.phase === "running"
+    ? world.pursuit?.gta?.escapeGoal
+    : null;
+  if (escapeGoal) {
+    const gx = cx + escapeGoal.x * scale, gz = cz + escapeGoal.z * scale;
+    const clampedX = Math.max(10, Math.min(210, gx));
+    const clampedZ = Math.max(10, Math.min(210, gz));
+    map.save();
+    map.setLineDash([4, 4]);
+    map.strokeStyle = "rgba(110, 238, 194, 0.72)";
+    map.lineWidth = 1.5;
+    map.beginPath();
+    map.moveTo(110, 110);
+    map.lineTo(clampedX, clampedZ);
+    map.stroke();
+    map.setLineDash([]);
+    map.fillStyle = "#6eeec2";
+    map.beginPath();
+    map.arc(clampedX, clampedZ, 4.2, 0, Math.PI * 2);
+    map.fill();
+    map.strokeStyle = "#14261f";
+    map.lineWidth = 1.4;
+    map.stroke();
+    map.restore();
+  }
+  if (environment === "metro" && (world.config.cityVersion ?? 0) >= 5) {
+    map.fillStyle = "#4d5c57";
+    for (const st of world.statics) {
+      if (st.kind !== "parked-vehicle") continue;
+      const sx = cx + st.x * scale, sz = cz + st.z * scale;
+      if (sx < -4 || sx > 224 || sz < -4 || sz > 224) continue;
+      map.fillRect(sx - 1.2, sz - 1.2, 2.4, 2.4);
+    }
+  }
   for (const actor of world.actors) {
     map.fillStyle =
       actor === world.player
@@ -1506,7 +1970,7 @@ visualClient = createVisualClient({
     }
   },
 });
-function updateCameraScreen() {
+function currentCameraEvidence() {
   let result = visualClient.status.result;
   const visual = world.visualState;
   if (result && visual?.available && visual.streamId === result.streamId
@@ -1514,13 +1978,16 @@ function updateCameraScreen() {
     result = visualClient.getResult(visual.streamId, visual.frameId) ?? result;
   const matchingMotion = result && visual?.streamId === result.streamId
     && visual.frameId === result.frameId;
-  cameraScreen.update({
+  return {
     frame: result ? visualClient.getFrame(result.streamId, result.frameId) : visualClient.latestFrame,
     result, visual: matchingMotion ? visual : null, availability: visualClient.status,
     enabled: visualClient.enabled, ego: { speedMps: world.player.speed },
     applied: { reason: world.player.reason, ...(world.district
       ? { districtSources: world.player.districtSources } : {}) },
-  });
+  };
+}
+function updateCameraScreen() {
+  cameraScreen.update(currentCameraEvidence());
 }
 const offset = new THREE.Vector3(),
   target = new THREE.Vector3(),
@@ -1538,17 +2005,38 @@ function frame(time) {
   requestAnimationFrame(frame);
   const delta = (time - lastTime) / 1000;
   lastTime = time;
-  input();
+  const perspective = environment === "lab" ? ghostPlayback.perspective() : null;
+  const replayCity = perspective && views.get(worlds.metro);
+  if (!replayCity) input();
   const survivalReview = world.pursuit?.survival && world.pursuit.reviewUntilTick;
   if (!paused && !document.hidden) clock.advance(delta * (survivalReview && !reducedMotion.matches ? .33 : 1),
     stepWorld, environment === "metro" ? 5 : Infinity);
+  if (replayCity) {
+    if (!lastPerspectiveReplay) {
+      $("environmentLabel").textContent = "Recorded Metro playback";
+      document.body.setAttribute("data-pako-perspective", "");
+    }
+    renderer.setScissorTest(false);
+    renderer.setViewport(0, 0, viewportWidth, viewportHeight);
+    lastPerspectiveReplay = perspectiveGhosts.draw(renderer, replayCity, perspective, viewportWidth, viewportHeight);
+    mainCalls = renderer.info.render.calls;
+    mainTriangles = renderer.info.render.triangles;
+    renderedFrames++;
+    return;
+  }
+  if (lastPerspectiveReplay) {
+    lastPerspectiveReplay = null;
+    document.body.removeAttribute("data-pako-perspective");
+    if (environment === "lab") $("environmentLabel").textContent = "Training lab";
+    cameraSnap = true;
+  }
   updateSurvivalFeedback();
   const player = view.sync(clock.alpha);
   const cinematic = activeCinematic();
   const preview = previewVisible(cinematic);
   // Keep the full scene and camera cadence; the static sun's depth map
   // does not need to be rebuilt up to 60 times a second in a dense City.
-  const shadowTicks = world.config.cityVersion === 4 && world.capacity.traffic >= 72 ? 3 : 1;
+  const shadowTicks = (world.config.cityVersion ?? 0) >= 4 && world.capacity.traffic >= 64 ? 3 : 1;
   if (environment !== "metro" || world !== lastShadowWorld || world.tick - lastShadowTick >= shadowTicks ||
       isInspection() || cameraSnap || appliedCutaway !== cutaway) {
     renderer.shadowMap.needsUpdate = true;
@@ -1589,7 +2077,8 @@ function frame(time) {
       camera.position.copy(offset);
       camera.lookAt(target);
     }
-  } else if (pursuitShot) {
+  } else if (pursuitShot || (environment === "metro" && (world.config.cityVersion ?? 0) >= 5 && cameraMode === "chase")) {
+    const packActive = Boolean(pursuitShot && isPackPursuit(pursuitShot.variant));
     pursuitCamera.update(camera, {
       position: player.position,
       heading: player.rotation.y,
@@ -1598,10 +2087,12 @@ function frame(time) {
       staticIndex: world.staticIndex,
       deltaS: delta,
       snap: cameraSnap || pursuitShot !== lastPursuitShot,
-      pack: isPackPursuit(pursuitShot.variant),
-      packLab: pursuitShot.packLab && pursuitShot.patrols.size >= 3,
-      trailingVehicles: pursuitShot.gta?.config.ruleset === "dispatch-v1" ? pursuitShot.patrols : null,
-      impactReview: pursuitShot.metrics.terminalCause === "pedestrian-impact" || Boolean(survivalReview && !reducedMotion.matches),
+      pack: packActive,
+      packLab: Boolean(pursuitShot?.packLab && pursuitShot.patrols.size >= 3),
+      cityChase: Boolean(pursuitShot?.cityChase),
+      cameraStyle: packActive ? "auto" : chaseCameraStyle,
+      trailingVehicles: pursuitShot?.gta?.config.ruleset === "dispatch-v1" ? pursuitShot.patrols : null,
+      impactReview: Boolean(pursuitShot && (pursuitShot.metrics.terminalCause === "pedestrian-impact" || Boolean(survivalReview && !reducedMotion.matches))),
     });
   } else {
     const openPursuit = world.pursuit?.variant === "rush" && world.pursuit.phase === "running" &&
@@ -1634,7 +2125,7 @@ function frame(time) {
     frontCamera.position.y += 1.25;
     frontCamera.lookAt(target.copy(frontCamera.position).addScaledVector(forward, 20));
   }
-  const captureVision = (visualClient.enabled || cameraScreenVisible) && mountedCameraPose(player, "sensor");
+  const captureVision = (visualClient.enabled || cameraScreenVisible || cityPerception.open) && mountedCameraPose(player, "sensor");
   if (captureVision) {
     visionCamera.position.copy(offset);
     visionCamera.lookAt(target);
@@ -1658,7 +2149,22 @@ function frame(time) {
   renderer.setViewport(0, 0, viewportWidth, viewportHeight);
   const routeVisible = view.route.visible;
   if (cinematic && $("inspectorPanel").hidden) view.route.visible = false;
+  if (environment === "metro" && cityPerception.open) {
+    const pursuitScan = world.pursuit?.phase === "running" && world.pursuit.gta?.scan;
+    if (!pursuitScan && (senseWorld !== world || !senseScan)) {
+      senseWorld = world;
+      senseScan = senseScanner.sample(world);
+    }
+    if (time - lastUI > 120)
+      senseForecasts = cityPerception.update({ scan: pursuitScan || senseScan, tick: world.tick,
+        evidence: currentCameraEvidence() });
+    if (pedestrianForecastView.group.parent !== view.scene) view.scene.add(pedestrianForecastView.group);
+    pedestrianForecastView.update(senseForecasts);
+    pedestrianForecastView.group.updateMatrixWorld(true);
+  }
+  pedestrianForecastView.group.visible = environment === "metro" && cityPerception.open && senseForecasts.length > 0;
   renderer.render(view.scene, camera);
+  pedestrianForecastView.group.visible = false;
   mainCalls = renderer.info.render.calls;
   mainTriangles = renderer.info.render.triangles;
   renderedFrames++;
@@ -1683,9 +2189,14 @@ function frame(time) {
   }
 }
 activate("metro");
+void loadDefaultChasePolicy();
 requestAnimationFrame(frame);
 // Reproducible diagnostics used by browser smoke tests and Python adapters.
 window.sim = {
+  get defaultChaseReady() { return defaultChaseReady; },
+  get ghostReplay() { return lastPerspectiveReplay; },
+  get cityPerception() { return cityPerception.report; },
+  get pursuitTraining() { return labSession && { ...labSession }; },
   pursuitAudio: () => ({ ...pursuitAudio.cues, muted: pursuitAudio.muted, audible: Boolean(pursuitAudio.audible) }),
   cameraFrame(streamId, frameId) {
     return visualClient.getFrame(streamId, frameId);
@@ -1720,10 +2231,12 @@ window.sim = {
     return { selectedId: selectedPersonId, focusedId: focusedPersonId,
       rig: record?.pedestrianRig?.diagnostics() ?? null };
   },
+  get chaseCameraStyle() { return chaseCameraStyle; },
+  setChaseCameraStyle(style) { setChaseCameraStyle(style); },
   renderDiagnostics() {
     const gl = renderer.getContext();
     return {
-      renderedFrames, cameraMode, cutaway, sensorView, sensorCamera,
+      renderedFrames, cameraMode, chaseCameraStyle, cameraFov: camera.fov, cutaway, sensorView, sensorCamera,
       width: renderer.domElement.width, height: renderer.domElement.height,
       pixelRatio: renderer.getPixelRatio(),
       renderCalls: renderer.info.render.calls,

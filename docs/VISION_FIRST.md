@@ -141,6 +141,29 @@ values and bounded public motion controls. They are never supplied to camera
 recognition or the predictor. Following a person changes the main display
 camera, not the physical SUV-mounted front inference camera.
 
+The main City's **Car's view** keeps two sources visible together. The
+ego-centered 360-degree map displays current virtual first returns,
+including sensor-visible people and traffic. The front JPEG is annotated
+only when paired with its matching pixel result. Nearby steady tracks
+can appear as short non-colliding ghosts in the street: amber for a
+range-based estimate and mint for fitted camera motion. The renderer
+hides the ghost layer for camera capture. It never reads private actor
+poses to place a forecast character. In an explicit development PPO test
+a fresh, confirmed camera-person forecast may add braking, never override
+the independent range guard. Turning the detector off removes camera
+predictions without disabling range sensing.
+
+The [matched live Chase comparison](../.runtime-proof/pako-hybrid-causality-20261121/runs/hybrid/20261121T133314-e844c623a1/chase-hybrid.json)
+used the same frozen policy and starting poses for both crossing arms.
+The camera made it brake 12 ticks (0.20 s) before the range-only run,
+while the independent range guard still accepted the policy's throttle
+request. The predictor's existing bounded stop episode can keep braking
+after the SUV slows; it needs a fresh person track from the same stream.
+The range panel displays the scan sampled by the current pursuit rather
+than reusing an earlier sample from a different display cadence. This
+comparison does not demonstrate collision-free pursuit: both crossings
+included patrol contact and the late parallel control still hit the walker.
+
 Open **Vision lab**, choose a case and the vision-first or reactive/sensors-only
 mode, then run it. The physical scene is recreated without replacing the saved
 city. Both modes retain independent collision safety. Run/reset/return controls

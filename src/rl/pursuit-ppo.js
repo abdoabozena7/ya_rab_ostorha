@@ -1,6 +1,9 @@
 import { Random } from "../core/random.js";
 import { CLEARANCE_ROUTE_OBSERVATION_SCHEMA, DISPATCH_OBSERVATION_SCHEMA,
   ROUTE_OBSERVATION_SCHEMA } from "./gta-pursuit-env.js";
+import { PAKO_JUNCTION_OBSERVATION } from "./pako-junction-observation.js";
+import { PAKO_QUEUE_BRANCH_OBSERVATION, PAKO_QUEUE_OBSERVATION } from "./pako-queue-observation.js";
+import { PAKO_CURVE_OBSERVATION, PAKO_ENDPOINT_OBSERVATION } from "./pako-curve-observation.js";
 import { validatePursuitAction } from "../core/pursuit-controls.js";
 
 const HIDDEN = 24, ACTIONS = 3, HEADS = ACTIONS + 1;
@@ -8,7 +11,9 @@ const POLICY_ID = "metro-dispatch-ppo-v2";
 const GAUSS_CONSTANT = Math.log(2 * Math.PI) / 2;
 const normal = rng => Math.sqrt(-2 * Math.log(1 - rng.next())) * Math.cos(2 * Math.PI * rng.next());
 
-const layouts = new Map([DISPATCH_OBSERVATION_SCHEMA, ROUTE_OBSERVATION_SCHEMA, CLEARANCE_ROUTE_OBSERVATION_SCHEMA].map(schema => {
+const layouts = new Map([DISPATCH_OBSERVATION_SCHEMA, ROUTE_OBSERVATION_SCHEMA, CLEARANCE_ROUTE_OBSERVATION_SCHEMA,
+  PAKO_JUNCTION_OBSERVATION, PAKO_QUEUE_OBSERVATION, PAKO_QUEUE_BRANCH_OBSERVATION,
+  PAKO_CURVE_OBSERVATION, PAKO_ENDPOINT_OBSERVATION].map(schema => {
   const INPUT = schema.length, HIDDEN_BIAS = INPUT * HIDDEN, OUTPUT_WEIGHTS = HIDDEN_BIAS + HIDDEN;
   const OUTPUT_BIAS = OUTPUT_WEIGHTS + HIDDEN * HEADS, PARAMETERS = OUTPUT_BIAS + HEADS;
   return [schema.version, Object.freeze({ schema, INPUT, HIDDEN_BIAS, OUTPUT_WEIGHTS, OUTPUT_BIAS, PARAMETERS,
@@ -67,6 +72,11 @@ function readCheckpoint(checkpoint, optimizerRequired) {
 }
 
 export function freezePursuitPolicy(checkpoint) {
+  const schema = layouts.get(checkpoint?.observation)?.schema;
+  if (schema?.researchOnly) {
+    const adapter = schema.researchAdapter ?? (schema.version.startsWith("pako-queue-") ? "queue" : "junction");
+    throw new RangeError(`This checkpoint requires the ${adapter} research adapter and cannot drive the City`);
+  }
   const model = readCheckpoint(checkpoint, false);
   if (!model.updates || !model.transitions || !model.optimizerSteps)
     throw new TypeError("No learning updates are recorded in this Metro checkpoint");

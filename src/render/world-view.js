@@ -3,7 +3,9 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { RGBELoader } from "three/addons/loaders/RGBELoader.js";
 import { clone } from "three/addons/utils/SkeletonUtils.js";
 import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
-import { angleDelta, interpolate, roadRect, pointOnRoad } from "../core/geometry.js";
+import {
+  angleDelta, interpolate, isDiagonalRoad, pointOnRoad, roadFrame, roadRect,
+} from "../core/geometry.js";
 import { avenueCrossings } from "../core/district-behavior.js";
 import { addPlaceSigns } from "./place-signs.js";
 import { createPlayerVehicle } from "./player-vehicle.js";
@@ -28,6 +30,10 @@ const trafficColors = [
   0x88969a, 0xa84a39, 0xb0b5ac, 0x455b76, 0x8f7458, 0x62766a,
 ];
 const METRO_NEAR_M = 42, METRO_RELEASE_M = 51;
+const CURB_WHEEL_PIVOTS = {
+  frontLeft: "wheel-front-left", frontRight: "wheel-front-right",
+  rearLeft: "wheel-rear-left", rearRight: "wheel-rear-right",
+};
 const METRO_TRAFFIC = {
   // Height and greenhouse proportions. A single opaque mesh per family stands
   // in for the actual fitted shell and wheels only at street distance.
@@ -77,12 +83,17 @@ function actorProxyGeometry(kind) {
       cube(.17, .30, .45, side * .43, .565, 0, 0xa4a69a);
     }
   } else {
-    const [, roofWidth, roofDepth, roofZ, belt] = METRO_TRAFFIC[kind];
+    const [, roofWidth, roofDepth, roofZ, belt] = METRO_TRAFFIC[kind === "patrol" ? "sedan" : kind];
     const tuk = kind === "tuktuk";
     cube(tuk ? .90 : 1, belt - .18, 1, 0, (belt + .18) / 2, 0, 0xffffff, tuk ? .89 : .96);
     cube(roofWidth, .94 - belt, roofDepth, 0, (belt + .94) / 2, roofZ, 0x647671,
       kind === "van" ? .93 : .81);
     cube(roofWidth * .84, .06, roofDepth * .84, 0, .97, roofZ, tuk ? 0x454947 : 0xe0ded2);
+    if (kind === "patrol") {
+      cube(.65, .045, .12, 0, 1.02, roofZ, 0x343936);
+      cube(.29, .06, .11, -.154, 1.06, roofZ, 0x54a7ff);
+      cube(.29, .06, .11, .154, 1.06, roofZ, 0xff6358);
+    }
     for (const axle of [-.31, .31])
       for (const side of tuk && axle > 0 ? [0] : [-1, 1])
         add(new THREE.CylinderGeometry(1, 1, 1, 6).rotateZ(Math.PI / 2)
@@ -93,9 +104,10 @@ function actorProxyGeometry(kind) {
   return geometry;
 }
 
-class MetroSilhouettes {
-  constructor(scene) {
+export class MetroSilhouettes {
+  constructor(scene, { markPatrols = false } = {}) {
     this.scene = scene;
+    this.markPatrols = markPatrols;
     this.groups = new Map();
     this.material = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: .96 });
     this.material.name = "metro-distance-silhouettes";
@@ -111,9 +123,11 @@ class MetroSilhouettes {
     for (const group of this.groups.values()) group.count = 0;
   }
   put(actor, x, y, z, heading) {
-    const kind = proxyKind(actor), group = this.geometry(kind), slot = group.count++;
+    const kind = this.markPatrols && actor.pursuitRole === "police" ? "patrol" : proxyKind(actor);
+    const group = this.geometry(kind), slot = group.count++;
     const width = kind === "pedestrian" ? actor.body?.widthM ?? .51 : actor.width;
-    const height = kind === "pedestrian" ? actor.body?.heightM ?? 1.78 : actor.height ?? METRO_TRAFFIC[kind][0];
+    const height = kind === "pedestrian" ? actor.body?.heightM ?? 1.78
+      : actor.height ?? (METRO_TRAFFIC[kind] ?? METRO_TRAFFIC.sedan)[0];
     const length = kind === "pedestrian" ? actor.body?.depthM ?? .32 : actor.length;
     const margin = Math.max(width, height, length);
     if (!group.mesh || slot >= group.mesh.instanceMatrix.count) {
@@ -235,6 +249,70 @@ function containsXZ(rect, x, z) {
   return rect.minX <= x && x <= rect.maxX && rect.minZ <= z && z <= rect.maxZ;
 }
 
+function diagRoadInfo(road) {
+  const dx = road.x2 - road.x1, dz = road.z2 - road.z1;
+  const length = road.length ?? (Math.hypot(dx, dz) || 0);
+  const ux = road.ux ?? (length > 0 ? dx / length : 0);
+  const uz = road.uz ?? (length > 0 ? dz / length : 1);
+  const heading = road.heading ?? Math.atan2(ux, uz);
+  return { length, ux, uz, heading, mx: (road.x1 + road.x2) / 2, mz: (road.z1 + road.z2) / 2 };
+}
+
+function pointOnDiagRoad(p, road, margin = 0) {
+  const { length, ux, uz } = diagRoadInfo(road);
+  const h = road.width / 2 - margin;
+  if (h <= 0) return false;
+  const dx = p.x - road.x1, dz = p.z - road.z1;
+  const along = dx * ux + dz * uz;
+  if (along < -h || along > length + h) return false;
+  return Math.abs(dx * uz - dz * ux) <= h;
+}
+
+function pointOnAnyRoad(p, roads, margin = 0) {
+  for (const road of roads) {
+    if (isDiagonalRoad(road)) {
+      if (pointOnRoad(p, [road], margin) || pointOnDiagRoad(p, road, margin)) return true;
+    } else if (pointOnRoad(p, [road], margin)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function diagAvenueCrossings(road, candidateRoads, allRoads = candidateRoads) {
+  if (road.zone !== "avenue" || road.parkingBay) return [];
+  const { length, ux, uz } = diagRoadInfo(road);
+  const otherDriving = (candidateRoads ?? []).filter(other =>
+    other !== road && !other.parkingBay && !other.supportApron);
+  const blockers = (allRoads ?? []).filter(other =>
+    other !== road && (!other.parkingBay || other.supportApron));
+  const raw = [];
+  for (const other of otherDriving) {
+    const f = isDiagonalRoad(other)
+      ? (() => { const d = diagRoadInfo(other); return { x1: other.x1, z1: other.z1, ux: d.ux, uz: d.uz, length: d.length }; })()
+      : roadFrame(other);
+    const det = -ux * f.uz + uz * f.ux;
+    if (Math.abs(det) < 0.12) continue;
+    const dx = f.x1 - road.x1, dz = f.z1 - road.z1;
+    const t = (-f.uz * dx + f.ux * dz) / det;
+    const u = (-uz * dx + ux * dz) / det;
+    if (t < -other.width / 2 || t > length + other.width / 2 ||
+        u < -road.width / 2 || u > f.length + road.width / 2) continue;
+    const offset = Math.max(11.5, (other.width / 2 + (road.width / 2) * Math.abs(ux * f.ux + uz * f.uz)) / Math.abs(det) + 2.4);
+    raw.push(t - offset, t + offset);
+  }
+  raw.sort((a, b) => a - b);
+  const crossings = [];
+  for (const along of raw) {
+    if (along <= 8 || along >= length - 8) continue;
+    if (crossings.some(prev => Math.abs(prev - along) < 4.5)) continue;
+    const p = { x: road.x1 + ux * along, z: road.z1 + uz * along };
+    if (pointOnAnyRoad(p, blockers, -1.0)) continue;
+    crossings.push(along);
+  }
+  return crossings;
+}
+
 function disposeSkeletons(visual) {
   const skeletons = new Set();
   visual?.traverse(part => { if (part.isSkinnedMesh) skeletons.add(part.skeleton); });
@@ -291,6 +369,16 @@ function surfaceGeometry(rect, height, bottom, tileMetres) {
   geometry.translate(centerX, bottom + height / 2, centerZ);
   return geometry;
 }
+function orientedSurfaceGeometry(width, length, height, bottom, centerX, centerZ, heading, tileMetres) {
+  const geometry = new THREE.BoxGeometry(width, height, length);
+  geometry.rotateY(heading);
+  geometry.translate(centerX, bottom + height / 2, centerZ);
+  const positions = geometry.getAttribute("position"),
+    uv = geometry.getAttribute("uv");
+  for (let i = 8; i < 12; i++)
+    uv.setXY(i, positions.getX(i) / tileMetres, positions.getZ(i) / tileMetres);
+  return geometry;
+}
 function mergedSurface(scene, geometries, color) {
   const geometry = mergeGeometries(geometries);
   for (const part of geometries) part.dispose();
@@ -301,7 +389,7 @@ function mergedSurface(scene, geometries, color) {
   scene.add(mesh);
   return mesh;
 }
-function wornPaint(width, length, x, z) {
+function wornPaint(width, length, x, z, heading = 0) {
   const wear = (Math.abs(Math.floor(x * 13 + z * 17)) % 9) / 8;
   const h = width / 2, l = length / 2, notch = .09 + wear * .16;
   const shape = new THREE.Shape();
@@ -311,7 +399,9 @@ function wornPaint(width, length, x, z) {
   shape.lineTo(h - width * .10, l);
   shape.lineTo(-h, l);
   shape.lineTo(-h, -l + length * .06);
-  const geometry = new THREE.ShapeGeometry(shape).rotateX(-Math.PI / 2).translate(x, .12, z);
+  const geometry = new THREE.ShapeGeometry(shape).rotateX(-Math.PI / 2);
+  if (heading) geometry.rotateY(heading);
+  geometry.translate(x, .12, z);
   const tint = new THREE.Color(0xd0c8b6).multiplyScalar(.69 + wear * .31);
   const colors = new Float32Array(geometry.attributes.position.count * 3);
   for (let n = 0; n < colors.length; n += 3) tint.toArray(colors, n);
@@ -589,12 +679,20 @@ export class WorldView {
       this.metroTrafficKinds = new Set();
       this.metroFrame = this.metroPresented = this.metroProxyActors = 0;
       this.metroAlpha = 1;
+      this.metroGroundRoads = world.roads;
+      const orthoRoads = (world.roads ?? []).filter(road => road.axis !== "diag");
+      this.metroDiagRoads = (world.roads ?? []).filter(road => road.axis === "diag");
+      this.metroAsphalt = orthoRoads.map(road => roadRect(road));
+      this.metroPavement = orthoRoads.map(road => roadRect(road, -2.5));
     }
     this.pursuitView = world.pursuit || this.metro ? createPursuitView(scene, world) : null;
     this.drillPatrolModels = world.pursuit?.packLab ? new MetroTrafficModels() : null;
     this.trafficBatches = world.environment === "egypt" ? new TrafficBatches(scene) : null;
-    scene.background = new THREE.Color(0xcbd2cd);
-    scene.fog = new THREE.Fog(0xcbd2cd, 90, 280);
+    const grandCity = (world.config?.cityVersion ?? 0) >= 5;
+    scene.background = new THREE.Color(0xd8cab8);
+    scene.fog = grandCity
+      ? new THREE.Fog(0xd8cab8, 120, 460)
+      : new THREE.Fog(0xd8cab8, 90, 280);
     if (world.environment === "city" || world.environment === "egypt" || this.metro) {
       streetLighting ??= new RGBELoader().loadAsync(
         "/assets/lighting/urban_alley_01_1k.hdr",
@@ -607,28 +705,62 @@ export class WorldView {
         })
         .catch(() => this.status.failed.push("street-lighting"));
     }
-    scene.add(new THREE.HemisphereLight(0xdce7eb, 0x8f7b60, 0.65));
-    const sun = new THREE.DirectionalLight(0xffe6c7, 1.4);
-    sun.position.set(-65, 100, -45);
+    this.hemiLight = new THREE.HemisphereLight(0x9dc3e6, 0x8d6e4e, 0.78);
+    scene.add(this.hemiLight);
+    const sun = new THREE.DirectionalLight(0xffdfad, 2.05);
+    sun.position.set(-88, 92, -58);
     sun.castShadow = true;
     sun.shadow.mapSize.set(2048, 2048);
-    sun.shadow.camera.left = sun.shadow.camera.bottom = -65;
-    sun.shadow.camera.right = sun.shadow.camera.top = 65;
+    sun.shadow.camera.left = sun.shadow.camera.bottom = -85;
+    sun.shadow.camera.right = sun.shadow.camera.top = 85;
     sun.shadow.camera.near = 1;
-    sun.shadow.camera.far = 230;
+    sun.shadow.camera.far = 290;
     sun.shadow.bias = -0.0005;
     sun.shadow.normalBias = 0.04;
     scene.add(sun, sun.target);
     this.sun = sun;
+    const rimLight = new THREE.DirectionalLight(0x7faad9, 0.38);
+    rimLight.position.set(75, 55, 65);
+    rimLight.castShadow = false;
+    scene.add(rimLight);
+    this.rimLight = rimLight;
+    this._sunAnchorX = NaN;
+    this._sunAnchorZ = NaN;
+    this.updateSunShadowAnchor(world.player?.x ?? 0, world.player?.z ?? 0);
     this.egyptStreets = createEgyptStreetLayer(world, { streamDetails: this.metro });
     scene.add(this.egyptStreets.root);
+    let groundWidth = 650, groundDepth = 650, groundX = 0, groundZ = 0;
+    if (grandCity) {
+      let minX = Infinity, maxX = -Infinity, minZ = Infinity, maxZ = -Infinity;
+      for (const road of world.roads ?? []) {
+        const r = isDiagonalRoad(road)
+          ? (() => {
+              const { length, ux, uz, mx, mz } = diagRoadInfo(road);
+              const h = road.width / 2 + 2.5, halfLen = length / 2 + h;
+              const extX = Math.abs(ux) * halfLen + Math.abs(uz) * h;
+              const extZ = Math.abs(uz) * halfLen + Math.abs(ux) * h;
+              return { minX: mx - extX, maxX: mx + extX, minZ: mz - extZ, maxZ: mz + extZ };
+            })()
+          : roadRect(road, -2.5);
+        minX = Math.min(minX, r.minX); maxX = Math.max(maxX, r.maxX);
+        minZ = Math.min(minZ, r.minZ); maxZ = Math.max(maxZ, r.maxZ);
+      }
+      if (Number.isFinite(minX)) {
+        groundX = (minX + maxX) / 2;
+        groundZ = (minZ + maxZ) / 2;
+        groundWidth = Math.max(2600, maxX - minX + 800);
+        groundDepth = Math.max(2600, maxZ - minZ + 800);
+      } else {
+        groundWidth = groundDepth = 2600;
+      }
+    }
     const ground = new THREE.Mesh(
-      new THREE.PlaneGeometry(650, 650),
+      new THREE.PlaneGeometry(groundWidth, groundDepth),
       material(this.cityStreetFinish ? CITY_V4_SURFACE.ground : world.environment === "lab" ? 0xaaa99d : 0xb1a18a),
     );
     ground.rotation.x = -Math.PI / 2;
     ground.userData.owned = true;
-    ground.position.y = -0.05;
+    ground.position.set(groundX, -0.05, groundZ);
     ground.receiveShadow = true;
     scene.add(ground);
     this.buildRoads();
@@ -644,6 +776,7 @@ export class WorldView {
     if (this.metro) {
       // Roads and ground have no changing transforms; only the moving roots
       // and the lights need an updated matrix tree for each camera pass.
+      this.metroPlaybackBackdrop = new Set(scene.children.filter(child => child.name !== "pursuit-layer"));
       scene.updateMatrixWorld(true);
       scene.matrixAutoUpdate = false;
       for (const child of scene.children)
@@ -671,18 +804,53 @@ export class WorldView {
     const pavementParts = [],
       roadParts = [],
       markingParts = [];
-    const mark = (width, length, x, z) => this.cityStreetFinish ? wornPaint(width, length, x, z)
-      : new THREE.BoxGeometry(width, .005, length).translate(x, .1205, z);
+    const mark = (width, length, x, z, heading = 0) => {
+      if (this.cityStreetFinish) return wornPaint(width, length, x, z, heading);
+      const g = new THREE.BoxGeometry(width, .005, length);
+      if (heading) g.rotateY(heading);
+      return g.translate(x, .1205, z);
+    };
     // Sidewalk slabs first, then asphalt. The same expanded rectangles are
     // used in bodyOnRoad(), including the ends where roads meet.
     for (const road of roads) {
-      const r = roadRect(road, -2.5);
-      pavementParts.push(surfaceGeometry(r, 0.1, -0.03, 1.8));
+      if (road.axis === "diag") {
+        const { length, heading, mx, mz } = diagRoadInfo(road);
+        pavementParts.push(orientedSurfaceGeometry(
+          road.width + 5.0, length + road.width + 5.0, 0.1, -0.03, mx, mz, heading, 1.8,
+        ));
+      } else {
+        const r = roadRect(road, -2.5);
+        pavementParts.push(surfaceGeometry(r, 0.1, -0.03, 1.8));
+      }
     }
     this.surfaces.pavement.push(
       mergedSurface(this.scene, pavementParts, this.cityStreetFinish ? CITY_V4_SURFACE.pavement.base : 0xc1b9a5),
     );
     for (const road of roads) {
+      if (road.axis === "diag") {
+        const { length, ux, uz, heading, mx, mz } = diagRoadInfo(road);
+        roadParts.push(orientedSurfaceGeometry(
+          road.width, length + road.width, 0.06, 0.055, mx, mz, heading, 2.5,
+        ));
+        const crossings = this.metro ? diagAvenueCrossings(road, this.world.drivingRoads ?? roads, roads) : [];
+        for (const along of crossings) {
+          for (let offset = -road.width / 2 + .75; offset < road.width / 2 - .3; offset += .95) {
+            const bx = road.x1 + ux * along + uz * offset;
+            const bz = road.z1 + uz * along - ux * offset;
+            markingParts.push(mark(.48, 2.2, bx, bz, heading));
+          }
+        }
+        if (road.marking === "center" && !road.sideStreet && !road.parkingBay) {
+          const otherRoads = roads.filter((other) => other !== road && (!other.parkingBay || other.supportApron));
+          for (let n = 4; n < length - 4; n += 9) {
+            const p = { x: road.x1 + ux * n, z: road.z1 + uz * n };
+            if (pointOnAnyRoad(p, otherRoads, -2) || crossings.some(along => Math.abs(along - n) < 3.5))
+              continue;
+            markingParts.push(mark(0.12, 2.8, p.x, p.z, heading));
+          }
+        }
+        continue;
+      }
       const r = roadRect(road);
       roadParts.push(surfaceGeometry(r, 0.06, 0.055, 2.5));
       const crossings = this.metro ? avenueCrossings(road, this.world.drivingRoads) : [];
@@ -697,7 +865,7 @@ export class WorldView {
         const p =
           road.axis === "z" ? { x: road.fixed, z: n } : { x: n, z: road.fixed };
         const crossing = roads.some(
-          (other) => other.axis !== road.axis && pointOnRoad(p, [other], -2),
+          (other) => other.axis !== road.axis && pointOnAnyRoad(p, [other], -2),
         );
         if (crossing || crossings.some(along => Math.abs(along - n) < 3) ||
             road.sideStreet || road.parkingBay || road.marking === "none"
@@ -1006,25 +1174,62 @@ export class WorldView {
   metroGroundHeight(x, z) {
     if (this.metroGroundRoads !== this.world.roads) {
       this.metroGroundRoads = this.world.roads;
-      this.metroAsphalt = this.world.roads.map(road => roadRect(road));
-      this.metroPavement = this.world.roads.map(road => roadRect(road, -2.5));
+      const orthoRoads = this.world.roads.filter(road => road.axis !== "diag");
+      this.metroDiagRoads = this.world.roads.filter(road => road.axis === "diag");
+      this.metroAsphalt = orthoRoads.map(road => roadRect(road));
+      this.metroPavement = orthoRoads.map(road => roadRect(road, -2.5));
     }
     for (const road of this.metroAsphalt) if (containsXZ(road, x, z)) return .115;
+    if (this.metroDiagRoads.length && pointOnAnyRoad({ x, z }, this.metroDiagRoads, 0)) return .115;
     for (const road of this.metroPavement) if (containsXZ(road, x, z)) return .07;
+    if (this.metroDiagRoads.length && pointOnAnyRoad({ x, z }, this.metroDiagRoads, -2.5)) return .07;
     return -.05;
+  }
+  updateSunShadowAnchor(anchorX, anchorZ) {
+    if (!this.sun || !Number.isFinite(anchorX) || !Number.isFinite(anchorZ)) return;
+    const sx = Math.round(anchorX / 2) * 2;
+    const sz = Math.round(anchorZ / 2) * 2;
+    if (sx === this._sunAnchorX && sz === this._sunAnchorZ) return;
+    this._sunAnchorX = sx;
+    this._sunAnchorZ = sz;
+    this.sun.target.position.set(sx, 0, sz);
+    this.sun.position.set(sx - 88, 92, sz - 58);
+    this.sun.updateMatrixWorld(true);
+    this.sun.target.updateMatrixWorld(true);
   }
   syncMetroPlayer(alpha) {
     const { world } = this, actor = world.player, record = this.roots.get(actor.id);
-    this.metroAlpha = alpha;
-    record.root.position.set(actor.x, .12 + (world.pursuit?.phase === "running" ? actor.y ?? 0 : 0), actor.z);
-    record.root.rotation.y = actor.heading;
+    const t = Number.isFinite(alpha) ? THREE.MathUtils.clamp(alpha, 0, 1) : 1;
+    this.metroAlpha = t;
+    const prev = actor.previous && Math.hypot(actor.x - actor.previous.x, actor.z - actor.previous.z) < 12
+      ? actor.previous
+      : actor;
+    const ix = THREE.MathUtils.lerp(prev.x, actor.x, t);
+    const iz = THREE.MathUtils.lerp(prev.z, actor.z, t);
+    const iy = .12 + (world.pursuit?.phase === "running"
+      ? THREE.MathUtils.lerp(prev.y ?? 0, actor.y ?? 0, t)
+      : 0);
+    const iHeading = (prev.heading ?? 0) + angleDelta(actor.heading ?? 0, prev.heading ?? 0) * t;
+    record.root.position.set(ix, iy, iz);
+    record.root.rotation.y = iHeading;
+    this.updateSunShadowAnchor(ix, iz);
     this.pursuitView?.appearance(record.root, world);
-    record.vehicleRig.update(actor, world.sensors, alpha);
+    const terrain = actor.vehicle?.suspension?.terrainOffsetsM;
+    if (terrain || record.curbWheels) {
+      record.curbWheels ??= Object.entries(CURB_WHEEL_PIVOTS).map(([key, name]) => {
+        const pivot = record.vehicleRig.root.getObjectByName(name);
+        return { key, pivot, baseY: pivot.position.y };
+      });
+      for (const { key, pivot, baseY } of record.curbWheels)
+        pivot.position.y = baseY + (terrain?.[key] ?? 0);
+      if (!terrain) record.curbWheels = null;
+    }
+    record.vehicleRig.update(actor, world.sensors, t);
     const focused = this.focusedPersonId && world.actors.find(a => a.id === this.focusedPersonId && a.type === "pedestrian");
     this.metroFocus = focused ? this.roots.get(focused.id) ?? this.addMetroActor(focused) : null;
     if (focused) {
       const previous = focused.previous ?? focused;
-      const x = THREE.MathUtils.lerp(previous.x, focused.x, alpha), z = THREE.MathUtils.lerp(previous.z, focused.z, alpha);
+      const x = THREE.MathUtils.lerp(previous.x, focused.x, t), z = THREE.MathUtils.lerp(previous.z, focused.z, t);
       this.metroFocus.root.position.set(x, this.metroGroundHeight(x, z), z);
     }
     return record.root;
@@ -1032,15 +1237,18 @@ export class WorldView {
   prepareMetro(cameras) {
     const { world, metroAnchors: anchors, metroLead: lead, metroAlpha: alpha } = this;
     const player = world.player;
+    const playerRoot = this.roots.get(player.id)?.root;
+    const playerAnchor = playerRoot ? playerRoot.position : player;
+    const playerHeading = playerRoot ? playerRoot.rotation.y : (player.heading ?? 0);
     anchors.length = 0;
-    anchors.push(player);
+    anchors.push(playerAnchor);
     if (this.metroFocus) anchors.push(this.metroFocus.root.position);
     for (const camera of cameras)
       if (camera) anchors.push(camera.position);
     // At the avenue limit this prepares roughly one second of travel, but
     // never lets the approximate lead replace the real camera safety disk.
     const advance = THREE.MathUtils.clamp((player.speed ?? 0) * .85, -13, 13);
-    lead.set(player.x + Math.sin(player.heading) * advance, 0, player.z + Math.cos(player.heading) * advance);
+    lead.set(playerAnchor.x + Math.sin(playerHeading) * advance, 0, playerAnchor.z + Math.cos(playerHeading) * advance);
     this.egyptStreets.updateResidency?.(anchors, lead);
     const frame = ++this.metroFrame, pending = this.metroPending;
     const pursuit = world.pursuit?.phase === "running";
@@ -1051,10 +1259,15 @@ export class WorldView {
     pending.length = 0;
     for (const actor of world.actors) {
       if (actor === player) continue;
-      const person = actor.type === "pedestrian", previous = actor.previous ?? actor;
+      const person = actor.type === "pedestrian";
+      const previous = actor.previous && Math.hypot(actor.x - actor.previous.x, actor.z - actor.previous.z) < 12
+        ? actor.previous
+        : actor;
       const x = THREE.MathUtils.lerp(previous.x, actor.x, alpha);
       const z = THREE.MathUtils.lerp(previous.z, actor.z, alpha);
-      const y = person ? this.metroGroundHeight(x, z) : .12 + (pursuit ? actor.y ?? 0 : 0);
+      const y = person
+        ? this.metroGroundHeight(x, z)
+        : .12 + (pursuit ? THREE.MathUtils.lerp(previous.y ?? 0, actor.y ?? 0, alpha) : 0);
       const heading = (previous.heading ?? 0) + angleDelta(actor.heading ?? 0, previous.heading ?? 0) * alpha;
       const pinned = person && (actor.id === this.focusedPersonId || actor.id === this.selectedPersonId);
       let record = this.roots.get(actor.id);
@@ -1066,8 +1279,25 @@ export class WorldView {
         record.actor = actor;
         record.root.position.set(x, y, z);
         record.root.rotation.y = heading;
-        if (!person) animateWheels(record, actor);
-        else if (!record.pedestrianRig) {
+        if (!person) {
+          animateWheels(record, actor);
+          const yawDelta = angleDelta(actor.heading ?? 0, previous.heading ?? 0);
+          const latG = THREE.MathUtils.clamp((actor.speed ?? 0) * yawDelta * 60, -9, 9);
+          const accelG = THREE.MathUtils.clamp(((actor.speed ?? 0) - (previous.speed ?? actor.speed ?? 0)) * 60, -10, 10);
+          const maxRoll = actor.pursuitRole === "police" ? 0.065 : 0.052;
+          const targetRoll = THREE.MathUtils.clamp((latG / 9) * maxRoll, -0.065, 0.065);
+          const targetPitch = THREE.MathUtils.clamp((-accelG / 10) * 0.048, -0.048, 0.048);
+          const suspBlend = record.suspTick === undefined ? 0.35 : record.suspTick === world.tick ? 0.14 : 0.26;
+          record.suspTick = world.tick;
+          record.rollRad = THREE.MathUtils.lerp(record.rollRad ?? 0, targetRoll, suspBlend);
+          record.pitchRad = THREE.MathUtils.lerp(record.pitchRad ?? 0, targetPitch, suspBlend);
+          if (Math.abs(record.rollRad) < 1e-5) record.rollRad = 0;
+          if (Math.abs(record.pitchRad) < 1e-5) record.pitchRad = 0;
+          if (record.visual) {
+            record.visual.rotation.z = record.rollRad;
+            record.visual.rotation.x = record.pitchRad;
+          }
+        } else if (!record.pedestrianRig) {
           const source = this.metroAsset(actorAsset(actor), actor.kind);
           if (source.gltf && !source.failed)
             pending.push({ record, source, priority: pinned ? -1 : distance2 });
@@ -1094,7 +1324,7 @@ export class WorldView {
       if (id !== player.id && record.frame !== frame) this.removeMetroActor(id, record);
     this.prepareMetroProps(anchors);
     this.metroSilhouettes.end();
-    this.pursuitView?.update(world);
+    this.pursuitView?.update(world, alpha);
     this.scene.matrixWorldAutoUpdate = false;
     this.scene.updateMatrixWorld();
   }
@@ -1185,8 +1415,8 @@ export class WorldView {
   }
   pedestrianGroundHeight(position) {
     if (this.world.environment === "vision") return 0.12;
-    if (pointOnRoad(position, this.world.roads)) return 0.115;
-    return pointOnRoad(position, this.world.roads, -2.5) ? 0.07 : -0.05;
+    if (pointOnAnyRoad(position, this.world.roads, 0)) return 0.115;
+    return pointOnAnyRoad(position, this.world.roads, -2.5) ? 0.07 : -0.05;
   }
   sync(alpha) {
     const world = this.world;
@@ -1218,10 +1448,14 @@ export class WorldView {
         });
         this.barriers.delete(id);
       }
+    const t = Number.isFinite(alpha) ? THREE.MathUtils.clamp(alpha, 0, 1) : 1;
     for (const actor of world.actors) {
       if (!this.roots.has(actor.id)) this.addActor(actor);
-      const record = this.roots.get(actor.id),
-        p = actor === world.player ? actor : interpolate(actor.previous ?? actor, actor, alpha);
+      const record = this.roots.get(actor.id);
+      const prev = actor.previous && Math.hypot(actor.x - actor.previous.x, actor.z - actor.previous.z) < 12
+        ? actor.previous
+        : actor;
+      const p = interpolate(prev, actor, t);
       record.root.position.set(p.x, actor.type === "pedestrian" ? this.pedestrianGroundHeight(p) : 0.12, p.z);
       record.root.rotation.y = p.heading;
       const distanceFromPlayer = Math.hypot(
@@ -1236,11 +1470,11 @@ export class WorldView {
         record.visual.visible = detailed;
         record.fallback.visible = !detailed;
       }
-      record.vehicleRig?.update(actor, world.sensors, alpha);
+      record.vehicleRig?.update(actor, world.sensors, t);
       if (detailed) animateWheels(record, actor);
-      if (record.pedestrianRig && detailed) record.pedestrianRig.update(actor, alpha);
+      if (record.pedestrianRig && detailed) record.pedestrianRig.update(actor, t);
       if (actor.type === "pedestrian" && (actor.impact || record.root.userData.pedestrianImpactPose))
-        applyPedestrianImpact(record.root, actor, world.tick, alpha);
+        applyPedestrianImpact(record.root, actor, world.tick, t);
     }
     this.syncRoute();
     const phase = (world.tick / 60) % 24;
@@ -1261,7 +1495,7 @@ export class WorldView {
     }
     const player = this.roots.get("player").root;
     this.aimSun(player);
-    this.pursuitView?.update(world);
+    this.pursuitView?.update(world, t);
     return player;
   }
   syncRoute() {
@@ -1274,8 +1508,7 @@ export class WorldView {
     );
   }
   aimSun(player) {
-    this.sun.position.set(player.position.x - 65, 100, player.position.z - 45);
-    this.sun.target.position.copy(player.position);
+    this.updateSunShadowAnchor(player.position.x, player.position.z);
   }
   prepareFrame({ cameras = [] } = {}) {
     if (this.metro) return this.prepareMetro(cameras);

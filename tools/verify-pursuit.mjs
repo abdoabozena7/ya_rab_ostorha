@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { clickCityTool } from "./city-tool-button.mjs";
 import { createHash } from "node:crypto";
 import { createRequire } from "node:module";
 import { writeFile } from "node:fs/promises";
@@ -95,7 +96,7 @@ try {
   assert.equal(await page.locator("#pursuitPhase").textContent(), "Paused");
 
   const expected = await page.evaluate(() => JSON.stringify(window.sim.snapshot()));
-  await page.locator("#settingsBtn").click();
+  await clickCityTool(page, "settingsBtn");
   const exported = page.waitForEvent("download");
   await page.locator("#replayBtn").click();
   const replay = await exported;
@@ -141,7 +142,7 @@ try {
   assert.equal(report.terminal.visible.toLowerCase(), finishLabel);
   assert.deepEqual(report.terminal.audit, []);
   await shot("pursuit-terminal.png");
-  await page.locator("#labBtn").click();
+  await clickCityTool(page, "labBtn");
   report.savedCity = await page.evaluate(() => window.sim.world === window.__priorPursuitCity);
   assert.equal(report.savedCity, true);
   await shot("pursuit-return-city.png");

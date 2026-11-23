@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { clickCityTool } from "./city-tool-button.mjs";
 import { readFile, writeFile } from "node:fs/promises";
 import { createRequire } from "node:module";
 import { join } from "node:path";
@@ -21,12 +22,12 @@ async function city() {
   await page.waitForFunction(() => window.sim?.view.actorDiagnostics().ready);
   await page.locator("#pauseBtn").click();
   await page.waitForFunction(() => window.sim.paused);
-  await page.locator("#settingsBtn").click();
+  await clickCityTool(page, "settingsBtn");
   return page;
 }
 
 async function inspectCar(page) {
-  if (!await page.locator("#carPanel").isVisible()) await page.locator("#carToggleBtn").click();
+  if (!await page.locator("#carPanel").isVisible()) await clickCityTool(page, "carToggleBtn");
   await page.locator('[data-car-view="inspection"]').click();
   await page.locator("#carCloseBtn").click();
   // Inspect starts on the left. Orbit to the struck side using the regular canvas controls.
@@ -52,7 +53,7 @@ try {
   await page.waitForFunction(seed => window.sim.world.config.seed === seed && window.sim.world.tick === 0 &&
     window.sim.world.capacity.traffic === 36 && window.sim.world.capacity.pedestrians === 80, seed);
   if (await page.locator("#closeSettings").isVisible()) await page.locator("#closeSettings").click();
-  await page.locator("#streetPursuitBtn").click();
+  await clickCityTool(page, "streetPursuitBtn");
   await page.locator("#pursuitStyle").selectOption("dispatch");
   await page.locator("#pursuitLevel").selectOption("5");
   await page.evaluate(() => {
@@ -103,7 +104,7 @@ try {
   await inspectCar(page);
   const before = await mesh(page);
   await page.screenshot({ path: join(output, "impact-before.png") });
-  await page.locator("#carToggleBtn").click();
+  await clickCityTool(page, "carToggleBtn");
   await page.locator('[data-car-view="chase"]').click();
   await page.locator("#carCloseBtn").click();
   await page.evaluate(() => {
@@ -132,7 +133,7 @@ try {
   }
 
   const expected = await snapshot(page);
-  await page.locator("#settingsBtn").click();
+  await clickCityTool(page, "settingsBtn");
   const download = page.waitForEvent("download");
   await page.locator("#replayBtn").click();
   const recording = join(output, "impact-city-replay.json");
@@ -159,7 +160,7 @@ try {
   assert.deepEqual(again.damage, after.damage);
 
   if (await restored.locator("#settingsPanel").isVisible()) await restored.locator("#closeSettings").click();
-  if (!await restored.locator("#pursuitPanel").isVisible()) await restored.locator("#streetPursuitBtn").click();
+  if (!await restored.locator("#pursuitPanel").isVisible()) await clickCityTool(restored, "streetPursuitBtn");
   await restored.locator("#pursuitRestartBtn").click();
   for (const style of ["gta", "survival"]) {
     await restored.locator("#pursuitStyle").selectOption(style);

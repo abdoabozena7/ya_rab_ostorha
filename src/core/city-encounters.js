@@ -1,6 +1,8 @@
 import { STEP } from "./config.js";
 import { avenueCrossings } from "./district-behavior.js";
-import { angleDelta, bodyOnRoad, distance, pointOnRoad } from "./geometry.js";
+import {
+  angleDelta, bodyOnRoad, distance, pointOnRoad, roadFrame, roadPointAt, roadProject,
+} from "./geometry.js";
 import { Random } from "./random.js";
 import { SpatialIndex } from "./spatial-index.js";
 import { walkSegmentClear } from "./walk-route.js";
@@ -10,10 +12,16 @@ export const CITY_ENCOUNTERS = Object.freeze([
   "curb-pickup", "traffic-wave", "side-street-tuktuk", "curb-crossing", "roadworks",
 ]);
 const seconds = value => Math.round(value / STEP);
-const span = (road, point) => road.axis === "z" ? point.z : point.x;
-const cross = (road, point) => road.axis === "z" ? point.x : point.z;
-const place = (road, along, across) => road.axis === "z"
-  ? { x: across, z: along } : { x: along, z: across };
+const span = (road, point) => road.axis === "diag"
+  ? roadProject(road, point).along
+  : road.axis === "z" ? point.z : point.x;
+const cross = (road, point) => road.axis === "diag"
+  ? roadProject(road, point).leftOffset
+  : road.axis === "z" ? point.x : point.z;
+const place = (road, along, across) => road.axis === "diag"
+  ? roadPointAt(road, along, across)
+  : road.axis === "z"
+    ? { x: across, z: along } : { x: along, z: across };
 const longitudinal = (body, point) => (point.x - body.x) * Math.sin(body.heading) +
   (point.z - body.z) * Math.cos(body.heading);
 const lateral = (body, point) => Math.abs((point.x - body.x) * Math.cos(body.heading) -
@@ -47,8 +55,8 @@ function nearZone(world, point, margin = 1) {
 function laneAt(world, actor) {
   return world.drivingRoads.find(road =>
     span(road, actor) >= road.min && span(road, actor) <= road.max &&
-    Math.abs(cross(road, actor) - road.fixed) < road.width / 2 &&
-    Math.abs(Math.sin(actor.heading - (road.axis === "z" ? 0 : Math.PI / 2))) < .45);
+    Math.abs(cross(road, actor) - (road.fixed ?? 0)) < road.width / 2 &&
+    Math.abs(Math.sin(actor.heading - roadFrame(road).heading)) < .45);
 }
 
 function ordered(rng, candidates) {
@@ -92,7 +100,8 @@ function chooseVehicle(kind, world, nearby) {
         lateral(actor, other) < 1.6 && Math.abs(angleDelta(actor.heading, other.heading)) < .32);
       if (follower) return vehicleEvent(kind, world, actor, road, follower);
     } else if (kind === "side-street-tuktuk") {
-      if (actor.kind !== "tuktuk" || road.axis === playerRoad.axis ||
+      if (actor.kind !== "tuktuk" ||
+          Math.abs(Math.sin(roadFrame(road).heading - roadFrame(playerRoad).heading)) < 0.2 ||
           forward < -3 || nearZone(world, actor)) continue;
       const join = world.junctions.find(node =>
         longitudinal(actor, node) > 5 && longitudinal(actor, node) < 19 &&
@@ -111,7 +120,7 @@ function chooseCrossing(world, nearby) {
     if (actor.crossing || actor.motionMode !== "ambient" || longitudinal(player, actor) < 2 ||
         state.active.some(event => event.actor === actor) || pointOnRoad(actor, world.roads)) continue;
     const line = district.walkways.find(walkway => !walkway.doorway &&
-      Math.abs(cross(walkway, actor) - walkway.fixed) < .8 &&
+      Math.abs(cross(walkway, actor) - (walkway.fixed ?? 0)) < .8 &&
       span(walkway, actor) > walkway.min + .8 && span(walkway, actor) < walkway.max - .8);
     if (!line) continue;
     const road = district.drivingRoads.find(road => road.id === line.roadId);
@@ -120,10 +129,14 @@ function chooseCrossing(world, nearby) {
     if (!road || !opposite) continue;
     const at = span(line, actor);
     const along = road.zone === "avenue" ? avenueCrossings(road, world.drivingRoads)
+      .map(val => line.axis === "diag" ? span(line, roadPointAt(road, val, 0)) : val)
       .sort((a, b) => Math.abs(at - a) - Math.abs(at - b))[0] : at + state.rng.range(-1, 1);
     if (!Number.isFinite(along) || Math.abs(along - at) > 3 || along < line.min + .6 ||
-        along > line.max - .6 || along < opposite.min + .6 || along > opposite.max - .6) continue;
-    const curb = place(line, along, line.fixed), target = place(opposite, along, opposite.fixed);
+        along > line.max - .6) continue;
+    const curb = place(line, along, line.fixed ?? 0);
+    const oppositeAlong = opposite.axis === "diag" ? span(opposite, curb) : along;
+    if (oppositeAlong < opposite.min + .6 || oppositeAlong > opposite.max - .6) continue;
+    const target = place(opposite, oppositeAlong, opposite.fixed ?? 0);
     if (!walkSegmentClear(actor, actor, curb, world.statics, .12) ||
         !walkSegmentClear(actor, curb, target, world.statics, .12)) continue;
     return { actor, road, target, curb, originLine: line, targetLine: opposite,
@@ -137,7 +150,7 @@ function chooseRoadworks(world) {
   const { player, cityEncounters: state } = world;
   const road = laneAt(world, player);
   if (!road || road.width < 5.5) return null;
-  const yaw = road.axis === "z" ? 0 : Math.PI / 2;
+  const yaw = roadFrame(road).heading;
   const ahead = angleDelta(player.heading, yaw);
   const direction = Math.cos(ahead) > 0 ? 1 : -1;
   const minimum = 17 + Math.abs(player.speed) * .55 + player.speed ** 2 / 7;
@@ -145,9 +158,10 @@ function chooseRoadworks(world) {
     const along = span(road, player) + direction * (minimum + offset);
     if (along < road.min + 5 || along > road.max - 5) continue;
     const centre = cross(road, player);
-    const side = Math.sign(centre - road.fixed) || direction;
-    const position = place(road, along, road.fixed + side *
-      Math.min(road.width / 2 - 1.2, Math.max(Math.abs(centre - road.fixed), road.laneOffsetM) + .6));
+    const base = road.fixed ?? 0;
+    const side = Math.sign(centre - base) || direction;
+    const position = place(road, along, base + side *
+      Math.min(road.width / 2 - 1.2, Math.max(Math.abs(centre - base), road.laneOffsetM ?? 0) + .6));
     const barrier = { ...position, id: `metro-roadworks-${state.serial + 1}`,
       kind: "barrier", type: "static", width: 2, length: .62, height: .86, heading: yaw,
       cityEncounter: "roadworks" };

@@ -4,10 +4,64 @@ import { roadRect } from "../core/geometry.js";
 
 const ROAD_TOP = 0.115; // WorldView's shared asphalt surface.
 const LIGHTBAR_HOLD_TICKS = 20; // At 60 Hz each lens pulses 1.5 times per second.
+const BOUNCE_LIGHT_RANGE_M = 48;
+const BOUNCE_LIGHT_HEIGHT_M = 2.35;
 const finite = Number.isFinite;
 const positive = (n) => finite(n) && n > 0;
 const matte = (color) => new THREE.MeshStandardMaterial({ color, roughness: 0.9 });
 const accent = (color) => new THREE.MeshBasicMaterial({ color });
+
+function createRadialGlowTexture() {
+  const size = 64;
+  if (typeof document !== "undefined") {
+    const canvas = document.createElement("canvas");
+    canvas.width = canvas.height = size;
+    const ctx = canvas.getContext?.("2d");
+    if (ctx) {
+      const grad = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
+      grad.addColorStop(0.0, "rgba(255, 255, 255, 1.0)");
+      grad.addColorStop(0.24, "rgba(255, 255, 255, 0.78)");
+      grad.addColorStop(0.58, "rgba(255, 255, 255, 0.24)");
+      grad.addColorStop(1.0, "rgba(255, 255, 255, 0.0)");
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, size, size);
+      const tex = new THREE.CanvasTexture(canvas);
+      tex.needsUpdate = true;
+      return tex;
+    }
+  }
+  const data = new Uint8Array(size * size * 4);
+  const half = size / 2;
+  for (let y = 0; y < size; y++) {
+    for (let x = 0; x < size; x++) {
+      const r = Math.hypot(x + 0.5 - half, y + 0.5 - half) / half;
+      const alpha = r >= 1 ? 0 : Math.pow(1 - r * r, 2.2);
+      const idx = (y * size + x) * 4;
+      data[idx] = 255;
+      data[idx + 1] = 255;
+      data[idx + 2] = 255;
+      data[idx + 3] = Math.round(alpha * 255);
+    }
+  }
+  const tex = new THREE.DataTexture(data, size, size, THREE.RGBAFormat);
+  tex.needsUpdate = true;
+  return tex;
+}
+
+function doubleFlashEnvelope(u) {
+  const pulse1 = Math.exp(-(((u - 0.18) / 0.14) ** 2));
+  const pulse2 = Math.exp(-(((u - 0.64) / 0.15) ** 2));
+  return Math.min(1, 0.36 + 0.68 * Math.max(pulse1, pulse2));
+}
+
+function bounceDistanceGain(distM) {
+  if (!(distM < BOUNCE_LIGHT_RANGE_M)) return 0;
+  if (distM <= 25) {
+    const nearT = Math.max(0, distM / 25);
+    return THREE.MathUtils.lerp(21.5, 14.5, nearT * nearT);
+  }
+  return 14.5 * (1 - THREE.MathUtils.smoothstep(distM, 25, BOUNCE_LIGHT_RANGE_M));
+}
 
 function patrolBank(id) {
   let parity = 0;
@@ -224,7 +278,42 @@ export function createPursuitView(scene, world) {
   const patrols = new Map(), barriers = new Map(), shoulders = new Map(), activePolice = new Map();
   const patrolShells = new Map();
   const staticLenses = [paints.coolLens, paints.warmLens];
-  let rushLenses, cinematicLenses, diffuser;
+  const tiltEuler = new THREE.Euler(), tiltQuat = new THREE.Quaternion(), haloPos = new THREE.Vector3();
+  const redBounceLight = new THREE.PointLight(0xff2442, 0, 26, 1.6);
+  redBounceLight.name = "pursuit-bounce-red";
+  redBounceLight.castShadow = false;
+  const blueBounceLight = new THREE.PointLight(0x2484ff, 0, 26, 1.6);
+  blueBounceLight.name = "pursuit-bounce-blue";
+  blueBounceLight.castShadow = false;
+  const haloGroup = new THREE.Group();
+  haloGroup.name = "pursuit-lightbar-halos";
+  layer.add(haloGroup);
+  if (world?.player) {
+    layer.add(redBounceLight, blueBounceLight);
+  }
+  let rushLenses, cinematicLenses, diffuser, glowTexture = null, lastActiveHalos = 0;
+  function sharedGlowTexture() {
+    return (glowTexture ??= createRadialGlowTexture());
+  }
+  function createHaloSprites(id) {
+    const map = sharedGlowTexture();
+    return [0x3b9eff, 0xff2e4c].map((color, i) => {
+      const mat = new THREE.SpriteMaterial({
+        map,
+        color,
+        transparent: true,
+        opacity: 0,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+        toneMapped: false,
+      });
+      const sprite = new THREE.Sprite(mat);
+      sprite.name = `pursuit-halo-${i ? "red" : "blue"}:${id}`;
+      sprite.visible = false;
+      haloGroup.add(sprite);
+      return sprite;
+    });
+  }
   function rushPalette() {
     if (!rushLenses) {
       // These small opaque lenses are their own visible pixels; they light no surfaces.
@@ -275,8 +364,23 @@ export function createPursuitView(scene, world) {
     kit.livery = null;
   }
 
+  function hideHalos(kit) {
+    if (!kit.halos) return;
+    for (const halo of kit.halos) {
+      halo.visible = false;
+      halo.material.opacity = 0;
+    }
+  }
+
   function removePatrol(kit) {
     restorePatrolShell(kit);
+    if (kit.halos) {
+      for (const halo of kit.halos) {
+        halo.removeFromParent();
+        halo.material.dispose();
+      }
+      kit.halos = null;
+    }
     kit.root.removeFromParent();
     kit.stripe.geometry.dispose();
   }
@@ -298,7 +402,8 @@ export function createPursuitView(scene, world) {
     root.add(housing, ...lenses, stripe);
     layer.add(root);
     patrols.set(actor.id, { root, record, housing, lenses, stripe, source: null, fitted: false,
-      bank: patrolBank(actor.id), style: "legacy", livery: null });
+      bank: patrolBank(actor.id), style: "legacy", livery: null,
+      halos: world?.player ? createHaloSprites(actor.id) : null });
   }
 
   function syncRoads(current) {
@@ -368,18 +473,99 @@ export function createPursuitView(scene, world) {
     contact.position.set(impact.x, ROAD_TOP + height + 0.014, impact.z);
   }
 
-  function update(current = world) {
+  function isPatrolWrecked(actor, current) {
+    return Boolean(
+      actor.pursuitWreck ||
+      actor.wrecked ||
+      (current.pursuit?.gta && actor.aiState === "WRECKED"),
+    );
+  }
+
+  function updateBounceLights(current, tickNow, running) {
+    redBounceLight.intensity = 0;
+    blueBounceLight.intensity = 0;
+    const player = current?.player;
+    if (!running || !player) return;
+    if (!redBounceLight.parent) layer.add(redBounceLight, blueBounceLight);
+    const px = finite(player.x) ? player.x : 0;
+    const pz = finite(player.z) ? player.z : 0;
+    let near1 = null, near2 = null;
+    for (const actor of current.actors ?? []) {
+      if (actor.pursuitRole !== "police" || isPatrolWrecked(actor, current)) continue;
+      const kit = patrols.get(actor.id);
+      const resident = kit?.record?.root?.visible && kit.record.root.parent === scene
+        ? kit.record.root
+        : null;
+      const ax = resident ? resident.position.x : actor.x;
+      const ay = resident ? resident.position.y : ROAD_TOP + (actor.y ?? 0);
+      const az = resident ? resident.position.z : actor.z;
+      const heading = resident ? resident.rotation.y : (actor.heading ?? 0);
+      if (!finite(ax) || !finite(az)) continue;
+      const dist = Math.hypot(ax - px, az - pz);
+      if (!(dist < BOUNCE_LIGHT_RANGE_M)) continue;
+      const candidate = { x: ax, y: ay, z: az, heading, dist, bank: kit?.bank ?? patrolBank(actor.id) };
+      if (!near1 || dist < near1.dist) {
+        near2 = near1;
+        near1 = candidate;
+      } else if (!near2 || dist < near2.dist) {
+        near2 = candidate;
+      }
+    }
+    if (!near1) return;
+    const halfCycle = tickNow / LIGHTBAR_HOLD_TICKS;
+    const u = halfCycle - Math.floor(halfCycle);
+    const env = doubleFlashEnvelope(u);
+    const side1 = (Math.floor(halfCycle) ^ near1.bank) & 1;
+    const gain1 = bounceDistanceGain(near1.dist);
+    if (near2) {
+      const side2 = (Math.floor(halfCycle) ^ near2.bank) & 1;
+      const gain2 = bounceDistanceGain(near2.dist);
+      if (side1 === 1) {
+        redBounceLight.position.set(near1.x, near1.y + BOUNCE_LIGHT_HEIGHT_M, near1.z);
+        redBounceLight.intensity = gain1 * env;
+        blueBounceLight.position.set(near2.x, near2.y + BOUNCE_LIGHT_HEIGHT_M, near2.z);
+        blueBounceLight.intensity = side2 === 0 ? gain2 * env : Math.max(gain2 * 0.4, gain1 * 0.14);
+      } else {
+        blueBounceLight.position.set(near1.x, near1.y + BOUNCE_LIGHT_HEIGHT_M, near1.z);
+        blueBounceLight.intensity = gain1 * env;
+        redBounceLight.position.set(near2.x, near2.y + BOUNCE_LIGHT_HEIGHT_M, near2.z);
+        redBounceLight.intensity = side2 === 1 ? gain2 * env : Math.max(gain2 * 0.4, gain1 * 0.14);
+      }
+    } else {
+      const cosH = Math.cos(near1.heading), sinH = Math.sin(near1.heading);
+      blueBounceLight.position.set(near1.x - cosH * 0.32, near1.y + BOUNCE_LIGHT_HEIGHT_M, near1.z + sinH * 0.32);
+      redBounceLight.position.set(near1.x + cosH * 0.32, near1.y + BOUNCE_LIGHT_HEIGHT_M, near1.z - sinH * 0.32);
+      if (side1 === 0) {
+        blueBounceLight.intensity = gain1 * env;
+        redBounceLight.intensity = gain1 * 0.12;
+      } else {
+        redBounceLight.intensity = gain1 * env;
+        blueBounceLight.intensity = gain1 * 0.12;
+      }
+    }
+    redBounceLight.updateMatrixWorld(true);
+    blueBounceLight.updateMatrixWorld(true);
+  }
+
+  function update(current = world, alpha = 0) {
     if (disposed) return;
     syncRoads(current);
     syncBarriers(current);
     syncContact(current);
     survivalEffects?.update(current);
-    if (!patrols.size) return;
     const running = current.pursuit?.phase === "running";
+    const subAlpha = finite(alpha) ? THREE.MathUtils.clamp(alpha, 0, 1) : 0;
+    const tickNow = (current.tick ?? 0) + subAlpha;
+    lastActiveHalos = 0;
+    updateBounceLights(current, tickNow, running);
+    if (!patrols.size) return;
+    const hasPlayer = Boolean(current?.player);
     const cinematic = Boolean(current.pursuit?.response);
     const rush = current.pursuit?.variant === "rush" && running;
     const style = cinematic ? "cinematic" : rush ? "rush" : "legacy";
-    const phase = Math.floor(current.tick / LIGHTBAR_HOLD_TICKS) & 1;
+    const halfCycle = tickNow / LIGHTBAR_HOLD_TICKS;
+    const phase = Math.floor((current.tick ?? 0) / LIGHTBAR_HOLD_TICKS) & 1;
+    const haloEnv = doubleFlashEnvelope(halfCycle - Math.floor(halfCycle));
     activePolice.clear();
     for (const actor of current.actors)
       if (actor.pursuitRole === "police") activePolice.set(actor.id, actor);
@@ -393,6 +579,7 @@ export function createPursuitView(scene, world) {
       const { record, root } = kit;
       root.visible = false;
       if (!record.root.visible || record.root.parent !== scene) {
+        hideHalos(kit);
         if (kit.livery) {
           restorePatrolShell(kit);
           kit.source = null;
@@ -407,11 +594,26 @@ export function createPursuitView(scene, world) {
         kit.source = source;
         kit.style = style;
         if (source && cinematic) setPatrolShell(kit, source);
+        const savedRx = source ? source.rotation.x : 0;
+        const savedRz = source ? source.rotation.z : 0;
+        if (source && (savedRx || savedRz)) {
+          source.rotation.x = 0;
+          source.rotation.z = 0;
+        }
         kit.fitted = Boolean(source && fitPatrolKit(kit, source, record.root, actor, style));
+        if (source && (savedRx || savedRz)) {
+          source.rotation.x = savedRx;
+          source.rotation.z = savedRz;
+          source.updateWorldMatrix(true, true);
+        }
         if (!kit.fitted) restorePatrolShell(kit);
       }
-      if (!kit.fitted) continue;
-      const dim = actor.pursuitWreck || !running || current.tick % LIGHTBAR_HOLD_TICKS < 5;
+      if (!kit.fitted) {
+        hideHalos(kit);
+        continue;
+      }
+      const wrecked = isPatrolWrecked(actor, current);
+      const dim = wrecked || !running || current.tick % LIGHTBAR_HOLD_TICKS < 5;
       const gtaAppearance = current.pursuit?.gta ? (actor.aiState === "WRECKED" ? "wrecked"
         : actor.aiState === "ROADBLOCK" ? "roadblock" : actor.unitType) : null;
       if (root.userData.gtaAppearance !== gtaAppearance) {
@@ -429,14 +631,57 @@ export function createPursuitView(scene, world) {
         for (let i = 0; i < lenses.length; i++) kit.lenses[i].material = lenses[i];
       root.position.copy(record.root.position);
       root.quaternion.copy(record.root.quaternion);
+      if (record.rollRad || record.pitchRad) {
+        tiltEuler.set(record.pitchRad || 0, 0, record.rollRad || 0);
+        root.quaternion.multiply(tiltQuat.setFromEuler(tiltEuler));
+      }
       root.scale.copy(record.root.scale);
       root.visible = true;
+
+      if (hasPlayer && running && !wrecked && gtaAppearance !== "wrecked") {
+        kit.halos ??= createHaloSprites(id);
+        const activeSide = (phase ^ kit.bank) & 1;
+        for (let i = 0; i < 2; i++) {
+          const halo = kit.halos[i];
+          haloPos.copy(kit.lenses[i].position)
+            .multiply(root.scale)
+            .applyQuaternion(root.quaternion)
+            .add(root.position);
+          haloPos.y += 0.06;
+          halo.position.copy(haloPos);
+          if (i === activeSide) {
+            const s = 1.45 + 1.15 * haloEnv;
+            halo.scale.set(s * 1.25, s * 0.88, 1);
+            halo.material.opacity = 0.42 + 0.54 * haloEnv;
+          } else {
+            halo.scale.set(0.78, 0.56, 1);
+            halo.material.opacity = 0.08 + 0.06 * (1 - haloEnv);
+          }
+          halo.visible = true;
+          halo.updateMatrixWorld(true);
+        }
+        lastActiveHalos++;
+      } else {
+        hideHalos(kit);
+      }
     }
+  }
+
+  function diagnostics() {
+    return {
+      bounceLightsActive: redBounceLight.intensity > 0 || blueBounceLight.intensity > 0,
+      redIntensity: redBounceLight.intensity,
+      blueIntensity: blueBounceLight.intensity,
+      activePatrolHalos: lastActiveHalos,
+    };
   }
 
   function dispose() {
     if (disposed) return;
     disposed = true;
+    redBounceLight.intensity = 0;
+    blueBounceLight.intensity = 0;
+    lastActiveHalos = 0;
     for (const kit of patrols.values()) removePatrol(kit);
     patrols.clear();
     activePolice.clear();
@@ -446,6 +691,8 @@ export function createPursuitView(scene, world) {
     layer.clear();
     box.dispose();
     diffuser?.dispose();
+    glowTexture?.dispose();
+    glowTexture = null;
     warningStripes.dispose();
     contactCircle.dispose();
     for (const paint of Object.values(paints)) paint.dispose();
@@ -455,7 +702,7 @@ export function createPursuitView(scene, world) {
   }
 
   update();
-  return { attach, update, dispose, appearance(root, current) {
+  return { attach, update, dispose, diagnostics, appearance(root, current) {
     if (current.pursuit?.survival) survivalEffects ??= createSurvivalEffects(layer);
     survivalEffects?.appearance(root, current);
   } };

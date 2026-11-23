@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { clickCityTool } from "./city-tool-button.mjs";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { createRequire } from "node:module";
 import { runInThisContext } from "node:vm";
@@ -112,7 +113,7 @@ try {
     assert.ok(report.runtime.passed, JSON.stringify(report.runtime));
     await page.screenshot({ path: path.join(output, "egypt-driving.png") });
   }
-  await page.locator("#visionToggleBtn").click();
+  await clickCityTool(page, "visionToggleBtn");
   await page.waitForFunction(() => Boolean(window.sim.vision.status.result), undefined, { timeout: 30000 });
   const readyStream = await page.evaluate(() => window.sim.vision.streamId);
   await page.waitForFunction(() => window.sim.vision.status.status === "stale",
@@ -355,7 +356,7 @@ try {
     });
     assert.ok(report.runtime.withLiveVision.passed, JSON.stringify(report.runtime.withLiveVision));
     report.runtime.passed = report.runtime.passed && report.runtime.withLiveVision.passed;
-    await page.locator("#carToggleBtn").click();
+    await clickCityTool(page, "carToggleBtn");
     await page.locator("#carSensorCamera").selectOption("rear");
     const previousCapture = latestFrame.frameId;
     await page.waitForTimeout(500);

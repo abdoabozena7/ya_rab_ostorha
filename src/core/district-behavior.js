@@ -1,9 +1,20 @@
 import { STEP, VEHICLE, clamp } from "./config.js";
-import { angleDelta, bodyOnRoad, distance, overlaps } from "./geometry.js";
+import {
+  angleDelta,
+  bodyOnRoad,
+  distance,
+  isDiagonalRoad,
+  makeDiagonalRoad,
+  overlaps,
+  roadFrame,
+  roadIntersection,
+  roadPointAt,
+  roadProject,
+} from "./geometry.js";
 import { pedestrianMotion } from "./pedestrian.js";
 import { canLeaveWalkMargin, planWalk, walkSegmentClear } from "./walk-route.js";
 import {
-  hasImmutablePathPoints, integrateVehicle, nearestPathPoint, vehicleProbe,
+  hasImmutablePathPoints, integrateVehicle, markImmutablePath, nearestPathPoint, vehicleProbe,
 } from "./vehicle.js";
 import { planDistrictRoute } from "./district-navigation.js";
 import { SpatialIndex } from "./spatial-index.js";
@@ -23,19 +34,35 @@ const adjoiningJunctionResources = new WeakMap();
 const pathGeometryCache = new WeakMap();
 const isDistrict = (world) => world.environment === "egypt" || world.environment === "metro";
 const now = (world) => world.tick * STEP;
-const along = (walkway, point) => point[walkway.axis === "z" ? "z" : "x"];
-const walkPose = (walkway, position) => walkway.axis === "z"
-  ? { x: walkway.fixed, z: position }
-  : { x: position, z: walkway.fixed };
+const along = (walkway, point) => walkway.axis === "diag"
+  ? (point.x - walkway.x1) * walkway.ux + (point.z - walkway.z1) * walkway.uz
+  : point[walkway.axis === "z" ? "z" : "x"];
+const walkPose = (walkway, position) => walkway.axis === "diag"
+  ? { x: walkway.x1 + walkway.ux * position, z: walkway.z1 + walkway.uz * position }
+  : walkway.axis === "z"
+    ? { x: walkway.fixed, z: position }
+    : { x: position, z: walkway.fixed };
 
 export function avenueCrossings(road, roads) {
   if (road.zone !== "avenue") return [];
-  return [...new Set(roads.filter(other => other.axis !== road.axis &&
-    road.fixed >= other.min && road.fixed <= other.max &&
-    other.fixed >= road.min && other.fixed <= road.max).flatMap(other => {
-    const offset = other.width / 2 + 2.4;
-    return [other.fixed - offset, other.fixed + offset];
-  }).filter(along => along > road.min + 8 && along < road.max - 8))];
+  const fa = isDiagonalRoad(road) ? roadFrame(road) : null;
+  return [...new Set(roads.flatMap(other => {
+    if (other === road) return [];
+    if (!isDiagonalRoad(road) && !isDiagonalRoad(other)) {
+      if (other.axis === road.axis ||
+          road.fixed < other.min || road.fixed > other.max ||
+          other.fixed < road.min || other.fixed > road.max) return [];
+      const offset = other.width / 2 + 2.4;
+      return [other.fixed - offset, other.fixed + offset];
+    }
+    const hit = roadIntersection(road, other, 0.5);
+    if (!hit) return [];
+    const rFrame = fa ?? roadFrame(road), oFrame = roadFrame(other);
+    const sinAngle = Math.max(0.35, Math.abs(-rFrame.ux * oFrame.uz + rFrame.uz * oFrame.ux));
+    const cosAngle = Math.abs(rFrame.ux * oFrame.ux + rFrame.uz * oFrame.uz);
+    const offset = (other.width / 2 + (road.width / 2) * cosAngle) / sinAngle + 2.4;
+    return [hit.alongA - offset, hit.alongA + offset];
+  }).filter(pos => pos > road.min + 8 && pos < road.max - 8))];
 }
 function zoneGeometry(zone) {
   let geometry = zoneGeometryCache.get(zone);
@@ -152,11 +179,18 @@ function clearWalkLeg(world, person, target) {
 }
 
 function lineConnection(a, b) {
-  if (a.axis === b.axis) return null;
-  const vertical = a.axis === "z" ? a : b, horizontal = a.axis === "x" ? a : b;
-  const point = { x: vertical.fixed, z: horizontal.fixed };
-  return point.z >= vertical.min && point.z <= vertical.max &&
-    point.x >= horizontal.min && point.x <= horizontal.max ? point : null;
+  if (a.axis !== "diag" && b.axis !== "diag") {
+    if (a.axis === b.axis) return null;
+    const vertical = a.axis === "z" ? a : b, horizontal = a.axis === "x" ? a : b;
+    const point = { x: vertical.fixed, z: horizontal.fixed };
+    return point.z >= vertical.min && point.z <= vertical.max &&
+      point.x >= horizontal.min && point.x <= horizontal.max ? point : null;
+  }
+  const hit = roadIntersection(a, b, 0.5);
+  if (!hit) return null;
+  return hit.alongA >= a.min - 0.5 && hit.alongA <= a.max + 0.5 &&
+    hit.alongB >= b.min - 0.5 && hit.alongB <= b.max + 0.5
+    ? { x: hit.x, z: hit.z } : null;
 }
 
 /** Targets belong to declared walklines, never a width-derived phantom sidewalk. */
@@ -188,13 +222,21 @@ export function nextDistrictWalk(world, person) {
     ? world.district.drivingRoads.find(road => road.id === walkway.roadId) : null;
   const avenue = street?.zone === "avenue";
   const crossing = avenue ? avenueCrossings(street, world.district.drivingRoads)
+    .map(value => walkway.axis === "diag" ? along(walkway, roadPointAt(street, value, 0)) : value)
     .filter(value => Math.abs(value - position) < 1.6 && value >= lower && value <= upper)
     .sort((a, b) => Math.abs(a - position) - Math.abs(b - position))[0] : undefined;
-  const opposite = (world.district.walkways ?? []).filter((line) =>
-    line.roadId === walkway.roadId && line.axis === walkway.axis &&
-    line.side !== walkway.side && Math.abs(line.fixed - walkway.fixed) > 0.5 &&
-    (!avenue || crossing !== undefined) &&
-    (crossing ?? position) >= line.min + inset && (crossing ?? position) <= line.max - inset);
+  const crossPos = crossing ?? position;
+  const crossOrigin = walkPose(walkway, crossPos);
+  const opposite = (world.district.walkways ?? []).filter((line) => {
+    if (line.roadId !== walkway.roadId || line.axis !== walkway.axis ||
+        line.side === walkway.side || (avenue && crossing === undefined)) return false;
+    const separated = walkway.axis === "diag"
+      ? distance(walkPose(line, clamp(along(line, crossOrigin), line.min, line.max)), crossOrigin) > 0.5
+      : Math.abs(line.fixed - walkway.fixed) > 0.5;
+    if (!separated) return false;
+    const lineAlong = walkway.axis === "diag" ? along(line, crossOrigin) : crossPos;
+    return lineAlong >= line.min + inset && lineAlong <= line.max - inset;
+  });
   let selected = walkway, target = null, declaredRoute = null;
   if (pattern === "emergence" || position < lower + 2 || position > upper - 2) {
     const connections = (world.district.walkways ?? []).flatMap((line) => {
@@ -220,8 +262,9 @@ export function nextDistrictWalk(world, person) {
     selected = world.rng.pick(opposite);
     if (avenue) pattern = "crossing";
     const shift = pattern === "diagonal" ? person.walkDirection * world.rng.range(2, 4) : 0;
+    const baseSelectedAlong = walkway.axis === "diag" ? along(selected, crossOrigin) : crossPos;
     const candidate = walkPose(selected,
-      clamp((crossing ?? position) + shift, selected.min + inset, selected.max - inset));
+      clamp(baseSelectedAlong + shift, selected.min + inset, selected.max - inset));
     if (clearWalkLeg(world, person, candidate)) {
       target = candidate;
       if (avenue) declaredRoute = [walkPose(walkway, crossing), candidate];
@@ -390,6 +433,8 @@ export function stepDistrictPedestrian(world, person, targetBlocker) {
       state.targetRetryTick = world.tick + 90;
       event(world, person, "walk-retarget", "occupied-catalog-target", { blockedBy: blocker.id });
       nextDistrictWalk(world, working);
+    } else if ((world.config?.cityVersion ?? 0) >= 5 && distance(working, working.target) > 6) {
+      state.targetRetryTick = world.tick + 12;
     }
   }
   const progressed = (person.distance ?? 0) - (state.startedDistanceM ?? 0);
@@ -653,11 +698,10 @@ function storageBlocker(world, car, route, zone) {
 export function onRoadLimit(world, car) {
   let limit = Infinity, roadId = null, width = 0;
   for (const road of world.district?.drivingRoads ?? world.drivingRoads ?? []) {
-    const position = road.axis === "z" ? car.z : car.x;
-    const lateral = Math.abs((road.axis === "z" ? car.x : car.z) - road.fixed);
-    if (position < road.min - 0.2 || position > road.max + 0.2 || lateral > road.width / 2)
+    const proj = roadProject(road, car);
+    if (proj.along < road.min - 0.2 || proj.along > road.max + 0.2 || proj.absLateral > road.width / 2)
       continue;
-    const heading = road.axis === "z" ? 0 : Math.PI / 2;
+    const { heading } = roadFrame(road);
     const aligned = Math.min(Math.abs(angleDelta(car.heading, heading)),
       Math.abs(angleDelta(car.heading, heading + Math.PI))) < 0.8;
     if (!aligned) continue;
@@ -707,21 +751,34 @@ function withoutQueuedDeparture(world, route) {
   const district = world.district;
   const road = district.drivingRoads.find((item) => item.id === onRoadLimit(world, exit).roadId);
   if (!road) return null;
-  const sign = (road.axis === "z" ? Math.cos(exit.heading) : Math.sin(exit.heading)) > 0 ? 1 : -1;
+  const frame = roadFrame(road);
+  const sign = (Math.sin(exit.heading) * frame.ux + Math.cos(exit.heading) * frame.uz) > 0 ? 1 : -1;
   if (road.flow && road.flow !== sign) return null;
   const cuts = new Set([road.min, road.max]);
-  for (const other of district.drivingRoads)
-    if (other.axis !== road.axis && other.fixed >= road.min && other.fixed <= road.max &&
-        road.fixed >= other.min && road.fixed <= other.max)
-      cuts.add(other.fixed);
-  const along = exit[road.axis === "z" ? "z" : "x"], sorted = [...cuts].sort((a, b) => a - b);
+  for (const other of district.drivingRoads) {
+    if (other === road) continue;
+    if (!isDiagonalRoad(road) && !isDiagonalRoad(other)) {
+      if (other.axis !== road.axis && other.fixed >= road.min && other.fixed <= road.max &&
+          road.fixed >= other.min && road.fixed <= other.max)
+        cuts.add(other.fixed);
+    } else {
+      const hit = roadIntersection(road, other, 0.5);
+      if (hit) cuts.add(Math.max(road.min, Math.min(road.max, hit.alongA)));
+    }
+  }
+  const alongVal = roadProject(road, exit).along, sorted = [...cuts].sort((a, b) => a - b);
   const index = sorted.findIndex((value, i) => i + 1 < sorted.length &&
-    along >= value && along <= sorted[i + 1]);
+    alongVal >= value && alongVal <= sorted[i + 1]);
   if (index < 0) return null;
   const min = sorted[index], max = sorted[index + 1], pieces = [];
-  if (road.min < min) pieces.push({ ...road, max: min });
-  if (!road.flow) pieces.push({ ...road, min, max, flow: -sign });
-  if (max < road.max) pieces.push({ ...road, min: max });
+  const subPiece = (subMin, subMax, flowOverride = road.flow) => {
+    if (!isDiagonalRoad(road)) return { ...road, min: subMin, max: subMax, flow: flowOverride };
+    const p1 = roadPointAt(road, subMin, 0), p2 = roadPointAt(road, subMax, 0);
+    return makeDiagonalRoad({ ...road, x1: p1.x, z1: p1.z, x2: p2.x, z2: p2.z, flow: flowOverride });
+  };
+  if (road.min < min) pieces.push(subPiece(road.min, min));
+  if (!road.flow) pieces.push(subPiece(min, max, -sign));
+  if (max < road.max) pieces.push(subPiece(max, road.max));
   // Restrict only this search's existing directed link; the physical map stays unchanged.
   return { ...district, drivingRoads: district.drivingRoads.flatMap((item) => item === road ? pieces : [item]) };
 }
@@ -746,15 +803,16 @@ export function planDistrictTrafficTrip(world, car, start) {
       plannedPassageVisits(actor, actor.path ?? [], zone, actor.cursor)).length >= 2);
   const goals = district.trafficGoals;
   let fallback = [];
-  for (let i = 0; i < goals.length; i++) {
+  const maxTrials = (world.config?.cityVersion ?? 0) >= 5 ? Math.min(goals.length, 4) : goals.length;
+  for (let i = 0; i < maxTrials; i++) {
     const goal = goals[(start + i) % goals.length];
     if (distance(car, goal) < 12) continue;
     const path = planDistrictRoute(district, car, goal, actors);
     if (path.length <= 10) continue;
-    if (!congested.some((zone) => plannedPassageVisits(car, path, zone))) return path;
+    if (!congested.some((zone) => plannedPassageVisits(car, path, zone))) return markImmutablePath(path);
     if (!fallback.length) fallback = path;
   }
-  return fallback;
+  return fallback.length ? markImmutablePath(fallback) : fallback;
 }
 
 function replanQueuedVehicle(world, car, zone, queuedRoute, waitS = 0) {
@@ -773,6 +831,12 @@ function replanQueuedVehicle(world, car, zone, queuedRoute, waitS = 0) {
   const roads = district.drivingRoads.filter((road) => {
     if (zone.kind !== "single-lane" || road.flow || (road.laneOffsetM ?? 0) !== 0)
       return true;
+    if (isDiagonalRoad(road)) {
+      return road.x1 < zone.minX || road.x1 > zone.maxX ||
+        road.x2 < zone.minX || road.x2 > zone.maxX ||
+        road.z1 < zone.minZ || road.z1 > zone.maxZ ||
+        road.z2 < zone.minZ || road.z2 > zone.maxZ;
+    }
     return road.axis === "z"
       ? road.fixed < zone.minX || road.fixed > zone.maxX ||
         road.min < zone.minZ || road.max > zone.maxZ
@@ -858,19 +922,32 @@ function divertCongestedCirculation(world, car, approachZone, approachPath) {
     if (!near.hasExit) continue;
     const roads = world.district.drivingRoads.filter((road) => {
       if (road.flow || (road.laneOffsetM ?? 0) !== 0) return true;
-      const contained = road.axis === "z"
-        ? road.fixed >= zone.minX && road.fixed <= zone.maxX &&
-          road.min >= zone.minZ && road.max <= zone.maxZ
-        : road.fixed >= zone.minZ && road.fixed <= zone.maxZ &&
-          road.min >= zone.minX && road.max <= zone.maxX;
+      const contained = isDiagonalRoad(road)
+        ? road.x1 >= zone.minX && road.x1 <= zone.maxX &&
+          road.x2 >= zone.minX && road.x2 <= zone.maxX &&
+          road.z1 >= zone.minZ && road.z1 <= zone.maxZ &&
+          road.z2 >= zone.minZ && road.z2 <= zone.maxZ
+        : road.axis === "z"
+          ? road.fixed >= zone.minX && road.fixed <= zone.maxX &&
+            road.min >= zone.minZ && road.max <= zone.maxZ
+          : road.fixed >= zone.minZ && road.fixed <= zone.maxZ &&
+            road.min >= zone.minX && road.max <= zone.maxX;
       if (!contained) return true;
       return !car.path.slice(Math.max(0, car.cursor - 2)).some((point) => {
-        const along = point[road.axis === "z" ? "z" : "x"];
-        return along > road.min + car.length && along < road.max - car.length &&
-          Math.abs(point[road.axis === "z" ? "x" : "z"] - road.fixed) < 1e-4;
+        const proj = roadProject(road, point);
+        return proj.along > road.min + car.length && proj.along < road.max - car.length &&
+          proj.absLateral < (isDiagonalRoad(road) ? 1e-3 : 1e-4);
       });
     });
     if (roads.length === world.district.drivingRoads.length) continue;
+    if ((world.config?.cityVersion ?? 0) >= 5 && world.pursuit?.gta?.config?.tacticalPursuit === "gta-tactical-v1") {
+      if (world._routePlanTick === world.tick && world._routePlanCount >= 2) return false;
+      if (world._routePlanTick !== world.tick) {
+        world._routePlanTick = world.tick;
+        world._routePlanCount = 0;
+      }
+      world._routePlanCount++;
+    }
     car.district.nextCongestionPlanTick = world.tick + Math.ceil(6 / STEP);
     const end = car.path.at(-1), before = car.path.at(-2);
     const goal = car.goal ?? car.district.goal ?? {
@@ -884,7 +961,7 @@ function divertCongestedCirculation(world, car, approachZone, approachPath) {
     const oldTransitM = distanceInsideZone(forwardPath(world, car, Infinity), zone);
     const newTransitM = distanceInsideZone(future, zone);
     if (newTransitM + car.length >= oldTransitM) continue;
-    car.path = path;
+    car.path = markImmutablePath(path);
     car.cursor = 0;
     state.metrics.replans++;
     state.metrics.reroutes++;
@@ -921,7 +998,7 @@ function trafficApproach(world, car, zoneRows, paths, routes) {
 
 function trafficResources(world) {
   const zones = world.district?.conflictZones;
-  if (!zones || world.config?.cityVersion !== 4) return zones ?? [];
+  if (!zones || !(world.config?.cityVersion >= 4)) return zones ?? [];
   if (adjoiningJunctionResources.has(zones)) return adjoiningJunctionResources.get(zones);
   const resources = zones.slice();
   for (let i = 0; i < resources.length; i++) {
@@ -945,11 +1022,84 @@ function trafficResources(world) {
   return resources;
 }
 
+const zoneRowGridCache = new WeakMap();
+const ZONE_GRID_M = 48;
+
+function getIndexedZoneRows(zones) {
+  let cached = zoneRowGridCache.get(zones);
+  if (
+    cached &&
+    cached.len === zones.length &&
+    zones.every((z, i) => {
+      const r = cached.rows[i];
+      return (
+        r.zone === z &&
+        r.geometry.id === z.id &&
+        Object.is(r.geometry.minX, z.minX) &&
+        Object.is(r.geometry.maxX, z.maxX) &&
+        Object.is(r.geometry.minZ, z.minZ) &&
+        Object.is(r.geometry.maxZ, z.maxZ) &&
+        Object.is(r.approachM, z.approachM)
+      );
+    })
+  ) {
+    return cached;
+  }
+  const rows = zones.map((zone) => ({ zone, geometry: zoneGeometry(zone), approachM: zone.approachM }));
+  const cells = new Map();
+  let maxApproachM = 18;
+  for (const row of rows) {
+    const { zone } = row;
+    maxApproachM = Math.max(maxApproachM, zone.approachM ?? 0);
+    const x0 = Math.floor(zone.minX / ZONE_GRID_M), x1 = Math.floor(zone.maxX / ZONE_GRID_M);
+    const z0 = Math.floor(zone.minZ / ZONE_GRID_M), z1 = Math.floor(zone.maxZ / ZONE_GRID_M);
+    for (let x = x0; x <= x1; x++) {
+      for (let z = z0; z <= z1; z++) {
+        const key = (x << 16) ^ (z & 0xffff);
+        let bucket = cells.get(key);
+        if (!bucket) cells.set(key, bucket = []);
+        bucket.push(row);
+      }
+    }
+  }
+  cached = { len: zones.length, rows, cells, maxApproachM };
+  zoneRowGridCache.set(zones, cached);
+  return cached;
+}
+
+function nearbyZoneRowsForCar(indexed, car) {
+  if (indexed.rows.length <= 18) return indexed.rows;
+  const len = Math.abs(car.length ?? 4.5), wid = Math.abs(car.width ?? 2.0);
+  const reach = Math.max(indexed.maxApproachM, len + 1) + len + wid + 4;
+  const x0 = Math.floor((car.x - reach) / ZONE_GRID_M), x1 = Math.floor((car.x + reach) / ZONE_GRID_M);
+  const z0 = Math.floor((car.z - reach) / ZONE_GRID_M), z1 = Math.floor((car.z + reach) / ZONE_GRID_M);
+  const seen = new Set(), out = [];
+  for (let x = x0; x <= x1; x++) {
+    for (let z = z0; z <= z1; z++) {
+      const bucket = indexed.cells.get((x << 16) ^ (z & 0xffff));
+      if (!bucket) continue;
+      for (let i = 0; i < bucket.length; i++) {
+        const row = bucket[i];
+        if (!seen.has(row)) {
+          seen.add(row);
+          out.push(row);
+        }
+      }
+    }
+  }
+  return out;
+}
+
 /** First-arrival tickets are per-world and never timed out while occupied. */
 export function updateDistrictTraffic(world) {
   if (!isDistrict(world)) return;
   const state = stateFor(world);
   if (state.lastTick === world.tick) return;
+  if ((world.config?.cityVersion ?? 0) >= 5 &&
+      world.pursuit?.gta?.config?.tacticalPursuit === "gta-tactical-v1" &&
+      state.lastTick === world.tick - 1 && (world.tick & 1) === 1) {
+    return;
+  }
   state.lastTick = world.tick;
   state.approaches = {};
   state.holds = {};
@@ -961,19 +1111,40 @@ export function updateDistrictTraffic(world) {
   const paths = new Map();
   const routes = new Map();
   const zones = trafficResources(world);
-  const zoneRows = zones.map((zone) => ({ zone, geometry: zoneGeometry(zone) }));
+  const indexedZones = getIndexedZoneRows(zones);
+  const zoneRows = indexedZones.rows;
+  const occupantsByZone = new Map();
   for (const car of cars) {
     initializeDistrictActor(world, car);
-    const closest = trafficApproach(world, car, zoneRows, paths, routes);
+    const localZoneRows = nearbyZoneRowsForCar(indexedZones, car);
+    for (let i = 0; i < localZoneRows.length; i++) {
+      const { zone, geometry } = localZoneRows[i];
+      if (occupies(car, zone, 0.12, geometry)) {
+        let list = occupantsByZone.get(zone.id);
+        if (!list) occupantsByZone.set(zone.id, list = []);
+        list.push(car);
+      }
+    }
+    const closest = trafficApproach(world, car, localZoneRows, paths, routes);
     if (closest) state.approaches[car.id] = closest;
   }
   const approachesByZone = new Map();
   for (const car of cars) {
     const closest = state.approaches[car.id];
-    if (closest && paths.has(car.id) && divertCongestedCirculation(world, car,
+    const canDivert = !((world.config?.cityVersion ?? 0) >= 5 &&
+      world.pursuit?.gta?.config?.tacticalPursuit === "gta-tactical-v1" &&
+      world._routePlanTick === world.tick && world._routePlanCount >= 2);
+    if (canDivert && closest && paths.has(car.id) && divertCongestedCirculation(world, car,
       zones.find((zone) => zone.id === closest.zoneId), paths.get(car.id))) {
+      if ((world.config?.cityVersion ?? 0) >= 5 && world.pursuit?.gta?.config?.tacticalPursuit === "gta-tactical-v1") {
+        if (world._routePlanTick !== world.tick) {
+          world._routePlanTick = world.tick;
+          world._routePlanCount = 0;
+        }
+        world._routePlanCount++;
+      }
       paths.delete(car.id);
-      const updated = trafficApproach(world, car, zoneRows, paths, routes);
+      const updated = trafficApproach(world, car, nearbyZoneRowsForCar(indexedZones, car), paths, routes);
       if (updated) state.approaches[car.id] = updated;
       else delete state.approaches[car.id];
     }
@@ -984,9 +1155,9 @@ export function updateDistrictTraffic(world) {
       else approachesByZone.set(approach.zoneId, [car]);
     }
   }
-  for (const { zone, geometry } of zoneRows) {
+  for (const { zone } of zoneRows) {
     let reservation = state.reservations[zone.id];
-    const occupants = cars.filter((car) => occupies(car, zone, 0.12, geometry));
+    const occupants = occupantsByZone.get(zone.id) ?? [];
     if (reservation) {
       const owner = byId.get(reservation.ownerId);
       const occupied = owner && occupants.includes(owner);

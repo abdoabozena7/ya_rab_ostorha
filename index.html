@@ -21,25 +21,49 @@
           title="Phone (P)"
         >
           Phone</button
-        ><button id="streetPursuitBtn" aria-expanded="false" aria-controls="pursuitPanelHost">Pursuit</button
-        ><button id="labBtn">Lab</button
-        ><button
-          id="inspectorBtn"
-          aria-expanded="false"
-          aria-controls="inspectorPanel"
-        >
-          Decision lab</button
-        ><button
-          id="settingsBtn"
-          aria-expanded="false"
-          aria-controls="settingsPanel"
-        >
-          Settings
-        </button>
+        ><button id="selfDrivingBtn" type="button">Self Driving</button
+        ><button id="pakoBtn" type="button" aria-expanded="false" aria-controls="pursuitPanelHost">Chase</button
+        ><button id="driveSenseBtn" type="button" aria-expanded="false" aria-controls="driveSense">Car's view</button>
+        <details id="cityTools">
+          <summary>Tools</summary>
+          <div id="cityToolItems">
+            <button id="streetPursuitBtn" aria-expanded="false" aria-controls="pursuitPanelHost">Experiments</button>
+            <button id="labBtn">Lab</button>
+            <button id="inspectorBtn" aria-expanded="false" aria-controls="inspectorPanel">Decision lab</button>
+            <button id="settingsBtn" aria-expanded="false" aria-controls="settingsPanel">Settings</button>
+          </div>
+        </details>
       </nav>
     </header>
     <div id="loadingStatus" role="status">Loading scene…</div>
     <aside id="pursuitPanelHost" hidden></aside>
+    <aside id="driveSense" aria-labelledby="driveSenseTitle" hidden>
+      <header>
+        <h2 id="driveSenseTitle">What the car sees</h2>
+        <button id="driveSenseClose" type="button" aria-label="Close car's view">×</button>
+      </header>
+      <div class="drive-sense-views">
+        <figure>
+          <figcaption>360° range</figcaption>
+          <canvas id="driveSenseMap" width="250" height="250" role="img" aria-label="Ego-centered virtual range returns"></canvas>
+          <small id="driveSenseRangeStatus">Waiting for a current scan</small>
+        </figure>
+        <figure>
+          <figcaption>Front camera</figcaption>
+          <div class="drive-sense-image">
+            <canvas id="driveSenseImage" width="640" height="360" role="img" aria-label="Exact rendered front camera frame with matching detector boxes" hidden></canvas>
+            <span id="driveSenseEmpty">Waiting for front RGB…</span>
+          </div>
+          <small id="driveSenseRecognition" role="status">Detector off</small>
+          <button id="driveSenseDetector" type="button">Start detector</button>
+        </figure>
+      </div>
+      <p class="drive-sense-legend">
+        <span class="sense-person">People</span><span class="sense-vehicle">Vehicles</span><span class="sense-patrol">Patrols</span>
+      </p>
+      <p class="drive-sense-note">Ghosts are short forecasts, not people. Amber: range · Mint: camera.</p>
+      <p id="driveSenseError" role="alert" hidden></p>
+    </aside>
     <aside id="inGamePhone" class="phone" hidden aria-label="Destination phone">
       <div class="phone-speaker"></div>
       <div class="phone-head">Destination <span>YA RAB OSTORHA</span></div>
@@ -77,7 +101,7 @@
       aria-label="Simulation settings"
     >
       <div class="drawer-head">
-        <h2>Simulation settings</h2>
+        <h2 id="settingsTitle">Simulation settings</h2>
         <button id="closeSettings" aria-label="Close settings">×</button>
       </div>
       <p>
@@ -173,11 +197,20 @@
         </div>
         <p id="scenarioStatus" role="status"></p>
         <details id="metroPpoLab">
-          <summary>Metro Dispatch training</summary>
-          <p>Run a bounded PPO update on the shared Metro simulation. These development scenarios do not certify safe escape.</p>
+          <summary>Train &amp; test in Metro</summary>
+          <p id="pakoWorkloadNote">Train on full City chases. Testing freezes the weights and counts clean escapes.</p>
+          <details id="pakoLabSetup" open>
+          <summary>Training settings</summary>
           <label for="metroPpoStage">Training workload</label>
           <select id="metroPpoStage">
-            <option value="maneuver">Basic maneuvering</option>
+            <optgroup label="Full City chases">
+              <option value="chase-level-1">City chase · Level 1</option>
+              <option value="chase-level-2">City chase · Level 2</option>
+              <option value="chase-level-3">City chase · Level 3</option>
+              <option value="chase-level-4">City chase · Level 4</option>
+              <option value="chase-level-5">Dense City chase · Level 5</option>
+            </optgroup>
+            <option value="maneuver" selected>Basic maneuvering</option>
             <option value="left-crossing">L09 · Pedestrian from the left</option>
             <option value="right-crossing">L10 · Pedestrian from the right</option>
             <option value="crossing-pursuit">L12 · Pedestrian and pursuing patrol</option>
@@ -191,13 +224,69 @@
           <label class="file-button">Resume from checkpoint
             <input id="metroPpoResume" type="file" accept=".json,application/json" />
           </label>
+          <fieldset class="pako-session-limits">
+            <legend>Session limits</legend>
+            <label>Episodes <input id="pakoEpisodeLimit" type="number" min="1" max="100" value="8" required /></label>
+            <label>Seconds <input id="pakoTimeLimit" type="number" min="1" max="1800" value="120" required /></label>
+            <label>Speed
+              <select id="pakoTrainingSpeed"><option value="normal">Normal</option><option value="fast">Fast</option></select>
+            </label>
+            <label>Worlds
+              <select id="pakoWorldCount">
+                <option value="1">1 world</option><option value="2">2 worlds</option>
+                <option value="3">3 worlds</option><option value="4">4 worlds</option>
+              </select>
+            </label>
+          </fieldset>
+          </details>
           <div class="actions">
-            <button type="button" id="metroPpoTrain">Train one update</button>
-            <button type="button" id="metroPpoStop" disabled>Stop update</button>
-            <button type="button" id="metroPpoUse" disabled>Use checkpoint in City</button>
+            <button type="button" class="primary" id="pakoTrain">Start training</button>
+            <button type="button" id="pakoEvaluate" disabled>Test frozen checkpoint</button>
+            <button type="button" id="pakoPause" disabled>Pause training</button>
+            <button type="button" id="pakoStop" disabled>Stop training</button>
+            <button type="button" id="metroPpoUse" disabled>Use checkpoint in Chase</button>
             <a class="file-button" id="metroPpoDownload" download="metro-dispatch-ppo.json" hidden>Save checkpoint</a>
           </div>
-          <p id="metroPpoStatus" role="status">No checkpoint. Start one update to collect real Metro transitions.</p>
+          <p id="pakoSessionStatus" role="status">No session running.</p>
+          <p id="pakoEpisodeOutcomes" hidden></p>
+          <button id="pakoWatchLast" type="button" hidden>Watch last chase</button>
+          <details id="pakoGhostFleet">
+            <summary>Ghost Fleet</summary>
+            <p>Watch the latest City chase with recorded traffic, patrols and people. Other replays may show just the SUV path.</p>
+            <canvas id="pakoGhostMap" class="pako-map-view" width="520" height="300" role="img" aria-label="Overhead map of recorded SUV rollouts"></canvas>
+            <p id="pakoGhostSummary" role="status">No completed episodes to display.</p>
+            <label>Focus <select id="pakoGhostFocus" disabled><option value="">All recorded episodes</option></select></label>
+            <label>View <select id="pakoGhostCamera" disabled><option value="map">Overhead map</option><option value="city">City perspective</option></select></label>
+            <div class="pako-playback">
+              <button type="button" id="pakoGhostPlay" disabled>Play</button>
+              <button type="button" id="pakoGhostStep" disabled>Step</button>
+              <button type="button" id="pakoGhostExport" disabled>Save paths</button>
+              <label>Playback <select id="pakoGhostSpeed"><option value="1">1×</option><option value=".25">¼×</option></select></label>
+            </div>
+            <label>Replay time <input id="pakoGhostTime" type="range" min="0" max="0" step="1" value="0" disabled /></label>
+          </details>
+          <details id="pakoForecastComparison">
+            <summary>Compare candidate forecasts</summary>
+            <p>Load a simulator forecast comparison. Dashed marks show predicted motion; solid marks show the measured outcome of that same candidate.</p>
+            <label class="file-button">Load forecast comparison
+              <input id="pakoForecastFile" type="file" accept=".json,application/json" />
+            </label>
+            <p id="pakoForecastStatus" role="status">No comparison loaded.</p>
+            <div id="pakoForecastResult" hidden>
+              <label>Recorded approach <select id="pakoForecastCase"></select></label>
+              <label>Intended control <select id="pakoForecastBranch"></select></label>
+              <canvas id="pakoForecastMap" class="pako-map-view" width="520" height="300" role="img" aria-label="Simulated patrol track forecast and actual motion"></canvas>
+              <p>Patrol surface in the initial ego frame. Each dot marks a matched time; dashed cyan is forecast and solid ivory is actual.</p>
+            </div>
+          </details>
+          <details id="metroPpoLegacyUpdate" open>
+            <summary>Single-update tools</summary>
+            <div class="actions">
+              <button type="button" id="metroPpoTrain">Train one update</button>
+              <button type="button" id="metroPpoStop" disabled>Stop update</button>
+            </div>
+            <p id="metroPpoStatus" role="status">No checkpoint. Start one update to collect real Metro transitions.</p>
+          </details>
         </details>
       </section>
       <section id="policyPanel">
@@ -279,7 +368,8 @@
       </div>
     </section>
     <footer>
-      <span id="drivingHelp">W A S D drive · Space brake · C camera · P phone · I auto</span
+      <span id="drivingHelp">W A S D drive · Space brake · V chasing cam · C cockpit · P phone · I auto</span
+      ><button id="chaseCamBtn" type="button" title="Switch Behind car / Chasing camera (V)">Behind car</button
       ><button id="cameraBtn">Hide camera</button
       ><button id="pauseBtn">Pause</button>
     </footer>

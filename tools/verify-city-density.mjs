@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { clickCityTool } from "./city-tool-button.mjs";
 import { writeFile } from "node:fs/promises";
 import { createRequire } from "node:module";
 import { join } from "node:path";
@@ -81,7 +82,7 @@ try {
   const version = await page.evaluate(() => window.sim.world.config.cityVersion);
   const capacity = version === 4 ? { traffic: 96, pedestrians: 144 }
     : version === 3 ? { traffic: 96, pedestrians: 120 } : { traffic: 72, pedestrians: 96 };
-  await page.locator("#settingsBtn").click();
+  await clickCityTool(page, "settingsBtn");
   if (await page.locator("#cityDriver").isVisible())
     await page.locator("#cityDriver").selectOption("sensors-only");
   await page.locator('[name="speedLimit"]').fill("50");
@@ -115,7 +116,7 @@ try {
     audit: window.sim.world.audit(), encounters: window.sim.world.cityEncounters?.events ?? [],
     scenery: window.sim.view.egyptStreets.diagnostics,
   }));
-  await page.locator("#streetPursuitBtn").click();
+  await clickCityTool(page, "streetPursuitBtn");
   await page.locator("#pursuitStyle").selectOption("hunt");
   await page.locator("#pursuitLevel").selectOption("4");
   await page.locator("#pursuitRunBtn").click();

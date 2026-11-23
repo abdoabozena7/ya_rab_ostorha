@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { clickCityTool } from "./city-tool-button.mjs";
 import { createHash } from "node:crypto";
 import { writeFile } from "node:fs/promises";
 import { createRequire } from "node:module";
@@ -50,7 +51,7 @@ try {
   assert.deepEqual(report.ready.capacity, report.ready.version === 4 ? { traffic: 36, pedestrians: 80 }
     : report.ready.version === 3 ? { traffic: 36, pedestrians: 48 } : { traffic: 28, pedestrians: 32 });
   assert.ok(report.ready.architecture >= 16 && report.ready.trafficModels.length >= 5);
-  await page.locator("#settingsBtn").click();
+  await clickCityTool(page, "settingsBtn");
   assert.equal(await page.locator("#environmentSelect").count(), 0);
   assert.equal(await page.locator("#policyPanel").isVisible(), false);
   if (await page.locator("#cityDriver").isVisible())
@@ -96,7 +97,7 @@ try {
   assert.deepEqual(report.journey.audit, []);
   await shot("city-arrived.png");
 
-  await page.locator("#streetPursuitBtn").click();
+  await clickCityTool(page, "streetPursuitBtn");
   await page.locator("#pursuitLevel").selectOption("2");
   await page.locator("#pursuitRunBtn").click();
   await wait(() => window.sim.world.pursuit?.phase === "running");
@@ -130,12 +131,12 @@ try {
         before.ordinary.every(actor => world.actors.includes(actor)) };
   });
   assert.ok(report.afterPursuit.sameCity);
-  await page.locator("#streetPursuitBtn").click();
+  await clickCityTool(page, "streetPursuitBtn");
 
   await page.locator("#pauseBtn").click();
   assert.equal(await page.locator("#pauseBtn").textContent(), "Resume");
   const beforeReplay = await page.evaluate(() => JSON.stringify(window.sim.snapshot()));
-  await page.locator("#settingsBtn").click();
+  await clickCityTool(page, "settingsBtn");
   const download = page.waitForEvent("download");
   await page.locator("#replayBtn").click();
   const replayFile = join(output, "public-city-replay.json");
@@ -152,25 +153,25 @@ try {
     window.__postReplayCity = window.sim.world;
     window.__postReplayView = window.sim.view;
   });
-  await page.locator("#labBtn").click();
+  await clickCityTool(page, "labBtn");
   await wait(() => window.sim.world.environment === "lab");
-  await page.locator("#settingsBtn").click();
+  await clickCityTool(page, "settingsBtn");
   assert.equal(await page.locator("#policyPanel").isVisible(), true);
   assert.equal(await page.locator("#trainPolicyBtn").isVisible(), true);
   await page.locator("#closeSettings").click();
-  await page.locator("#labBtn").click();
+  await clickCityTool(page, "labBtn");
   report.labRoundTrip = await page.evaluate(() => window.sim.world === window.__postReplayCity &&
     window.sim.view === window.__postReplayView);
   assert.ok(report.labRoundTrip);
 
-  await page.locator("#peopleToggleBtn").click();
+  await clickCityTool(page, "peopleToggleBtn");
   await page.locator("#peopleMotionMode").selectOption("stop");
   await wait(() => window.sim.world.actors.find(actor => actor.id === window.sim.people.selectedId)?.motionMode === "stop");
   await page.locator("#peopleMotionMode").selectOption("ambient");
   await page.locator("#peopleCloseBtn").click();
   report.peopleControls = true;
 
-  await page.locator("#cameraScreenToggleBtn").click();
+  await clickCityTool(page, "cameraScreenToggleBtn");
   await wait(() => Boolean(document.querySelector("#cameraRawCanvas")?.dataset.frameId));
   report.camera = { rawFrame: await page.locator("#cameraRawCanvas").getAttribute("data-frame-id"),
     observedAnalysis: false };

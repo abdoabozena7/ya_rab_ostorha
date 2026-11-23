@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { clickCityTool } from "./city-tool-button.mjs";
 import { writeFile } from "node:fs/promises";
 import { createRequire } from "node:module";
 import { join } from "node:path";
@@ -271,7 +272,7 @@ async function cityTurn() {
 }
 
 async function resetCity(seed, dense = false, crossing = false) {
-  await id("settingsBtn").click();
+  await clickCityTool(page, "settingsBtn");
   await page.locator('#settingsForm [name="seed"]').fill(seed);
   if (dense) {
     await page.locator('#settingsForm [name="speedLimit"]').fill("50");
@@ -338,8 +339,8 @@ async function armCityCross(impact) {
 try {
   await page.goto(base);
   await wait(() => window.sim?.view.actorDiagnostics().ready);
-  await id("labBtn").click();
-  await id("streetPursuitBtn").click();
+  await clickCityTool(page, "labBtn");
+  await clickCityTool(page, "streetPursuitBtn");
   await wait(() => window.sim.world.pursuit?.packLab && window.sim.view.actorDiagnostics().ready);
   report.order.push("lab");
   await chooseCase("pack-dodge", true);
@@ -391,10 +392,10 @@ try {
   const checkpoint = await page.evaluate(() => window.sim.world.pursuit.learner.checkpoint());
   assert.ok(Object.values(checkpoint.q).some(row => row.some(value => value !== 0)));
 
-  await id("labBtn").click();
+  await clickCityTool(page, "labBtn");
   report.order.push("city");
   await wait(() => window.sim.world.environment === "metro" && window.sim.view.actorDiagnostics().ready);
-  await id("streetPursuitBtn").click();
+  await clickCityTool(page, "streetPursuitBtn");
   await id("pursuitStyle").selectOption("hunt");
   await id("pursuitLearn").uncheck();
   await id("packUseLabPolicy").check();

@@ -6,9 +6,15 @@ import { World } from "../core/world.js";
 import { bodyOnRoad, distance, overlaps } from "../core/geometry.js";
 import { updatePursuitResponse } from "../core/pursuit-response.js";
 import { SpatialIndex } from "../core/spatial-index.js";
-import { guardDispatchAction, requireDispatchScan } from "./pursuit-shield.js";
+import { PURSUIT_STOP, validatePursuitAction } from "../core/pursuit-controls.js";
+import { selectDispatchMovement, requireDispatchScan } from "./pursuit-shield.js";
+import { planDispatchEvasion } from "./pursuit-evasion.js";
+import { PAKO_EVASIVE_CONTROL, planPakoEvasiveAction } from "./pako-evasive-control.js";
+import { MEASURED_QUEUE_CORRIDOR, MEASURED_QUEUE_DETOUR, planMeasuredQueueCorridor, planMeasuredQueueDetour }
+  from "./pako-measured-detour.js";
+import { finishPursuitDecision, observePursuitDecision, startPursuitDecision } from "./pursuit-diagnostics.js";
 import { stagePursuitLabScenario } from "./pursuit-lab-scenarios.js";
-import { CLEARANCE_ROUTE_CONTEXT, LEGACY_ROUTE_CONTEXT, ROUTE_NAVIGATION_FIELDS,
+import { CLEARANCE_CORRIDOR, CLEARANCE_ROUTE_CONTEXT, LEGACY_ROUTE_CONTEXT, ROUTE_NAVIGATION_FIELDS,
   sampleRouteNavigation } from "./pursuit-route-context.js";
 import { PursuitScanner, PURSUIT_SCAN_RAYS, PURSUIT_SCAN_RANGE_M, PURSUIT_SCAN_TICKS, PURSUIT_TRACK_TTL_S }
   from "../signal_processing/pursuit-scanner.js";
@@ -48,6 +54,7 @@ const scanTrackOffset = scanEgo.length + PURSUIT_SCAN_RAYS * scanRays.length;
 const scanTrackCount = 16;
 const QUALIFIED_REWARD = "qualified-progress-v2";
 const PRACTICE_REWARD = "maneuver-practice-v1";
+export const CLEAN_ESCAPE_REWARD = "clean-escape-v1";
 
 export const DISPATCH_OBSERVATION_SCHEMA = Object.freeze({
   version: "dispatch-scan-v3", source: "virtual first-return geometry", dtype: "Float32Array",
@@ -78,13 +85,15 @@ const unit = (n, scale) => clamp(n / scale, 0, 1);
 const distanceSquared = (a, b) => (a.x - b.x) ** 2 + (a.z - b.z) ** 2;
 const nearest = (bodies, ego) => bodies.sort((a, b) => distanceSquared(a, ego) - distanceSquared(b, ego));
 
-export function getDispatchObservation(world, version = DISPATCH_OBSERVATION_SCHEMA.version) {
+export function getDispatchObservation(world, version = DISPATCH_OBSERVATION_SCHEMA.version, routeMode) {
   const { player, sensors, pursuit, tick } = world;
   if (pursuit?.gta?.config.ruleset !== "dispatch-v1" || !pursuit.gta.scan)
     throw new Error("Dispatch observation requires a sampled dispatch-v1 chase");
   const scan = requireDispatchScan(world);
   const schema = dispatchSchemas.get(version);
   if (!schema) throw new RangeError("Unknown dispatch observation version");
+  if (routeMode !== undefined && (routeMode !== CLEARANCE_CORRIDOR || version !== CLEARANCE_ROUTE_CONTEXT))
+    throw new RangeError("Clearance corridor requires the Metro v2 route observation");
   const { ego, rays, tracks, scales: s, length } = schema;
   const obs = new Float32Array(length);
   obs.set([
@@ -110,7 +119,7 @@ export function getDispatchObservation(world, version = DISPATCH_OBSERVATION_SCH
       ttcKnown ? unit(track.ttcS, s.ttcS) : 0,
     ], tracks.offset + i * tracks.stride);
   }
-  if (schema.navigation) obs.set(sampleRouteNavigation(world, version), schema.navigation.offset);
+  if (schema.navigation) obs.set(sampleRouteNavigation(world, version, routeMode), schema.navigation.offset);
   if (!obs.every(Number.isFinite)) throw new Error("Nonfinite dispatch observation");
   return obs;
 }
@@ -198,17 +207,31 @@ export class GtaPursuitEnv {
     return this.schema ?? GTA_OBSERVATION_SCHEMA;
   }
 
-  reset({ seed, config, traffic, pedestrians, shield = false, scenario, observation, practiceProgress = false } = {}) {
+  reset({ seed, config, traffic, pedestrians, shield = false, scenario, observation, practiceProgress = false,
+    decisionTrace = null, evasion = false, evasiveControl, queueDetour, rewardProfile, cityVersion = 4 } = {}) {
+    if (![4, 5].includes(cityVersion))
+      throw new RangeError("GtaPursuitEnv requires cityVersion 4 or 5");
     const options = resolveGtaChaseConfig(config);
-    for (const [density, max, label] of [[traffic, 96, "traffic"], [pedestrians, 144, "pedestrians"]])
+    const maxTraffic = cityVersion >= 5 ? 140 : 96;
+    const maxPedestrians = cityVersion >= 5 ? 220 : 144;
+    for (const [density, max, label] of [[traffic, maxTraffic, "traffic"], [pedestrians, maxPedestrians, "pedestrians"]])
       if (density !== undefined && (!Number.isInteger(density) || density < 0 || density > max))
         throw new RangeError(`Invalid Metro ${label} count`);
     if (typeof shield !== "boolean" || (shield && options.ruleset !== "dispatch-v1"))
       throw new TypeError("Brake shield is only available for dispatch-v1");
+    if (typeof evasion !== "boolean" || (evasion && !shield))
+      throw new TypeError("Predictive recovery requires the independent Dispatch brake shield");
+    if (evasiveControl !== undefined && (evasiveControl !== PAKO_EVASIVE_CONTROL || !shield))
+      throw new TypeError("PAKO evasive control requires the independent Dispatch brake shield");
+    if (queueDetour !== undefined && (![MEASURED_QUEUE_DETOUR, MEASURED_QUEUE_CORRIDOR].includes(queueDetour) || !shield))
+      throw new TypeError("Measured queue detour requires the independent Dispatch brake shield");
     if (typeof practiceProgress !== "boolean")
       throw new TypeError("practiceProgress must be a boolean");
     if (practiceProgress && (options.ruleset !== "dispatch-v1" || options.maxActivePatrols !== 0))
       throw new TypeError("Progress practice is only available in no-patrol Dispatch drills");
+    if (rewardProfile !== undefined && (rewardProfile !== CLEAN_ESCAPE_REWARD || !shield ||
+        options.ruleset !== "dispatch-v1" || options.maxActivePatrols === 0 || practiceProgress))
+      throw new TypeError("Clean escape reward profile requires a guarded Metro Dispatch pursuit with patrols");
     if (scenario !== undefined && (options.ruleset !== "dispatch-v1" ||
         (scenario === "L12" && options.maxActivePatrols < 1) ||
         (scenario === "L12-control" && options.maxActivePatrols !== 0)))
@@ -216,7 +239,7 @@ export class GtaPursuitEnv {
     const schema = observation === undefined ? DISPATCH_OBSERVATION_SCHEMA : dispatchSchemas.get(observation);
     if (observation !== undefined && (options.ruleset !== "dispatch-v1" || !schema))
       throw new RangeError("Invalid observation for this pursuit ruleset");
-    const world = new World({ cityVersion: 4, seed, ...(traffic === undefined ? {} : { traffic }),
+    const world = new World({ cityVersion, seed, ...(traffic === undefined ? {} : { traffic }),
       ...(pedestrians === undefined ? {} : { pedestrians }) }, "metro");
     const staged = scenario === undefined ? null : stagePursuitLabScenario(world, scenario);
     if (staged?.barrierId) world.staticIndex = new SpatialIndex(world.statics);
@@ -251,7 +274,11 @@ export class GtaPursuitEnv {
     this.schema = options.ruleset === "dispatch-v1" ? schema : GTA_OBSERVATION_SCHEMA;
     this.furthestM = 0;
     this.shield = shield;
-    this.rewardProfile = practiceProgress ? PRACTICE_REWARD : QUALIFIED_REWARD;
+    this.evasion = evasion;
+    this.evasiveControl = evasiveControl;
+    this.queueDetour = queueDetour;
+    this.decisionTrace = decisionTrace;
+    this.rewardProfile = rewardProfile ?? (practiceProgress ? PRACTICE_REWARD : QUALIFIED_REWARD);
     const info = infoFor(world, null, []);
     if (options.ruleset === "dispatch-v1") info.rewardProfile = this.rewardProfile;
     if (schema.navigation) info.observationVersion = schema.version;
@@ -265,24 +292,62 @@ export class GtaPursuitEnv {
       getDispatchObservation(this.world, this.observationSchema.version);
   }
 
-  step(action, actionRepeat = 6) {
+  step(action, actionRepeat = 6, decisionContext = null) {
     const { world } = this;
     if (world?.pursuit.phase !== "running") throw new Error("Reset the GTA environment before stepping");
     if (!Number.isSafeInteger(actionRepeat) || actionRepeat < 1)
       throw new RangeError("actionRepeat must be a positive integer");
-    world.command({ type: "pursuit-drive", action }, false);
-    const requestedAction = { ...world.pursuit.manualAction }, events = [];
+    const requestedAction = { ...validatePursuitAction(action) }, events = [];
+    if (!this.shield) world.command({ type: "pursuit-drive", action: requestedAction }, false);
     const dispatch = this.observationSchema !== GTA_OBSERVATION_SCHEMA;
     const rewardComponents = dispatch ? { progress: 0, time: 0, instability: 0, safety: 0, capture: 0, outcome: 0 } : null;
-    let shieldTick = null, shieldReason = null, interventions = 0;
+    const trace = this.decisionTrace;
+    const alternate = this.evasiveControl === PAKO_EVASIVE_CONTROL ? planPakoEvasiveAction
+      : this.queueDetour === MEASURED_QUEUE_CORRIDOR ? planMeasuredQueueCorridor
+      : this.queueDetour ? planMeasuredQueueDetour : this.evasion ? planDispatchEvasion : null;
+    let shieldTick = null, shieldReason = null, interventions = 0, pending = null, beforeRewards = null, planner = null;
+    const record = () => {
+      const rewards = beforeRewards && Object.fromEntries(Object.entries(rewardComponents)
+        .map(([key, value]) => [key, value - beforeRewards[key]]));
+      trace.append(finishPursuitDecision(world, pending, { rewardComponents: rewards }));
+    };
+    const shieldPlan = () => {
+      if (!this.shield) return null;
+      try {
+        const scan = requireDispatchScan(world);
+        return shieldTick === scan.tick ? null
+          : { tick: scan.tick, ...selectDispatchMovement(world, requestedAction, alternate) };
+      } catch (error) {
+        if (pending) record();
+        world.command({ type: "pursuit-drive", action: PURSUIT_STOP }, false);
+        if (trace) {
+          const fault = { code: error?.code === "STALE_OBSERVATION" ? error.code : "CONTROLLER_FAULT",
+            message: error instanceof Error ? error.message : String(error) };
+          trace.append(finishPursuitDecision(world, startPursuitDecision(world, { source: "manual", ...decisionContext,
+            requested: requestedAction, submitted: PURSUIT_STOP, status: "fault", fault })));
+        }
+        throw error;
+      }
+    };
     let reward = 0;
     for (let i = 0; i < actionRepeat && world.pursuit.phase === "running"; i++) {
-      if (this.shield && shieldTick !== requireDispatchScan(world).tick) {
-        const { action: safe, reason } = guardDispatchAction(world, requestedAction);
+      const movement = shieldPlan();
+      if (trace && pending && (movement || world.tick - pending.tick >= PURSUIT_SCAN_TICKS)) {
+        record();
+        pending = null;
+      }
+      if (movement) {
+        const { action: safe, reason } = movement;
+        planner = movement.planner ?? null;
         world.command({ type: "pursuit-drive", action: safe }, false);
-        shieldTick = world.pursuit.gta.scan.tick;
+        shieldTick = movement.tick;
         shieldReason = reason;
         if (reason) interventions++;
+      }
+      if (trace && !pending) {
+        pending = startPursuitDecision(world, { source: "manual", ...decisionContext, requested: requestedAction,
+          submitted: world.pursuit.manualAction, shieldReason, planner });
+        beforeRewards = rewardComponents && { ...rewardComponents };
       }
       const before = world.pursuit.metrics.distanceM;
       const beforeSteer = world.player.steer;
@@ -291,15 +356,19 @@ export class GtaPursuitEnv {
       if (dispatch) this.scoreDispatchTick(rewardComponents, beforeSteer, stepEvents);
       else reward += tickReward(world, world.pursuit.metrics.distanceM - before, stepEvents);
       for (const event of stepEvents) events.push({ ...event });
+      if (pending) observePursuitDecision(world, pending);
     }
+    if (pending) record();
     const { phase } = world.pursuit;
     const info = infoFor(world, requestedAction, events);
+    if (trace) info.decision = trace.latest;
     if (dispatch) {
       reward = Object.values(rewardComponents).reduce((sum, component) => sum + component, 0);
       info.rewardComponents = rewardComponents;
       info.rewardProfile = this.rewardProfile;
       info.observationVersion = this.schema.version;
       if (this.shield) info.shield = { reason: shieldReason, interventions };
+      if (alternate) info.planner = planner;
     }
     return {
       obs: this.getObservation(), reward, terminated: ["escaped", "wrecked", "busted"].includes(phase),
@@ -320,7 +389,7 @@ export class GtaPursuitEnv {
       if (event.type === "patrol_collision") reward.safety -= 1 + 4 * event.damageToPlayer / player.maxHealth;
       else if (event.type === "static_or_civilian_hit")
         reward.safety -= (event.kind === "pedestrian" ? 24 : 3) + 8 * event.damageToPlayer / player.maxHealth;
-      else if (event.type === "ambient_collision" && this.rewardProfile === QUALIFIED_REWARD) {
+      else if (event.type === "ambient_collision" && this.rewardProfile !== PRACTICE_REWARD) {
         const { first, second } = event;
         const pedestrian = first.type === "pedestrian" || second.type === "pedestrian";
         const civilianVehicle = (first.type === "vehicle" && !first.patrol) ||
@@ -330,8 +399,11 @@ export class GtaPursuitEnv {
       else if (event.type === "near_miss") reward.safety -= .12 * (1 - unit(event.minDist, .72));
       else if (event.type === "pinned_progress") reward.capture -= .2 * STEP * event.ratio;
     }
-    if (pursuit.phase === "escaped") reward.outcome += 12;
-    else if (pursuit.phase === "busted" || pursuit.phase === "wrecked") reward.outcome -= 8;
+    if (pursuit.phase === "escaped") {
+      if (this.rewardProfile !== CLEAN_ESCAPE_REWARD ||
+          (pursuit.response.dispatch.escapeEligible && pursuit.metrics.collisions === 0))
+        reward.outcome += 12;
+    } else if (pursuit.phase === "busted" || pursuit.phase === "wrecked") reward.outcome -= 8;
     // A time limit truncates a rollout, not the plant's return. The continuing
     // time cost already makes waiting unprofitable; the trainer bootstraps here.
   }

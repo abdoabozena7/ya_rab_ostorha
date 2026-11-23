@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { clickCityTool } from "./city-tool-button.mjs";
 import { writeFile } from "node:fs/promises";
 import { createRequire } from "node:module";
 import { join } from "node:path";
@@ -19,7 +20,7 @@ const shot = name => page.screenshot({ path: join(output, `${name}.png`) });
 const ready = () => wait(() => window.sim?.view.actorDiagnostics().ready);
 
 async function openPanel() {
-  if (!await id("pursuitPanel").isVisible()) await id("streetPursuitBtn").click();
+  if (!await id("pursuitPanel").isVisible()) await clickCityTool(page, "streetPursuitBtn");
   await id("pursuitRunBtn").waitFor({ state: "visible" });
   if (await id("pursuitStyle").isVisible()) await id("pursuitStyle").selectOption("hunt");
 }
@@ -92,8 +93,8 @@ const trail = () => page.evaluate(() => ({
 }));
 
 async function labCrossings() {
-  await id("labBtn").click();
-  await id("streetPursuitBtn").click();
+  await clickCityTool(page, "labBtn");
+  await clickCityTool(page, "streetPursuitBtn");
   await ready();
   await id("packCase").selectOption("pack-crossing");
   await id("pursuitRunBtn").click();
@@ -122,7 +123,7 @@ async function labCrossings() {
   });
   assert.ok(impact.cost > 240 && impact.cost === -impact.reward && impact.tilt >= .65);
   await shot("02-lab-real-contact");
-  await id("labBtn").click();
+  await clickCityTool(page, "labBtn");
   await ready();
   return { safe, impact };
 }

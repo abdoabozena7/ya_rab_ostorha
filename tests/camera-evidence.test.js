@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { cameraFrameKey, pairCameraEvidence, projectCameraPoint, projectPixelTrack } from "../src/ui/camera-evidence.js";
+import { pedestrianForecasts } from "../src/ui/city-perception.js";
 import { VisualCrossingPredictor } from "../src/core/visual-prediction.js";
 
 function fixture() {
@@ -137,6 +138,17 @@ test("solid history is observed, future is fitted velocity only and the display 
   assert.match(unqualified.reason, /unavailable/i);
   f.visual.forecasts[0].reason = "uncertain-longitudinal-arrival";
   assert.deepEqual(projectPixelTrack(f.visual.tracks[0], pair).predicted, []);
+});
+
+test("a camera frame with a person, vehicle and unclassified motion renders only the person's ghost", () => {
+  const f = fixture(), [person] = f.visual.tracks;
+  f.visual.tracks.unshift({ ...person, id: "passing-vehicle", label: "vehicle" });
+  f.visual.tracks.push({ ...person, id: "unclassified", label: "motion" });
+  const pair = pairCameraEvidence(f);
+  assert.deepEqual(pedestrianForecasts({ tick: 72, pair }), [{
+    id: `camera:${person.id}`, source: "camera", heading: Math.PI / 2,
+    points: [0, .5, 1, 2].map(secondsAhead => ({ x: -2 + secondsAhead, z: 10, secondsAhead })),
+  }]);
 });
 
 test("wrong-source, old, unsorted, future-injected or unobserved tracks cannot become projected paths", () => {

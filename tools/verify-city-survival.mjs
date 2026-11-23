@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { clickCityTool } from "./city-tool-button.mjs";
 import { writeFile } from "node:fs/promises";
 import { createRequire } from "node:module";
 import { join } from "node:path";
@@ -45,7 +46,7 @@ async function setupCity(config) {
     if (config) sim.reset({ seed: "cairo-42", ...config });
   }, config);
   await ready();
-  if (!(await id("pursuitPanel").isVisible())) await id("streetPursuitBtn").click();
+  if (!(await id("pursuitPanel").isVisible())) await clickCityTool(page, "streetPursuitBtn");
   assert.equal(await id("pursuitStyle").inputValue(), "survival");
 }
 
@@ -153,7 +154,7 @@ async function stockScene() {
   assert.ok(report.giantRestored.normal, JSON.stringify(report.giantRestored));
   await page.reload();
   await ready();
-  await id("streetPursuitBtn").click();
+  await clickCityTool(page, "streetPursuitBtn");
   assert.equal(await id("pursuitBest").textContent(), report.impact.restoredBest);
 }
 
@@ -327,7 +328,7 @@ async function portraitDrift() {
     await phone.goto(url);
     await phone.waitForFunction(() => window.sim?.view.actorDiagnostics().ready);
     await phone.evaluate(() => { window.sim.pause(true); window.sim.reset({ seed: "cairo-42", traffic: 0, pedestrians: 0 }); });
-    await phone.locator("#streetPursuitBtn").tap();
+    await clickCityTool(phone, "streetPursuitBtn", "tap");
     await phone.locator("#pursuitRunBtn").tap();
     await phone.locator("#aiToggleBtn").tap();
     await phone.waitForFunction(() => window.sim.world.mode === "manual" &&

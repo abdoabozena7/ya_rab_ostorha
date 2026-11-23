@@ -9,23 +9,36 @@ export function resetPursuitEpisode(stage, seed) {
   const env = new GtaPursuitEnv();
   const initial = env.reset({ seed, traffic: stage.traffic, pedestrians: stage.pedestrians, shield: true,
     scenario: stage.scenario, observation: stage.observation, practiceProgress: stage.practiceProgress,
+    evasiveControl: stage.evasiveControl, queueDetour: stage.queueDetour, rewardProfile: stage.rewardProfile,
+    ...(stage.cityVersion === undefined ? {} : { cityVersion: stage.cityVersion }),
     config: { ruleset: "dispatch-v1", episodeMaxSeconds: stage.episodeSeconds,
+      ...(stage.curbSupport === undefined ? {} : { curbSupport: stage.curbSupport }),
+      ...(stage.chasePresence === undefined ? {} : { chasePresence: stage.chasePresence }),
+      ...(stage.tacticalPursuit === undefined ? {} : { tacticalPursuit: stage.tacticalPursuit }),
       ...(stage.civilianCrossingPreview === undefined ? {} : { civilianCrossingPreview: stage.civilianCrossingPreview }),
       ...(stage.patrolTrafficPreview === undefined ? {} : { patrolTrafficPreview: stage.patrolTrafficPreview }),
+      ...(stage.patrolChainYield === undefined ? {} : { patrolChainYield: stage.patrolChainYield }),
       wantedLevelStart: stage.wantedLevel, wantedLevelMax: stage.wantedLevelMax ?? 5, maxActivePatrols: stage.patrols } });
   return { env, initial };
 }
 
-export function runPursuitEpisode(stage, seed, select, collect = false, observeStep = null, observeWorld = null) {
+export function beginPursuitEpisode(stage, seed, select, { collect = false, observeStep, observeWorld } = {}) {
   const { env, initial } = resetPursuitEpisode(stage, seed);
-  let { obs } = initial, result, reward = 0, firstAction, interventions = 0, ambientPedestrianImpacts = 0;
+  let { obs } = initial, reward = 0, firstAction, interventions = 0, ambientPedestrianImpacts = 0;
   const rollout = [], events = {}, rewardComponents = {};
+  let ended = false;
+  const pose = () => {
+    const { x, z, speed, heading } = env.world.player;
+    return [env.world.tick, x, z, speed, heading];
+  };
   observeWorld?.(env.world);
-  do {
+
+  function advance() {
+    if (ended) throw new Error("Reset a new pursuit episode after a terminal decision");
     const decision = select(obs);
     const action = collect ? decision.action : decision;
     firstAction ??= action;
-    result = env.step(action, PURSUIT_SCAN_TICKS);
+    const result = env.step(action, PURSUIT_SCAN_TICKS);
     interventions += result.info.shield.interventions;
     for (const event of result.info.events) {
       if (event.type === "ambient_collision") {
@@ -42,36 +55,51 @@ export function runPursuitEpisode(stage, seed, select, collect = false, observeS
     reward += result.reward;
     if (collect) rollout.push({ obs, raw: decision.raw, value: decision.value, logp: decision.logp, reward: result.reward });
     obs = result.obs;
-    if (observeStep) {
-      const { x, z, speed, heading } = env.world.player;
-      observeStep([env.world.tick, x, z, speed, heading, result.info.appliedCommand], result.info.events);
-    }
+    observeStep?.([...pose(), result.info.appliedCommand], result.info.events);
     observeWorld?.(env.world);
-  } while (!result.terminated && !result.truncated);
-  const { pursuit } = env.world, { metrics } = pursuit;
-  return { rollout, last: result, metrics: { seed, phase: pursuit.phase, ticks: env.world.tick,
-    ...(initial.info.scenario ? { scenario: initial.info.scenario } : {}),
-    reward, rewardComponents, rewardProfile: initial.info.rewardProfile,
-    distanceM: metrics.distanceM, firstAction, collisions: metrics.collisions, interventions,
-    pedestrianImpacts: metrics.pedestrianCollisions, nearMisses: metrics.nearCollisions, contacts: events,
-    ambientCollisions: metrics.trafficCollisions, ambientPedestrianImpacts,
-    pursuitQualified: pursuit.response.dispatch?.escapeEligible === true } };
+    if (!result.terminated && !result.truncated) return null;
+    ended = true;
+    const { pursuit } = env.world, { metrics } = pursuit;
+    return { rollout, last: result, metrics: { seed, phase: pursuit.phase, ticks: env.world.tick,
+      ...(initial.info.scenario ? { scenario: initial.info.scenario } : {}),
+      reward, rewardComponents, rewardProfile: initial.info.rewardProfile,
+      distanceM: metrics.distanceM, firstAction, collisions: metrics.collisions, interventions,
+      pedestrianImpacts: metrics.pedestrianCollisions, nearMisses: metrics.nearCollisions, contacts: events,
+      ambientCollisions: metrics.trafficCollisions, ambientPedestrianImpacts,
+      pursuitQualified: pursuit.response.dispatch?.escapeEligible === true } };
+  }
+  return { advance, pose };
 }
 
-export function collectPursuitRollout(model, stage, trainingSeeds, observeStep) {
-  const variants = pursuitStageVariants(stage);
+export function runPursuitEpisode(stage, seed, select, collect = false, observeStep = null, observeWorld = null) {
+  const episode = beginPursuitEpisode(stage, seed, select, { collect, observeStep, observeWorld });
+  let completed;
+  do { completed = episode.advance(); } while (!completed);
+  return completed;
+}
+
+export function planPursuitRollout(model, trainingSeeds) {
   const seed = trainingSeeds[model.updates % trainingSeeds.length];
   const rng = new Random(`${model.seed}:rollout:${model.updates}`);
-  const episodes = variants.map(variant => {
-    const episode = runPursuitEpisode(variant, seed, obs => model.sample(obs, rng), true, observeStep);
-    return { ...episode, bootstrap: episode.last.terminated ? 0 : model.value(episode.last.obs) };
-  });
+  return { seed, select: obs => model.sample(obs, rng) };
+}
+
+export function joinPursuitRollout(model, seed, results) {
+  const episodes = results.map(episode =>
+    ({ ...episode, bootstrap: episode.last.terminated ? 0 : model.value(episode.last.obs) }));
   if (episodes.length === 1) return episodes[0];
   const rollout = episodes.flatMap(episode => {
     episode.rollout.at(-1).episodeBootstrap = episode.bootstrap;
     return episode.rollout;
   });
   return { rollout, bootstrap: 0, metrics: { seed, episodes: episodes.map(episode => episode.metrics) } };
+}
+
+export function collectPursuitRollout(model, stage, trainingSeeds, observeStep) {
+  const variants = pursuitStageVariants(stage);
+  const { seed, select } = planPursuitRollout(model, trainingSeeds);
+  const results = variants.map(variant => runPursuitEpisode(variant, seed, select, true, observeStep));
+  return joinPursuitRollout(model, seed, results);
 }
 
 export function pursuitStageVariants(stage) {

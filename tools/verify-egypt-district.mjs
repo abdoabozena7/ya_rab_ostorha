@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { clickCityTool } from "./city-tool-button.mjs";
 import { createHash } from "node:crypto";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { createRequire } from "node:module";
@@ -72,7 +73,7 @@ try {
   await page.waitForFunction(() => window.sim?.vehicleRig, undefined, { timeout: 60000 });
   const shot = (name) => page.screenshot({ path: path.join(output, name) });
   const settings = async () => {
-    if (await page.locator("#settingsPanel").isHidden()) await page.locator("#settingsBtn").click();
+    if (await page.locator("#settingsPanel").isHidden()) await clickCityTool(page, "settingsBtn");
   };
   await page.evaluate(() => {
     window.__districtOriginalCity = {
@@ -133,7 +134,7 @@ try {
   await page.locator("#closeSettings").click();
   await shot("district-entry.png");
   const startCamera = async () => {
-    await page.locator("#cameraScreenToggleBtn").click();
+    await clickCityTool(page, "cameraScreenToggleBtn");
     await page.locator("#cameraPerceptionStartBtn").click();
     await page.waitForFunction(() => window.sim.vision.status.status === "ready"
       && window.sim.vision.status.result?.streamId === window.sim.vision.streamId,
@@ -320,7 +321,7 @@ try {
           && Math.abs(current.player.speed) <= 1e-8
           && current.visual?.ageMs > 750) {
         const previousStream = await page.evaluate(() => window.sim.vision.streamId);
-        await page.locator("#cameraScreenToggleBtn").click();
+        await clickCityTool(page, "cameraScreenToggleBtn");
         await page.locator("#cameraPerceptionStartBtn").click();
         await page.waitForFunction((old) => window.sim.vision.streamId !== old, previousStream);
         const retry = await state();
@@ -501,7 +502,7 @@ try {
         report.hiddenTwinChecks.push({ seed, ...comparison });
         assert.ok(comparison.passed, `${seed}: actual hidden/empty and strict identical-input isolation: ${JSON.stringify(comparison)}`);
       }
-      await page.locator("#cameraScreenToggleBtn").click();
+      await clickCityTool(page, "cameraScreenToggleBtn");
       await page.locator("#cameraPerceptionStopBtn").click();
       await page.locator("#cameraScreenCloseBtn").click();
     }
@@ -530,7 +531,7 @@ try {
       && Math.abs(window.sim.world.player.speed) < .05, undefined, { timeout: 10000 });
     const failed = await state();
     await shot("district-unavailable.png");
-    await page.locator("#cameraScreenToggleBtn").click();
+    await clickCityTool(page, "cameraScreenToggleBtn");
     await page.locator("#cameraPerceptionStartBtn").click();
     await page.unroute("**/api/vision/frame");
     intentionalLoss = false;
@@ -601,7 +602,7 @@ try {
       report.completedRoutes++;
       await shot(`district-arrival-${report.completedRoutes}.png`);
     }
-    await page.locator("#cameraScreenToggleBtn").click();
+    await clickCityTool(page, "cameraScreenToggleBtn");
     await page.waitForFunction(() => document.querySelector("#cameraAnalysisCanvas").dataset.frameId);
     await shot("district-camera-sources.png");
     await page.setViewportSize({ width: 900, height: 650 });
@@ -610,7 +611,7 @@ try {
     await settings();
     await shot("district-settings-compact.png");
     await page.locator("#closeSettings").click();
-    await page.locator("#peopleToggleBtn").click();
+    await clickCityTool(page, "peopleToggleBtn");
     await shot("district-people-compact.png");
     await page.locator("#peopleCloseBtn").click();
     await page.setViewportSize({ width: 1365, height: 900 });

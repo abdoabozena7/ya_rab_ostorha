@@ -1,12 +1,9 @@
 import { STEP, clamp } from "./config.js";
-import { distance, angleDelta, pointOnRoad } from "./geometry.js";
+import { distance, angleDelta, pointOnRoad, roadPointAt, roadProject } from "./geometry.js";
 import { canLeaveWalkMargin, walkingWaypoint, walkSegmentBlocker } from "./walk-route.js";
 import { createPedestrianBody } from "./pedestrian-body.js";
 const WALK_TURNS = [0, -0.5, 0.5, -1, 1, -1.6, 1.6, -2.2, 2.2, Math.PI];
-const pose = (road, along, side, offset) =>
-  road.axis === "z"
-    ? { x: road.fixed - side * offset, z: along }
-    : { x: along, z: road.fixed + side * offset };
+const pose = (road, along, side, offset) => roadPointAt(road, along, side * offset);
 export function nextWalk(world, person) {
   person.walkRoute = null;
   const road = person.road;
@@ -22,8 +19,9 @@ export function nextWalk(world, person) {
     person.crossing = true;
     person.pause = world.rng.range(0.4, 1.4);
   } else {
-    const min = road.min + 6,
-      max = road.max - 6;
+    const pad = Math.min(6, (road.max - road.min) * 0.25);
+    const min = road.min + pad,
+      max = road.max - pad;
     if (
       (person.walkDirection > 0 && max - person.along < 5) ||
       (person.walkDirection < 0 && person.along - min < 5)
@@ -41,11 +39,23 @@ export function nextWalk(world, person) {
   }
 }
 
+const distantPedNearbyCache = new WeakMap();
+
 function nearbyBodies(world, p) {
+  const canCache = (world.config?.cityVersion ?? 0) >= 5 &&
+    world.pursuit?.gta?.config?.tacticalPursuit === "gta-tactical-v1" &&
+    Math.hypot(p.x - world.player.x, p.z - world.player.z) > 65;
+  if (canCache) {
+    const cached = distantPedNearbyCache.get(p);
+    if (cached && cached.until > world.tick) return cached.nearby;
+  }
   const nearby = world.actorIndex.near(p, 28);
   const self = nearby.indexOf(p);
   if (self !== -1) nearby.splice(self, 1);
   for (const body of world.staticIndex.near(p, 34)) nearby.push(body);
+  if (canCache) {
+    distantPedNearbyCache.set(p, { nearby, until: world.tick + 4 });
+  }
   return nearby;
 }
 
@@ -102,7 +112,7 @@ export function pedestrianMotion(world, p, reuseProposal = false) {
     return stop("district-target");
   if (remaining < 0.22) {
     if (p.crossing) p.side = -p.side;
-    p.along = p.road.axis === "z" ? p.z : p.x;
+    p.along = p.road ? roadProject(p.road, p).along : 0;
     world.nextWalk(p);
     if (p.pause > 0) return stop("waiting");
     // A waypoint is not a stop: carry the walking motion into the next leg.

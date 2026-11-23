@@ -1,35 +1,45 @@
-import { angleDelta, distance } from "./geometry.js";
+import { angleDelta, distance, isDiagonalRoad, roadIntersection, roadPointAt } from "./geometry.js";
 export const LANE_OFFSET = 1.65;
 const key = (p) => `${p.x.toFixed(4)},${p.z.toFixed(4)}`;
 const direction = (a, b) => Math.atan2(b.x - a.x, b.z - a.z);
 export function createRoadGraph(roads) {
   const nodes = new Map();
+  const hasDiagonal = roads.some(isDiagonalRoad);
   const put = (p) => {
     const k = key(p);
-    if (!nodes.has(k)) nodes.set(k, { ...p, key: k, edges: [] });
-    return nodes.get(k);
+    if (nodes.has(k)) return nodes.get(k);
+    if (hasDiagonal) {
+      for (const existing of nodes.values()) {
+        if (distance(existing, p) <= 0.35) return existing;
+      }
+    }
+    const node = { ...p, key: k, edges: [] };
+    nodes.set(k, node);
+    return node;
   };
   for (const road of roads) {
     const values = new Set([road.min, road.max]);
     for (let n = road.min; n < road.max; n += 10) values.add(n);
     for (const other of roads) {
-      if (other.axis === road.axis) continue;
-      if (
-        other.fixed >= road.min &&
-        other.fixed <= road.max &&
-        road.fixed >= other.min &&
-        road.fixed <= other.max
-      )
-        values.add(other.fixed);
+      if (other === road) continue;
+      if (!isDiagonalRoad(road) && !isDiagonalRoad(other)) {
+        if (other.axis === road.axis) continue;
+        if (
+          other.fixed >= road.min &&
+          other.fixed <= road.max &&
+          road.fixed >= other.min &&
+          road.fixed <= other.max
+        )
+          values.add(other.fixed);
+      } else {
+        const hit = roadIntersection(road, other, 0.5);
+        if (hit) values.add(Math.max(road.min, Math.min(road.max, hit.alongA)));
+      }
     }
     let previous = null;
     for (const value of [...values].sort((a, b) => a - b)) {
-      const node = put(
-        road.axis === "z"
-          ? { x: road.fixed, z: value }
-          : { x: value, z: road.fixed },
-      );
-      if (previous) {
+      const node = put(roadPointAt(road, value, 0));
+      if (previous && previous !== node) {
         previous.edges.push(node.key);
         node.edges.push(previous.key);
       }
@@ -144,10 +154,17 @@ export function lanePath(points, offset = LANE_OFFSET) {
   const shifted = turns.map((p, i) => {
     const a = normals[Math.max(0, i - 1)],
       b = normals[Math.min(i, normals.length - 1)];
-    const count = i === 0 || i === turns.length - 1 ? 1 : 2;
+    if (i === 0 || i === turns.length - 1) {
+      return {
+        x: p.x - offset * b.z,
+        z: p.z + offset * b.x,
+      };
+    }
+    const dotAB = a.x * b.x + a.z * b.z;
+    const scale = Math.abs(dotAB) < 1e-6 ? 1 : 1 / Math.max(0.2, 1 + dotAB);
     return {
-      x: p.x - offset * (count === 1 ? b.z : a.z + b.z),
-      z: p.z + offset * (count === 1 ? b.x : a.x + b.x),
+      x: p.x - offset * (a.z + b.z) * scale,
+      z: p.z + offset * (a.x + b.x) * scale,
     };
   });
   const path = [];
@@ -170,14 +187,25 @@ export function lanePath(points, offset = LANE_OFFSET) {
     const p = shifted[i],
       a = normals[i - 1],
       b = normals[i];
-    const radius = Math.min(
-      4.2,
+    const bend = angleDelta(Math.atan2(b.x, b.z), Math.atan2(a.x, a.z));
+    const orthogonal = Math.abs(Math.abs(bend) - Math.PI / 2) < 1e-6;
+    const halfTan = orthogonal ? 1 : Math.tan(Math.abs(bend) / 2);
+    const maxTangent = Math.min(
       distance(shifted[i - 1], p) * 0.45,
       distance(p, shifted[i + 1]) * 0.45,
     );
-    const start = { x: p.x - a.x * radius, z: p.z - a.z * radius };
-    const end = { x: p.x + b.x * radius, z: p.z + b.z * radius };
-    const center = { x: start.x + b.x * radius, z: start.z + b.z * radius };
+    const radius = orthogonal
+      ? Math.min(4.2, maxTangent)
+      : Math.min(4.2, maxTangent / Math.max(0.1, halfTan));
+    const tangentDist = radius * halfTan;
+    const start = { x: p.x - a.x * tangentDist, z: p.z - a.z * tangentDist };
+    const end = { x: p.x + b.x * tangentDist, z: p.z + b.z * tangentDist };
+    const center = orthogonal
+      ? { x: start.x + b.x * radius, z: start.z + b.z * radius }
+      : {
+          x: start.x + a.z * Math.sign(bend) * radius,
+          z: start.z - a.x * Math.sign(bend) * radius,
+        };
     append(start);
     const first = Math.atan2(start.z - center.z, start.x - center.x);
     const last = Math.atan2(end.z - center.z, end.x - center.x);

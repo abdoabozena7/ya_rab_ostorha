@@ -7,6 +7,7 @@ import { Random } from "../core/random.js";
 import { walkSegmentClear } from "../core/walk-route.js";
 import { stagePocketCourse } from "./pursuit-pocket-scenario.js";
 import { stageReverseCourse } from "./pursuit-reverse-scenario.js";
+import { stagePakoJunction } from "./pako-junction-course.js";
 
 const crossingCases = Object.freeze({ L09: 1, L10: -1, L12: 1, "L12-control": 1 });
 const turnCases = Object.freeze({ "tail-civic-eastbound": 1, "tail-civic-westbound": -1 });
@@ -100,6 +101,7 @@ function narrowCourse(world, id) {
 export function stagePursuitLabScenario(world, id) {
   if (world.tick !== 0 || world.environment !== "metro" || world.pursuit)
     throw new RangeError("Unknown or late Metro pursuit Lab scenario");
+  if (typeof id === "string" && id.startsWith("pako-junction-")) return stagePakoJunction(world, id);
   if (typeof id === "string" && id.startsWith("pocket-")) return stagePocketCourse(world, id);
   if (Object.hasOwn(approachCases, id)) return approachCourse(world, id);
   if (id === "L07" || id === "L07-blocked") return stageReverseCourse(world, id);

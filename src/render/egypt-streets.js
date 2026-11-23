@@ -13,7 +13,16 @@ const COLORS = {
 };
 
 export const usesCityV4StreetFinish = (world) =>
-  world.environment === "metro" && world.config?.cityVersion === 4;
+  world.environment === "metro" && (world.config?.cityVersion ?? 0) >= 4;
+
+function diagRoadFrame(road) {
+  const dx = road.x2 - road.x1, dz = road.z2 - road.z1;
+  const length = road.length ?? (Math.hypot(dx, dz) || 0);
+  const ux = road.ux ?? (length > 0 ? dx / length : 0);
+  const uz = road.uz ?? (length > 0 ? dz / length : 1);
+  const heading = road.heading ?? Math.atan2(ux, uz);
+  return { length, ux, uz, heading };
+}
 
 function hash(value) {
   let state = 2166136261;
@@ -231,9 +240,17 @@ function streetFaces(site, faces, roads) {
   const scores = faces.map(() => Infinity), c = Math.cos(site.heading ?? 0), s = Math.sin(site.heading ?? 0);
   for (const road of roads) {
     if (road.parkingBay) continue;
-    const along = Math.max(road.min, Math.min(road.max, road.axis === "z" ? site.z : site.x));
-    const dx = (road.axis === "z" ? road.fixed : along) - site.x;
-    const dz = (road.axis === "x" ? road.fixed : along) - site.z;
+    let dx, dz;
+    if (road.axis === "diag") {
+      const { length, ux, uz } = diagRoadFrame(road);
+      const along = Math.max(0, Math.min(length, (site.x - road.x1) * ux + (site.z - road.z1) * uz));
+      dx = road.x1 + ux * along - site.x;
+      dz = road.z1 + uz * along - site.z;
+    } else {
+      const along = Math.max(road.min, Math.min(road.max, road.axis === "z" ? site.z : site.x));
+      dx = (road.axis === "z" ? road.fixed : along) - site.x;
+      dz = (road.axis === "x" ? road.fixed : along) - site.z;
+    }
     const localX = dx * c - dz * s, localZ = dx * s + dz * c;
     const index = Math.abs(localX) > Math.abs(localZ) ? (localX > 0 ? 1 : 3) : (localZ > 0 ? 0 : 2);
     scores[index] = Math.min(scores[index], Math.hypot(dx, dz) - road.width / 2);
@@ -390,10 +407,13 @@ function buildSite(site, index, atlasBatch, solidBatch, roads, counts) {
 
 const METRO_CELL = 56;
 const STREAM_CELL = 36;
+const GRAND_METRO_CELL = 240;
+const GRAND_STREAM_CELL = 150;
 const DETAIL_RADIUS = 42;
 const PREWARM_RADIUS = 51;
 const RELEASE_RADIUS = 59;
 const METRO_BUDGET = { maxDrawCalls: 96, maxTriangles: 170000 };
+const METRO_V5_BUDGET = { maxDrawCalls: 75, maxTriangles: 260000 };
 const METRO_PLASTER = [
   [0, 0xfff5e6, 0xb9a58b], [3, 0xffdfca, 0xae9479],
   [1, 0xf6f1de, 0xb0a595], [2, 0xffecda, 0xaf977d],
@@ -436,9 +456,18 @@ function metroStreetFaces(site, faces, roads, boulevard) {
     const x = site.x + nx * face.hull, z = site.z + nz * face.hull;
     return roads.flatMap((road) => {
       if (road.parkingBay || road.supportApron) return [];
-      const vertical = road.axis === "z";
-      const along = Math.max(road.min, Math.min(road.max, vertical ? z : x));
-      const dx = (vertical ? road.fixed : along) - x, dz = (vertical ? along : road.fixed) - z;
+      let dx, dz;
+      if (road.axis === "diag") {
+        const { length, ux, uz } = diagRoadFrame(road);
+        const along = Math.max(0, Math.min(length, (x - road.x1) * ux + (z - road.z1) * uz));
+        dx = road.x1 + ux * along - x;
+        dz = road.z1 + uz * along - z;
+      } else {
+        const vertical = road.axis === "z";
+        const along = Math.max(road.min, Math.min(road.max, vertical ? z : x));
+        dx = (vertical ? road.fixed : along) - x;
+        dz = (vertical ? along : road.fixed) - z;
+      }
       const distance = Math.hypot(dx, dz), lateral = Math.abs(dx * nz - dz * nx);
       if (dx * nx + dz * nz < Math.max(0.01, distance * 0.53)) return [];
       return [{ index, road, score: Math.max(0, distance - road.width / 2) + lateral * 0.3 }];
@@ -514,9 +543,10 @@ function metroGlazing(atlas, solid, face, bay, variant, shutter = false) {
   }
 }
 
-function metroGroundBays(face, top, shopfront, main, boulevard) {
+function metroGroundBays(face, top, shopfront, main, boulevard, grand = false) {
   const bays = [], bottom = 0.16, setback = Math.min(boulevard ? 0.62 : 0.40, face.out * 0.39);
-  const numShops = shopfront ? Math.min(main ? 3 : 2, Math.max(1, Math.floor(face.width / 4.1))) : 0;
+  const maxShops = grand && face.width > 28 ? (main ? 5 : 3) : (main ? 3 : 2);
+  const numShops = shopfront ? Math.min(maxShops, Math.max(1, Math.floor(face.width / 4.1))) : 0;
   const slots = numShops + Number(face.width > 5.5 || numShops === 0);
   const step = face.width / slots, entry = boulevard ? Math.floor(slots / 2) : slots - 1;
   for (let n = 0; n < slots; n++) {
@@ -673,8 +703,8 @@ function metroMarketCounter(solid, face, bay, stall) {
   }
 }
 
-function metroGround(atlas, solid, face, top, shopfront, main, boulevard, seed, counts, trim, market, finish) {
-  const bays = metroGroundBays(face, top, shopfront, main, boulevard);
+function metroGround(atlas, solid, face, top, shopfront, main, boulevard, seed, counts, trim, market, finish, grand = false) {
+  const bays = metroGroundBays(face, top, shopfront, main, boulevard, grand);
   metroWall(atlas, solid, face, 0.16, top, finish?.tile ?? (boulevard ? 15 : 14),
     finish?.plaster ?? 0xf1e8d7, bays, finish);
   let marketBay = false;
@@ -771,9 +801,10 @@ function metroBalcony(solid, face, u, floor, width, open, seed, trim, counts, pl
   counts.balconies++;
 }
 
-function metroUpperBays(face, floor, pitch, frontage, primary, boulevard, ribbon, seed, row) {
+function metroUpperBays(face, floor, pitch, frontage, primary, boulevard, ribbon, seed, row, grand = false) {
   const bays = [];
-  const columns = Math.max(1, Math.min(frontage ? (boulevard ? 5 : 4) : 2,
+  const maxCols = grand && face.width > 28 ? (frontage ? (boulevard ? 7 : 6) : 3) : (frontage ? (boulevard ? 5 : 4) : 2);
+  const columns = Math.max(1, Math.min(maxCols,
     Math.round(face.width / (frontage ? 3.8 : 5.9))));
   const step = face.width / columns;
   for (let n = 0; n < columns; n++) {
@@ -790,13 +821,14 @@ function metroUpperBays(face, floor, pitch, frontage, primary, boulevard, ribbon
   return { bays, step, columns };
 }
 
-function metroUpper(atlas, solid, face, floor, pitch, frontage, primary, boulevard, ribbon, seed, row, finish, counts) {
+function metroUpper(atlas, solid, face, floor, pitch, frontage, primary, boulevard, ribbon, seed, row, finish, counts, grand = false) {
   const [tile, tint, trim] = finish;
-  const { bays, step, columns } = metroUpperBays(face, floor, pitch, frontage, primary, boulevard, ribbon, seed, row);
+  const { bays, step, columns } = metroUpperBays(face, floor, pitch, frontage, primary, boulevard, ribbon, seed, row, grand);
   const wallTile = !boulevard && seed % 4 === 0 && row >= 2 ? 5 : tile;
-  metroWall(atlas, solid, face, floor, floor + pitch, wallTile, tint, frontage ? bays : []);
+  const towerFlush = grand && row >= 4;
+  metroWall(atlas, solid, face, floor, floor + pitch, wallTile, tint, frontage && !towerFlush ? bays : []);
   for (const [n, bay] of bays.entries()) {
-    metroGlazing(atlas, solid, face, bay, seed + row + n);
+    metroGlazing(atlas, solid, face, towerFlush ? { ...bay, d: face.out + 0.012 } : bay, seed + row + n);
     if (bay.balcony) {
       metroBalcony(solid, face, bay.u, floor, Math.min(step * 0.88, 2.75),
         (seed + row + n) % 4 !== 1, seed + row + n, trim, counts, primary && row === 0);
@@ -824,7 +856,7 @@ function metroUpper(atlas, solid, face, floor, pitch, frontage, primary, bouleva
   }
 }
 
-function metroSitePlan(site, index, roads) {
+function metroSitePlan(site, index, roads, grand = false) {
   const seed = hash(site.id), style = seed % 4, boulevard = site.architecture === "boulevard";
   const ribbon = boulevard && style % 2 === 1;
   const finish = (boulevard ? METRO_STONE : METRO_PLASTER)[style];
@@ -835,31 +867,34 @@ function metroSitePlan(site, index, roads) {
     return { angle, c: Math.cos(angle), s: Math.sin(angle), width: n % 2 ? length : width, out, hull: out + inset };
   });
   const streets = metroStreetFaces(site, faces, roads, boulevard);
-  const crown = Math.min(boulevard ? 1.28 : 1.48, site.height * 0.16), roof = site.height - crown;
-  const ground = Math.min(boulevard ? 4.13 : 3.33, roof * 0.44);
-  const floors = Math.max(1, Math.round((roof - ground) / (boulevard ? 3.18 : 2.82)));
+  const tall = grand && site.height > 34;
+  const crown = Math.min(tall ? (boulevard ? 2.1 : 1.85) : (boulevard ? 1.28 : 1.48), site.height * 0.16);
+  const roof = site.height - crown;
+  const ground = Math.min(tall ? (boulevard ? 4.65 : 3.75) : (boulevard ? 4.13 : 3.33), roof * 0.44);
+  const rawFloors = Math.max(1, Math.round((roof - ground) / (boulevard ? 3.18 : 2.82)));
+  const floors = grand ? Math.min(16, rawFloors) : rawFloors;
   const pitch = (roof - ground) / floors;
   const info = { id: site.id, index, style, architecture: boulevard ? "boulevard" : "neighborhood",
     facingRoadId: streets.roadId, upperFloors: floors, roofY: roof + GROUND,
     primaryFace: streets.primary, shopFaces: [...streets.shops], width: site.width, length: site.length };
   return { seed, style, boulevard, ribbon, finish, inset, width, length, faces, streets,
-    crown, roof, ground, floors, pitch, info };
+    crown, roof, ground, floors, pitch, grand, info };
 }
 
 function buildMetroSite(site, index, atlasBatch, solidBatch, roads, counts,
   plan = metroSitePlan(site, index, roads), market = false) {
   const { seed, style, boulevard, ribbon, finish, inset, width, length, faces, streets,
-    crown, roof, ground, floors, pitch, info } = plan;
+    crown, roof, ground, floors, pitch, grand, info } = plan;
   const [tile, tint, trim] = finish;
   const atlas = new Writer(atlasBatch, site, index), solid = new Writer(solidBatch, site, index);
   const groundFinish = market ? GROUND_FINISHES[style] : null;
   solid.box(0, 0.08, 0, site.width, 0.16, site.length, 0, trim, 0, [5]);
   for (const [f, face] of faces.entries()) {
     const main = f === streets.primary, frontage = streets.shops.has(f);
-    metroGround(atlas, solid, face, ground, frontage, main, boulevard, seed + f * 7, counts, trim, market, groundFinish);
+    metroGround(atlas, solid, face, ground, frontage, main, boulevard, seed + f * 7, counts, trim, market, groundFinish, grand);
     for (let row = 0; row < floors; row++)
       metroUpper(atlas, solid, face, ground + row * pitch, pitch, frontage, main,
-        boulevard, ribbon, seed + f * 7, row, finish, counts);
+        boulevard, ribbon, seed + f * 7, row, finish, counts, grand);
     if (main && face.width > 4 && !boulevard) {
       const u = face.width * 0.37, y = ground + pitch * 0.21, out = face.out + inset * 0.36;
       solid.feature = atlas.feature = 5;
@@ -891,7 +926,7 @@ function buildMetroSite(site, index, atlasBatch, solidBatch, roads, counts,
 
 function buildMetroProxy(site, plan, batch) {
   const { seed, boulevard, ribbon, finish, width, length, faces, streets,
-    crown, roof, ground, floors, pitch } = plan;
+    crown, roof, ground, floors, pitch, grand } = plan;
   const [tile, tint, trim] = finish;
   const w = new Writer(batch, site, plan.info.index);
   w.box(0, roof / 2, 0, width, roof, length, tile, tint, 0, [5]);
@@ -905,14 +940,14 @@ function buildMetroProxy(site, plan, batch) {
     const parapet = boulevard && main ? crown : crown * .55;
     metroPanel(w, face, -face.width / 2, face.width / 2,
       roof, roof + parapet, face.hull - .08, tile, tint);
-    for (const [n, bay] of metroGroundBays(face, ground, frontage, main, boulevard).entries()) {
+    for (const [n, bay] of metroGroundBays(face, ground, frontage, main, boulevard, grand).entries()) {
       metroPanel(w, face, bay.l, bay.r, bay.b, bay.t, face.out + .016, 0, 0x576a61);
       if (bay.shop)
         metroPanel(w, face, bay.l, bay.r, ground * .72, ground * .88, face.out + .018,
           9 + (s + n * 3) % SHOP_NAMES.length, 0xffffff);
     }
     for (let row = 0; row < floors; row++) {
-      const { bays } = metroUpperBays(face, ground + row * pitch, pitch, frontage, main, boulevard, ribbon, s, row);
+      const { bays } = metroUpperBays(face, ground + row * pitch, pitch, frontage, main, boulevard, ribbon, s, row, grand);
       for (const [n, bay] of bays.entries()) {
         metroPanel(w, face, bay.l, bay.r, bay.b, bay.t, face.out + .019, 0,
           (s + row + n) % 4 === 1 ? 0x889087 : 0x596c66);
@@ -924,30 +959,151 @@ function buildMetroProxy(site, plan, batch) {
 }
 
 function roadBounds(road) {
-  const h = road.width / 2;
-  return road.axis === "z"
-    ? { minX: road.fixed - h, maxX: road.fixed + h, minZ: road.min - h, maxZ: road.max + h }
-    : { minX: road.min - h, maxX: road.max + h, minZ: road.fixed - h, maxZ: road.fixed + h };
+  return roadRect(road);
 }
 const intersects = (a, b) => a.minX < b.maxX && a.maxX > b.minX && a.minZ < b.maxZ && a.maxZ > b.minZ;
 
+function roadPoly(road, margin = 0) {
+  if (road.axis === "diag") {
+    const { ux, uz } = diagRoadFrame(road);
+    const h = Math.max(0, road.width / 2 - margin);
+    const sx = road.x1 - ux * h, sz = road.z1 - uz * h;
+    const ex = road.x2 + ux * h, ez = road.z2 + uz * h;
+    const lx = uz * h, lz = -ux * h;
+    return [
+      { x: sx - lx, z: sz - lz },
+      { x: sx + lx, z: sz + lz },
+      { x: ex + lx, z: ez + lz },
+      { x: ex - lx, z: ez - lz },
+    ];
+  }
+  const { minX, maxX, minZ, maxZ } = roadRect(road, margin);
+  return [
+    { x: minX, z: minZ },
+    { x: maxX, z: minZ },
+    { x: maxX, z: maxZ },
+    { x: minX, z: maxZ },
+  ];
+}
+
+function sitePoly(site) {
+  const c = Math.cos(site.heading ?? 0), s = Math.sin(site.heading ?? 0);
+  const hw = site.width / 2, hl = site.length / 2;
+  return [[-1, -1], [1, -1], [1, 1], [-1, 1]].map(([sx, sz]) => ({
+    x: site.x + c * hw * sx + s * hl * sz,
+    z: site.z - s * hw * sx + c * hl * sz,
+  }));
+}
+
+function polyAlongStreet(poly, road) {
+  if (road.axis === "diag") {
+    const { ux, uz } = diagRoadFrame(road);
+    return poly.map((p) => {
+      const dx = p.x - road.x1, dz = p.z - road.z1;
+      return { u: dx * uz - dz * ux, a: dx * ux + dz * uz };
+    });
+  }
+  const f = road.fixed;
+  return road.axis === "z"
+    ? poly.map((p) => ({ u: p.x - f, a: p.z }))
+    : poly.map((p) => ({ u: f - p.z, a: p.x }));
+}
+
+function clipStripU(pts, limit, keepGreater) {
+  const out = [];
+  for (let i = 0; i < pts.length; i++) {
+    const cur = pts[i], nxt = pts[(i + 1) % pts.length];
+    const curIn = keepGreater ? cur.u >= limit : cur.u <= limit;
+    const nxtIn = keepGreater ? nxt.u >= limit : nxt.u <= limit;
+    if (curIn) out.push(cur);
+    if (curIn !== nxtIn) {
+      const t = (limit - cur.u) / (nxt.u - cur.u);
+      out.push({ u: limit, a: cur.a + (nxt.a - cur.a) * t });
+    }
+  }
+  return out;
+}
+
+function polySpanInBand(pts, uMin, uMax) {
+  let minU = Infinity, maxU = -Infinity, minA = Infinity, maxA = -Infinity;
+  for (const p of pts) {
+    if (p.u < minU) minU = p.u;
+    if (p.u > maxU) maxU = p.u;
+    if (p.a < minA) minA = p.a;
+    if (p.a > maxA) maxA = p.a;
+  }
+  if (!(minU < uMax && maxU > uMin)) return null;
+  if (minU >= uMin && maxU <= uMax) return { a0: minA, a1: maxA };
+  let clipped = clipStripU(pts, uMin, true);
+  if (!clipped.length) return null;
+  clipped = clipStripU(clipped, uMax, false);
+  if (!clipped.length) return null;
+  let a0 = Infinity, a1 = -Infinity;
+  for (const p of clipped) {
+    if (p.a < a0) a0 = p.a;
+    if (p.a > a1) a1 = p.a;
+  }
+  return { a0, a1 };
+}
+
+function openPolyStreetSpans(roadMin, roadMax, left, right, polyBlockers, margin) {
+  const lo = Math.min(left, right) - margin, hi = Math.max(left, right) + margin;
+  const cuts = [];
+  for (const pts of polyBlockers) {
+    const span = polySpanInBand(pts, lo, hi);
+    if (span) cuts.push(span);
+  }
+  cuts.sort((a, b) => a.a0 - b.a0);
+  const start = roadMin + .85, end = roadMax - .85, runs = [];
+  let at = start;
+  for (const { a0, a1 } of cuts) {
+    const stop = Math.min(end, a0 - margin);
+    if (stop > at + .45) runs.push([at, stop]);
+    at = Math.max(at, a1 + margin);
+    if (at >= end) return runs;
+  }
+  if (end > at + .45) runs.push([at, end]);
+  return runs;
+}
+
 function buildStreetSurfaces(roads, patches, curbs, counts, metro = false) {
-  const bounds = roads.map(roadBounds);
+  const hasDiag = roads.some(r => r.axis === "diag");
+  const bounds = hasDiag ? null : roads.map(roadBounds);
+  const polys = hasDiag ? roads.map(r => roadPoly(r, 0)) : null;
   for (let index = 0; index < roads.length; index++) {
     const road = roads[index];
     if (road.parkingBay) continue;
-    const rng = random(hash(`${road.axis}:${road.fixed}:${road.min}:${road.max}`));
-    const site = road.axis === "z"
-      ? { x: road.fixed, z: 0, heading: 0 } : { x: 0, z: road.fixed, heading: Math.PI / 2 };
+    const isDiag = road.axis === "diag";
+    const diag = isDiag ? diagRoadFrame(road) : null;
+    const roadMin = isDiag ? 0 : road.min, roadMax = isDiag ? diag.length : road.max;
+    const seedKey = isDiag
+      ? `diag:${road.x1}:${road.z1}:${road.x2}:${road.z2}`
+      : `${road.axis}:${road.fixed}:${road.min}:${road.max}`;
+    const rng = random(hash(seedKey));
+    const site = isDiag
+      ? { x: road.x1, z: road.z1, heading: diag.heading }
+      : road.axis === "z"
+        ? { x: road.fixed, z: 0, heading: 0 }
+        : { x: 0, z: road.fixed, heading: Math.PI / 2 };
     const patch = new Writer(patches, site, -1, 6), curb = new Writer(curbs, site, -1, 7);
-    const rectAt = (u, along, halfWidth, halfLength) => road.axis === "z"
-      ? { minX: road.fixed + u - halfWidth, maxX: road.fixed + u + halfWidth, minZ: along - halfLength, maxZ: along + halfLength }
-      : { minX: along - halfLength, maxX: along + halfLength, minZ: road.fixed - u - halfWidth, maxZ: road.fixed - u + halfWidth };
-    const blocked = (rect) => bounds.some((other, n) => n !== index && intersects(rect, other));
-    for (let along = road.min + 12 + rng() * 6; along < road.max - 6; along += 31) {
+    const otherPolys = hasDiag ? polys.filter((_, n) => n !== index).map(p => polyAlongStreet(p, road)) : null;
+    const blockedBox = (u, along, halfWidth, halfLength) => {
+      if (hasDiag) {
+        const span = otherPolys.some(pts => {
+          const hit = polySpanInBand(pts, u - halfWidth, u + halfWidth);
+          return hit && hit.a0 < along + halfLength && hit.a1 > along - halfLength;
+        });
+        return span;
+      }
+      const rect = road.axis === "z"
+        ? { minX: road.fixed + u - halfWidth, maxX: road.fixed + u + halfWidth, minZ: along - halfLength, maxZ: along + halfLength }
+        : { minX: along - halfLength, maxX: along + halfLength, minZ: road.fixed - u - halfWidth, maxZ: road.fixed - u + halfWidth };
+      return bounds.some((other, n) => n !== index && intersects(rect, other));
+    };
+    for (let along = roadMin + 12 + rng() * 6; along < roadMax - 6; along += 31) {
       const u = (rng() > 0.5 ? 1 : -1) * road.width * 0.23;
       const halfWidth = 0.56 + rng() * 0.38, halfLength = 1.1 + rng() * 0.8;
-      if (blocked(rectAt(u, along, halfWidth + 0.3, halfLength + 0.6))) continue;
+      if (blockedBox(u, along, halfWidth + 0.3, halfLength + 0.6)) continue;
       const points = [
         [u-halfWidth*.8, along-halfLength], [u-halfWidth, along+halfLength*.7],
         [u-halfWidth*.4, along+halfLength], [u+halfWidth*.85, along+halfLength*.85],
@@ -974,19 +1130,19 @@ function buildStreetSurfaces(roads, patches, curbs, counts, metro = false) {
           start = null;
           counts.curbSegments++;
         };
-        for (let a = road.min + 1; a < road.max - 1; a += 2.8) {
-          const end = Math.min(a + 2.8, road.max - 1);
-          if (blocked(rectAt((toe + back) / 2, (a + end) / 2, 0.21, (end - a) / 2 + 0.08))) flush(a);
+        for (let a = roadMin + 1; a < roadMax - 1; a += 2.8) {
+          const end = Math.min(a + 2.8, roadMax - 1);
+          if (blockedBox((toe + back) / 2, (a + end) / 2, 0.21, (end - a) / 2 + 0.08)) flush(a);
           else start ??= a;
         }
-        flush(road.max - 1);
+        flush(roadMax - 1);
       }
       continue;
     }
     for (const side of [-1, 1])
-      for (let n = 0, along = road.min + 2; along < road.max - 3; n++, along += 1.42) {
-        const u = side * (road.width / 2 + 0.23), length = Math.min(1.38, road.max - 2 - along);
-        if (blocked(rectAt(u, along + length / 2, 0.19, length / 2 + 0.16))) continue;
+      for (let n = 0, along = roadMin + 2; along < roadMax - 3; n++, along += 1.42) {
+        const u = side * (road.width / 2 + 0.23), length = Math.min(1.38, roadMax - 2 - along);
+        if (blockedBox(u, along + length / 2, 0.19, length / 2 + 0.16)) continue;
         curb.quad([[u-0.14,-0.040,along],[u-0.14,-0.040,along+length],
           [u+0.14,-0.040,along+length],[u+0.14,-0.040,along]], 0, n % 2 ? 0xbcb8a4 : 0x55574e);
         counts.curbSegments++;
@@ -1017,21 +1173,37 @@ function openStreetSpans(road, left, right, blockers, margin) {
 }
 
 function buildV4StreetSurfaces(roads, sites, repairs, edging, counts) {
-  const asphalt = roads.map(road => roadRect(road));
-  const footway = roads.map(road => roadRect(road, -2.5));
-  const walls = sites.map(site => {
+  const hasDiag = roads.some(road => road.axis === "diag");
+  const asphalt = hasDiag ? null : roads.map(road => roadRect(road));
+  const footway = hasDiag ? null : roads.map(road => roadRect(road, -2.5));
+  const walls = hasDiag ? null : sites.map(site => {
     const c = Math.abs(Math.cos(site.heading ?? 0)), s = Math.abs(Math.sin(site.heading ?? 0));
     const x = (site.width * c + site.length * s) / 2, z = (site.width * s + site.length * c) / 2;
     return { minX: site.x - x, maxX: site.x + x, minZ: site.z - z, maxZ: site.z + z };
   });
+  const asphaltPolys = hasDiag ? roads.map(road => roadPoly(road, 0)) : null;
+  const footwayPolys = hasDiag ? roads.map(road => roadPoly(road, -2.5)) : null;
+  const wallPolys = hasDiag ? sites.map(sitePoly) : null;
   for (const [index, road] of roads.entries()) {
     if (road.parkingBay) continue;
+    const isDiag = road.axis === "diag";
+    const diag = isDiag ? diagRoadFrame(road) : null;
+    const roadMin = isDiag ? 0 : road.min, roadMax = isDiag ? diag.length : road.max;
     const avenue = road.zone === "avenue", edge = road.width / 2;
-    const local = road.axis === "z" ? { x: road.fixed, z: 0 } : { x: 0, z: road.fixed, heading: Math.PI / 2 };
-    const asphaltCuts = asphalt.filter((_, n) => n !== index).map(rect => alongStreet(rect, road));
-    const wingCuts = [...footway.filter((_, n) => n !== index), ...walls].map(rect => alongStreet(rect, road));
+    const local = isDiag
+      ? { x: road.x1, z: road.z1, heading: diag.heading }
+      : road.axis === "z" ? { x: road.fixed, z: 0 } : { x: 0, z: road.fixed, heading: Math.PI / 2 };
+    const asphaltCuts = hasDiag
+      ? asphaltPolys.filter((_, n) => n !== index).map(poly => polyAlongStreet(poly, road))
+      : asphalt.filter((_, n) => n !== index).map(rect => alongStreet(rect, road));
+    const wingCuts = hasDiag
+      ? [...footwayPolys.filter((_, n) => n !== index), ...wallPolys].map(poly => polyAlongStreet(poly, road))
+      : [...footway.filter((_, n) => n !== index), ...walls].map(rect => alongStreet(rect, road));
+    const spans = (left, right, cuts, margin) => hasDiag
+      ? openPolyStreetSpans(roadMin, roadMax, left, right, cuts, margin)
+      : openStreetSpans(road, left, right, cuts, margin);
     const patch = new Writer(repairs, local, -1, 6), curb = new Writer(edging, local, -1, 7);
-    const rng = random(hash(road.id));
+    const rng = random(hash(road.id ?? (isDiag ? `${road.x1}:${road.z1}:${road.x2}:${road.z2}` : `${road.axis}:${road.fixed}`)));
     const strip = (w, u0, u1, a, b, y0, y1, color) => {
       const points = [[u0,y0,a],[u0,y0,b],[u1,y1,b],[u1,y1,a]];
       w.quad(u1 > u0 ? points : points.reverse(), 0, color);
@@ -1042,7 +1214,7 @@ function buildV4StreetSurfaces(roads, sites, repairs, edging, counts) {
     for (const side of [-1, 1]) {
       const e = edge * side, at = (out) => e + side * out;
       const drains = avenue ? .56 : .33;
-      for (const [a, b] of openStreetSpans(road, at(-drains), at(.43), asphaltCuts, .18)) {
+      for (const [a, b] of spans(at(-drains), at(.43), asphaltCuts, .18)) {
         curb.feature = GUTTER;
         flush(curb, at(-drains), at(-.11), a, b, roadY, avenue ? 0x414442 : 0x46443e);
         flush(curb, at(-.11), e, a, b, roadY, 0x333735);
@@ -1071,9 +1243,9 @@ function buildV4StreetSurfaces(roads, sites, repairs, edging, counts) {
       const courtBands = avenue ? [[2.505, 3.375, 4.15], [3.415, 5.25, 4.15]] : [[2.505, 3.60, 3.55]];
       for (const [inner, outer, pitch] of courtBands) {
         const palette = COURT_PAVING[Number(inner > 3.4)];
-        for (const [a, b] of openStreetSpans(road, at(inner), at(outer), wingCuts, .02)) {
+        for (const [a, b] of spans(at(inner), at(outer), wingCuts, .02)) {
           flush(curb, at(inner), at(outer), a, b, courtY - .0008, 0x646660);
-          const basis = road.min + (inner > 3.4 ? .8 : 0);
+          const basis = roadMin + (inner > 3.4 ? .8 : 0);
           for (let n = Math.floor((a - basis) / pitch); basis + n * pitch < b; n++) {
             const start = Math.max(a, basis + n * pitch + .023);
             const end = Math.min(b, basis + (n + 1) * pitch - .023);
@@ -1090,7 +1262,7 @@ function buildV4StreetSurfaces(roads, sites, repairs, edging, counts) {
     const side = rng() < .5 ? -1 : 1;
     const u = edge * (avenue ? .59 : .34) * side;
     const half = avenue ? .68 : .43;
-    for (const [a, b] of openStreetSpans(road, u - half, u + half, asphaltCuts, 2.8)) {
+    for (const [a, b] of spans(u - half, u + half, asphaltCuts, 2.8)) {
       const length = b - a;
       if (length < 11) continue;
       const from = a + length * (.14 + rng() * .30);
@@ -1126,16 +1298,17 @@ function cellDistance2(cell, point) {
   return x * x + z * z;
 }
 
-function streamMetroSites(sites, roads, mapped, flat, diagnostics, attach, detach, market) {
+function streamMetroSites(sites, roads, mapped, flat, diagnostics, attach, detach, market, grand = false) {
   const cells = new Map(), residents = new Set();
+  const cellSpan = grand ? GRAND_STREAM_CELL : STREAM_CELL;
   for (const [index, site] of sites.entries()) {
-    const key = `${Math.floor(site.x / STREAM_CELL)}:${Math.floor(site.z / STREAM_CELL)}`;
+    const key = `${Math.floor(site.x / cellSpan)}:${Math.floor(site.z / cellSpan)}`;
     let cell = cells.get(key);
     if (!cell) {
       cell = { key, sites: [], minX: Infinity, maxX: -Infinity, minZ: Infinity, maxZ: -Infinity };
       cells.set(key, cell);
     }
-    const plan = metroSitePlan(site, index, roads);
+    const plan = metroSitePlan(site, index, roads, grand);
     cell.sites.push({ site, index, plan });
     diagnostics.sites.push(plan.info);
     includeFootprint(cell, site);
@@ -1218,13 +1391,15 @@ function streamMetroSites(sites, roads, mapped, flat, diagnostics, attach, detac
  * detail (plus the permanent curb and repair layer). Eager use supports the
  * existing architecture fixtures and non-metro views.
  */
-export function createEgyptStreetLayer(world, { streamDetails = false } = {}) {
+export function createEgyptStreetLayer(world, { streamDetails } = {}) {
   const root = new THREE.Group();
   root.name = "egypt-street-layer";
   root.userData.egyptStreetLayer = true;
+  const grandCity = (world.config?.cityVersion ?? 0) >= 5;
   const metro = world.environment === "metro";
-  const streaming = metro && streamDetails;
-  const market = streaming && usesCityV4StreetFinish(world);
+  const effectiveStream = streamDetails ?? (metro && grandCity);
+  const streaming = metro && effectiveStream;
+  const market = (streaming || (metro && grandCity)) && usesCityV4StreetFinish(world);
   const active = metro || world.environment === "city" || world.environment === "vision" || world.environment === "egypt";
   const diagnostics = {
     active, siteIds: [], sites: [], featureNames: [...FEATURES], drawCalls: 0, triangles: 0,
@@ -1252,13 +1427,17 @@ export function createEgyptStreetLayer(world, { streamDetails = false } = {}) {
   if (!active) return { root, diagnostics, dispose };
   const sites = (world.statics ?? []).filter((site) => site.kind === "building").slice()
     .sort((a, b) => String(a.id).localeCompare(String(b.id), "en"));
-  const roads = (world.roads ?? []).slice().sort((a, b) =>
-    `${a.axis}:${a.fixed}:${a.min}:${a.max}:${a.width}`.localeCompare(`${b.axis}:${b.fixed}:${b.min}:${b.max}:${b.width}`, "en"));
+  const roadKey = (r) => r.axis === "diag"
+    ? `diag:${r.x1}:${r.z1}:${r.x2}:${r.z2}:${r.width}:${r.id ?? ""}`
+    : `${r.axis}:${r.fixed}:${r.min}:${r.max}:${r.width}`;
+  const roads = (world.roads ?? []).slice().sort((a, b) => roadKey(a).localeCompare(roadKey(b), "en"));
   diagnostics.siteIds = sites.map((site) => site.id);
   if (metro) {
     diagnostics.featureNames.push(...METRO_CLOSE_FEATURES);
-    Object.assign(diagnostics.budget, METRO_BUDGET);
+    Object.assign(diagnostics.budget, grandCity ? METRO_V5_BUDGET : METRO_BUDGET);
     Object.assign(diagnostics.counts, { awnings: 0, laundry: 0 });
+  } else if (grandCity) {
+    Object.assign(diagnostics.budget, METRO_V5_BUDGET);
   }
   if (market) {
     diagnostics.featureNames.push(...MARKET_FEATURES, ...STREET_FINISH_FEATURES);
@@ -1293,17 +1472,20 @@ export function createEgyptStreetLayer(world, { streamDetails = false } = {}) {
   };
   const batches = [];
   const districts = new Map();
-  const build = metro ? buildMetroSite : buildSite;
-  if (streaming) residency = streamMetroSites(sites, roads, mapped, flat, diagnostics, attach, detach, market);
+  const metroCell = grandCity ? GRAND_METRO_CELL : METRO_CELL;
+  if (streaming) residency = streamMetroSites(sites, roads, mapped, flat, diagnostics, attach, detach, market, grandCity);
   else sites.forEach((site, index) => {
-    const key = metro ? `${Math.floor(site.x / METRO_CELL)}:${Math.floor(site.z / METRO_CELL)}`
+    const key = metro ? `${Math.floor(site.x / metroCell)}:${Math.floor(site.z / metroCell)}`
       : `${site.x < 0 ? "west" : "east"}-${site.z < 0 ? "south" : "north"}`;
     if (!districts.has(key)) {
       // Only the metro wall and awning shells submit a shadow pass; small hardware still receives it.
       const pair = [new Batch(`egypt-${key}-facades`, mapped), new Batch(`egypt-${key}-structure`, flat, metro)];
       districts.set(key, pair); batches.push(...pair);
     }
-    diagnostics.sites.push(build(site, index, ...districts.get(key), roads, diagnostics.counts));
+    diagnostics.sites.push(metro
+      ? buildMetroSite(site, index, ...districts.get(key), roads, diagnostics.counts,
+          metroSitePlan(site, index, roads, grandCity), market)
+      : buildSite(site, index, ...districts.get(key), roads, diagnostics.counts));
   });
   if (metro && !streaming) {
     diagnostics.totalCells = diagnostics.residentCells = districts.size;
@@ -1328,6 +1510,10 @@ export function createEgyptStreetLayer(world, { streamDetails = false } = {}) {
       if (metro && !streaming && mesh.geometry.getAttribute("siteIndex").getX(0) >= 0)
         diagnostics.residentTriangles += mesh.geometry.attributes.position.count / 3;
     }
+  }
+  if (streamDetails === undefined && grandCity && residency) {
+    const initialAnchor = world.player ?? world.playerStart ?? sites[0];
+    if (initialAnchor) residency.update([initialAnchor]);
   }
   Object.assign(diagnostics.resources, {
     geometries: geometries.size, materials: materials.size, textures: textures.size,

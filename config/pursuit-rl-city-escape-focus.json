@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "description": "Full City practice and development testing from the single Chase entry. No protected seeds.",
+  "trainingSeeds": ["chase-practice-01", "chase-practice-02", "chase-practice-03", "chase-practice-04"],
+  "validationSeeds": ["chase-test-01", "chase-test-02", "chase-test-03", "chase-test-04"],
+  "stages": [
+    {"id":"chase-level-1","cityVersion":5,"observation":"dispatch-route-v2","traffic":36,"pedestrians":80,"episodeSeconds":120,"wantedLevel":1,"wantedLevelMax":5,"patrols":14,"curbSupport":"metro-city-curbs-v2","chasePresence":"city-chase-v1","tacticalPursuit":"gta-tactical-v1","evasiveControl":"pako-evasive-v2","patrolTrafficPreview":"visible-traffic-v1","patrolChainYield":"indirect-pedestrian-yield-v2"},
+    {"id":"chase-level-2","cityVersion":5,"observation":"dispatch-route-v2","traffic":44,"pedestrians":95,"episodeSeconds":120,"wantedLevel":2,"wantedLevelMax":5,"patrols":14,"curbSupport":"metro-city-curbs-v2","chasePresence":"city-chase-v1","tacticalPursuit":"gta-tactical-v1","evasiveControl":"pako-evasive-v2","patrolTrafficPreview":"visible-traffic-v1","patrolChainYield":"indirect-pedestrian-yield-v2"},
+    {"id":"chase-level-3","cityVersion":5,"observation":"dispatch-route-v2","traffic":48,"pedestrians":100,"episodeSeconds":120,"wantedLevel":3,"wantedLevelMax":5,"patrols":14,"curbSupport":"metro-city-curbs-v2","chasePresence":"city-chase-v1","tacticalPursuit":"gta-tactical-v1","evasiveControl":"pako-evasive-v2","patrolTrafficPreview":"visible-traffic-v1","patrolChainYield":"indirect-pedestrian-yield-v2"},
+    {"id":"chase-level-4","cityVersion":5,"observation":"dispatch-route-v2","traffic":68,"pedestrians":128,"episodeSeconds":120,"wantedLevel":4,"wantedLevelMax":5,"patrols":14,"curbSupport":"metro-city-curbs-v2","chasePresence":"city-chase-v1","tacticalPursuit":"gta-tactical-v1","evasiveControl":"pako-evasive-v2","patrolTrafficPreview":"visible-traffic-v1","patrolChainYield":"indirect-pedestrian-yield-v2"},
+    {"id":"chase-level-5","cityVersion":5,"observation":"dispatch-route-v2","traffic":96,"pedestrians":144,"episodeSeconds":120,"wantedLevel":5,"wantedLevelMax":5,"patrols":14,"curbSupport":"metro-city-curbs-v2","chasePresence":"city-chase-v1","tacticalPursuit":"gta-tactical-v1","evasiveControl":"pako-evasive-v2","patrolTrafficPreview":"visible-traffic-v1","patrolChainYield":"indirect-pedestrian-yield-v2"}
+  ]
+}

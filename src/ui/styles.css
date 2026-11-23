@@ -469,6 +469,13 @@ footer button {
   font-size: 10px;
   background: #28382ec9;
 }
+footer button[aria-pressed="true"],
+#pursuitCamStyleBtn[aria-pressed="true"] {
+  background: #acd5b9;
+  color: #14271d;
+  border-color: #bddcc6;
+  font-weight: 700;
+}
 footer span {
   direction: ltr;
   margin-right: auto;
@@ -553,5 +560,451 @@ footer span {
   }
   .pursuit-panel {
     top: 145px;
+  }
+}
+
+#pakoBtn {
+  color: #14271d;
+  border-color: #bddcc6;
+  background: #acd5b9;
+  font-weight: 700;
+}
+#pakoBtn:hover { background: #c9e9d1; }
+.pursuit-arcade dd,
+#pursuitUnitCount {
+  font-variant-numeric: tabular-nums;
+}
+#pursuitUnitCount {
+  text-align: end;
+  white-space: nowrap;
+}
+.pursuit-controls .pursuit-driver-toggle {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid #879e8b85;
+  border-radius: 6px;
+  background: #18231d;
+}
+.pursuit-controls .pursuit-driver-toggle button {
+  min-height: 0;
+  height: 24px;
+  padding: 4px 10px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  color: #d7e5da;
+  background: transparent;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.15;
+}
+.pursuit-controls .pursuit-driver-toggle button[aria-pressed="false"]:not(:disabled):hover {
+  background: #2b3c32;
+  color: #eef5ef;
+}
+.pursuit-controls .pursuit-driver-toggle button[aria-pressed="true"] {
+  border-color: #bddcc6;
+  background: #acd5b9;
+  color: #14271d;
+  font-weight: 700;
+}
+.pursuit-controls .pursuit-driver-toggle button[aria-pressed="true"]:not(:disabled):hover {
+  background: #c5e6ce;
+  color: #14271d;
+}
+.pursuit-controls .pursuit-driver-toggle button:disabled {
+  border-color: transparent;
+  background: transparent;
+  color: #9db2a2;
+  cursor: default;
+}
+.pursuit-controls .pursuit-driver-toggle button[aria-pressed="true"]:disabled {
+  border-color: #9ec1a9;
+  background: #9ec1a9;
+  color: #14271d;
+}
+.pursuit-controls .pursuit-driver-toggle button:focus-visible {
+  outline: 2px solid #b6dfc3;
+  outline-offset: 1px;
+}
+.pursuit-panel--simple #pursuitLearning {
+  margin-top: 6px;
+  color: #dcebe0;
+  font-variant-numeric: tabular-nums;
+}
+@media (max-width: 660px) {
+  .pursuit-panel.pursuit-panel--simple {
+    width: min(268px, calc(100vw - 24px));
+    padding: 8px 10px 7px;
+  }
+  .pursuit-panel--simple header {
+    margin-bottom: 5px;
+    gap: 2px 7px;
+  }
+  .pursuit-panel--simple #pursuitScene {
+    line-height: 1.3;
+  }
+  .pursuit-panel--simple:is([data-phase="running"], [data-phase="paused"]) #pursuitScene:not([hidden]) {
+    display: block;
+  }
+  .pursuit-panel--simple .pursuit-controls {
+    gap: 4px 6px;
+  }
+  .pursuit-panel--simple .pursuit-controls :is(#pursuitLevel, #pursuitRunBtn, #pursuitRestartBtn, #pako-training) {
+    min-height: 32px;
+    padding-block: 4px;
+  }
+  .pursuit-panel--simple #pakoWorkflows {
+    margin-top: 5px;
+    gap: 3px;
+  }
+  .pursuit-panel--simple #pakoCheckpointChoice summary {
+    min-height: 24px;
+    padding: 3px 2px;
+  }
+}
+#cityTools { position: relative; }
+.topbar:has(#cityTools[open]) { z-index: 9; }
+#cityTools > summary {
+  cursor: pointer;
+  list-style: none;
+  min-height: 36px;
+  padding: 9px 13px;
+  border: 1px solid #76857a66;
+  border-radius: 6px;
+  background: var(--panel);
+  text-shadow: none;
+}
+#cityTools > summary::marker { content: ""; }
+#cityTools[open] > summary,
+#driveSenseBtn[aria-expanded="true"] { border-color: #a6d7b8; }
+#cityTools > summary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+#cityToolItems {
+  position: absolute;
+  z-index: 9;
+  right: 0;
+  top: calc(100% + 8px);
+  width: 168px;
+  max-height: 64dvh;
+  overflow-y: auto;
+  padding: 5px;
+  display: grid;
+  gap: 2px;
+  background: #22322a;
+  border: 1px solid #728c7a;
+  border-radius: 7px;
+  box-shadow: 0 6px 18px #16271f75;
+}
+#cityToolItems > button {
+  box-sizing: border-box;
+  width: 100%;
+  text-align: left;
+  padding: 9px 12px;
+  background: transparent;
+  border: 1px solid transparent;
+}
+#cityToolItems > button:hover { background: #425c4b; }
+
+#driveSense {
+  position: fixed;
+  z-index: 3;
+  left: 24px;
+  bottom: 136px;
+  width: min(408px, calc(100vw - 28px));
+  padding: 12px;
+  border: 1px solid #779383;
+  border-radius: 8px;
+  color: #f0f5eb;
+  background: #20312a;
+  box-shadow: 0 6px 22px #17272075;
+  font-size: 12px;
+}
+#driveSense > header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+#driveSense h2 { margin: 0; font-size: 16px; }
+#driveSenseClose { min-width: 32px; min-height: 32px; padding: 0; font-size: 19px; }
+.drive-sense-views {
+  display: grid;
+  grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr);
+  align-items: start;
+  gap: 10px;
+}
+.drive-sense-views figure { margin: 0; min-width: 0; }
+.drive-sense-views figcaption { margin-bottom: 5px; font-weight: 700; }
+.drive-sense-views canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 4px;
+}
+.drive-sense-views small {
+  display: block;
+  margin: 5px 0;
+  font-size: 12px;
+  color: #d0ddd3;
+  line-height: 1.4;
+}
+.drive-sense-image {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 16 / 9;
+  padding: 0;
+  color: #cddbcf;
+  background: #14251f;
+  border-radius: 4px;
+}
+#driveSenseEmpty { padding: 8px; }
+#driveSenseDetector { width: 100%; min-height: 39px; background: #344c40; }
+#driveSenseDetector:hover { background: #456352; }
+.drive-sense-legend {
+  display: flex;
+  margin: 8px 0 4px;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.sense-person { color: #ffca83; }
+.sense-vehicle { color: #b2d0c6; }
+.sense-patrol { color: #ff9c90; }
+.drive-sense-note { margin: 0; color: #cfdbd3; line-height: 1.4; }
+#driveSenseError { margin: 8px 0 0; color: #ffb9a9; }
+body[data-city-sense] :is(#minimap, .map-label, #cameraBtn) { visibility: hidden; }
+@media (max-width: 850px) {
+  #cityTools > summary { font-size: 11px; padding: 8px; min-height: 34px; }
+  #driveSense { left: 14px; bottom: 112px; }
+}
+@media (max-width: 660px) {
+  #cityToolItems { left: auto; right: 0; }
+  #driveSense { bottom: 112px; max-height: 46dvh; overflow: auto; }
+  body[data-city-sense]:has(#pursuitTouch:not([hidden])) #driveSense { bottom: 178px; }
+  #driveSenseClose { min-width: 42px; min-height: 42px; }
+}
+@media (max-height: 560px) and (orientation: landscape) {
+  #driveSense { bottom: 70px; width: min(365px, calc(50vw - 24px)); max-height: 57dvh; overflow: auto; }
+}
+
+.pursuit-strobe {
+  --strobe-intensity: 0;
+  --strobe-cycle-ms: 420ms;
+  --strobe-blur-px: 54px;
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  overflow: hidden;
+  opacity: 1;
+  transition: opacity 480ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+@starting-style {
+  .pursuit-strobe:not([hidden]):not([data-mode="off"]) {
+    opacity: 0;
+  }
+}
+.pursuit-strobe[hidden],
+.pursuit-strobe[data-mode="off"] {
+  display: none !important;
+  opacity: 0;
+}
+.pursuit-strobe[data-mode="searching"] {
+  opacity: 0.94;
+}
+.pursuit-strobe[data-mode="cooling"] {
+  opacity: 0.84;
+}
+.pursuit-strobe__red,
+.pursuit-strobe__blue,
+.pursuit-strobe__ambient {
+  position: absolute;
+  inset: -12%;
+  pointer-events: none;
+  opacity: 0;
+  filter: blur(var(--strobe-blur-px, 54px));
+  will-change: opacity, transform;
+  mix-blend-mode: screen;
+  transform: translate3d(0, 0, 0) scale3d(1, 1, 1);
+}
+.pursuit-strobe__red {
+  background:
+    radial-gradient(ellipse 14% 34% at 3% 18%, rgba(255, 112, 96, 0.94) 0%, #ff1e3a 32%, rgba(216, 14, 48, 0.30) 64%, transparent 100%),
+    radial-gradient(ellipse 13% 30% at 2% 80%, rgba(255, 92, 88, 0.80) 0%, rgba(255, 30, 58, 0.66) 36%, rgba(188, 10, 42, 0.20) 68%, transparent 100%),
+    radial-gradient(ellipse 18% 11% at 9% 3%, rgba(255, 84, 92, 0.62) 0%, rgba(255, 30, 58, 0.24) 56%, transparent 100%);
+  animation: pursuitStrobeRed var(--strobe-cycle-ms, 420ms) cubic-bezier(0.22, 0.61, 0.36, 1) infinite;
+}
+.pursuit-strobe__blue {
+  background:
+    radial-gradient(ellipse 14% 34% at 97% 18%, rgba(124, 232, 255, 0.94) 0%, #1a75ff 32%, rgba(16, 76, 224, 0.30) 64%, transparent 100%),
+    radial-gradient(ellipse 13% 30% at 98% 80%, rgba(92, 210, 255, 0.80) 0%, rgba(26, 117, 255, 0.66) 36%, rgba(12, 62, 198, 0.20) 68%, transparent 100%),
+    radial-gradient(ellipse 18% 11% at 91% 3%, rgba(96, 196, 255, 0.62) 0%, rgba(26, 117, 255, 0.24) 56%, transparent 100%);
+  animation: pursuitStrobeBlue var(--strobe-cycle-ms, 420ms) cubic-bezier(0.22, 0.61, 0.36, 1) infinite;
+}
+.pursuit-strobe__ambient {
+  background:
+    radial-gradient(ellipse 30% 10% at 15% 2.5%, rgba(255, 30, 58, 0.56) 0%, rgba(255, 78, 96, 0.20) 52%, transparent 100%),
+    radial-gradient(ellipse 30% 10% at 85% 2.5%, rgba(26, 117, 255, 0.56) 0%, rgba(92, 212, 255, 0.20) 52%, transparent 100%);
+  animation: pursuitStrobeAmbient var(--strobe-cycle-ms, 420ms) ease-in-out infinite;
+}
+.pursuit-strobe[data-mode="searching"] :is(.pursuit-strobe__red, .pursuit-strobe__blue, .pursuit-strobe__ambient) {
+  animation-timing-function: ease-in-out;
+}
+.pursuit-strobe[data-mode="cooling"] :is(.pursuit-strobe__red, .pursuit-strobe__blue, .pursuit-strobe__ambient) {
+  animation-timing-function: ease-in-out;
+  filter: blur(var(--strobe-blur-px, 78px)) saturate(0.82);
+}
+@keyframes pursuitStrobeRed {
+  0% {
+    opacity: calc(var(--strobe-intensity, 0) * 0.10);
+    transform: translate3d(0, 0, 0) scale3d(0.99, 0.99, 1);
+  }
+  14% {
+    opacity: var(--strobe-intensity, 0);
+    transform: translate3d(0, 0, 0) scale3d(1.04, 1.02, 1);
+  }
+  21% {
+    opacity: calc(var(--strobe-intensity, 0) * 0.30);
+    transform: translate3d(0, 0, 0) scale3d(1.01, 1.005, 1);
+  }
+  32% {
+    opacity: calc(var(--strobe-intensity, 0) * 0.96);
+    transform: translate3d(0, 0, 0) scale3d(1.04, 1.02, 1);
+  }
+  52% {
+    opacity: calc(var(--strobe-intensity, 0) * 0.16);
+    transform: translate3d(0, 0, 0) scale3d(1, 0.995, 1);
+  }
+  78% {
+    opacity: calc(var(--strobe-intensity, 0) * 0.05);
+    transform: translate3d(0, 0, 0) scale3d(0.985, 0.99, 1);
+  }
+  100% {
+    opacity: calc(var(--strobe-intensity, 0) * 0.10);
+    transform: translate3d(0, 0, 0) scale3d(0.99, 0.99, 1);
+  }
+}
+@keyframes pursuitStrobeBlue {
+  0% {
+    opacity: calc(var(--strobe-intensity, 0) * 0.16);
+    transform: translate3d(0, 0, 0) scale3d(1, 0.995, 1);
+  }
+  28% {
+    opacity: calc(var(--strobe-intensity, 0) * 0.05);
+    transform: translate3d(0, 0, 0) scale3d(0.985, 0.99, 1);
+  }
+  50% {
+    opacity: calc(var(--strobe-intensity, 0) * 0.10);
+    transform: translate3d(0, 0, 0) scale3d(0.99, 0.99, 1);
+  }
+  64% {
+    opacity: var(--strobe-intensity, 0);
+    transform: translate3d(0, 0, 0) scale3d(1.04, 1.02, 1);
+  }
+  71% {
+    opacity: calc(var(--strobe-intensity, 0) * 0.30);
+    transform: translate3d(0, 0, 0) scale3d(1.01, 1.005, 1);
+  }
+  82% {
+    opacity: calc(var(--strobe-intensity, 0) * 0.96);
+    transform: translate3d(0, 0, 0) scale3d(1.04, 1.02, 1);
+  }
+  100% {
+    opacity: calc(var(--strobe-intensity, 0) * 0.16);
+    transform: translate3d(0, 0, 0) scale3d(1, 0.995, 1);
+  }
+}
+@keyframes pursuitStrobeAmbient {
+  0%, 100% {
+    opacity: calc(var(--strobe-intensity, 0) * 0.30);
+    transform: translate3d(0, 0, 0) scale3d(1, 1, 1);
+  }
+  22% {
+    opacity: calc(var(--strobe-intensity, 0) * 0.54);
+    transform: translate3d(-1.2%, 0, 0) scale3d(1.03, 1.015, 1);
+  }
+  50% {
+    opacity: calc(var(--strobe-intensity, 0) * 0.28);
+    transform: translate3d(0, 0, 0) scale3d(0.995, 1, 1);
+  }
+  72% {
+    opacity: calc(var(--strobe-intensity, 0) * 0.54);
+    transform: translate3d(1.2%, 0, 0) scale3d(1.03, 1.015, 1);
+  }
+}
+
+#pursuitWanted {
+  display: inline-flex;
+  align-items: center;
+}
+.pursuit-star {
+  display: inline-block;
+  line-height: 1;
+  transition: color 150ms ease, opacity 150ms ease, transform 150ms ease;
+}
+.pursuit-star--active,
+#pursuitWanted .pursuit-star--active {
+  color: #f8cc79;
+  text-shadow: 0 0 6px rgba(248, 204, 121, 0.3);
+}
+.pursuit-star--cooling,
+#pursuitWanted .pursuit-star--cooling {
+  color: #ffe29e;
+  animation: pursuitStarCooldown 720ms ease-in-out infinite;
+}
+.pursuit-star--empty,
+#pursuitWanted .pursuit-star--empty {
+  color: #b6c1b6;
+  opacity: 0.62;
+  text-shadow: none;
+}
+.pursuit-panel[data-cooling="true"] .pursuit-phase {
+  color: #9de5df;
+}
+@keyframes pursuitStarCooldown {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+    color: #ffe29e;
+    text-shadow: 0 0 8px rgba(255, 214, 122, 0.65);
+  }
+  50% {
+    opacity: 0.24;
+    transform: scale(0.88);
+    color: #b6c1b6;
+    text-shadow: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pursuit-strobe {
+    transition: none;
+  }
+  .pursuit-strobe__red,
+  .pursuit-strobe__blue,
+  .pursuit-strobe__ambient {
+    animation: none !important;
+    transform: none !important;
+    will-change: auto;
+    opacity: calc(var(--strobe-intensity, 0) * 0.38);
+  }
+  .pursuit-strobe__ambient {
+    opacity: calc(var(--strobe-intensity, 0) * 0.24);
+  }
+  .pursuit-star,
+  .pursuit-star--cooling,
+  #pursuitWanted .pursuit-star--cooling {
+    animation: none !important;
+    transition: none;
+  }
+  .pursuit-star--cooling,
+  #pursuitWanted .pursuit-star--cooling {
+    opacity: 0.65;
+    color: #efd494;
   }
 }

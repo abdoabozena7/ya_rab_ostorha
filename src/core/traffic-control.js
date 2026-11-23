@@ -4,6 +4,8 @@ import { integrateVehicle, followPath, vehicleProbe } from "./vehicle.js";
 import { junctionLimit } from "./junctions.js";
 import { signalSpeedLimit } from "./signals.js";
 import { isCityHunt, survivalGhostPair } from "./pursuit-survival.js";
+const distantSafeCache = new WeakMap();
+
 export function safeSpeed(world, car, command, usePlannedPath = true) {
   const district = world.environment === "egypt" || world.environment === "metro";
   let speed = command.targetSpeed,
@@ -42,6 +44,21 @@ export function safeSpeed(world, car, command, usePlannedPath = true) {
   }
   let physicalStop = false;
   if (speed <= 0 && !softStop) return { ...command, reason };
+  const distantV5Traffic = (world.config?.cityVersion ?? 0) >= 5 &&
+    world.pursuit?.gta?.config?.tacticalPursuit === "gta-tactical-v1" &&
+    car !== world.player && !world.pursuit.patrols.has(car) &&
+    Math.hypot(car.x - world.player.x, car.z - world.player.z) > 85;
+  if (distantV5Traffic) {
+    const entry = distantSafeCache.get(car);
+    if (entry && entry.until > world.tick && Math.abs(entry.req - speed) < 0.4) {
+      return {
+        ...command,
+        targetSpeed: Math.min(speed, entry.speed),
+        reason: entry.reason,
+        blockedBy: entry.blockedBy,
+      };
+    }
+  }
   const probe = vehicleProbe(car, Math.max(1.2, Math.abs(car.speed)));
   const horizon = Math.max(
     5,
@@ -95,6 +112,15 @@ export function safeSpeed(world, car, command, usePlannedPath = true) {
     reason = "red-light";
     blockedBy = null;
     physicalStop = softStop;
+  }
+  if (distantV5Traffic) {
+    distantSafeCache.set(car, {
+      until: world.tick + (reason === "driving" ? 4 : 1),
+      req: command.targetSpeed,
+      speed,
+      reason,
+      blockedBy,
+    });
   }
   const result = { ...command, targetSpeed: speed, reason, blockedBy };
   if (district && (speed < command.targetSpeed || physicalStop))

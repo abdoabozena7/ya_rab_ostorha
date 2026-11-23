@@ -44,8 +44,14 @@ import { signalSpeedLimit } from "./signals.js";
 import { VisualCrossingPredictor } from "./visual-prediction.js";
 import { createVisionScenario, advanceVisionActor } from "./vision-scenarios.js";
 import { createEgyptDistrict } from "./egypt-district.js";
-import { createUnifiedCity, METRO_POPULATION_LIMITS,
-  RUSH_CITY_POPULATION_DEFAULTS, RUSH_CITY_POPULATION_LIMITS } from "./unified-city.js";
+import {
+  createUnifiedCity,
+  GRAND_CITY_POPULATION_DEFAULTS,
+  GRAND_CITY_POPULATION_LIMITS,
+  METRO_POPULATION_LIMITS,
+  RUSH_CITY_POPULATION_DEFAULTS,
+  RUSH_CITY_POPULATION_LIMITS,
+} from "./unified-city.js";
 import { advanceCityEncounters, capCityEncounter, createCityEncounters } from "./city-encounters.js";
 import { planDistrictRoute } from "./district-navigation.js";
 import {
@@ -135,9 +141,20 @@ function freezePath(path) {
 export class World {
   constructor(options = {}, environment = "city") {
     const cityVersion = environment === "metro" ? options.cityVersion ?? 2 : null;
-    const rush = cityVersion === 4;
-    this.config = settings(rush ? { ...RUSH_CITY_POPULATION_DEFAULTS, speedLimit: 48, ...options } : options,
-      rush ? RUSH_CITY_POPULATION_LIMITS : cityVersion === 3 ? METRO_POPULATION_LIMITS : null);
+    const rush = cityVersion >= 4;
+    const grand = cityVersion === 5;
+    const popDefaults = grand ? GRAND_CITY_POPULATION_DEFAULTS : rush ? RUSH_CITY_POPULATION_DEFAULTS : null;
+    const popLimits = grand
+      ? GRAND_CITY_POPULATION_LIMITS
+      : rush
+        ? RUSH_CITY_POPULATION_LIMITS
+        : cityVersion === 3
+          ? METRO_POPULATION_LIMITS
+          : null;
+    this.config = settings(
+      popDefaults ? { ...popDefaults, speedLimit: grand ? 52 : 48, ...options } : options,
+      popLimits,
+    );
     this.environment = environment;
     this.pursuit = environment === "pursuit" ? createPursuitState(options) : null;
     if (this.pursuit) Object.assign(this.config, {
@@ -145,13 +162,13 @@ export class World {
       ...(this.pursuit.packLab ? { pursuitVariant: this.pursuit.variant } : {}),
     });
     if (environment === "egypt") Object.assign(this.config, districtOptions(options));
-    this.district = environment === "metro" ? { ...createUnifiedCity({ dense: cityVersion >= 3, rush }), metro: true } :
+    this.district = environment === "metro" ? { ...createUnifiedCity({ dense: cityVersion >= 3, rush, grand }), metro: true } :
       environment === "egypt" ? createEgyptDistrict() : null;
     this.districtCase = environment === "egypt"
       ? createDistrictCase(this.district, this.config.districtCase, this.config.seed) : null;
     if (this.district) {
       if (environment === "metro") {
-        if (![1, 2, 3, 4].includes(cityVersion))
+        if (![1, 2, 3, 4, 5].includes(cityVersion))
           throw new Error("Unsupported city layout version");
         this.config.cityVersion = cityVersion;
         if (cityVersion >= 2) this.cityEncounters = createCityEncounters(this.config);
@@ -834,13 +851,14 @@ export class World {
   followTrafficTrip(actor) {
     if (!actor.path.length && this.tick % 120 === 0) this.assignTrafficRoute(actor);
     freezePath(actor.path);
-    let command = followPath(actor, actor.path, actor.cursor);
+    const remCap = (this.config.cityVersion ?? 0) >= 5 ? ((actor.maxSpeed ?? 15) ** 2) / 4 + 6 : Infinity;
+    let command = followPath(actor, actor.path, actor.cursor, false, remCap);
     actor.cursor = command.cursor;
     if (actor.path.length && command.remaining < 1.5) {
       this.metrics.trafficTrips++;
       this.assignTrafficRoute(actor);
       freezePath(actor.path);
-      command = followPath(actor, actor.path, 0);
+      command = followPath(actor, actor.path, 0, false, remCap);
     }
     return command;
   }
@@ -895,7 +913,7 @@ export class World {
     stepPursuit(this, action, {
       pedestrianMotion: actor => stepDistrictPedestrian(this, actor, targetBlocker),
       vehicleCommand: (actor, requested) => pursuit.gta &&
-          (pursuit.patrols.has(actor) || (actor === this.player && this.mode === "manual"))
+          (pursuit.patrols.has(actor) || (actor === this.player && (this.mode === "manual" || pursuit.frozenDriver?.status === "active")))
         ? requested : actor.pursuitRole === "police"
         ? districtTrafficCommand(this, actor, requested)
         : this.districtDrivingCommand(actor, requested ?? this.followTrafficTrip(actor),

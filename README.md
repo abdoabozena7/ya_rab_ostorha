@@ -5,6 +5,12 @@ simulator is required or started.** The city, vehicle motion, traffic,
 pedestrians, road graph and driving controls run in the browser with Three.js.
 Continue this version rather than the historical native integrations below.
 
+![Grand Metro City v5 5-star RL pursuit with cinematic golden-hour lighting, pedestrian prediction ghosts, and blurred police lens strobe](./docs/screenshots/grand-city-v5-hot-pursuit.png)
+
+| Dynamic Chasing Camera & Diagonal Boulevards | GTA-Style Alley Hiding & Star-by-Star Cooldown |
+| --- | --- |
+| ![Elevated Chasing camera over diagonal boulevards with 3D red and blue police siren light bounce](./docs/screenshots/grand-city-v5-chasing-cam-diagonal.png) | ![SUV hidden in building cover losing wanted stars one by one as the police strobe calms down](./docs/screenshots/grand-city-v5-hidden-star-decay.png) |
+
 ## Run the game
 
 Requires Python **3.10+** on PATH and a WebGL-capable browser. The checked-in
@@ -33,10 +39,10 @@ fails visibly; the launcher never reuses or stops somebody else's server.
 | Car | Inspect the player car, running gear, cabin and mounted virtual sensors |
 | Camera | Inspect the actual vehicle-front pixels, exact-frame recognition and observed-motion forecast |
 | People | Inspect real human bodies and explicit world-reference walk/jog/stop controls |
-| Pursuit | Start an Arcade, Tactical, or GTA Chase on the current City streets |
-| Decision lab | Inspect the route, rules, virtual ranges and traffic queues |
-| Lab / Return to city | Enter the separate learning lab and its Pursuit drills, then resume the current city |
-| Settings | Change seed, traffic, pedestrians and speed; reset the current world |
+| Self Driving / Chase | Drive autonomously, or pick a pursuit difficulty (`Level 1` to `5 · Max`) and watch the preloaded RL PPO driver evade visible police across roads and clear curbs (or toggle `Manual` / press `I` to drive yourself) |
+| Car's view | See all-around virtual range returns, exact front-camera recognition and translucent pedestrian forecasts |
+| Tools | Open Settings, Decision lab, the Lab or the preserved experimental chase variants |
+| Return to city | Resume the same City after a Lab or inspection visit |
 | Pause / Resume | Pause and resume the browser world |
 
 Place buttons work without an NLP model. Typed/voice NLP and the explicitly
@@ -122,16 +128,15 @@ retained or reused from the earlier work and what remains engine-specific.
 
 ## One connected city
 
-The game now opens directly in **City**. The wider avenues, the Egyptian
-neighborhood, and its original narrow alleys share one road graph, traffic
-population and set of Phone destinations. For a route across both street
-types, choose **الفرن البلدي** from the default start. Main avenues have
-painted crossings and higher driving limits; neighborhood streets rely on
-slower shared space, limited sight lines, and passage priority. The two
-street types have distinct façades, and other vehicles are locally modeled
-to match their physical footprints.
+The game opens directly in **Grand Metro City (`cityVersion: 5`)** (`~960 × 800 m`, `> 765,000 m²`, preserving `cityVersion: 1..4` for deterministic legacy tests and replays). Broad boulevards, **5 diagonal radial avenues & market slash streets** (`qasr-diagonal`, `talaat-diagonal`, `ramses-diagonal`, `bazaar-slash`, `citadel-diagonal`), monumental multi-story Egyptian buildings (`28–56 m` tall), **66 curbside parked vehicles**, dense pedestrian crowd hotspots, traffic convergence hubs, and narrow neighborhood alleys share one road graph, traffic population, and set of Phone destinations. Switch live between the grounded **Behind car** camera and the dynamic speed-reactive **Chasing cam** using the HUD camera button (`Behind car` / `Chasing cam`), the Chase card toggle, or **V** (**C** switches to cockpit).
 
-Use **Pursuit → Start pursuit** in the top bar to start an arcade chase on the
+Use **Chase** on the main toolbar to pick a pursuit level (`Level 1` up to `5 · Max`) and press **Start chase** on the same City streets:
+- A trained **RL PPO checkpoint** (`public/threejs/pako-chase-ppo.json`) is preloaded by default (`RL AI` vs `Manual` toggle, or press **I** / **WASD** to take over).
+- Vanguard police cruisers deploy in close view (`18–33 m`) with backup waves, interceptors, SWAT units, and roadblocks scaling up to Level 5 Max.
+- **City-wide curb & courtyard support** (`metro-city-curbs-v2`, 316 surveyed orthogonal + diagonal sidewalk spans and interior courtyard blocks) and **sensor-only path-changing evasion** (`pako-evasive-v2`) let the SUV weave through curbside parked-car chicanes, yield/wait calmly for crossing pedestrian crowd waves, hop clear sidewalks, cut through open alleys between buildings, or execute fast 2-phase K-turns from 360° range rays, surface tracks, and front-camera forecasts.
+- Use **Train & test** inside Chase to run multi-episode PPO updates in the background Worker, watch full actor replays, and apply updated checkpoints directly back into City Chase.
+
+Use **Tools → Experiments → Arcade chase → Start pursuit** to start the original arcade variant on the
 street you are already on. The same city, original SUV and civilian actors
 keep running. Two cruisers open the chase, then backup joins from available
 streets, including heavier vans. Patrol collisions produce wrecks. The raised
@@ -172,13 +177,13 @@ available from that heading, choose a destination again.
 See the [PAKO Forever / GTA V comparison and implementation checklist](docs/CITY_PURSUIT_REVIEW.md)
 for the decisions behind this mode.
 
-**Pursuit → GTA Chase** is a separate manual variant on the same City streets.
+Under **Tools → Experiments**, **GTA Chase** is a separate manual variant on the same City streets.
 Select the opening wanted level (1–5); use **W / S** for throttle or reverse,
 **A / D** to steer, and **Space** to brake. Impacts can shove or damage cars
 without ending the chase on the first hit. Higher heat brings faster units,
 heavy vans, and temporary roadblocks. End the chase without resetting traffic.
 
-**Pursuit → Metro Dispatch** is a separate, manual ruleset on those same
+Under **Tools → Experiments**, **Metro Dispatch** is the original manual ruleset on those same
 streets. Police share reports while your SUV is inside a surveillance zone.
 Outside coverage they need a sighting to update your position; the HUD shows
 the current tracking state and Chase diagnostics lists the active zones. Losing
@@ -199,8 +204,54 @@ run in the full-density City without an SUV contact, but other actors still
 collided and the untouched acceptance suite has not been run. The brake guard
 checks a requested turn around a measured stationary vehicle; it does not
 choose the route or certify safety.
-In **Lab → Settings → Metro Dispatch training**, train one update at a time
-with the same rollout and optimizer as the CLI. You can continue or save the
+In **Lab → Settings → PAKO Training and Testing → Single-update tools**,
+train one update at a time with the same rollout and optimizer as the CLI.
+The main flow is **Chase → Difficulty → Start chase**. With no selected PPO
+checkpoint, you drive. Load a compatible file explicitly, or choose **Use
+checkpoint in Chase** after training, to watch the AI drive in development
+testing. The panel labels an unverified checkpoint **PPO test**. Unified City
+**Chase** activates `gta-tactical-v1`: privileged faster cruisers/interceptors
+(`33.5–38.0 m/s`), lane-breaking civilian overtakes, curb/courtyard pursuit,
+dynamic wanted escalation up to `5★` (`14` active units), 3D building-occluded
+GTA line-of-sight + large-distance (`86–110 m`) or alley-cover (`≥ 52 m`)
+one-by-one star decay, cross-city escape sector objectives (`≥ 450 m` away in
+Grand City v5 so the AI drives purposefully across distant districts), realistic
+speed-sensitive steering & cornering suspension dynamics, golden-hour player-
+tracking 3D lighting + police siren light bounce, and a heavily blurred
+cinematic lens-wash Red & Blue pursuit strobe that calms down when out of sight.
+Legacy `dispatch-v1` runs retain their original rules.
+
+**Chase → Train & test** selects a full City workload at that level, with a
+120-second episode deadline. It separates qualified clean escapes, other
+terminal outcomes, and actual contacts from PPO updates and transitions.
+New Chase sessions award the escape bonus only if the SUV made no contacts.
+Existing checkpoints resume with their original reward rules. Testing freezes
+the weights. Controls for limits, parallel worlds, and
+other scenarios are under **Training settings**.
+An episode failure or completion records an outcome and resets the simulator
+without another click. Pause/resume, stop, save, and frozen testing are
+separate controls. Choose one to four independent training worlds in one
+worker. **Ghost Fleet** plays back actual histories in the overhead map or
+the original City's perspective. **Compare candidate forecasts** loads a
+separate measured prediction comparison, not an achieved escape.
+**Car's view** can open during driving or a chase. Its range map is sensed
+surface geometry, not an all-knowing world map. Start the installed local
+detector to see boxes on the matching front JPEG; amber pedestrian ghosts
+come from range tracking, mint from fitted camera motion. These are short
+forecast visuals only and never appear in the detector input. A confirmed
+fresh person forecast can add a brake in a PPO test; the independent range
+guard still applies. Missing camera evidence is not proof of an empty road.
+
+Verified PAKO release admission still requires a qualified checkpoint. An
+individual clean test or an optimizer update does not prove a safe release. See
+[the corrective acceptance ledger](docs/PAKO_ACCEPTANCE.md).
+
+**Experiments → Metro Dispatch → Manual curb pilot** opts into one surveyed
+low curb on Tahrir Boulevard. The SUV must return to pavement before ending
+that chase. This does not make other sidewalks drivable; the autonomous
+release and archived driving rules do not enable the pilot.
+
+You can continue or save the
 checkpoint, or select it for City without starting a chase. Leaving the Lab
 stops an unfinished update. L09/L10 stage a real jogger crossing from either
 side. L12 adds a live patrol and ambient traffic to the crossing. The headless

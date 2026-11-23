@@ -20,7 +20,7 @@ export function pursuitCommand(body, action, dt = STEP) {
     decelerationMps2: (body.spec?.braking ?? VEHICLE.braking) * action.brake,
   };
   const speed = body.speed ?? 0;
-  const limit = action.gear > 0 ? body.maxSpeed ?? 9.72 : VEHICLE.reverseSpeed;
+  const limit = action.gear > 0 ? body.maxSpeed ?? 9.72 : (body.spec?.reverseSpeed ?? VEHICLE.reverseSpeed);
   const acceleration = (body.spec?.acceleration ?? VEHICLE.acceleration) * action.throttle;
   const targetSpeed = action.throttle === 0
     ? Math.sign(speed) * Math.max(0, Math.abs(speed) - 0.18 * dt)

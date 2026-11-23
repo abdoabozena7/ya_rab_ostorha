@@ -97,26 +97,32 @@ export function advanceVehicleState(
   const averageSpeed = (speed + oldSpeed) / 2;
   const acceleration = clamp((speed - oldSpeed) / dt, -9, 9);
   const lateral = clamp((averageSpeed * yaw) / dt, -8, 8);
+  const dy = (after.y ?? 0) - (before.y ?? 0);
+  const hasCurbStep = Math.abs(dy) > 0.002;
+  const stepRate = hasCurbStep ? dy / Math.max(dt, 1 / 60) : 0;
+  const heaveImpulse = hasCurbStep ? -clamp(stepRate * 0.38, -0.45, 0.45) : 0;
+  const forwardSign = forwardTravel < -1e-6 || (Math.abs(forwardTravel) <= 1e-6 && averageSpeed < 0) ? -1 : 1;
+  const pitchImpulse = hasCurbStep ? -forwardSign * clamp(stepRate * 0.12, -0.18, 0.18) : 0;
   const load = previous.suspension;
   const pitch = spring(
     load.pitchRad,
-    load.pitchVelocityRadS,
-    clamp(-acceleration * 0.008, -0.06, 0.06),
+    load.pitchVelocityRadS + pitchImpulse,
+    clamp(-acceleration * 0.0095, -0.068, 0.068),
     11,
-    0.065,
+    0.072,
     dt,
   );
   const roll = spring(
     load.rollRad,
     load.rollVelocityRadS,
-    clamp(lateral * 0.009, -0.065, 0.065),
+    clamp(lateral * 0.0115, -0.078, 0.078),
     10,
-    0.07,
+    0.082,
     dt,
   );
   const heave = spring(
     load.heaveM,
-    load.heaveVelocityMps,
+    load.heaveVelocityMps + heaveImpulse,
     contact ? -0.035 : -Math.min(0.018, Math.abs(acceleration) * 0.0012 + Math.abs(lateral) * 0.001),
     13,
     0.04,

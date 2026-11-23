@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { clickCityTool } from "./city-tool-button.mjs";
 import { createRequire } from "node:module";
 import { writeFile } from "node:fs/promises";
 import { join } from "node:path";
@@ -23,13 +24,13 @@ const modelReady = () => wait(() => window.sim.vision.status.result?.model?.id &
   window.sim.vision.status.result.streamId === window.sim.vision.streamId, null, 30_000);
 
 async function chooseDriver(value) {
-  await page.locator("#settingsBtn").click();
+  await clickCityTool(page, "settingsBtn");
   await page.locator("#cityDriver").selectOption(value);
   await page.locator("#closeSettings").click();
 }
 
 async function startDetector() {
-  await page.locator("#cameraScreenToggleBtn").click();
+  await clickCityTool(page, "cameraScreenToggleBtn");
   await page.locator("#cameraPerceptionStartBtn").click();
   await modelReady();
   await page.locator("#cameraScreenCloseBtn").click();
@@ -136,7 +137,7 @@ async function fixture(kind, side, driver, withhold = false) {
   }
   if (withhold) await page.unroute("**/api/vision/frame");
   if (driver === "vision-first" && !withhold) {
-    await page.locator("#cameraScreenToggleBtn").click();
+    await clickCityTool(page, "cameraScreenToggleBtn");
     await shot(`lead-${kind}-${side}.png`);
     await page.locator("#cameraScreenCloseBtn").click();
   }
@@ -148,7 +149,7 @@ async function denseCity() {
   await ready();
   assert.equal(await page.evaluate(() => window.sim.vision.status.result ?? null), null,
     "Loading City must not start local inference");
-  await page.locator("#settingsBtn").click();
+  await clickCityTool(page, "settingsBtn");
   await page.locator('[name="speedLimit"]').fill("50");
   await page.locator("#stressBtn").click();
   await page.locator("#closeSettings").click();
@@ -185,7 +186,7 @@ async function denseCity() {
     }
     requestAnimationFrame(sample);
   }));
-  await page.locator("#cameraScreenToggleBtn").click();
+  await clickCityTool(page, "cameraScreenToggleBtn");
   await wait(() => {
     const raw = document.querySelector("#cameraRawCanvas"), matched = document.querySelector("#cameraAnalysisCanvas");
     return raw?.dataset.frameId && raw.dataset.frameId === matched?.dataset.frameId &&

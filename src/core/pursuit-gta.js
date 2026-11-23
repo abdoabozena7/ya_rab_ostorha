@@ -1,5 +1,14 @@
 import { STEP, VEHICLE, clamp } from "./config.js";
-import { angleDelta, distance, pointOnRoad, sweepSafe } from "./geometry.js";
+import { angleDelta, distance, overlaps, pointOnRoad, sweepSafe } from "./geometry.js";
+import {
+  AGGRESSIVE_CHASE_PRESENCE, aggressivePatrolPace, isAggressiveChase,
+} from "./pako-aggressive-police.js";
+import { METRO_CITY_CURBS, METRO_CURB_SUPPORT, sweepSafeWithCurbs } from "./pako-curb.js";
+import { PATROL_CHAIN_YIELD, PATROL_LATERAL_YIELD } from "./pako-patrol-yield.js";
+import {
+  TACTICAL_PURSUIT_MODE, canPatrolUseCurbPrivilege, isTacticalPursuit,
+  selectTacticalSearchTarget, tacticalPatrolSpec,
+} from "./pako-tactical-police.js";
 import {
   DEFAULT_SURVEILLANCE_ZONES, DISPATCH_RULESET, createDispatchResponse, isDispatchTracked,
   resolveSurveillanceZones, updateDispatchEscape,
@@ -16,6 +25,7 @@ export const GtaChaseConfig = Object.freeze({
 export const GTA_MAX_SPEED = 28;
 export const GTA_PIN_SECONDS = 2.2;
 export const CIVILIAN_MOTION_PREVIEW = "visible-motion-v2";
+export const CIVILIAN_TIMED_YIELD = "timed-stop-reserve-v4";
 export const PATROL_TRAFFIC_PREVIEW = "visible-traffic-v1";
 export const DISPATCH_DAMAGE_FEEDBACK = "accepted-contact-v1";
 export const GTA_UNIT_TYPES = Object.freeze(["patrol", "interceptor", "swat"]);
@@ -47,7 +57,8 @@ export function resolveGtaChaseConfig(options = {}, level = GtaChaseConfig.wante
     throw new TypeError("GTA chase config must be a plain object");
   for (const key of Object.keys(options))
     if (!Object.hasOwn(GtaChaseConfig, key) &&
-        !["ruleset", "surveillanceZones", "civilianCrossingPreview", "patrolTrafficPreview", "damageFeedback"].includes(key))
+        !["ruleset", "surveillanceZones", "civilianCrossingPreview", "patrolTrafficPreview", "damageFeedback", "curbSupport",
+          "patrolChainYield", "chasePresence", "tacticalPursuit"].includes(key))
       throw new TypeError(`Unknown GTA chase config field: ${key}`);
   const config = { ...GtaChaseConfig, wantedLevelStart: level, ...options };
   if (Object.hasOwn(config, "ruleset") && config.ruleset !== "legacy" && config.ruleset !== DISPATCH_RULESET)
@@ -59,14 +70,26 @@ export function resolveGtaChaseConfig(options = {}, level = GtaChaseConfig.wante
     throw new TypeError(`surveillanceZones requires ruleset "${DISPATCH_RULESET}"`);
   if (Object.hasOwn(config, "civilianCrossingPreview") &&
       (config.ruleset !== DISPATCH_RULESET || (typeof config.civilianCrossingPreview !== "boolean" &&
-        config.civilianCrossingPreview !== CIVILIAN_MOTION_PREVIEW)))
-    throw new TypeError(`civilianCrossingPreview requires a boolean or "${CIVILIAN_MOTION_PREVIEW}" and ruleset "${DISPATCH_RULESET}"`);
+        ![CIVILIAN_MOTION_PREVIEW, CIVILIAN_TIMED_YIELD].includes(config.civilianCrossingPreview))))
+    throw new TypeError(`civilianCrossingPreview requires a boolean, "${CIVILIAN_MOTION_PREVIEW}" or "${CIVILIAN_TIMED_YIELD}" and ruleset "${DISPATCH_RULESET}"`);
   if (Object.hasOwn(config, "patrolTrafficPreview") &&
       (config.ruleset !== DISPATCH_RULESET || config.patrolTrafficPreview !== PATROL_TRAFFIC_PREVIEW))
     throw new TypeError(`patrolTrafficPreview requires "${PATROL_TRAFFIC_PREVIEW}" and ruleset "${DISPATCH_RULESET}"`);
   if (Object.hasOwn(config, "damageFeedback") &&
       (config.ruleset !== DISPATCH_RULESET || config.damageFeedback !== DISPATCH_DAMAGE_FEEDBACK))
     throw new TypeError(`damageFeedback requires "${DISPATCH_DAMAGE_FEEDBACK}" and ruleset "${DISPATCH_RULESET}"`);
+  if (Object.hasOwn(config, "curbSupport") &&
+      (config.ruleset !== DISPATCH_RULESET || ![METRO_CURB_SUPPORT, METRO_CITY_CURBS].includes(config.curbSupport)))
+    throw new TypeError(`curbSupport requires "${METRO_CURB_SUPPORT}" or "${METRO_CITY_CURBS}" and ruleset "${DISPATCH_RULESET}"`);
+  if (Object.hasOwn(config, "chasePresence") &&
+      (config.ruleset !== DISPATCH_RULESET || config.chasePresence !== AGGRESSIVE_CHASE_PRESENCE))
+    throw new TypeError(`chasePresence requires "${AGGRESSIVE_CHASE_PRESENCE}" and ruleset "${DISPATCH_RULESET}"`);
+  if (Object.hasOwn(config, "tacticalPursuit") &&
+      (config.ruleset !== DISPATCH_RULESET || config.tacticalPursuit !== TACTICAL_PURSUIT_MODE))
+    throw new TypeError(`tacticalPursuit requires "${TACTICAL_PURSUIT_MODE}" and ruleset "${DISPATCH_RULESET}"`);
+  if (Object.hasOwn(config, "patrolChainYield") &&
+      (config.ruleset !== DISPATCH_RULESET || ![PATROL_CHAIN_YIELD, PATROL_LATERAL_YIELD].includes(config.patrolChainYield)))
+    throw new TypeError(`patrolChainYield requires "${PATROL_CHAIN_YIELD}" or "${PATROL_LATERAL_YIELD}" and ruleset "${DISPATCH_RULESET}"`);
   for (const key of ["wantedLevelStart", "wantedLevelMax", "maxActivePatrols"]) {
     const min = key === "maxActivePatrols" ? 0 : 1, max = key === "maxActivePatrols" ? 32 : 5;
     if (!Number.isInteger(config[key]) || config[key] < min || config[key] > max)
@@ -104,6 +127,7 @@ export function initializeGtaDurability(actor, maxHealth, massKg) {
 export function initializeGtaPatrol(car, unitType, state) {
   const profile = GTA_PATROL_PROFILES[unitType];
   const { config } = state.gta;
+  const tactical = isTacticalPursuit(state);
   const faster = config.ruleset === DISPATCH_RULESET && DISPATCH_LIGHT_PACE[unitType];
   car.unitType = unitType;
   car.aiState = "APPROACH";
@@ -115,12 +139,37 @@ export function initializeGtaPatrol(car, unitType, state) {
     car.length = 5.2;
     car.width = 2.1;
   }
-  car.spec = { acceleration: faster?.acceleration ?? profile.acceleration, steerRate: profile.steerRate,
-    wheelbase: unitType === "swat" ? 3.15 : VEHICLE.wheelbase };
-  car.maxSpeed = faster ? Math.min(DISPATCH_LIGHT_CAP, faster.speed * config.npcSpeedMultiplier)
-    : profile.speed * config.npcSpeedMultiplier;
-  car.gtaAI = { order: state.gta.serial, nextPlan: 0, stuckTicks: 0, behindTicks: 0 };
+  if (tactical) {
+    const spec = tacticalPatrolSpec(unitType, state.wantedLevel, config.npcSpeedMultiplier);
+    car.spec = {
+      acceleration: spec.acceleration,
+      braking: spec.braking,
+      steerRate: spec.steerRate,
+      wheelbase: spec.wheelbase,
+      reverseSpeed: spec.reverseSpeed,
+      realisticDynamics: true,
+    };
+    car.maxSpeed = spec.maxSpeed;
+  } else {
+    car.spec = { acceleration: faster?.acceleration ?? profile.acceleration, steerRate: profile.steerRate,
+      wheelbase: unitType === "swat" ? 3.15 : VEHICLE.wheelbase };
+    car.maxSpeed = faster ? Math.min(DISPATCH_LIGHT_CAP, faster.speed * config.npcSpeedMultiplier)
+      : profile.speed * config.npcSpeedMultiplier;
+  }
+  car.gtaAI = { order: state.gta.serial, nextPlan: tactical ? (state.gta.serial % 12) : 0, stuckTicks: 0, behindTicks: 0 };
   initializeGtaDurability(car, profile.health, profile.mass);
+}
+
+export function refreshTacticalPatrolSpecs(state) {
+  if (!isTacticalPursuit(state)) return;
+  const mult = state.gta.config.npcSpeedMultiplier;
+  for (const car of state.patrols) {
+    if (car.aiState === "WRECKED") continue;
+    const spec = tacticalPatrolSpec(car.unitType, state.wantedLevel, mult);
+    car.spec = { ...car.spec, acceleration: spec.acceleration, braking: spec.braking,
+      steerRate: spec.steerRate, reverseSpeed: spec.reverseSpeed };
+    car.maxSpeed = spec.maxSpeed;
+  }
 }
 
 export function gtaOffset(from, forward, right = 0) {
@@ -133,17 +182,21 @@ export function gtaLocal(from, to) {
   return { forward: dx * sin + dz * cos, right: dx * cos - dz * sin };
 }
 
-function directCommand(car, aim, pace, steerBias = 0, dispatch = false) {
+function directCommand(car, aim, pace, steerBias = 0, dispatch = false, lateralAccel = PURSUIT_LATERAL_ACCEL) {
   const error = angleDelta(headingTo(car, aim), car.heading);
   const steer = clamp(error * .91 + steerBias, -VEHICLE.maxSteer, VEHICLE.maxSteer);
   const curvature = Math.abs(Math.tan(steer)) / car.spec.wheelbase;
-  const curveSpeed = Math.sqrt(PURSUIT_LATERAL_ACCEL / (dispatch ? curvature : Math.max(.008, curvature)));
+  const curveSpeed = Math.sqrt(lateralAccel / (dispatch ? curvature : Math.max(.008, curvature)));
   return { steer, targetSpeed: Math.min(car.maxSpeed, pace, curveSpeed) };
 }
 
 function recoveryBlockers(world, car) {
   const { player, pursuit } = world;
-  const blockers = world.statics.concat(world.actorIndex.near(car, 9)
+  const localStatics = world.statics.filter(s => {
+    const span = ((s.width ?? 0) + (s.length ?? 0)) * 0.5 + 9;
+    return Math.abs(s.x - car.x) <= span && Math.abs(s.z - car.z) <= span;
+  });
+  const blockers = localStatics.concat(world.actorIndex.near(car, 9)
     .filter(body => body !== car && body !== player));
   if (isDispatchTracked(pursuit.response)) {
     blockers.push({ ...vehicleProbe(player, 0), ...pursuit.response.lastSeen });
@@ -152,11 +205,26 @@ function recoveryBlockers(world, car) {
 }
 
 function projectRecovery(world, car, command, steps, blockers) {
+  const aggressive = isAggressiveChase(world.pursuit);
+  const closeNonPed = aggressive
+    ? blockers.filter(b => b.type !== "pedestrian" && overlaps(car, b, .15))
+    : [];
+  const strictBlockers = closeNonPed.length
+    ? blockers.filter(b => !closeNonPed.includes(b))
+    : blockers;
+  const curbPrivilege = canPatrolUseCurbPrivilege(world, car);
   let pose = { ...vehicleProbe(car, car.speed), gtaSlipMps: car.gtaSlipMps, gtaYawRate: car.gtaYawRate };
   for (let i = 0; i < steps; i++) {
     const next = integrateVehicle(pose, command, STEP);
     integrateGtaSlip(pose, next);
-    if (!sweepSafe(pose, next, blockers, world.roads).safe) return null;
+    const supported = curbPrivilege
+      ? sweepSafeWithCurbs(pose, next, strictBlockers, world.roads, world.pursuit.gta.curb).safe
+      : sweepSafe(pose, next, strictBlockers, world.roads).safe;
+    if (!supported) return null;
+    for (const close of closeNonPed) {
+      if (overlaps(next, close) || distance(next, close) < distance(pose, close) - .002)
+        return null;
+    }
     pose = next;
   }
   return pose;
@@ -164,8 +232,12 @@ function projectRecovery(world, car, command, steps, blockers) {
 
 function chooseDispatchRecovery(world, car) {
   const blockers = recoveryBlockers(world, car);
+  const aggressive = isAggressiveChase(world.pursuit);
+  const speeds = aggressive ? [-3.8, -2.35, 2.8] : [2.8, -2.35];
+  const steers = aggressive ? [0, -.65, .65, -.35, .35] : [0, -.5, .5];
+  const nearPlayer = aggressive && distance(car, world.player) < 5.4;
   let best = null, bestScore = -Infinity;
-  for (const targetSpeed of [2.8, -2.35]) for (const steer of [0, -.5, .5]) {
+  for (const targetSpeed of speeds) for (const steer of steers) {
     const command = { steer, targetSpeed, reason: "RECOVER" };
     const pose = projectRecovery(world, car, command, RECOVER_TICKS, blockers);
     if (!pose) continue;
@@ -175,26 +247,29 @@ function chooseDispatchRecovery(world, car) {
       const direction = road.axis === "x" ? Math.sin(pose.heading) : Math.cos(pose.heading);
       alignment = Math.max(alignment, road.flow ? direction * road.flow : Math.abs(direction));
     }
+    const unpinBonus = nearPlayer ? (distance(pose, world.player) - distance(car, world.player)) * 2.5 : 0;
     // Prefer a small move that restores a forward road heading; the normal
     // pursuit planner chooses the route again after this bounded adjustment.
-    const score = alignment * 4 + distance(car, pose) * .2 + (targetSpeed > 0 ? .08 : 0);
+    const score = alignment * 4 + distance(car, pose) * .2 + unpinBonus + (targetSpeed > 0 && !nearPlayer ? .08 : 0);
     if (score > bestScore) { best = command; bestScore = score; }
   }
   return best;
 }
 
 function usesCheckedRecovery(pursuit) {
-  return Boolean(pursuit.response.dispatch) && pursuit.wantedLevel >= 3;
+  return Boolean(pursuit.response.dispatch) && (pursuit.wantedLevel >= 3 || isAggressiveChase(pursuit));
 }
 
 export function trackGtaPatrolProgress(world, car, command, moved) {
   const ai = car.gtaAI;
   if (isGtaStationary(car) || car.aiState === "RECOVER") return;
   const { pursuit } = world;
+  const aggressive = isAggressiveChase(pursuit);
   const checked = usesCheckedRecovery(pursuit);
   const noRoute = checked && command.needsTrackedRecovery && isDispatchTracked(pursuit.response);
+  const stuckLimit = aggressive ? Math.round(.38 / STEP) : STUCK_TICKS;
   ai.stuckTicks = (command.targetSpeed > .5 || noRoute) && moved / STEP < .5 ? ai.stuckTicks + 1 : 0;
-  if (ai.stuckTicks <= STUCK_TICKS) return;
+  if (ai.stuckTicks <= stuckLimit) return;
   ai.stuckTicks = 0;
   ai.checkedRecovery = checked ? chooseDispatchRecovery(world, car) : null;
   if (checked && !ai.checkedRecovery) return;
@@ -205,12 +280,12 @@ export function trackGtaPatrolProgress(world, car, command, moved) {
   car.aiState = "RECOVER";
 }
 
-function dispatchPathCommand(car, pace, steerBias, arrivalSpeed) {
+function dispatchPathCommand(car, pace, steerBias, arrivalSpeed, lateralAccel = PURSUIT_LATERAL_ACCEL) {
   const { path } = car;
   const follow = followPath(car, path, car.cursor, true);
   const steer = clamp(follow.steer + steerBias, -VEHICLE.maxSteer, VEHICLE.maxSteer);
   const curvature = Math.abs(Math.tan(steer)) / car.spec.wheelbase;
-  let targetSpeed = Math.min(car.maxSpeed, pace, Math.sqrt(PURSUIT_LATERAL_ACCEL / curvature));
+  let targetSpeed = Math.min(car.maxSpeed, pace, Math.sqrt(lateralAccel / curvature));
   const braking = car.spec.braking ?? VEHICLE.braking;
   const margin = 2;
   const horizon = margin + targetSpeed ** 2 / (2 * braking);
@@ -235,7 +310,7 @@ function dispatchPathCommand(car, pace, steerBias, arrivalSpeed) {
       const bend = Math.abs(angleDelta(headingTo(b, c), headingTo(a, b))) /
         Math.max(.1, (length + nextLength) / 2);
       if (bend > .003)
-        targetSpeed = Math.min(targetSpeed, Math.sqrt(PURSUIT_LATERAL_ACCEL / bend + available));
+        targetSpeed = Math.min(targetSpeed, Math.sqrt(lateralAccel / bend + available));
     }
   }
   return { cursor: follow.cursor, remaining, steer, targetSpeed };
@@ -243,16 +318,33 @@ function dispatchPathCommand(car, pace, steerBias, arrivalSpeed) {
 
 function routeCommand(world, car, aim, pace, planRoute, steerBias, dispatchArrivalSpeed = null, tracked = false) {
   const ai = car.gtaAI;
+  const tactical = isTacticalPursuit(world.pursuit);
+  const lateralAccel = tactical ? 8.8 : PURSUIT_LATERAL_ACCEL;
+  const fastReplan = tactical && (world.pursuit.response?.sightedBy?.has(car) || distance(car, aim) < 68);
   if (world.tick >= ai.nextPlan) {
-    ai.nextPlan = world.tick + (car.path.length ? 48 : 65) + Math.floor(car.phase * 17);
-    if (!planRoute(world, car, aim)) {
-      car.path = [];
-      car.cursor = 0;
+    const gta = world.pursuit.gta;
+    if (tactical && world._routePlanTick === world.tick && world._routePlanCount >= 2) {
+      ai.nextPlan = world.tick + 1 + (ai.order % 4);
+    } else {
+      if (tactical) {
+        if (world._routePlanTick !== world.tick) {
+          world._routePlanTick = world.tick;
+          world._routePlanCount = 0;
+        }
+        world._routePlanCount++;
+      }
+      ai.nextPlan = world.tick + (tactical
+        ? (car.path.length ? (fastReplan ? 22 : 48) : 24) + Math.floor(car.phase * 12)
+        : (car.path.length ? 48 : 65) + Math.floor(car.phase * 17));
+      if (!planRoute(world, car, aim)) {
+        car.path = [];
+        car.cursor = 0;
+      }
     }
   }
   if (car.path.length > 1) {
     if (dispatchArrivalSpeed !== null) {
-      const { cursor, remaining, steer, targetSpeed } = dispatchPathCommand(car, pace, steerBias, dispatchArrivalSpeed);
+      const { cursor, remaining, steer, targetSpeed } = dispatchPathCommand(car, pace, steerBias, dispatchArrivalSpeed, lateralAccel);
       car.cursor = cursor;
       if (remaining >= 1.5) return { steer, targetSpeed };
     } else {
@@ -269,13 +361,15 @@ function routeCommand(world, car, aim, pace, planRoute, steerBias, dispatchArriv
   const next = gtaOffset(car, 3);
   const aligned = Math.abs(angleDelta(headingTo(car, aim), car.heading)) < 1;
   return pointOnRoad(next, world.drivingRoads) && aligned
-    ? directCommand(car, aim, Math.min(3.2, pace), steerBias, dispatchArrivalSpeed !== null)
+    ? directCommand(car, aim, Math.min(tactical ? 12 : 3.2, pace), steerBias, dispatchArrivalSpeed !== null, lateralAccel)
     : { steer: 0, targetSpeed: 0, ...(dispatchArrivalSpeed !== null && tracked ? { needsTrackedRecovery: true } : {}) };
 }
 
 /** Targets use the last accepted sighting, not a reconstruction from rendered pixels. */
 export function gtaPatrolCommand(world, car, planRoute, canDriveDirect, steerBias) {
   const { pursuit: s, tick } = world, { config } = s.gta, ai = car.gtaAI;
+  const tactical = isTacticalPursuit(s);
+  const lateralAccel = tactical ? 8.8 : PURSUIT_LATERAL_ACCEL;
   if (car.aiState === "RECOVER") {
     if (tick < ai.recoverUntil) {
       if (!ai.checkedRecovery) return { steer: ai.counterSteer, targetSpeed: -2.35, reason: "RECOVER" };
@@ -298,45 +392,56 @@ export function gtaPatrolCommand(world, car, planRoute, canDriveDirect, steerBia
   const report = s.response.lastSeen ?? s.playerStart;
   const range = distance(car, report), rel = gtaLocal(report, car);
   const reportSpeed = Math.abs(report.speed);
-  const pace = Math.min(car.maxSpeed, Math.max(5.5,
-    (dispatch && tracked ? reportSpeed * 1.14 : reportSpeed) + 2.8 + range * .15) * config.npcSpeedMultiplier);
+  const pace = (isAggressiveChase(s) || tactical) && tracked
+    ? aggressivePatrolPace(s, car, reportSpeed, range)
+    : tactical && !tracked
+      ? Math.min(car.maxSpeed, 25.5 * config.npcSpeedMultiplier)
+      : Math.min(car.maxSpeed, Math.max(5.5,
+        (dispatch && tracked ? reportSpeed * 1.14 : reportSpeed) + 2.8 + range * .15) * config.npcSpeedMultiplier);
   let state, aim, command;
   if (!seen) ai.commitUntil = null;
   if (!tracked) {
     const searching = dispatch ? s.response.dispatch.state !== "LAST_KNOWN" : s.gta.lostTicks >= 75;
     state = searching || range < 7 ? "SEARCH" : "APPROACH";
-    const sector = (ai.order + Math.floor(s.gta.lostTicks / 210)) % 4;
-    aim = state === "SEARCH" ? gtaOffset(report, sector < 2 ? 13 : -13, sector % 2 ? 9 : -9) : report;
+    if (tactical && state === "SEARCH" && s.response.lastSeen) {
+      aim = selectTacticalSearchTarget(world, car, report, ai.order);
+    } else {
+      const sector = (ai.order + Math.floor(s.gta.lostTicks / 210)) % 4;
+      aim = state === "SEARCH" ? gtaOffset(report, sector < 2 ? 13 : -13, sector % 2 ? 9 : -9) : report;
+    }
   } else {
-    const lead = clamp(report.speed * clamp(.35 + range * .015, .35, 1.1), -12, 12);
+    const lead = tactical
+      ? clamp(report.speed * clamp(.40 + range * .017, .38, 1.32), -14, 22)
+      : clamp(report.speed * clamp(.35 + range * .015, .35, 1.1), -12, 12);
+    const roleMinStar = tactical ? 2 : 3;
     state = "PURSUIT";
     aim = gtaOffset(report, lead);
-    if (s.wantedLevel >= 3 && car.squadRole === "FLANKER") {
+    if (s.wantedLevel >= roleMinStar && car.squadRole === "FLANKER") {
       state = "FLANK";
       aim = gtaOffset(report, lead + 2, car.squadSide * 4.2);
-    } else if (s.wantedLevel >= 3 && car.squadRole === "INTERCEPTOR") {
+    } else if (s.wantedLevel >= roleMinStar && car.squadRole === "INTERCEPTOR") {
       state = "BLOCK_INTERCEPT";
-      aim = gtaOffset(report, clamp(lead + 12, 11, 23), car.squadSide * 2.6);
+      aim = gtaOffset(report, clamp(lead + 12, 11, 24), car.squadSide * 2.6);
       if (rel.forward > 6 && distance(car, aim) < 5.5) {
         const inward = angleDelta(headingTo(car, report), car.heading);
         command = { steer: clamp(inward, -.55, .55), targetSpeed: distance(car, aim) < 2.8 ? 0 : 1.8 };
       }
-    } else if (s.wantedLevel >= 3 && car.squadRole === "SUPPORT") {
+    } else if (s.wantedLevel >= roleMinStar && car.squadRole === "SUPPORT") {
       aim = gtaOffset(report, lead - (4 + ai.order % 4 * 3), (ai.order % 2 ? 1 : -1) * 2.5);
     }
     const pit = seen && config.enablePitManeuver && s.wantedLevel >= 2 && car.unitType !== "swat" &&
       car.squadRole === "PRIMARY_CHASER" && report.speed > 2.8 &&
       rel.forward >= -4.5 && rel.forward < -.5 && Math.abs(rel.right) > 1.2 && Math.abs(rel.right) < 4.8 &&
-      Math.abs(car.speed - report.speed) < 4.5 && Math.abs(angleDelta(report.heading, car.heading)) < .57;
+      Math.abs(car.speed - report.speed) < (tactical ? 6.5 : 4.5) && Math.abs(angleDelta(report.heading, car.heading)) < .57;
     const ramAim = gtaOffset(report, clamp(report.speed * .28, -3, 5));
-    const ram = seen && config.enableRamming && s.wantedLevel >= 4 &&
-      (car.unitType === "swat" || (s.wantedLevel === 5 && car.squadRole !== "PRIMARY_CHASER")) &&
+    const ram = seen && config.enableRamming && s.wantedLevel >= (tactical ? 3 : 4) &&
+      (car.unitType === "swat" || (s.wantedLevel >= (tactical ? 4 : 5) && car.squadRole !== "PRIMARY_CHASER")) &&
       car.speed >= 5 && range <= 19 && rel.forward < 3 &&
       Math.abs(angleDelta(headingTo(car, ramAim), car.heading)) < .48 && canDriveDirect(world, car, ramAim, true);
     if (pit) {
       state = "PIT_MANEUVER";
       aim = gtaOffset(report, Math.max(2.5, report.speed * .48), Math.sign(rel.right) * .28);
-      command = directCommand(car, aim, report.speed + 3, 0, dispatch);
+      command = directCommand(car, aim, report.speed + 4, 0, dispatch, lateralAccel);
     } else if (seen && (ai.commitUntil > tick || (ram && tick >= (ai.nextRam ?? 0)))) {
       if (!(ai.commitUntil > tick)) {
         ai.commitUntil = tick + 38;
@@ -345,7 +450,7 @@ export function gtaPatrolCommand(world, car, planRoute, canDriveDirect, steerBia
       }
       if (canDriveDirect(world, car, ai.ramAim, true)) {
         state = "RAM";
-        command = directCommand(car, ai.ramAim, car.maxSpeed, 0, dispatch);
+        command = directCommand(car, ai.ramAim, car.maxSpeed, 0, dispatch, lateralAccel);
       } else ai.commitUntil = null;
     }
     if (!command && canDriveDirect(world, car, aim)) {
@@ -354,7 +459,7 @@ export function gtaPatrolCommand(world, car, planRoute, canDriveDirect, steerBia
         car.cursor = 0;
         ai.nextPlan = 0;
       }
-      command = directCommand(car, aim, pace, steerBias, dispatch);
+      command = directCommand(car, aim, pace, steerBias, dispatch, lateralAccel);
     }
   }
   if (!command) {
@@ -365,7 +470,7 @@ export function gtaPatrolCommand(world, car, planRoute, canDriveDirect, steerBia
       ai.routeState = state;
     }
     command = routeCommand(world, car, aim, pace, planRoute, steerBias,
-      dispatch ? (tracked ? reportSpeed : 0) : null, tracked);
+      dispatch ? (tracked ? Math.max(reportSpeed, tactical ? 18 : 0) : (tactical ? 14 : 0)) : null, tracked);
   }
   car.aiState = state;
   return { ...command, reason: state };
@@ -393,6 +498,12 @@ export function isGtaStationary(actor) {
 function mass(actor) {
   return actor.gtaMassKg ?? (actor.type === "static" ? Infinity : actor.type === "pedestrian"
     ? actor.body?.massKg ?? 75 : actor.kind === "tuktuk" ? 620 : 1450);
+}
+
+export function gtaRearPushSpeed(patrol, lead, closingSpeed) {
+  const patrolMass = mass(patrol), leadMass = mass(lead);
+  // Match the rear, non-PIT impulse without applying contact.
+  return Math.min(42, closingSpeed) * 1.17 * patrolMass / (patrolMass + leadMass);
 }
 
 function contactEvidence(a, b, closingSpeed) {
@@ -436,10 +547,22 @@ function shove(motion, pose, velocity, arm, nx, nz, delta, pit) {
   };
 }
 
+/** Predict the push without applying it to either simulated body. */
+export function gtaPreviewLateralPush(patrol, lead, normal) {
+  if (Math.abs(normal.x * Math.cos(lead.heading) - normal.z * Math.sin(lead.heading)) <= .65) return null;
+  const approach = gtaVelocity(patrol), brake = gtaVelocity(lead);
+  const closing = (approach.x - brake.x) * normal.x + (approach.z - brake.z) * normal.z;
+  if (closing <= 0) return null;
+  const preview = { a: lead, next: lead };
+  shove(preview, lead, brake, leverArm(lead, patrol), normal.x, normal.z, gtaRearPushSpeed(patrol, lead, closing), false);
+  return preview.impulse;
+}
+
 function damage(world, motion, other, closingSpeed, share) {
   const actor = motion.a;
   if (actor.health <= 0) return 0;
-  const damage = Math.min(actor.health, Math.max(0, closingSpeed - .65) ** 1.45 * share * 1.55);
+  const scale = isAggressiveChase(world.pursuit) && actor === world.player ? .32 : 1;
+  const damage = Math.min(actor.health, Math.max(0, closingSpeed - .65) ** 1.45 * share * 1.55 * scale);
   actor.health -= damage;
   if (actor.health <= 0 && world.pursuit.patrols.has(actor)) {
     actor.aiState = "WRECKED";
@@ -514,15 +637,31 @@ export function updateGtaPhase(world) {
     const dot = (a.x - player.x) * (b.x - player.x) + (a.z - player.z) * (b.z - player.z);
     return dot <= .5 * distance(a, player) * distance(b, player);
   }));
-  gta.pinnedTicks = Math.hypot(player.speed, player.gtaSlipMps) < .8 && boxed
-    ? Math.min(PIN_TICKS, gta.pinnedTicks + 1) : 0;
+  const aggressive = isAggressiveChase(s);
+  const pinLimit = aggressive ? Math.round(4.0 / STEP) : PIN_TICKS;
+  if (aggressive) {
+    const closeUnit = nearby.some(unit => distance(unit, player) <= 7.5);
+    const heldStill = (player.wait ?? 0) >= .25 ||
+      (Math.hypot(player.speed, player.gtaSlipMps) < .28 && Math.abs(player.gtaYawRate ?? 0) < .16 && !player.curbSupportId);
+    if (heldStill && (boxed || (closeUnit && (player.wait ?? 0) >= .65))) {
+      gta.pinnedTicks = Math.min(pinLimit, gta.pinnedTicks + 1);
+    } else {
+      const decay = (player.wait ?? 0) === 0 && Math.hypot(player.speed, player.gtaSlipMps) >= .6 ? 4 : 1;
+      gta.pinnedTicks = Math.max(0, gta.pinnedTicks - decay);
+    }
+  } else {
+    const pinStationary = Math.hypot(player.speed, player.gtaSlipMps) < .8;
+    gta.pinnedTicks = pinStationary && boxed
+      ? Math.min(pinLimit, gta.pinnedTicks + 1) : 0;
+  }
   metrics.capturePressureS = gta.pinnedTicks * STEP;
-  emitGtaEvent(world, "pinned_progress", { ratio: gta.pinnedTicks / PIN_TICKS });
+  emitGtaEvent(world, "pinned_progress", { ratio: gta.pinnedTicks / pinLimit });
 
   const from = s.wantedLevel, dispatch = response.dispatch;
+  const tactical = isTacticalPursuit(s);
   const tracked = dispatch ? isDispatchTracked(response) : response.unitsInContact;
   if (dispatch && tracked) s.wantedLevel = gta.fadeStars;
-  if (tracked) gta.heat += STEP / (13 + (s.wantedLevel - 1) * 2);
+  if (tracked) gta.heat += STEP / ((tactical ? 9.5 : 13) + (s.wantedLevel - 1) * 2);
   if ((!dispatch || tracked) && gta.heat >= 1 && s.wantedLevel < gta.config.wantedLevelMax) {
     s.wantedLevel++;
     gta.heat -= 1;
@@ -530,6 +669,7 @@ export function updateGtaPhase(world) {
     gta.fadeStars = s.wantedLevel;
     gta.nextDispatchTick = Math.min(gta.nextDispatchTick, world.tick);
     gta.nextRoadblockTick = Math.min(gta.nextRoadblockTick, world.tick);
+    if (tactical) refreshTacticalPatrolSpecs(s);
   }
   if (s.wantedLevel === gta.config.wantedLevelMax) gta.heat = 0;
   if (dispatch) updateDispatchEscape(world, tracked);
@@ -547,9 +687,13 @@ export function updateGtaPhase(world) {
     } else response.stage = "search";
     response.clearProgress = clamp(fading / (FADE_TICKS * Math.max(1, gta.fadeStars)), 0, 1);
   }
-  if (s.wantedLevel !== from) emitGtaEvent(world, "wanted_changed", { from, to: s.wantedLevel });
+  if (s.wantedLevel !== from) {
+    if (tactical) refreshTacticalPatrolSpecs(s);
+    if (!s.stepEvents.some(e => e.type === "wanted_changed"))
+      emitGtaEvent(world, "wanted_changed", { from, to: s.wantedLevel });
+  }
   if (player.health <= 0) s.phase = "wrecked";
-  else if (gta.pinnedTicks >= PIN_TICKS) s.phase = "busted";
+  else if (gta.pinnedTicks >= pinLimit) s.phase = "busted";
   else if (s.wantedLevel === 0) {
     s.phase = "escaped";
     metrics.escape = true;

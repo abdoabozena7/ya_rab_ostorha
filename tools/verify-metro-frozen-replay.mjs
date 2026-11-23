@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { clickCityTool } from "./city-tool-button.mjs";
 import { createHash } from "node:crypto";
 import { readFile, writeFile } from "node:fs/promises";
 import { createRequire } from "node:module";
@@ -32,7 +33,7 @@ async function openPaused(context) {
   await page.bringToFront();
   await page.locator("#pauseBtn").click();
   await page.waitForFunction(() => window.sim.paused);
-  await page.locator("#settingsBtn").click();
+  await clickCityTool(page, "settingsBtn");
   return page;
 }
 
@@ -127,7 +128,7 @@ try {
   await page.waitForFunction(seed => window.sim.world.config.seed === seed &&
     window.sim.world.capacity.traffic === 96 && window.sim.world.capacity.pedestrians === 144, seed);
   if (await page.locator("#closeSettings").isVisible()) await page.locator("#closeSettings").click();
-  if (!await page.locator("#pursuitStyle").isVisible()) await page.locator("#streetPursuitBtn").click();
+  if (!await page.locator("#pursuitStyle").isVisible()) await clickCityTool(page, "streetPursuitBtn");
   await page.locator("#pursuitStyle").selectOption("dispatch-ppo");
   await page.locator("#pursuitLevel").selectOption("5");
   assert.equal(await page.locator("#pursuitRunBtn").isDisabled(), true);
@@ -170,7 +171,7 @@ try {
   await page.screenshot({ path: join(output, "live-outcome.png") });
   const expected = await snapshot(page);
   await writeFile(join(output, "live-snapshot.json"), JSON.stringify(expected));
-  await page.locator("#settingsBtn").click();
+  await clickCityTool(page, "settingsBtn");
   const downloadWait = page.waitForEvent("download");
   await page.locator("#replayBtn").click();
   const file = join(output, "actual-replay.json");
@@ -217,7 +218,7 @@ try {
   assert.deepEqual(report.population, { vehicles: 96, pedestrians: 144 });
   assert.ok(report.exactSnapshot, JSON.stringify(report.differentFields));
 
-  await receiver.locator("#settingsBtn").click();
+  await clickCityTool(receiver, "settingsBtn");
   const index = replay.events.findIndex(row => row.command.type === "pursuit-drive" && row.command.action.throttle > .6);
   assert.ok(index > 0 && replay.events[index].tick < 120);
   const prefix = { ...replay, totalTicks: replay.events[index].tick + 6, events: replay.events.slice(0, index + 1) };

@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { clickCityTool } from "./city-tool-button.mjs";
 import { mkdir, writeFile } from "node:fs/promises";
 import { createRequire } from "node:module";
 import path from "node:path";
@@ -122,13 +123,13 @@ try {
     report.autoMoved = true;
     report.states.push({ action: "destination-autopilot", ...await sample() });
     await page.locator("#phoneToggleBtn").click();
-    await page.locator("#inspectorBtn").click();
+    await clickCityTool(page, "inspectorBtn");
     assert.equal(await page.locator("#inspectorPanel").isVisible(), true);
     await page.screenshot({ path: path.join(output, "decision-lab.png") });
     await page.locator("#closeInspector").click();
 
     await page.evaluate(() => { window.__recoveryCity = window.sim.world; });
-    await page.locator("#labBtn").click();
+    await clickCityTool(page, "labBtn");
     report.labEnvironment = await page.evaluate(() => window.sim.world.environment);
     assert.equal(report.labEnvironment, "lab");
     const cityTick = await page.evaluate(() => window.__recoveryCity.tick);
@@ -136,12 +137,12 @@ try {
     assert.equal(await page.evaluate(() => window.__recoveryCity.tick), cityTick);
     await page.screenshot({ path: path.join(output, "test-lab.png") });
     report.states.push({ action: "independent-test-lab", ...await sample() });
-    await page.locator("#labBtn").click();
+    await clickCityTool(page, "labBtn");
     report.returnedCity = await page.evaluate(() =>
       window.sim.world === window.__recoveryCity && window.sim.world.environment === "metro");
     assert.ok(report.returnedCity, "Return must restore the existing city, not a new unrelated world");
 
-    await page.locator("#settingsBtn").click();
+    await clickCityTool(page, "settingsBtn");
     await page.locator('#settingsForm [name="seed"]').fill("threejs-recovery-ui");
     await page.locator('#settingsForm button[type="submit"]').click();
     await page.waitForFunction(() => window.sim.world.config.seed === "threejs-recovery-ui");

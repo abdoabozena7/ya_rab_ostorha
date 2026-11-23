@@ -1,4 +1,5 @@
 import { STEP } from "../core/config.js";
+import { getVehicleMounts, mountToWorld } from "../core/vehicle-spec.js";
 
 export const PURSUIT_SCAN_RAYS = 72;
 export const PURSUIT_SCAN_RANGE_M = 48;
@@ -22,12 +23,12 @@ const pedBeams = Array.from({ length: PED_RAYS }, (_, i) =>
   i % PED_RAYS_PER_PRIMARY ? direction(i * PED_RAY_STEP) : beams[i / PED_RAYS_PER_PRIMARY]);
 const priority = { none: 0, civilian: 1, pedestrian: 2, police: 3, static: 4 };
 
-function candidates(world, heading) {
+function candidates(world, heading, origin = world.player) {
   const { player } = world, c = Math.cos(heading), s = Math.sin(heading);
   const shapes = [];
   function add(body, kind) {
     if (body === player) return;
-    const dx = body.x - player.x, dz = body.z - player.z;
+    const dx = body.x - origin.x, dz = body.z - origin.z;
     const right = dx * c - dz * s, forward = dx * s + dz * c;
     const circle = kind === "pedestrian";
     const w = body.width / 2, l = body.length / 2;
@@ -96,6 +97,34 @@ function firstReturn(shapes, { right, forward }) {
     }
   }
   return { rangeM, kind };
+}
+
+const cornerBeams = Object.freeze(Object.fromEntries([["left-outer", -1], ["right-outer", 1]].map(([id, side]) =>
+  [id, Array.from({ length: 12 }, (_, i) => {
+    const angleRad = side * (i + 1) * RAY_STEP / 4;
+    return { angleRad, ...direction(angleRad) };
+  })])));
+
+// Supplementary planar observation only; the primary scan and guard do not use it.
+export function samplePursuitCornerRays(world) {
+  const { tick, player } = world;
+  const heading = player.heading ?? 0;
+  if (!Number.isSafeInteger(tick) || tick < 0 || ![player.x, player.z, heading].every(Number.isFinite))
+    throw new RangeError("Invalid pursuit corner sample");
+  const c = Math.cos(heading), s = Math.sin(heading);
+  const rays = getVehicleMounts(player).ranges.flatMap(mount => {
+    const fan = cornerBeams[mount.id];
+    if (!fan) return [];
+    const { x, z } = mountToWorld(player, mount.position);
+    const shapes = candidates(world, heading, { x, z });
+    return fan.map(beam => {
+      const { rangeM, kind } = firstReturn(shapes, beam);
+      return Object.freeze({ mount: mount.id, angleRad: beam.angleRad, rangeM, kind, originX: x, originZ: z,
+        x: x + rangeM * (beam.right * c + beam.forward * s),
+        z: z + rangeM * (beam.forward * c - beam.right * s) });
+    });
+  });
+  return Object.freeze({ tick, rays: Object.freeze(rays) });
 }
 
 function pedestrianReturns(shapes, rays) {
@@ -184,10 +213,13 @@ function correspond(current, previous, heading) {
   });
 }
 
+const vehicleForecastMotion = new WeakMap();
+
 function track(point, tick, match, previous) {
   const { kind, rightM, forwardM, rangeM } = point;
   const motionKnown = match !== null && tick === point.tick &&
     point.tick - previous[match.index].tick === PURSUIT_SCAN_TICKS;
+  const old = motionKnown ? previous[match.index] : null;
   let rightMps = 0, forwardMps = 0, ttcS = null;
   if (motionKnown) {
     const elapsed = PURSUIT_SCAN_TICKS * STEP;
@@ -198,9 +230,52 @@ function track(point, tick, match, previous) {
     // observation horizon. It does not predict a future swept collision.
     if (closing > EPS) ttcS = Math.min(MAX_TTC_S, rangeM / closing);
   }
-  return Object.freeze({
-    kind, rightM, forwardM, rightMps, forwardMps, ageS: (tick - point.tick) * STEP, motionKnown, ttcS,
+  const angularStep = kind === "pedestrian" ? PED_RAY_STEP : RAY_STEP;
+  // Result is a measured surface point, not the object's center. This is a
+  // quantization allowance; face changes and misassociation can exceed it.
+  const positionAllowanceM = Math.max(.1, rangeM * Math.sin(angularStep / 2));
+  const elapsedS = PURSUIT_SCAN_TICKS * STEP;
+  const estimatedXMps = old ? (point.worldX - old.worldX) / elapsedS : null;
+  const estimatedZMps = old ? (point.worldZ - old.worldZ) / elapsedS : null;
+  const result = Object.freeze({
+    trackId: point.trackId, kind, rightM, forwardM, rightMps, forwardMps,
+    ageS: (tick - point.tick) * STEP, motionKnown, ttcS,
+    observedTick: point.tick, observedXM: point.worldX, observedZM: point.worldZ,
+    estimatedXMps, estimatedZMps, positionAllowanceM,
   });
+  if (old && (kind === "civilian" || kind === "police")) {
+    const preceding = old.surfaceMotion;
+    point.surfaceMotion = { x: estimatedXMps, z: estimatedZMps, allowanceM: positionAllowanceM };
+    // A matched track can move its representative return to a different vehicle face.
+    const tolerance = preceding ? Math.min(4, 1.1 + .5 * (positionAllowanceM + preceding.allowanceM) / elapsedS) : 0;
+    if (preceding && Math.hypot(estimatedXMps - preceding.x, estimatedZMps - preceding.z) <= tolerance)
+      vehicleForecastMotion.set(result, { x: (estimatedXMps + preceding.x) / 2, z: (estimatedZMps + preceding.z) / 2 });
+  }
+  return result;
+}
+
+const FORECAST_SECONDS = Object.freeze([.5, 1, 2, 3, 5]);
+
+export function forecastPursuitSurface(track) {
+  if (track.ageS > 0) return { status: "not-observed", points: [] };
+  if (track.kind !== "static" && !track.motionKnown) return { status: "motion-unresolved", points: [] };
+  const stationary = track.kind === "static";
+  const vehicle = track.kind === "civilian" || track.kind === "police";
+  const fit = vehicle ? vehicleForecastMotion.get(track) : null;
+  const vx = stationary ? 0 : vehicle ? fit?.x : track.estimatedXMps;
+  const vz = stationary ? 0 : vehicle ? fit?.z : track.estimatedZMps;
+  if (![vx, vz, track.observedXM, track.observedZM, track.positionAllowanceM].every(Number.isFinite))
+    return { status: "motion-unresolved", points: [] };
+  const points = [];
+  for (const secondsAhead of FORECAST_SECONDS) {
+    const allowanceM = track.positionAllowanceM + (stationary ? 0 :
+      secondsAhead * Math.max(.35, track.positionAllowanceM / (STEP * PURSUIT_SCAN_TICKS)) +
+      secondsAhead ** 2 * (track.kind === "pedestrian" ? .55 : 1.2));
+    if (allowanceM > 9) break;
+    points.push({ secondsAhead, xM: track.observedXM + vx * secondsAhead,
+      zM: track.observedZM + vz * secondsAhead, allowanceM });
+  }
+  return { status: points.length ? "constant-velocity" : "horizon-unresolved", points };
 }
 
 /** Chase-local virtual planar geometry, independent of mounted camera/ranges. */
@@ -208,6 +283,7 @@ export class PursuitScanner {
   #world;
   #frame;
   #history = [];
+  #nextTrack = 0;
 
   sample(world) {
     const { tick, player } = world;
@@ -216,6 +292,7 @@ export class PursuitScanner {
       this.#world = world;
       this.#frame = undefined;
       this.#history = [];
+      this.#nextTrack = 0;
     }
     if (this.#frame && tick - this.#frame.tick < PURSUIT_SCAN_TICKS) return this.#frame;
     const heading = player.heading ?? 0;
@@ -229,6 +306,12 @@ export class PursuitScanner {
       .sort((a, b) => a.rangeM - b.rangeM);
     const previous = this.#history.filter(point => tick - point.tick < TRACK_TTL_TICKS);
     const matches = correspond(current, previous, heading);
+    const c = Math.cos(heading), s = Math.sin(heading);
+    current.forEach((point, i) => {
+      point.trackId = matches[i] ? previous[matches[i].index].trackId : ++this.#nextTrack;
+      point.worldX = player.x + point.rightM * c + point.forwardM * s;
+      point.worldZ = player.z - point.rightM * s + point.forwardM * c;
+    });
     const matched = new Set(matches.flatMap(match => match ? [match.index] : []));
     const stale = previous.filter((_, i) => !matched.has(i))
       .sort((a, b) => b.tick - a.tick || a.rangeM - b.rangeM);

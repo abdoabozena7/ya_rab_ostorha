@@ -138,7 +138,12 @@ export function walkingWaypoint(world, person, nearby) {
   if (obstacles.some((a) => overlaps(pose, a, 0.2))) {
     for (const offset of [1.5, -1.5, 3, -3, 5, -5]) {
       const target = { ...person.target };
-      target[person.road.axis === "z" ? "z" : "x"] += offset;
+      if (person.road?.axis === "diag") {
+        target.x += person.road.ux * offset;
+        target.z += person.road.uz * offset;
+      } else {
+        target[person.road?.axis === "z" ? "z" : "x"] += offset;
+      }
       pose.x = target.x;
       pose.z = target.z;
       if (!obstacles.some((a) => overlaps(pose, a, 0.3))) {
