@@ -558,21 +558,18 @@ function forwardPath(world, car, horizonM = 110) {
   const result = [{ x: car.x, z: car.z, heading: car.heading }];
   const distances = [0];
   const fromIndices = [-1];
-  let geometry = null, tail = -1;
+  let geometry = null, tail = -1, lazyManual = null, lazyRay = null;
   const manual = car === world.player && world.mode === "manual";
   if (manual) {
     const sign = (world.input?.targetSpeed ?? car.speed) < 0 ? -1 : 1;
     const probe = vehicleProbe(car, sign * Math.max(1.2, Math.abs(car.speed)));
-    const command = { targetSpeed: probe.speed, steer: world.input?.steer ?? 0 };
-    let travelled = 0;
-    for (let i = 0; i < 500 && travelled < 90; i++) {
-      const x = probe.x, z = probe.z;
-      command.targetSpeed = probe.speed;
-      integrateVehicle(probe, command, Math.min(0.16, 0.3 / Math.abs(probe.speed)), probe);
-      travelled += Math.hypot(x - probe.x, z - probe.z);
-      result.push({ x: probe.x, z: probe.z, heading: probe.heading });
-      distances.push(travelled);
-    }
+    lazyManual = {
+      probe,
+      command: { targetSpeed: probe.speed, steer: world.input?.steer ?? 0 },
+      step: 0,
+      travelled: 0,
+      maxTravelM: Math.min(90, horizonM),
+    };
   } else if (car.path?.length > 1) {
     geometry = pathGeometry(car.path);
     const cursor = car.cursor ?? 0;
@@ -595,21 +592,44 @@ function forwardPath(world, car, horizonM = 110) {
   } else {
     const sign = car.speed < 0 ? -1 : 1;
     const s = Math.sin(car.heading), c = Math.cos(car.heading);
-    for (let d = 0.5; d <= 90; d += 0.5) {
-      result.push({
-        x: car.x + s * d * sign,
-        z: car.z + c * d * sign,
-        heading: car.heading,
-      });
-      distances.push(d);
-    }
+    lazyRay = {
+      x0: car.x,
+      z0: car.z,
+      sx: s * sign,
+      cz: c * sign,
+      heading: car.heading,
+      d: 0.5,
+      maxD: Math.min(90, horizonM),
+    };
   }
-  return { points: result, distances, geometry, fromIndices, tail, horizonM };
+  return { points: result, distances, geometry, fromIndices, tail, horizonM, lazyManual, lazyRay };
 }
 
 // Most zones only need the approach prefix. Extend it on demand, in the same
 // addition order, and share it with the other zones for this car and tick.
 function extendTrajectory(path) {
+  if (path.lazyManual) {
+    const m = path.lazyManual;
+    if (m.step >= 500 || m.travelled >= m.maxTravelM) return false;
+    const probe = m.probe;
+    const x = probe.x, z = probe.z;
+    m.command.targetSpeed = probe.speed;
+    integrateVehicle(probe, m.command, Math.min(0.16, 0.3 / Math.abs(probe.speed)), probe);
+    m.travelled += Math.hypot(x - probe.x, z - probe.z);
+    m.step++;
+    path.points.push({ x: probe.x, z: probe.z, heading: probe.heading });
+    path.distances.push(m.travelled);
+    return true;
+  }
+  if (path.lazyRay) {
+    const r = path.lazyRay;
+    if (r.d > r.maxD) return false;
+    const d = r.d;
+    r.d += 0.5;
+    path.points.push({ x: r.x0 + r.sx * d, z: r.z0 + r.cz * d, heading: r.heading });
+    path.distances.push(d);
+    return true;
+  }
   const from = path.tail;
   if (from < 0 || path.geometry.next[from] < 0) return false;
   const distances = path.distances, travelled = distances[distances.length - 1];
@@ -685,12 +705,19 @@ function approachBlocker(world, car, route) {
 
 function storageBlocker(world, car, route, zone) {
   if (!route.hasExit) return zone.id;
-  const obstacles = (world.actors ?? []).filter((actor) => actor.id !== car.id)
-    .concat(world.statics ?? []);
-  for (const pose of route.exitSamples) {
+  const actors = world.actors ?? [];
+  const statics = world.statics ?? [];
+  for (let pIdx = 0; pIdx < route.exitSamples.length; pIdx++) {
+    const pose = route.exitSamples[pIdx];
     if (!bodyOnRoad(pose, world.roads, 0.12)) return zone.id;
-    const blocker = obstacles.find((other) => overlaps(pose, other, 0.12));
-    if (blocker) return blocker.id;
+    for (let aIdx = 0; aIdx < actors.length; aIdx++) {
+      const other = actors[aIdx];
+      if (other.id !== car.id && overlaps(pose, other, 0.12)) return other.id;
+    }
+    for (let sIdx = 0; sIdx < statics.length; sIdx++) {
+      const other = statics[sIdx];
+      if (overlaps(pose, other, 0.12)) return other.id;
+    }
   }
   return null;
 }
@@ -815,19 +842,16 @@ export function planDistrictTrafficTrip(world, car, start) {
   return fallback.length ? markImmutablePath(fallback) : fallback;
 }
 
-function replanQueuedVehicle(world, car, zone, queuedRoute, waitS = 0) {
-  if (car.district.caseId && !car.district.allowReroute) return false;
-  // A different internal road cannot bypass an occupied atomic resource.
-  // Replan for a blocked exit, not merely to spend the same wait on a longer trip.
-  if (!queuedRoute || !storageBlocker(world, car, queuedRoute, zone)) return false;
-  const end = car.path?.at(-1), before = car.path?.at(-2);
-  const goal = car.goal ?? car.parking ?? car.district.goal ?? (end && before ? {
-    x: end.x, z: end.z,
-    heading: Math.atan2(end.x - before.x, end.z - before.z),
-  } : null);
-  if (!goal) return false;
-  const remaining = car.parking ? trajectoryLength(forwardPath(world, car, Infinity)) : null;
-  const district = world.district;
+const excludedZoneProfileCache = new WeakMap();
+
+function getExcludedSingleLaneProfile(district, zone) {
+  let byZone = excludedZoneProfileCache.get(district);
+  if (!byZone) {
+    byZone = new Map();
+    excludedZoneProfileCache.set(district, byZone);
+  }
+  const cacheKey = `${zone.id}:${district.drivingRoads.length}`;
+  if (byZone.has(cacheKey)) return byZone.get(cacheKey);
   const roads = district.drivingRoads.filter((road) => {
     if (zone.kind !== "single-lane" || road.flow || (road.laneOffsetM ?? 0) !== 0)
       return true;
@@ -843,10 +867,32 @@ function replanQueuedVehicle(world, car, zone, queuedRoute, waitS = 0) {
       : road.fixed < zone.minZ || road.fixed > zone.maxZ ||
         road.min < zone.minX || road.max > zone.maxX;
   });
+  const profile = roads.length < district.drivingRoads.length
+    ? { ...district, drivingRoads: roads }
+    : null;
+  byZone.set(cacheKey, profile);
+  return profile;
+}
+
+function replanQueuedVehicle(world, car, zone, queuedRoute, waitS = 0) {
+  if (car.district.caseId && !car.district.allowReroute) return false;
+  // A different internal road cannot bypass an occupied atomic resource.
+  // Replan for a blocked exit, not merely to spend the same wait on a longer trip.
+  if (!queuedRoute || !storageBlocker(world, car, queuedRoute, zone)) return false;
+  const end = car.path?.at(-1), before = car.path?.at(-2);
+  const goal = car.goal ?? car.parking ?? car.district.goal ?? (end && before ? {
+    x: end.x, z: end.z,
+    heading: Math.atan2(end.x - before.x, end.z - before.z),
+  } : null);
+  if (!goal) return false;
+  const remaining = car.parking ? trajectoryLength(forwardPath(world, car, Infinity)) : null;
+  const district = world.district;
+  const excludedProfile = zone.kind === "single-lane"
+    ? getExcludedSingleLaneProfile(district, zone)
+    : null;
   // Avoid the occupied single-lane link, not its registered turning support.
   // Replanning a queue is still the same trip, never a new random destination.
-  const profiles = roads.length < district.drivingRoads.length
-    ? [{ ...district, drivingRoads: roads }, district] : [district];
+  const profiles = excludedProfile ? [excludedProfile, district] : [district];
   if (queuedRoute && storageBlocker(world, car, queuedRoute, zone)) {
     const alternative = withoutQueuedDeparture(world, queuedRoute);
     if (alternative) profiles.push(alternative);
@@ -877,10 +923,44 @@ function replanQueuedVehicle(world, car, zone, queuedRoute, waitS = 0) {
 }
 
 function routeChanged(before, after) {
-  for (let i = 0; i < after.length; i += 8)
-    if (!before.some((point) =>
-      (point.x - after[i].x) ** 2 + (point.z - after[i].z) ** 2 <= 1))
-      return true;
+  if (before.length <= 64 || after.length <= 64) {
+    for (let i = 0; i < after.length; i += 8)
+      if (!before.some((point) =>
+        (point.x - after[i].x) ** 2 + (point.z - after[i].z) ** 2 <= 1))
+        return true;
+    return false;
+  }
+  const cells = new Map();
+  for (let j = 0; j < before.length; j++) {
+    const pt = before[j];
+    const cx = Math.floor(pt.x * 0.5);
+    const cz = Math.floor(pt.z * 0.5);
+    const k = (cx << 16) ^ (cz & 0xffff);
+    let bucket = cells.get(k);
+    if (bucket) bucket.push(pt);
+    else cells.set(k, [pt]);
+  }
+  for (let i = 0; i < after.length; i += 8) {
+    const ax = after[i].x, az = after[i].z;
+    const cx0 = Math.floor(ax * 0.5), cz0 = Math.floor(az * 0.5);
+    let matched = false;
+    for (let dx = -1; dx <= 1 && !matched; dx++) {
+      const hi = (cx0 + dx) << 16;
+      for (let dz = -1; dz <= 1; dz++) {
+        const bucket = cells.get(hi ^ ((cz0 + dz) & 0xffff));
+        if (!bucket) continue;
+        for (let b = 0; b < bucket.length; b++) {
+          const pt = bucket[b];
+          if ((pt.x - ax) ** 2 + (pt.z - az) ** 2 <= 1) {
+            matched = true;
+            break;
+          }
+        }
+        if (matched) break;
+      }
+    }
+    if (!matched) return true;
+  }
   return false;
 }
 
@@ -1097,7 +1177,8 @@ export function updateDistrictTraffic(world) {
   if (state.lastTick === world.tick) return;
   if ((world.config?.cityVersion ?? 0) >= 5 &&
       world.pursuit?.gta?.config?.tacticalPursuit === "gta-tactical-v1" &&
-      state.lastTick === world.tick - 1 && (world.tick & 1) === 1) {
+      state.lastTick === world.tick - 1 &&
+      (world.tick & 1) === 1) {
     return;
   }
   state.lastTick = world.tick;
@@ -1280,7 +1361,16 @@ export function updateDistrictTraffic(world) {
         stopBeforeM: queueClearance(world, car, zone),
         ticket: entry.ticket, waitS: entry.waitS,
       };
-      if (entry.waitS > 6 &&
+      const grandTacticalChase =
+        (world.config?.cityVersion ?? 0) >= 5 &&
+        world.pursuit?.gta?.config?.tacticalPursuit === "gta-tactical-v1";
+      const farAmbientInChase =
+        grandTacticalChase &&
+        car !== world.player &&
+        !world.pursuit?.patrols?.has?.(car) &&
+        (car.x - (world.player?.x ?? 0)) ** 2 + (car.z - (world.player?.z ?? 0)) ** 2 > 110 * 110;
+      if (!farAmbientInChase &&
+          entry.waitS > 6 &&
           (car !== world.player || (world.mode === "auto" && car.district.allowReroute === true)) &&
           (!car.district.caseId || car.district.allowReroute) &&
           car.district.reroutedTicket !== entry.ticket && car.speed < 0.08 &&

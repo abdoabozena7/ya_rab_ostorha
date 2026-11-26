@@ -1,5 +1,7 @@
 import * as THREE from "three";
 import { createSurvivalEffects } from "./pursuit-survival-effects.js";
+import { applyTrafficCrashDamage } from "./unified-traffic-model.js";
+import { getPatrolVisualDamage } from "../core/pursuit-world.js";
 import { roadRect } from "../core/geometry.js";
 
 const ROAD_TOP = 0.115; // WorldView's shared asphalt surface.
@@ -58,7 +60,7 @@ function bounceDistanceGain(distM) {
   if (!(distM < BOUNCE_LIGHT_RANGE_M)) return 0;
   if (distM <= 25) {
     const nearT = Math.max(0, distM / 25);
-    return THREE.MathUtils.lerp(21.5, 14.5, nearT * nearT);
+    return THREE.MathUtils.lerp(17.4, 14.5, nearT * nearT);
   }
   return 14.5 * (1 - THREE.MathUtils.smoothstep(distM, 25, BOUNCE_LIGHT_RANGE_M));
 }
@@ -279,10 +281,10 @@ export function createPursuitView(scene, world) {
   const patrolShells = new Map();
   const staticLenses = [paints.coolLens, paints.warmLens];
   const tiltEuler = new THREE.Euler(), tiltQuat = new THREE.Quaternion(), haloPos = new THREE.Vector3();
-  const redBounceLight = new THREE.PointLight(0xff2442, 0, 26, 1.6);
+  const redBounceLight = new THREE.PointLight(0xff2442, 0, 13.5, 2.2);
   redBounceLight.name = "pursuit-bounce-red";
   redBounceLight.castShadow = false;
-  const blueBounceLight = new THREE.PointLight(0x2484ff, 0, 26, 1.6);
+  const blueBounceLight = new THREE.PointLight(0x2484ff, 0, 13.5, 2.2);
   blueBounceLight.name = "pursuit-bounce-blue";
   blueBounceLight.castShadow = false;
   const haloGroup = new THREE.Group();
@@ -291,7 +293,7 @@ export function createPursuitView(scene, world) {
   if (world?.player) {
     layer.add(redBounceLight, blueBounceLight);
   }
-  let rushLenses, cinematicLenses, diffuser, glowTexture = null, lastActiveHalos = 0;
+  let rushLenses, cinematicLenses, diffuser, glowTexture = null, lastActiveHalos = 0, lastCrumpledPatrols = 0;
   function sharedGlowTexture() {
     return (glowTexture ??= createRadialGlowTexture());
   }
@@ -354,6 +356,9 @@ export function createPursuitView(scene, world) {
   }
 
   function restorePatrolShell(kit) {
+    if (kit.source) {
+      applyTrafficCrashDamage(kit.source, { front: 0, rear: 0, left: 0, right: 0, wrecked: false });
+    }
     if (!kit.livery) return;
     const { shell, original, paint } = kit.livery;
     shell.geometry = original;
@@ -407,11 +412,12 @@ export function createPursuitView(scene, world) {
   }
 
   function syncRoads(current) {
-    const active = new Set();
-    for (const road of current.roads ?? []) {
+    const roads = current.roads ?? null;
+    let active = null;
+    for (const road of roads ?? []) {
       if (road.pursuitShoulder !== true || !positive(road.supportHeightM) ||
           !positive(road.width) || !finite(road.fixed) || !(road.max >= road.min)) continue;
-      active.add(road);
+      (active ??= new Set()).add(road);
       let slab = shoulders.get(road);
       if (!slab) {
         const mesh = new THREE.Mesh(box, paints.shoulder);
@@ -426,37 +432,50 @@ export function createPursuitView(scene, world) {
         (r.minZ + r.maxZ) / 2);
       slab.mesh.scale.set(r.maxX - r.minX, road.supportHeightM, r.maxZ - r.minZ);
     }
-    for (const [road, { mesh }] of shoulders) if (!active.has(road)) {
-      mesh.removeFromParent();
-      shoulders.delete(road);
+    if (shoulders.size) {
+      for (const [road, { mesh }] of shoulders) if (!active?.has(road)) {
+        mesh.removeFromParent();
+        shoulders.delete(road);
+      }
     }
   }
 
   function syncBarriers(current) {
-    const active = new Set();
-    for (const site of current.statics ?? []) {
-      if (site.kind !== "barrier" || !positive(site.width) || !positive(site.length) ||
+    const statics = current.statics ?? null;
+    let active = null;
+    for (let i = 0; i < (statics?.length ?? 0); i++) {
+      const site = statics[i];
+      if (!site || site.kind !== "barrier" || !positive(site.width) || !positive(site.length) ||
           !finite(site.x) || !finite(site.z)) continue;
-      active.add(site.id);
+      (active ??= new Set()).add(site.id);
+      const isGtaRb = Boolean(site.gtaRoadblock);
       let root = barriers.get(site.id);
       if (!root) {
         root = new THREE.Group();
         root.name = `pursuit-barrier:${site.id}`;
-        root.userData.gtaRoadblock = Boolean(site.gtaRoadblock);
-        const shell = new THREE.Mesh(box, site.gtaRoadblock ? paints.gtaRoadblock : paints.closure);
+        root.userData.gtaRoadblock = isGtaRb;
+        const shell = new THREE.Mesh(box, isGtaRb ? paints.gtaRoadblock : paints.closure);
         shell.castShadow = shell.receiveShadow = true;
         root.add(shell, new THREE.Mesh(warningStripes, paints.reflector));
         layer.add(root);
         barriers.set(site.id, root);
+      } else if (root.userData.gtaRoadblock !== isGtaRb) {
+        root.userData.gtaRoadblock = isGtaRb;
+        if (root.children[0]?.isMesh) {
+          root.children[0].material = isGtaRb ? paints.gtaRoadblock : paints.closure;
+        }
       }
       const height = positive(site.height) ? site.height : 0.65;
-      root.position.set(site.x, ROAD_TOP + height / 2, site.z);
+      const bElev = current.terrainElevationAt ? current.terrainElevationAt(site.x, site.z) : 0;
+      root.position.set(site.x, ROAD_TOP + bElev + height / 2, site.z);
       root.rotation.y = site.heading ?? 0;
       root.scale.set(site.width, height, site.length);
     }
-    for (const [id, root] of barriers) if (!active.has(id)) {
-      root.removeFromParent();
-      barriers.delete(id);
+    if (barriers.size) {
+      for (const [id, root] of barriers) if (!active?.has(id)) {
+        root.removeFromParent();
+        barriers.delete(id);
+      }
     }
   }
 
@@ -470,7 +489,8 @@ export function createPursuitView(scene, world) {
       if (impact.x >= rect.minX && impact.x <= rect.maxX &&
           impact.z >= rect.minZ && impact.z <= rect.maxZ)
         height = Math.max(height, road.supportHeightM);
-    contact.position.set(impact.x, ROAD_TOP + height + 0.014, impact.z);
+    const cElev = current.terrainElevationAt ? current.terrainElevationAt(impact.x, impact.z) : 0;
+    contact.position.set(impact.x, ROAD_TOP + cElev + height + 0.014, impact.z);
   }
 
   function isPatrolWrecked(actor, current) {
@@ -497,8 +517,10 @@ export function createPursuitView(scene, world) {
         ? kit.record.root
         : null;
       const ax = resident ? resident.position.x : actor.x;
-      const ay = resident ? resident.position.y : ROAD_TOP + (actor.y ?? 0);
       const az = resident ? resident.position.z : actor.z;
+      const ay = resident
+        ? resident.position.y
+        : ROAD_TOP + (current.terrainElevationAt && finite(ax) && finite(az) ? current.terrainElevationAt(ax, az) : 0) + (actor.y ?? 0);
       const heading = resident ? resident.rotation.y : (actor.heading ?? 0);
       if (!finite(ax) || !finite(az)) continue;
       const dist = Math.hypot(ax - px, az - pz);
@@ -557,6 +579,7 @@ export function createPursuitView(scene, world) {
     const subAlpha = finite(alpha) ? THREE.MathUtils.clamp(alpha, 0, 1) : 0;
     const tickNow = (current.tick ?? 0) + subAlpha;
     lastActiveHalos = 0;
+    lastCrumpledPatrols = 0;
     updateBounceLights(current, tickNow, running);
     if (!patrols.size) return;
     const hasPlayer = Boolean(current?.player);
@@ -613,6 +636,28 @@ export function createPursuitView(scene, world) {
         continue;
       }
       const wrecked = isPatrolWrecked(actor, current);
+      if (source) {
+        const hitSpec = getPatrolVisualDamage(actor);
+        const healthLoss = positive(actor.maxHealth) && finite(actor.health)
+          ? THREE.MathUtils.clamp((actor.maxHealth - actor.health) / actor.maxHealth, 0, 1)
+          : 0;
+        const frontDmg = Math.max(hitSpec?.front ?? 0, wrecked ? 0.72 : healthLoss * 0.65);
+        const rearDmg = hitSpec?.rear ?? 0;
+        const leftDmg = hitSpec?.left ?? 0;
+        const rightDmg = hitSpec?.right ?? 0;
+        const dmgKey = `${frontDmg.toFixed(3)}:${rearDmg.toFixed(3)}:${leftDmg.toFixed(3)}:${rightDmg.toFixed(3)}:${wrecked ? 1 : 0}`;
+        if (kit.lastDmgKey !== dmgKey || kit.lastDmgSource !== source) {
+          applyTrafficCrashDamage(source, { front: frontDmg, rear: rearDmg, left: leftDmg, right: rightDmg, wrecked });
+          kit.lastDmgKey = dmgKey;
+          kit.lastDmgSource = source;
+        }
+        if (frontDmg > 0.05 || rearDmg > 0.05 || leftDmg > 0.05 || rightDmg > 0.05 || wrecked) {
+          lastCrumpledPatrols++;
+        }
+      }
+      kit.housing.rotation.z = wrecked ? (kit.bank ? 0.22 : -0.22) : 0;
+      kit.lenses[0].rotation.z = kit.housing.rotation.z;
+      kit.lenses[1].visible = !wrecked;
       const dim = wrecked || !running || current.tick % LIGHTBAR_HOLD_TICKS < 5;
       const gtaAppearance = current.pursuit?.gta ? (actor.aiState === "WRECKED" ? "wrecked"
         : actor.aiState === "ROADBLOCK" ? "roadblock" : actor.unitType) : null;
@@ -650,12 +695,12 @@ export function createPursuitView(scene, world) {
           haloPos.y += 0.06;
           halo.position.copy(haloPos);
           if (i === activeSide) {
-            const s = 1.45 + 1.15 * haloEnv;
-            halo.scale.set(s * 1.25, s * 0.88, 1);
-            halo.material.opacity = 0.42 + 0.54 * haloEnv;
+            const s = 0.78 + 0.62 * haloEnv;
+            halo.scale.set(s * 1.22, s * 0.86, 1);
+            halo.material.opacity = 0.11 + 0.14 * haloEnv;
           } else {
-            halo.scale.set(0.78, 0.56, 1);
-            halo.material.opacity = 0.08 + 0.06 * (1 - haloEnv);
+            halo.scale.set(0.44, 0.31, 1);
+            halo.material.opacity = 0.025 + 0.025 * (1 - haloEnv);
           }
           halo.visible = true;
           halo.updateMatrixWorld(true);
@@ -672,7 +717,10 @@ export function createPursuitView(scene, world) {
       bounceLightsActive: redBounceLight.intensity > 0 || blueBounceLight.intensity > 0,
       redIntensity: redBounceLight.intensity,
       blueIntensity: blueBounceLight.intensity,
+      bounceDistance: redBounceLight.distance,
+      bounceDecay: redBounceLight.decay,
       activePatrolHalos: lastActiveHalos,
+      crumpledPatrols: lastCrumpledPatrols,
     };
   }
 
@@ -684,6 +732,13 @@ export function createPursuitView(scene, world) {
     lastActiveHalos = 0;
     for (const kit of patrols.values()) removePatrol(kit);
     patrols.clear();
+    for (const [origGeo, paint] of prewarmedShellPins) {
+      if (--paint.users <= 0) {
+        paint.geometry.dispose();
+        patrolShells.delete(origGeo);
+      }
+    }
+    prewarmedShellPins.length = 0;
     activePolice.clear();
     barriers.clear();
     shoulders.clear();
@@ -701,8 +756,98 @@ export function createPursuitView(scene, world) {
     for (const lens of new Set(cinematicLenses?.flat())) lens.dispose();
   }
 
+  const prewarmedShellPins = [];
+  function prewarmMaterials(targetGroup, metroModels = null) {
+    if (disposed || !targetGroup) return () => {};
+    if (metroModels?.acquire && prewarmedShellPins.length === 0) {
+      for (const [kind, width, length, height] of [
+        ["sedan", 1.9, 4.5, 1.47],
+        ["suv", 2.0, 4.7, 1.84],
+        ["van", 2.05, 5.1, 2.05],
+      ]) {
+        try {
+          const sample = metroModels.acquire({ kind, phase: 0, width, length, height });
+          const shell = sample?.visual?.getObjectByName?.("traffic-shell");
+          if (shell?.isMesh && shell.geometry && !patrolShells.has(shell.geometry)) {
+            if (!shell.geometry.boundingBox) shell.geometry.computeBoundingBox();
+            const twoTone = twoToneShell(shell.geometry);
+            if (twoTone) {
+              const paint = { geometry: twoTone, users: 1 };
+              patrolShells.set(shell.geometry, paint);
+              prewarmedShellPins.push([shell.geometry, paint]);
+            }
+          }
+          if (sample?.entry) metroModels.release(sample.entry);
+        } catch {
+          // ignore fallback mock models
+        }
+      }
+    }
+    const tempDisposables = [];
+    const haloMat = new THREE.SpriteMaterial({
+      map: sharedGlowTexture(),
+      color: 0x3b9eff,
+      transparent: true,
+      opacity: 0.5,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+      toneMapped: false,
+    });
+    tempDisposables.push(haloMat);
+    const haloSprite = new THREE.Sprite(haloMat);
+    targetGroup.add(haloSprite);
+    for (const mat of [
+      paints.casing,
+      paints.coolLens,
+      paints.warmLens,
+      paints.trim,
+      paints.closure,
+      paints.gtaPatrol,
+      paints.gtaInterceptor,
+      paints.gtaSwat,
+      paints.gtaRoadblock,
+      paints.gtaWrecked,
+      ...rushPalette().flat(),
+      ...new Set(cinematicPalette().flat()),
+    ]) {
+      const m1 = new THREE.Mesh(box, mat);
+      m1.castShadow = false;
+      m1.receiveShadow = false;
+      const m2 = new THREE.Mesh(box, mat);
+      m2.castShadow = true;
+      m2.receiveShadow = true;
+      targetGroup.add(m1, m2);
+    }
+    const refl = new THREE.Mesh(warningStripes, paints.reflector);
+    const ring = new THREE.Mesh(contactCircle, paints.contact);
+    targetGroup.add(refl, ring);
+    return () => {
+      for (const d of tempDisposables) d.dispose();
+    };
+  }
+
+  function prewarmActorShell(actor, metroModels) {
+    if (disposed || !actor || !metroModels?.acquire) return;
+    try {
+      const sample = metroModels.acquire(actor);
+      const shell = sample?.visual?.getObjectByName?.("traffic-shell");
+      if (shell?.isMesh && shell.geometry && !patrolShells.has(shell.geometry)) {
+        if (!shell.geometry.boundingBox) shell.geometry.computeBoundingBox();
+        const twoTone = twoToneShell(shell.geometry);
+        if (twoTone) {
+          const paint = { geometry: twoTone, users: 1 };
+          patrolShells.set(shell.geometry, paint);
+          prewarmedShellPins.push([shell.geometry, paint]);
+        }
+      }
+      if (sample?.entry) metroModels.release(sample.entry);
+    } catch {
+      // ignore fallback mock models
+    }
+  }
+
   update();
-  return { attach, update, dispose, diagnostics, appearance(root, current) {
+  return { attach, update, dispose, diagnostics, prewarmMaterials, prewarmActorShell, appearance(root, current) {
     if (current.pursuit?.survival) survivalEffects ??= createSurvivalEffects(layer);
     survivalEffects?.appearance(root, current);
   } };

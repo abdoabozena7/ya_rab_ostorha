@@ -1361,11 +1361,14 @@
     return pointInCourtyardsGrid(px, pz, grid2) || pointInSitesGrid(px, pz, grid2);
   }
   function isPoseSupportedWithCurbs(curb, roads, pose5) {
+    let grid2 = null;
+    if (curb?.sites) {
+      grid2 = getCurbGrid(curb);
+      if (poseInSingleCourtyardGrid(pose5, grid2)) return true;
+    }
     if (poseOnRoadFast(pose5, roads)) return true;
     if (!curb) return false;
     if (!curb.sites) return inRibbon(curb, pose5);
-    const grid2 = getCurbGrid(curb);
-    if (poseInSingleCourtyardGrid(pose5, grid2)) return true;
     const h0 = pose5.heading ?? 0;
     const s = Math.sin(h0), c = Math.cos(h0);
     const hw = (pose5.width ?? 0) / 2, hl = (pose5.length ?? 0) / 2;
@@ -1373,11 +1376,14 @@
     const x = pose5.x, z = pose5.z;
     return cornerSupported(x - cw - sl, z + sw - cl, roads, grid2) && cornerSupported(x + cw - sl, z - sw - cl, roads, grid2) && cornerSupported(x + cw + sl, z - sw + cl, roads, grid2) && cornerSupported(x - cw + sl, z + sw + cl, roads, grid2);
   }
+  var _curbSweepStaticBuf = [];
   function sweepSafeWithCurbs(before, after, statics, roads, curb) {
     const heading2 = before.heading ?? 0;
     const turn = angleDelta(after.heading ?? 0, heading2);
     const dx = after.x - before.x, dz = after.z - before.z;
-    const travel2 = distance(before, after) + Math.abs(turn) * Math.hypot(before.length ?? 1, before.width ?? 1) / 2;
+    const bodyLen = after.length ?? before.length ?? 0;
+    const bodyWid = after.width ?? before.width ?? 0;
+    const travel2 = distance(before, after) + Math.abs(turn) * Math.hypot(bodyLen || 1, bodyWid || 1) / 2;
     const steps = Math.max(1, Math.ceil(travel2 / 0.12));
     const pose5 = {
       x: 0,
@@ -1385,9 +1391,26 @@
       heading: 0,
       type: after.type ?? before.type,
       radius: after.radius ?? before.radius,
-      length: after.length ?? before.length,
-      width: after.width ?? before.width
+      length: bodyLen,
+      width: bodyWid
     };
+    let nearStatics = statics;
+    if (Array.isArray(statics) && statics.length > 2) {
+      const poseHalf = pose5.type === "pedestrian" ? Math.abs(pose5.radius ?? 0) + 0.25 : (Math.abs(bodyLen) + Math.abs(bodyWid)) * 0.5 + 0.25;
+      const minSX = Math.min(before.x, after.x) - poseHalf;
+      const maxSX = Math.max(before.x, after.x) + poseHalf;
+      const minSZ = Math.min(before.z, after.z) - poseHalf;
+      const maxSZ = Math.max(before.z, after.z) + poseHalf;
+      _curbSweepStaticBuf.length = 0;
+      for (let sIdx = 0; sIdx < statics.length; sIdx++) {
+        const other = statics[sIdx];
+        const oHalf = other.type === "pedestrian" ? Math.abs(other.radius ?? 0) : (Math.abs(other.length ?? 0) + Math.abs(other.width ?? 0)) * 0.5;
+        if (other.x + oHalf >= minSX && other.x - oHalf <= maxSX && other.z + oHalf >= minSZ && other.z - oHalf <= maxSZ) {
+          _curbSweepStaticBuf.push(other);
+        }
+      }
+      nearStatics = _curbSweepStaticBuf;
+    }
     for (let i = 1; i <= steps; i++) {
       const t = i / steps;
       pose5.x = before.x + dx * t;
@@ -1395,10 +1418,12 @@
       pose5.heading = heading2 + turn * t;
       if (!isPoseSupportedWithCurbs(curb, roads, pose5))
         return { safe: false, reason: "road-boundary" };
-      if (statics) {
-        for (const other of statics)
+      if (nearStatics && nearStatics.length > 0) {
+        for (let sIdx = 0; sIdx < nearStatics.length; sIdx++) {
+          const other = nearStatics[sIdx];
           if (overlaps(pose5, other, 0.12))
             return { safe: false, reason: "occupied", actor: other.id };
+        }
       }
     }
     return { safe: true, reason: "clear" };
@@ -1771,9 +1796,27 @@
       }
       return { reason: "curb-speed" };
     }
-    const pedestrians = (plans ?? []).filter((p) => p.a !== actor && p.a?.type === "pedestrian" && distance(actor, p.a) <= egoRadius + (p.radius ?? p.a.radius ?? 0.5) + 1 + brakeWindow * (maxPace + (p.travel ?? distance(p.a, p.next)) / STEP));
+    const pedestrians = [];
+    if (plans) {
+      for (let i = 0; i < plans.length; i++) {
+        const p = plans[i];
+        if (p.a === actor || p.a?.type !== "pedestrian") continue;
+        const maxPedDist = egoRadius + (p.radius ?? p.a.radius ?? 0.5) + 1 + brakeWindow * (maxPace + (p.travel ?? distance(p.a, p.next)) / STEP);
+        if (Math.abs(actor.x - p.a.x) > maxPedDist || Math.abs(actor.z - p.a.z) > maxPedDist) continue;
+        if (distance(actor, p.a) <= maxPedDist) pedestrians.push(p);
+      }
+    }
     const solidReach = egoRadius + 1 + brakeWindow * maxPace;
-    const solids = (world.statics ?? []).filter((body) => distance(actor, body) <= solidReach + Math.hypot(body.width ?? 0, body.length ?? 0) / 2);
+    const rawStatics = world.statics ?? [];
+    const solids = [];
+    for (let i = 0; i < rawStatics.length; i++) {
+      const body = rawStatics[i];
+      const halfSum = ((body.width ?? 0) + (body.length ?? 0)) * 0.5;
+      if (Math.abs(actor.x - body.x) > solidReach + halfSum || Math.abs(actor.z - body.z) > solidReach + halfSum) continue;
+      if (distance(actor, body) <= solidReach + Math.hypot(body.width ?? 0, body.length ?? 0) / 2) {
+        solids.push(body);
+      }
+    }
     const closeSolids = /* @__PURE__ */ new Map();
     for (const body of solids) {
       if (overlaps(actor, body, 0.15)) closeSolids.set(body, solidGap(actor, body));
@@ -1783,23 +1826,31 @@
       if (overlaps(actor, body, 0.48))
         closePedestrians.set(body, { dist: distance(actor, body), gap: pedestrianGap(actor, body) });
     }
+    const pedSampleProbe = { type: "pedestrian", radius: 0.3, x: 0, z: 0 };
     const checkPoseObstacles = (pose5, step, t) => {
       if (!supported(pose5)) return { reason: "road-boundary" };
-      for (const body of solids) {
+      for (let sIdx = 0; sIdx < solids.length; sIdx++) {
+        const body = solids[sIdx];
+        const maxSpan = egoRadius + ((body.width ?? 0) + (body.length ?? 0)) * 0.5 + 0.25;
+        if (Math.abs(pose5.x - body.x) > maxSpan || Math.abs(pose5.z - body.z) > maxSpan) continue;
         const startGap = closeSolids.get(body);
         const blocked = startGap !== void 0 ? overlaps(pose5, body, 0.01) || solidGap(pose5, body) < startGap - 3e-3 : overlaps(pose5, body, 0.15);
         if (blocked) return { reason: "curb-solid", blockedBy: body.id };
       }
       const seconds2 = (step + t) * STEP;
       const margin = 0.48 + seconds2 * 0.65;
-      for (const { a: body, next: planned } of pedestrians) {
-        const sample = step ? {
-          ...planned,
-          x: planned.x + (planned.x - body.x) * (step + t - 1),
-          z: planned.z + (planned.z - body.z) * (step + t - 1)
-        } : interpolate(body, planned, t);
+      for (let pIdx = 0; pIdx < pedestrians.length; pIdx++) {
+        const { a: body, next: planned } = pedestrians[pIdx];
+        const sx = step ? planned.x + (planned.x - body.x) * (step + t - 1) : body.x + (planned.x - body.x) * t;
+        const sz = step ? planned.z + (planned.z - body.z) * (step + t - 1) : body.z + (planned.z - body.z) * t;
+        const pr = planned.radius ?? body.radius ?? 0.3;
+        const pedSpan = egoRadius + pr + margin + 0.1;
+        if (Math.abs(pose5.x - sx) > pedSpan || Math.abs(pose5.z - sz) > pedSpan) continue;
+        pedSampleProbe.radius = pr;
+        pedSampleProbe.x = sx;
+        pedSampleProbe.z = sz;
         const startPed = closePedestrians.get(body);
-        const blocked = startPed !== void 0 ? overlaps(pose5, sample, 0.05) || distance(pose5, sample) <= startPed.dist || pedestrianGap(pose5, sample) <= startPed.gap : overlaps(pose5, sample, margin);
+        const blocked = startPed !== void 0 ? overlaps(pose5, pedSampleProbe, 0.05) || distance(pose5, pedSampleProbe) <= startPed.dist || pedestrianGap(pose5, pedSampleProbe) <= startPed.gap : overlaps(pose5, pedSampleProbe, margin);
         if (blocked) return { reason: "curb-pedestrian", blockedBy: body.id };
       }
       return null;
@@ -1869,18 +1920,1262 @@
     return primary;
   }
 
+  // src/core/wheel-interaction-physics.js
+  var WHEEL_SCRUB_MODE = "wheel-scrub-v1";
+  var WHEEL_NAMES = Object.freeze([
+    "frontLeft",
+    "frontRight",
+    "rearLeft",
+    "rearRight"
+  ]);
+  var WHEEL_LAYOUT = Object.freeze([
+    ["frontLeft", -1, 1],
+    ["frontRight", 1, 1],
+    ["rearLeft", -1, -1],
+    ["rearRight", 1, -1]
+  ]);
+  var STATIC_WHEEL_LOAD_N = PLAYER_VEHICLE.massKg * 9.81 / 4;
+  var CURB_CELL_M2 = 24;
+  var CURB_INV_CELL2 = 1 / CURB_CELL_M2;
+  var contactSlideMap = /* @__PURE__ */ new WeakMap();
+  var contactContextMap = /* @__PURE__ */ new WeakMap();
+  var curbScrubGridCache = /* @__PURE__ */ new WeakMap();
+  var actorImpactReactions = /* @__PURE__ */ new WeakMap();
+  var INACTIVE_ACTOR_REACTION = Object.freeze({
+    active: false,
+    rollRad: 0,
+    pitchRad: 0,
+    heaveM: 0,
+    lateralPushMps: 0,
+    yawPushRadS: 0
+  });
+  function cleanZero(value) {
+    if (!Number.isFinite(value) || Math.abs(value) < 1e-12) return 0;
+    return Object.is(value, -0) ? 0 : value;
+  }
+  function round4(value) {
+    if (!Number.isFinite(value)) return 0;
+    const rounded = Math.round(value * 1e4) / 1e4;
+    return Object.is(rounded, -0) ? 0 : rounded;
+  }
+  function getContactSlide(body) {
+    return body ? contactSlideMap.get(body) ?? 0 : 0;
+  }
+  function setContactSlide(body, slide) {
+    if (!body) return;
+    if (Number.isFinite(slide) && Math.abs(slide) > 1e-12) {
+      contactSlideMap.set(body, slide);
+    } else {
+      contactSlideMap.delete(body);
+    }
+  }
+  function deleteContactSlide(body) {
+    if (body) contactSlideMap.delete(body);
+  }
+  function copyContactSlide(source, target) {
+    if (!target) return target;
+    if (source && contactSlideMap.has(source)) {
+      contactSlideMap.set(target, contactSlideMap.get(source));
+    } else {
+      contactSlideMap.delete(target);
+    }
+    return target;
+  }
+  function registerContactContext(contact, context) {
+    if (contact && context) contactContextMap.set(contact, context);
+    return contact;
+  }
+  var PARKED_BREAKAWAY_MPS = 1.35;
+  var PARKED_GROUND_MU = 0.72;
+  function resolveVehicleBodyMassKg(obstacle) {
+    if (!obstacle) return 1450;
+    if (Number.isFinite(obstacle.spec?.massKg) && obstacle.spec.massKg > 0) {
+      return obstacle.spec.massKg;
+    }
+    const kind = obstacle.vehicleKind ?? obstacle.kind;
+    if (kind === "tuktuk") return 620;
+    if (kind === "bus" || kind === "truck") return 3200;
+    if (kind === "van") return 2150;
+    if (kind === "pickup") return 2050;
+    if (kind === "suv") return 1920;
+    return 1450;
+  }
+  function resolveObstacleContactMechanics(egoMassKg, obstacle, closingSpeedMps, scrubEnabled, dt = STEP) {
+    const mEgo = Number.isFinite(egoMassKg) && egoMassKg > 0 ? egoMassKg : PLAYER_VEHICLE.massKg;
+    const closing = Math.max(0, Number.isFinite(closingSpeedMps) ? closingSpeedMps : 0);
+    const isMovingVehicle = obstacle?.type === "vehicle";
+    const isParkedVehicle = obstacle?.kind === "parked-vehicle";
+    if (isMovingVehicle) {
+      const mObs = resolveVehicleBodyMassKg(obstacle);
+      const obsShare = mObs / (mEgo + mObs);
+      const reducedMassKg = mEgo * mObs / (mEgo + mObs);
+      const normalImpulseNs = reducedMassKg * closing;
+      return {
+        isVehicle: true,
+        isParkedVehicle: false,
+        stictionBroken: true,
+        obsMassKg: mObs,
+        obsMomentumShare: obsShare,
+        reducedMassKg,
+        groundHoldDv: 0,
+        freeClosingMps: closing,
+        egoNormalDelta: scrubEnabled ? obsShare * closing : closing,
+        egoNormalImpulseNs: scrubEnabled ? normalImpulseNs : mEgo * closing,
+        actorNetNormalImpulseNs: normalImpulseNs
+      };
+    }
+    if (isParkedVehicle && scrubEnabled && closing >= PARKED_BREAKAWAY_MPS) {
+      const mObs = resolveVehicleBodyMassKg(obstacle);
+      const obsShare = mObs / (mEgo + mObs);
+      const reducedMassKg = mEgo * mObs / (mEgo + mObs);
+      const groundHoldDv = Math.min(closing * 0.35, PARKED_GROUND_MU * 9.81 * dt * 4.5);
+      const freeClosingMps = Math.max(0, closing - groundHoldDv);
+      const freeImpulseNs = reducedMassKg * freeClosingMps;
+      const groundImpulseNs = mEgo * groundHoldDv;
+      return {
+        isVehicle: true,
+        isParkedVehicle: true,
+        stictionBroken: true,
+        obsMassKg: mObs,
+        obsMomentumShare: obsShare,
+        reducedMassKg,
+        groundHoldDv,
+        freeClosingMps,
+        egoNormalDelta: groundHoldDv + obsShare * freeClosingMps,
+        egoNormalImpulseNs: groundImpulseNs + freeImpulseNs,
+        actorNetNormalImpulseNs: freeImpulseNs
+      };
+    }
+    return {
+      isVehicle: isParkedVehicle,
+      isParkedVehicle,
+      stictionBroken: false,
+      obsMassKg: isParkedVehicle ? resolveVehicleBodyMassKg(obstacle) : Infinity,
+      obsMomentumShare: 0,
+      reducedMassKg: mEgo,
+      groundHoldDv: closing,
+      freeClosingMps: 0,
+      egoNormalDelta: closing,
+      egoNormalImpulseNs: mEgo * closing,
+      actorNetNormalImpulseNs: 0
+    };
+  }
+  function computeWheelWorldPositions(pose5) {
+    const x = Number.isFinite(pose5?.x) ? pose5.x : 0;
+    const z = Number.isFinite(pose5?.z) ? pose5.z : 0;
+    const heading2 = Number.isFinite(pose5?.heading) ? pose5.heading : 0;
+    const scale = Number.isFinite(pose5?.giantScale) && pose5.giantScale > 0 ? pose5.giantScale : 1;
+    const halfTrack = PLAYER_VEHICLE.trackM * scale / 2;
+    const halfWheelbase = PLAYER_VEHICLE.wheelbaseM * scale / 2;
+    const c = Math.cos(heading2);
+    const s = Math.sin(heading2);
+    const ct = c * halfTrack;
+    const st = s * halfTrack;
+    const cw = c * halfWheelbase;
+    const sw = s * halfWheelbase;
+    return {
+      frontLeft: { x: cleanZero(x - ct + sw), z: cleanZero(z + st + cw) },
+      frontRight: { x: cleanZero(x + ct + sw), z: cleanZero(z - st + cw) },
+      rearLeft: { x: cleanZero(x - ct - sw), z: cleanZero(z + st - cw) },
+      rearRight: { x: cleanZero(x + ct - sw), z: cleanZero(z - st - cw) }
+    };
+  }
+  function curbCellKey2(cx, cz) {
+    return cx << 16 ^ cz & 65535;
+  }
+  function buildCurbScrubGrid(curb) {
+    const sites2 = curb.sites ?? [];
+    const cells = /* @__PURE__ */ new Map();
+    let minX = Infinity;
+    let maxX = -Infinity;
+    let minZ = Infinity;
+    let maxZ = -Infinity;
+    for (let i = 0; i < sites2.length; i++) {
+      const s = sites2[i];
+      const x0 = (s.axis === "z" ? Math.min(s.minX, s.edge) : s.minX) - 1.5;
+      const x1 = (s.axis === "z" ? Math.max(s.maxX, s.edge) : s.maxX) + 1.5;
+      const z0 = (s.axis === "x" ? Math.min(s.minZ, s.edge) : s.minZ) - 1.5;
+      const z1 = (s.axis === "x" ? Math.max(s.maxZ, s.edge) : s.maxZ) + 1.5;
+      if (x0 < minX) minX = x0;
+      if (x1 > maxX) maxX = x1;
+      if (z0 < minZ) minZ = z0;
+      if (z1 > maxZ) maxZ = z1;
+      const cx0 = Math.floor(x0 * CURB_INV_CELL2);
+      const cx1 = Math.floor(x1 * CURB_INV_CELL2);
+      const cz0 = Math.floor(z0 * CURB_INV_CELL2);
+      const cz1 = Math.floor(z1 * CURB_INV_CELL2);
+      for (let cx = cx0; cx <= cx1; cx++) {
+        const hi = cx << 16;
+        for (let cz = cz0; cz <= cz1; cz++) {
+          const key3 = hi ^ cz & 65535;
+          const bucket = cells.get(key3);
+          if (bucket) bucket.push(s);
+          else cells.set(key3, [s]);
+        }
+      }
+    }
+    const grid2 = {
+      sitesRef: curb.sites,
+      sitesLen: sites2.length,
+      cells,
+      minX,
+      maxX,
+      minZ,
+      maxZ
+    };
+    curbScrubGridCache.set(curb, grid2);
+    return grid2;
+  }
+  function getCurbScrubSitesNear(curb, x, z) {
+    if (!curb) return null;
+    if (!Array.isArray(curb.sites)) return [curb];
+    let grid2 = curbScrubGridCache.get(curb);
+    if (!grid2 || grid2.sitesRef !== curb.sites || grid2.sitesLen !== curb.sites.length) {
+      grid2 = buildCurbScrubGrid(curb);
+    }
+    if (x < grid2.minX || x > grid2.maxX || z < grid2.minZ || z > grid2.maxZ) {
+      return null;
+    }
+    return grid2.cells.get(
+      curbCellKey2(Math.floor(x * CURB_INV_CELL2), Math.floor(z * CURB_INV_CELL2))
+    ) ?? null;
+  }
+  function normalizeSingleSite(site) {
+    if (!site) return null;
+    if (site.axis === "x" || site.axis === "z" || site.axis === "diag") return site;
+    if (Number.isFinite(site.edgeZ)) {
+      return {
+        axis: "x",
+        side: 1,
+        edge: site.edgeZ,
+        minX: site.minX ?? -Infinity,
+        maxX: site.maxX ?? Infinity,
+        minZ: site.minZ ?? -Infinity,
+        maxZ: site.maxZ ?? Infinity
+      };
+    }
+    if (Number.isFinite(site.edgeX)) {
+      return {
+        axis: "z",
+        side: 1,
+        edge: site.edgeX,
+        minX: site.minX ?? -Infinity,
+        maxX: site.maxX ?? Infinity,
+        minZ: site.minZ ?? -Infinity,
+        maxZ: site.maxZ ?? Infinity
+      };
+    }
+    return null;
+  }
+  function pointInCurbSite(px, pz, rawSite) {
+    const site = normalizeSingleSite(rawSite);
+    if (!site) return false;
+    if (px < site.minX || px > site.maxX || pz < site.minZ || pz > site.maxZ) {
+      return false;
+    }
+    if (site.axis === "diag") {
+      const dx = px - site.x1;
+      const dz = pz - site.z1;
+      const along2 = dx * site.ux + dz * site.uz;
+      if (along2 < site.alongMin || along2 > site.alongMax) return false;
+      const leftOffset = -dx * site.uz + dz * site.ux;
+      return leftOffset >= site.crossLo && leftOffset <= site.crossHi;
+    }
+    return true;
+  }
+  function curbSiteOutwardM(px, pz, rawSite) {
+    const site = normalizeSingleSite(rawSite);
+    if (!site) return -Infinity;
+    const side = site.side >= 0 ? 1 : -1;
+    if (site.axis === "diag") {
+      const leftOffset = -(px - site.x1) * site.uz + (pz - site.z1) * site.ux;
+      return (leftOffset - site.edge) * side;
+    }
+    return ((site.axis === "x" ? pz : px) - site.edge) * side;
+  }
+  function curbStreetNormal(rawSite) {
+    const site = normalizeSingleSite(rawSite);
+    if (!site) return { nx: 0, nz: 0 };
+    const side = site.side >= 0 ? 1 : -1;
+    if (site.axis === "diag") {
+      const len = Math.hypot(site.ux, site.uz) || 1;
+      return {
+        nx: cleanZero(site.uz * side / len),
+        nz: cleanZero(-site.ux * side / len)
+      };
+    }
+    if (site.axis === "x") {
+      return { nx: 0, nz: side > 0 ? -1 : 1 };
+    }
+    return { nx: side > 0 ? -1 : 1, nz: 0 };
+  }
+  function inactiveCurbScrub(after) {
+    return {
+      adjustedPose: after,
+      active: false,
+      kind: "none",
+      wheel: null,
+      side: null,
+      attackAngleRad: 0,
+      grazing: false,
+      intensity: 0,
+      tangentialSpeedMps: 0,
+      worldX: cleanZero(after?.x ?? 0),
+      worldZ: cleanZero(after?.z ?? 0),
+      normalX: 0,
+      normalZ: 0,
+      steerKickRad: 0,
+      rollImpulse: 0,
+      pitchImpulse: 0,
+      heaveImpulse: 0
+    };
+  }
+  function computeCurbWheelScrub(before, after, curb, roads, dt = STEP, { applyDeflection = true } = {}) {
+    if (!after || !curb || !Number.isFinite(dt) || dt <= 0) {
+      return inactiveCurbScrub(after);
+    }
+    const prevPose = before ?? after;
+    const afterSpeed = Number.isFinite(after.speed) ? after.speed : 0;
+    const beforeSpeed = Number.isFinite(prevPose.speed) ? prevPose.speed : afterSpeed;
+    const avgSpeed = (afterSpeed + beforeSpeed) * 0.5;
+    const absSpeed = Math.max(Math.abs(afterSpeed), Math.abs(avgSpeed));
+    const bodyTravel = Math.hypot(
+      (after.x ?? 0) - (prevPose.x ?? 0),
+      (after.z ?? 0) - (prevPose.z ?? 0)
+    );
+    if (absSpeed < 0.05 && bodyTravel < 1e-4) {
+      return inactiveCurbScrub(after);
+    }
+    const wheelsBefore = computeWheelWorldPositions(prevPose);
+    const wheelsAfter = computeWheelWorldPositions(after);
+    const hasRoads = Array.isArray(roads) && roads.length > 0;
+    const dirSign = (afterSpeed !== 0 ? afterSpeed : beforeSpeed) < 0 ? -1 : 1;
+    let best = null;
+    let bestScore = -Infinity;
+    for (let i = 0; i < WHEEL_LAYOUT.length; i++) {
+      const [wheelName, sideSign, axleSign] = WHEEL_LAYOUT[i];
+      const wBefore = wheelsBefore[wheelName];
+      const wAfter = wheelsAfter[wheelName];
+      if (hasRoads && pointOnRoad(wAfter, roads)) continue;
+      const candidates2 = getCurbScrubSitesNear(curb, wAfter.x, wAfter.z);
+      if (!candidates2) continue;
+      const beforeOnRoad = hasRoads && pointOnRoad(wBefore, roads);
+      for (let j = 0; j < candidates2.length; j++) {
+        const rawSite = candidates2[j];
+        if (!pointInCurbSite(wAfter.x, wAfter.z, rawSite)) continue;
+        const outAfter = curbSiteOutwardM(wAfter.x, wAfter.z, rawSite);
+        if (!(outAfter > 0)) continue;
+        const outBefore = curbSiteOutwardM(wBefore.x, wBefore.z, rawSite);
+        const onCurbBand = outAfter > 0 && outAfter < 0.38;
+        const crossedLip = outAfter >= 0.38 && (beforeOnRoad || !pointInCurbSite(wBefore.x, wBefore.z, rawSite) || outBefore <= 0.05);
+        if (!onCurbBand && !crossedLip) continue;
+        const bandProfile = onCurbBand ? 1 - Math.abs(clamp(outAfter, 0.02, 0.36) - 0.17) / 0.25 : 0.85;
+        const leadBias = axleSign * dirSign > 0 ? 1.08 : 0.96;
+        const score = bandProfile * leadBias;
+        if (score > bestScore) {
+          bestScore = score;
+          best = {
+            wheel: wheelName,
+            side: sideSign < 0 ? "left" : "right",
+            sideSign,
+            axleSign,
+            wBefore,
+            wAfter,
+            outAfter,
+            site: rawSite
+          };
+        }
+      }
+    }
+    if (!best) {
+      return inactiveCurbScrub(after);
+    }
+    const { nx, nz } = curbStreetNormal(best.site);
+    const dwx = best.wAfter.x - best.wBefore.x;
+    const dwz = best.wAfter.z - best.wBefore.z;
+    const dwLen = Math.hypot(dwx, dwz);
+    let wheelDirX;
+    let wheelDirZ;
+    if (dwLen > 1e-5) {
+      wheelDirX = dwx / dwLen;
+      wheelDirZ = dwz / dwLen;
+    } else {
+      const steerAngle = best.axleSign > 0 ? after.steer ?? 0 : 0;
+      const wh = (after.heading ?? 0) + steerAngle;
+      wheelDirX = Math.sin(wh) * dirSign;
+      wheelDirZ = Math.cos(wh) * dirSign;
+    }
+    const attackAngle = cleanZero(
+      Math.asin(clamp(-(wheelDirX * nx + wheelDirZ * nz), -1, 1))
+    );
+    const absAttack = Math.abs(attackAngle);
+    const grazing = absAttack < 0.4 && absSpeed > 0.5;
+    const tangentialSpeedMps = cleanZero(Math.abs(absSpeed * Math.cos(attackAngle)));
+    const h = after.heading ?? 0;
+    const bodyDirX = Math.sin(h) * dirSign;
+    const bodyDirZ = Math.cos(h) * dirSign;
+    const bodyAttack = Math.asin(clamp(-(bodyDirX * nx + bodyDirZ * nz), -1, 1));
+    const rawAlignSign = Math.sign(dirSign * (Math.cos(h) * nx - Math.sin(h) * nz));
+    const alignSign = rawAlignSign !== 0 ? rawAlignSign : -best.sideSign * dirSign;
+    let adjustedPose = after;
+    let intensity;
+    let steerKickRad;
+    let rollImpulse;
+    let pitchImpulse;
+    let heaveImpulse;
+    if (grazing) {
+      intensity = clamp(absSpeed / 12 * (1 - absAttack / 0.42), 0.08, 1);
+      if (applyDeflection) {
+        const absAfterSpeed = Math.abs(afterSpeed);
+        const speedLoss = Math.min(
+          absAfterSpeed * 0.32,
+          (1.9 + 0.15 * absAfterSpeed) * intensity * dt
+        );
+        const nextSpeedMag = Math.max(0, absAfterSpeed - speedLoss);
+        const nextSpeed = afterSpeed === 0 ? 0 : Math.sign(afterSpeed) * nextSpeedMag;
+        const maxYawStep = 0.85 * intensity * dt;
+        let yawMag = 0;
+        if (bodyAttack > 0) {
+          yawMag = Math.min(maxYawStep, bodyAttack * 0.92 + 2e-3);
+        } else if (bodyAttack > -0.04) {
+          yawMag = maxYawStep * 0.35;
+        }
+        const yawDelta = alignSign * yawMag;
+        const speedScale = absAfterSpeed > 1e-6 ? nextSpeedMag / absAfterSpeed : 1;
+        const streetNudge = Math.min(
+          Math.max(0, best.outAfter) * 0.25,
+          0.3 * intensity * dt
+        );
+        adjustedPose = {
+          ...after,
+          x: (prevPose.x ?? after.x) + ((after.x ?? 0) - (prevPose.x ?? 0)) * speedScale + nx * streetNudge,
+          z: (prevPose.z ?? after.z) + ((after.z ?? 0) - (prevPose.z ?? 0)) * speedScale + nz * streetNudge,
+          heading: h + yawDelta,
+          speed: cleanZero(nextSpeed)
+        };
+      }
+      steerKickRad = cleanZero(alignSign * 0.085 * intensity);
+      rollImpulse = cleanZero(best.sideSign * 0.3 * intensity);
+      pitchImpulse = cleanZero(-best.axleSign * 0.14 * intensity);
+      heaveImpulse = cleanZero(-0.12 * intensity);
+    } else {
+      intensity = clamp(
+        absSpeed / 10 * (0.55 + 0.45 * Math.sin(Math.min(Math.PI / 2, absAttack))),
+        0.12,
+        1
+      );
+      const climbedStep = (after.y ?? 0) > (prevPose.y ?? 0) + 2e-3;
+      if (applyDeflection && climbedStep) {
+        const absAfterSpeed = Math.abs(afterSpeed);
+        const speedLoss = Math.min(absAfterSpeed * 0.18, 1.15 * dt);
+        const nextSpeedMag = Math.max(0, absAfterSpeed - speedLoss);
+        const nextSpeed = afterSpeed === 0 ? 0 : Math.sign(afterSpeed) * nextSpeedMag;
+        const speedScale = absAfterSpeed > 1e-6 ? nextSpeedMag / absAfterSpeed : 1;
+        adjustedPose = {
+          ...after,
+          x: (prevPose.x ?? after.x) + ((after.x ?? 0) - (prevPose.x ?? 0)) * speedScale,
+          z: (prevPose.z ?? after.z) + ((after.z ?? 0) - (prevPose.z ?? 0)) * speedScale,
+          speed: cleanZero(nextSpeed)
+        };
+      }
+      steerKickRad = cleanZero(
+        alignSign * 0.035 * intensity * Math.cos(Math.min(Math.PI / 2, absAttack))
+      );
+      rollImpulse = cleanZero(best.sideSign * 0.42 * intensity);
+      pitchImpulse = cleanZero(-best.axleSign * 0.24 * intensity);
+      heaveImpulse = cleanZero(-0.22 * intensity);
+    }
+    const finalWheels = adjustedPose === after ? wheelsAfter : computeWheelWorldPositions(adjustedPose);
+    const contactWheelPos = finalWheels[best.wheel];
+    return {
+      adjustedPose,
+      active: true,
+      kind: "curb",
+      wheel: best.wheel,
+      side: best.side,
+      attackAngleRad: attackAngle,
+      grazing,
+      intensity: cleanZero(intensity),
+      tangentialSpeedMps,
+      worldX: contactWheelPos.x,
+      worldZ: contactWheelPos.z,
+      normalX: nx,
+      normalZ: nz,
+      steerKickRad,
+      rollImpulse,
+      pitchImpulse,
+      heaveImpulse
+    };
+  }
+  function closestPointOnSegment(px, pz, ax, az, bx, bz) {
+    const dx = bx - ax;
+    const dz = bz - az;
+    const len2 = dx * dx + dz * dz;
+    const t = len2 > 0 ? clamp(((px - ax) * dx + (pz - az) * dz) / len2, 0, 1) : 0;
+    const qx = ax + dx * t;
+    const qz = az + dz * t;
+    return { x: qx, z: qz, dist: Math.hypot(px - qx, pz - qz) };
+  }
+  function closestPointOnPolygon(px, pz, poly) {
+    let bestX = poly[0].x;
+    let bestZ = poly[0].z;
+    let bestDist = Infinity;
+    for (let i = 0; i < poly.length; i++) {
+      const a = poly[i];
+      const b = poly[(i + 1) % poly.length];
+      const res = closestPointOnSegment(px, pz, a.x, a.z, b.x, b.z);
+      if (res.dist < bestDist) {
+        bestDist = res.dist;
+        bestX = res.x;
+        bestZ = res.z;
+      }
+    }
+    return { x: bestX, z: bestZ, dist: bestDist };
+  }
+  function resolveHullContactPatch(egoPose, obstacle, normal2) {
+    const halfWidth = (egoPose.width ?? PLAYER_VEHICLE.widthM) / 2;
+    const halfLength = (egoPose.length ?? PLAYER_VEHICLE.lengthM) / 2;
+    const heading2 = egoPose.heading ?? 0;
+    const s = Math.sin(heading2);
+    const c = Math.cos(heading2);
+    const egoCorners = corners(egoPose);
+    const candidates2 = [];
+    if (obstacle.type === "pedestrian" || !obstacle.width && !obstacle.length && obstacle.radius) {
+      const res = closestPointOnPolygon(obstacle.x, obstacle.z, egoCorners);
+      candidates2.push({ x: res.x, z: res.z, dist: Math.max(0, res.dist - (obstacle.radius ?? 0)) });
+    } else {
+      const obsCorners = corners({
+        x: obstacle.x,
+        z: obstacle.z,
+        heading: obstacle.heading ?? 0,
+        width: obstacle.width ?? (obstacle.radius ?? 0.5) * 2,
+        length: obstacle.length ?? (obstacle.radius ?? 0.5) * 2
+      });
+      for (let i = 0; i < egoCorners.length; i++) {
+        const p = egoCorners[i];
+        const res = closestPointOnPolygon(p.x, p.z, obsCorners);
+        candidates2.push({ x: p.x, z: p.z, dist: res.dist });
+      }
+      for (let j = 0; j < obsCorners.length; j++) {
+        const q = obsCorners[j];
+        const res = closestPointOnPolygon(q.x, q.z, egoCorners);
+        candidates2.push({ x: res.x, z: res.z, dist: res.dist });
+      }
+    }
+    let dMin = Infinity;
+    for (let i = 0; i < candidates2.length; i++) {
+      if (candidates2[i].dist < dMin) dMin = candidates2[i].dist;
+    }
+    let minLat = Infinity;
+    let maxLat = -Infinity;
+    let minFwd = Infinity;
+    let maxFwd = -Infinity;
+    const tol = dMin + 0.025;
+    for (let i = 0; i < candidates2.length; i++) {
+      const cand = candidates2[i];
+      if (cand.dist > tol) continue;
+      const dx = cand.x - egoPose.x;
+      const dz = cand.z - egoPose.z;
+      const lat = clamp(dx * c - dz * s, -halfWidth, halfWidth);
+      const fwd = clamp(dx * s + dz * c, -halfLength, halfLength);
+      if (lat < minLat) minLat = lat;
+      if (lat > maxLat) maxLat = lat;
+      if (fwd < minFwd) minFwd = fwd;
+      if (fwd > maxFwd) maxFwd = fwd;
+    }
+    let lateralOffsetM = Number.isFinite(minLat) ? (minLat + maxLat) * 0.5 : 0;
+    let forwardOffsetM = Number.isFinite(minFwd) ? (minFwd + maxFwd) * 0.5 : 0;
+    if (Math.abs(lateralOffsetM) < 1e-6) lateralOffsetM = 0;
+    if (Math.abs(forwardOffsetM) < 1e-6) forwardOffsetM = 0;
+    const distToSide = halfWidth - Math.abs(lateralOffsetM);
+    const distToEnd = halfLength - Math.abs(forwardOffsetM);
+    if (distToSide > 1e-4 && distToEnd > 1e-4) {
+      const nRight = normal2.x * c - normal2.z * s;
+      const nFwd = normal2.x * s + normal2.z * c;
+      if (Math.abs(nRight) >= Math.abs(nFwd)) {
+        lateralOffsetM = (nRight >= 0 ? 1 : -1) * halfWidth;
+      } else {
+        forwardOffsetM = (nFwd >= 0 ? 1 : -1) * halfLength;
+      }
+    }
+    const worldX = cleanZero(egoPose.x + lateralOffsetM * c + forwardOffsetM * s);
+    const worldZ = cleanZero(egoPose.z - lateralOffsetM * s + forwardOffsetM * c);
+    const wheels = computeWheelWorldPositions(egoPose);
+    let closestWheel = "frontLeft";
+    let bestWheelDist = Infinity;
+    for (let i = 0; i < WHEEL_NAMES.length; i++) {
+      const name = WHEEL_NAMES[i];
+      const wp = wheels[name];
+      const d = Math.hypot(worldX - wp.x, worldZ - wp.z);
+      if (d < bestWheelDist - 1e-9) {
+        bestWheelDist = d;
+        closestWheel = name;
+      }
+    }
+    return {
+      lateralOffsetM,
+      forwardOffsetM,
+      worldX,
+      worldZ,
+      wheel: closestWheel
+    };
+  }
+  function applyScrapingContactResponse(before, baseContact, obstacle, dt = STEP) {
+    if (!baseContact || !obstacle || !Number.isFinite(dt) || dt <= 0) {
+      return baseContact;
+    }
+    const normal2 = baseContact.normal ?? { x: 0, z: 1 };
+    const nLen = Math.hypot(normal2.x, normal2.z) || 1;
+    const nx = cleanZero(normal2.x / nLen);
+    const nz = cleanZero(normal2.z / nLen);
+    const tx = nz;
+    const tz = -nx;
+    const baseBody = baseContact.body;
+    const ctx = contactContextMap.get(baseContact);
+    const baseHeading = baseBody.heading ?? before?.heading ?? 0;
+    const bs = Math.sin(baseHeading);
+    const bc = Math.cos(baseHeading);
+    const baseSlide = getContactSlide(baseBody);
+    const baseVx = ctx ? ctx.baseVelocity.x : bs * (baseBody.speed ?? 0) + bc * baseSlide;
+    const baseVz = ctx ? ctx.baseVelocity.z : bc * (baseBody.speed ?? 0) - bs * baseSlide;
+    const remainingDt = ctx ? ctx.remainingDt : dt * (1 - clamp(baseContact.contactFraction ?? 0, 0, 1));
+    const incomingSpeed = ctx ? ctx.incomingSpeed : Math.max(
+      Math.hypot(baseVx, baseVz),
+      Math.hypot(
+        Math.sin(before?.heading ?? 0) * (before?.speed ?? 0) + Math.cos(before?.heading ?? 0) * getContactSlide(before),
+        Math.cos(before?.heading ?? 0) * (before?.speed ?? 0) - Math.sin(before?.heading ?? 0) * getContactSlide(before)
+      )
+    );
+    let touchBody = ctx?.touchBody ?? null;
+    if (!touchBody) {
+      const candidateTouch = {
+        ...baseBody,
+        x: baseBody.x - baseVx * remainingDt,
+        z: baseBody.z - baseVz * remainingDt
+      };
+      touchBody = overlaps(candidateTouch, obstacle) ? baseBody : candidateTouch;
+    }
+    const obsHeading = obstacle?.heading ?? 0;
+    const obsSpeed = Number.isFinite(obstacle?.speed) ? obstacle.speed : 0;
+    const obsSlide = getContactSlide(obstacle);
+    const obsVx = Number.isFinite(obstacle?.vx) ? obstacle.vx : Math.sin(obsHeading) * obsSpeed + Math.cos(obsHeading) * obsSlide;
+    const obsVz = Number.isFinite(obstacle?.vz) ? obstacle.vz : Math.cos(obsHeading) * obsSpeed - Math.sin(obsHeading) * obsSlide;
+    const obsVt = obsVx * tx + obsVz * tz;
+    const vt = baseVx * tx + baseVz * tz;
+    const vnBase = baseVx * nx + baseVz * nz;
+    const vtRel = vt - obsVt;
+    const absVtRel = Math.abs(vtRel);
+    const closingSpeedMps = Math.max(0, baseContact.closingSpeedMps ?? 0);
+    const initialPatch = resolveHullContactPatch(touchBody, obstacle, { x: nx, z: nz });
+    const halfLength = (touchBody.length ?? PLAYER_VEHICLE.lengthM) / 2;
+    const halfWidth = (touchBody.width ?? PLAYER_VEHICLE.widthM) / 2;
+    const nFwd = nx * bs + nz * bc;
+    const nRight = nx * bc - nz * bs;
+    const rawTorque = initialPatch.lateralOffsetM * nFwd - initialPatch.forwardOffsetM * nRight;
+    const yawTorqueNorm = Math.abs(rawTorque) < 1e-4 ? 0 : clamp(rawTorque / Math.max(0.5, halfLength * 0.82), -1, 1);
+    const intensity = clamp(
+      absVtRel / 11 * 0.72 + closingSpeedMps / 8 * 0.48,
+      0.06,
+      1
+    );
+    const outNx = cleanZero(-nx);
+    const outNz = cleanZero(-nz);
+    const isVehicleObstacle = obstacle.type === "vehicle" || obstacle.kind === "parked-vehicle";
+    const egoMassKg = Number.isFinite(before?.spec?.massKg) && before.spec.massKg > 0 ? before.spec.massKg : PLAYER_VEHICLE.massKg;
+    const contactMech = resolveObstacleContactMechanics(
+      egoMassKg,
+      obstacle,
+      closingSpeedMps,
+      true,
+      dt
+    );
+    const obsMomentumShare = contactMech.obsMomentumShare;
+    const sharedNormalImpulseNs = Number.isFinite(baseContact.sharedNormalImpulseNs) ? baseContact.sharedNormalImpulseNs : contactMech.egoNormalImpulseNs;
+    const actorNetNormalImpulseNs = Number.isFinite(baseContact.actorNetNormalImpulseNs) ? baseContact.actorNetNormalImpulseNs : contactMech.actorNetNormalImpulseNs;
+    let sharedShearImpulseNs = 0;
+    let actorNetShearImpulseNs = 0;
+    let responseBody = baseBody;
+    if (absVtRel >= 0.05) {
+      const mu = isVehicleObstacle ? 0.42 : 0.48;
+      const frictionDv = Math.min(
+        absVtRel * 0.46,
+        mu * (closingSpeedMps * 0.8 + 3.4) * dt
+      );
+      let appliedDv;
+      if (contactMech.isParkedVehicle && contactMech.stictionBroken) {
+        const shearGroundHold = Math.min(frictionDv * 0.35, PARKED_GROUND_MU * 9.81 * dt * 2);
+        const freeShearDv = Math.max(0, frictionDv - shearGroundHold) * obsMomentumShare;
+        appliedDv = shearGroundHold + freeShearDv;
+        sharedShearImpulseNs = egoMassKg * appliedDv;
+        actorNetShearImpulseNs = egoMassKg * freeShearDv;
+      } else if (obsMomentumShare > 0) {
+        appliedDv = frictionDv * obsMomentumShare;
+        sharedShearImpulseNs = egoMassKg * appliedDv;
+        actorNetShearImpulseNs = sharedShearImpulseNs;
+      } else {
+        appliedDv = frictionDv;
+        sharedShearImpulseNs = egoMassKg * appliedDv;
+        actorNetShearImpulseNs = 0;
+      }
+      const fasterCoMoving = obsMomentumShare > 0 && obsVt * vt >= 0 && Math.abs(obsVt) > Math.abs(vt);
+      const vtNext = vt - Math.sign(vtRel) * appliedDv;
+      let velX = vnBase * nx + vtNext * tx;
+      let velZ = vnBase * nz + vtNext * tz;
+      const maxVt = fasterCoMoving ? vt - Math.sign(vtRel) * absVtRel * obsMomentumShare : vt;
+      const maxAllowedSpeed = fasterCoMoving ? Math.max(
+        incomingSpeed,
+        Math.hypot(vnBase * nx + maxVt * tx, vnBase * nz + maxVt * tz)
+      ) : incomingSpeed;
+      const outgoingSpeed = Math.hypot(velX, velZ);
+      if (outgoingSpeed > maxAllowedSpeed && outgoingSpeed > 0) {
+        const scale = maxAllowedSpeed / outgoingSpeed;
+        velX *= scale;
+        velZ *= scale;
+      }
+      const slid = {
+        ...touchBody,
+        x: touchBody.x + velX * remainingDt,
+        z: touchBody.z + velZ * remainingDt
+      };
+      let accepted = overlaps(slid, obstacle) ? touchBody : slid;
+      let maxYawMag = 0.85 * intensity * dt;
+      if (Math.abs(nRight) > Math.abs(nFwd)) {
+        const angleToParallel = Math.abs(Math.atan2(nFwd, Math.abs(nRight)));
+        maxYawMag = Math.min(maxYawMag, Math.max(0, angleToParallel * 0.45));
+      }
+      const desiredYawDelta = clamp(yawTorqueNorm * maxYawMag, -0.85 * dt, 0.85 * dt);
+      if (Math.abs(desiredYawDelta) > 1e-6) {
+        const patchAtSlid = resolveHullContactPatch(accepted, obstacle, { x: nx, z: nz });
+        for (const frac of [1, 0.5, 0.25]) {
+          const dYaw = desiredYawDelta * frac;
+          const nextH = baseHeading + dYaw;
+          const ns = Math.sin(nextH);
+          const nc = Math.cos(nextH);
+          let pivX = patchAtSlid.worldX - (patchAtSlid.lateralOffsetM * nc + patchAtSlid.forwardOffsetM * ns);
+          let pivZ = patchAtSlid.worldZ - (-patchAtSlid.lateralOffsetM * ns + patchAtSlid.forwardOffsetM * nc);
+          let rotated = { ...accepted, x: pivX, z: pivZ, heading: nextH };
+          if (overlaps(rotated, obstacle)) {
+            let lo = 0, hi = 4e-3;
+            if (!overlaps({ ...rotated, x: pivX + outNx * hi, z: pivZ + outNz * hi }, obstacle)) {
+              for (let b = 0; b < 8; b++) {
+                const mid = 0.5 * (lo + hi);
+                if (overlaps({ ...rotated, x: pivX + outNx * mid, z: pivZ + outNz * mid }, obstacle)) lo = mid;
+                else hi = mid;
+              }
+              rotated = { ...rotated, x: pivX + outNx * hi, z: pivZ + outNz * hi };
+            }
+          }
+          if (!overlaps(rotated, obstacle)) {
+            accepted = rotated;
+            break;
+          }
+        }
+      }
+      const fs = Math.sin(accepted.heading);
+      const fc = Math.cos(accepted.heading);
+      const nextSpeed = cleanZero(velX * fs + velZ * fc);
+      const nextSlide = cleanZero(velX * fc - velZ * fs);
+      responseBody = {
+        ...accepted,
+        speed: nextSpeed,
+        reason: "vehicle-contact",
+        blockedBy: obstacle.id
+      };
+      setContactSlide(responseBody, nextSlide);
+    } else {
+      responseBody = copyContactSlide(baseBody, { ...baseBody });
+    }
+    const finalPatch = responseBody === baseBody ? resolveHullContactPatch(baseBody, obstacle, { x: nx, z: nz }) : resolveHullContactPatch(responseBody, obstacle, { x: nx, z: nz });
+    const active3 = absVtRel >= 0.25 || closingSpeedMps >= 0.6;
+    const kind = isVehicleObstacle ? "vehicle" : obstacle.kind === "barrier" ? "barrier" : "wall";
+    const latNorm = clamp(finalPatch.lateralOffsetM / Math.max(0.4, halfWidth), -1, 1);
+    const fwdNorm = clamp(finalPatch.forwardOffsetM / Math.max(0.5, halfLength), -1, 1);
+    const frontWeight = fwdNorm > -0.15 ? clamp(0.45 + 0.55 * Math.max(0, fwdNorm), 0, 1) : 0.2;
+    const steerKickRad = active3 && Math.abs(yawTorqueNorm) > 0.02 ? cleanZero(clamp(yawTorqueNorm * 0.095 * intensity * frontWeight, -0.11, 0.11)) : 0;
+    const rollImpulse = active3 && (Math.abs(nRight) > 0.02 || Math.abs(latNorm) > 0.05) ? cleanZero(clamp((-nRight * 0.28 + latNorm * 0.08) * intensity, -0.45, 0.45)) : 0;
+    const pitchImpulse = active3 && Math.abs(nFwd) > 0.02 ? cleanZero(clamp(nFwd * 0.22 * intensity, -0.35, 0.35)) : 0;
+    const slipSign = absVtRel >= 0.05 ? Math.sign(vtRel) : 0;
+    const sharedImpulse = {
+      ix: cleanZero(nx * actorNetNormalImpulseNs + slipSign * tx * actorNetShearImpulseNs),
+      iz: cleanZero(nz * actorNetNormalImpulseNs + slipSign * tz * actorNetShearImpulseNs),
+      egoIx: cleanZero(-nx * sharedNormalImpulseNs - slipSign * tx * sharedShearImpulseNs),
+      egoIz: cleanZero(-nz * sharedNormalImpulseNs - slipSign * tz * sharedShearImpulseNs),
+      normalImpulseNs: cleanZero(sharedNormalImpulseNs),
+      actorNetNormalImpulseNs: cleanZero(actorNetNormalImpulseNs),
+      shearImpulseNs: cleanZero(sharedShearImpulseNs),
+      actorNetShearImpulseNs: cleanZero(actorNetShearImpulseNs),
+      stictionBroken: contactMech.stictionBroken
+    };
+    return {
+      ...baseContact,
+      body: responseBody,
+      sharedImpulse,
+      scraping: {
+        active: active3,
+        kind,
+        wheel: finalPatch.wheel,
+        side: baseContact.side,
+        intensity: cleanZero(intensity),
+        tangentialSpeedMps: cleanZero(absVtRel),
+        tangentialSlipSignedMps: cleanZero(vtRel),
+        closingSpeedMps: cleanZero(closingSpeedMps),
+        worldX: finalPatch.worldX,
+        worldZ: finalPatch.worldZ,
+        normalX: outNx,
+        normalZ: outNz,
+        steerKickRad,
+        rollImpulse,
+        pitchImpulse
+      }
+    };
+  }
+  function stepUnderdampedSpring(pos, vel, omega, zeta, limit, dt) {
+    const wd = omega * Math.sqrt(Math.max(1e-6, 1 - zeta * zeta));
+    const decay = Math.exp(-zeta * omega * dt);
+    const cos = Math.cos(wd * dt);
+    const sin = Math.sin(wd * dt);
+    const bCoeff = (vel + zeta * omega * pos) / wd;
+    let nextPos = decay * (pos * cos + bCoeff * sin);
+    let nextVel = decay * ((bCoeff * wd - zeta * omega * pos) * cos - (pos * wd + zeta * omega * bCoeff) * sin);
+    if (Math.abs(nextPos) > limit) {
+      nextPos = clamp(nextPos, -limit, limit);
+      if (nextPos * nextVel > 0) nextVel *= 0.25;
+    }
+    if (Math.abs(nextPos) < 2e-4 && Math.abs(nextVel) < 2e-3) {
+      nextPos = 0;
+      nextVel = 0;
+    }
+    return { pos: cleanZero(nextPos), vel: cleanZero(nextVel) };
+  }
+  function recordActorImpactReaction(actor, {
+    normalX = 0,
+    normalZ = 1,
+    closingSpeedMps = 0,
+    tangentialSpeedMps = 0,
+    tangentialDirX = null,
+    tangentialDirZ = null,
+    sharedImpulse = null,
+    contactX = null,
+    contactZ = null,
+    egoMassKg = PLAYER_VEHICLE.massKg,
+    tick = 0
+  } = {}) {
+    if (!actor || typeof actor !== "object" || actor.type === "pedestrian") {
+      return INACTIVE_ACTOR_REACTION;
+    }
+    const nLen = Math.hypot(normalX, normalZ) || 1;
+    const nx = normalX / nLen;
+    const nz = normalZ / nLen;
+    const closing = Math.max(0, Number.isFinite(closingSpeedMps) ? closingSpeedMps : 0);
+    const tangential = Math.max(
+      0,
+      Number.isFinite(tangentialSpeedMps) ? Math.abs(tangentialSpeedMps) : 0
+    );
+    if (closing < 0.05 && tangential < 0.2 && !sharedImpulse) {
+      return getActorImpactReaction(actor);
+    }
+    const mEgo = Number.isFinite(egoMassKg) && egoMassKg > 0 ? egoMassKg : PLAYER_VEHICLE.massKg;
+    const mActor = resolveVehicleBodyMassKg(actor);
+    const reducedMass = mEgo * mActor / (mEgo + mActor);
+    const ah = Number.isFinite(actor.heading) ? actor.heading : 0;
+    const as = Math.sin(ah);
+    const ac = Math.cos(ah);
+    const pushForward = nx * as + nz * ac;
+    const pushRight = nx * ac - nz * as;
+    const defaultTangSign = (nz * as - nx * ac) * (pushForward >= 0 ? 1 : -1) >= 0 ? 1 : -1;
+    const tDirX = Number.isFinite(tangentialDirX) ? tangentialDirX : nz * defaultTangSign;
+    const tDirZ = Number.isFinite(tangentialDirZ) ? tangentialDirZ : -nx * defaultTangSign;
+    const shearForward = tDirX * as + tDirZ * ac;
+    const shearRight = tDirX * ac - tDirZ * as;
+    const isParkedActor = actor.kind === "parked-vehicle";
+    const brokeStiction = sharedImpulse && typeof sharedImpulse.stictionBroken === "boolean" ? sharedImpulse.stictionBroken : !isParkedActor || closing >= PARKED_BREAKAWAY_MPS;
+    const fallbackNormalImpulseNs = reducedMass * closing;
+    const fallbackShearImpulseNs = 0.34 * reducedMass * Math.min(tangential * 0.45, closing * 0.8 + 1.8);
+    const bodyNormalImpulseNs = sharedImpulse && Number.isFinite(sharedImpulse.normalImpulseNs) ? sharedImpulse.normalImpulseNs : fallbackNormalImpulseNs;
+    const bodyShearImpulseNs = sharedImpulse && Number.isFinite(sharedImpulse.shearImpulseNs) ? sharedImpulse.shearImpulseNs : fallbackShearImpulseNs;
+    const rockLatDv = pushRight * (bodyNormalImpulseNs / mActor) + shearRight * (bodyShearImpulseNs / mActor) * 0.45;
+    const rockLongDv = pushForward * (bodyNormalImpulseNs / mActor) + shearForward * (bodyShearImpulseNs / mActor) * 0.72;
+    const rockTotalDv = Math.hypot(rockLatDv, rockLongDv);
+    let transLongDv = 0;
+    let transLatDv = 0;
+    let transTotalDv = 0;
+    if (brokeStiction) {
+      if (sharedImpulse && Number.isFinite(sharedImpulse.ix) && Number.isFinite(sharedImpulse.iz)) {
+        const dvX = sharedImpulse.ix / mActor;
+        const dvZ = sharedImpulse.iz / mActor;
+        transLongDv = dvX * as + dvZ * ac;
+        transLatDv = dvX * ac - dvZ * as;
+        transTotalDv = Math.hypot(dvX, dvZ);
+      } else {
+        transLatDv = rockLatDv;
+        transLongDv = rockLongDv;
+        transTotalDv = rockTotalDv;
+      }
+    }
+    let leverTorqueNorm = pushRight * shearForward - pushForward * pushRight * 0.35;
+    if (Number.isFinite(contactX) && Number.isFinite(contactZ) && Number.isFinite(actor.x) && Number.isFinite(actor.z)) {
+      const rFwd = (contactX - actor.x) * as + (contactZ - actor.z) * ac;
+      const rRight = (contactX - actor.x) * ac - (contactZ - actor.z) * as;
+      const halfLen = Math.max(1.2, (actor.length ?? 4.2) * 0.45);
+      leverTorqueNorm = clamp((rFwd * pushRight - rRight * pushForward) / halfLen, -1.25, 1.25);
+    }
+    let state = actorImpactReactions.get(actor);
+    if (!state) {
+      state = {
+        rollRad: 0,
+        rollVel: 0,
+        pitchRad: 0,
+        pitchVel: 0,
+        heaveM: 0,
+        heaveVel: 0,
+        lateralPushMps: 0,
+        longitudinalPushMps: 0,
+        pendingLongDvMps: 0,
+        yawPushRadS: 0,
+        stictionBroken: false,
+        lastTick: -1
+      };
+      actorImpactReactions.set(actor, state);
+    }
+    if (brokeStiction) {
+      state.stictionBroken = true;
+    }
+    const sameTickScale = state.lastTick === tick && tick > 0 ? 0.35 : 1;
+    state.rollVel = clamp(
+      state.rollVel + rockLatDv * 0.58 * sameTickScale,
+      -1.85,
+      1.85
+    );
+    state.pitchVel = clamp(
+      state.pitchVel - rockLongDv * 0.42 * sameTickScale,
+      -1.35,
+      1.35
+    );
+    state.heaveVel = clamp(
+      state.heaveVel - rockTotalDv * 0.085 * sameTickScale,
+      -0.42,
+      0.42
+    );
+    if (brokeStiction) {
+      state.lateralPushMps = clamp(
+        state.lateralPushMps + transLatDv * sameTickScale,
+        -4.5,
+        4.5
+      );
+      state.longitudinalPushMps = clamp(
+        state.longitudinalPushMps + transLongDv * sameTickScale,
+        -4.5,
+        4.5
+      );
+      state.pendingLongDvMps += transLongDv * sameTickScale;
+      state.yawPushRadS = clamp(
+        state.yawPushRadS + leverTorqueNorm * transTotalDv * 0.65 * sameTickScale,
+        -2.4,
+        2.4
+      );
+    }
+    state.lastTick = tick;
+    return getActorImpactReaction(actor);
+  }
+  function stepActorImpactReaction(actor, dt = STEP) {
+    if (!actor || typeof actor !== "object") return INACTIVE_ACTOR_REACTION;
+    const state = actorImpactReactions.get(actor);
+    if (!state) return INACTIVE_ACTOR_REACTION;
+    if (!Number.isFinite(dt) || dt <= 0) return getActorImpactReaction(actor);
+    const omega = 11;
+    const zeta = 0.28;
+    const roll = stepUnderdampedSpring(state.rollRad, state.rollVel, omega, zeta, 0.11, dt);
+    const pitch = stepUnderdampedSpring(state.pitchRad, state.pitchVel, omega, zeta, 0.08, dt);
+    const heave = stepUnderdampedSpring(state.heaveM, state.heaveVel, 13, 0.34, 0.035, dt);
+    const isParkedActor = actor.kind === "parked-vehicle";
+    let lateralPushMps;
+    let longitudinalPushMps;
+    let yawPushRadS;
+    if (isParkedActor) {
+      const speedPush = Math.hypot(state.lateralPushMps, state.longitudinalPushMps ?? 0);
+      const decel = PARKED_GROUND_MU * 9.81 * dt;
+      const ratio = speedPush > decel && speedPush > 1e-6 ? (speedPush - decel) / speedPush : 0;
+      lateralPushMps = Math.abs(state.lateralPushMps * ratio) < 5e-4 ? 0 : cleanZero(state.lateralPushMps * ratio);
+      longitudinalPushMps = Math.abs((state.longitudinalPushMps ?? 0) * ratio) < 5e-4 ? 0 : cleanZero((state.longitudinalPushMps ?? 0) * ratio);
+      const yawDecel = 4.2 * dt;
+      const absYaw = Math.abs(state.yawPushRadS);
+      yawPushRadS = absYaw > yawDecel ? cleanZero(Math.sign(state.yawPushRadS) * (absYaw - yawDecel)) : 0;
+    } else {
+      const pushDecay = Math.exp(-5.5 * dt);
+      lateralPushMps = Math.abs(state.lateralPushMps * pushDecay) < 5e-4 ? 0 : cleanZero(state.lateralPushMps * pushDecay);
+      longitudinalPushMps = Math.abs((state.longitudinalPushMps ?? 0) * pushDecay) < 5e-4 ? 0 : cleanZero((state.longitudinalPushMps ?? 0) * pushDecay);
+      yawPushRadS = Math.abs(state.yawPushRadS * pushDecay) < 5e-4 ? 0 : cleanZero(state.yawPushRadS * pushDecay);
+    }
+    state.rollRad = roll.pos;
+    state.rollVel = roll.vel;
+    state.pitchRad = pitch.pos;
+    state.pitchVel = pitch.vel;
+    state.heaveM = heave.pos;
+    state.heaveVel = heave.vel;
+    state.lateralPushMps = lateralPushMps;
+    state.longitudinalPushMps = longitudinalPushMps;
+    state.yawPushRadS = yawPushRadS;
+    if (roll.pos === 0 && roll.vel === 0 && pitch.pos === 0 && pitch.vel === 0 && heave.pos === 0 && heave.vel === 0 && lateralPushMps === 0 && longitudinalPushMps === 0 && yawPushRadS === 0) {
+      actorImpactReactions.delete(actor);
+      return INACTIVE_ACTOR_REACTION;
+    }
+    return getActorImpactReaction(actor);
+  }
+  function consumeActorPendingLongDv(actor) {
+    const state = actor ? actorImpactReactions.get(actor) : null;
+    if (!state || !state.pendingLongDvMps) return 0;
+    const dv = state.pendingLongDvMps;
+    state.pendingLongDvMps = 0;
+    return cleanZero(dv);
+  }
+  function getActorImpactReaction(actor) {
+    if (!actor || typeof actor !== "object") return INACTIVE_ACTOR_REACTION;
+    const state = actorImpactReactions.get(actor);
+    if (!state) return INACTIVE_ACTOR_REACTION;
+    const active3 = Math.abs(state.rollRad) > 1e-6 || Math.abs(state.rollVel) > 1e-5 || Math.abs(state.pitchRad) > 1e-6 || Math.abs(state.pitchVel) > 1e-5 || Math.abs(state.heaveM) > 1e-6 || Math.abs(state.lateralPushMps) > 1e-5 || Math.abs(state.longitudinalPushMps ?? 0) > 1e-5 || Math.abs(state.yawPushRadS) > 1e-5;
+    return {
+      active: active3,
+      rollRad: cleanZero(state.rollRad),
+      pitchRad: cleanZero(state.pitchRad),
+      heaveM: cleanZero(state.heaveM),
+      lateralPushMps: cleanZero(state.lateralPushMps),
+      longitudinalPushMps: cleanZero(state.longitudinalPushMps ?? 0),
+      yawPushRadS: cleanZero(state.yawPushRadS),
+      stictionBroken: Boolean(state.stictionBroken)
+    };
+  }
+  function createDefaultWheelInteractionState() {
+    return {
+      surfaceKind: "asphalt",
+      tireSmokeIntensity: 0,
+      scrapeSmokeIntensity: 0,
+      steerKickRad: 0,
+      lateralAccelMps2: 0,
+      longitudinalAccelMps2: 0,
+      maxSlipAngleRad: 0,
+      wheels: {
+        frontLeft: {
+          slipAngleRad: 0,
+          brakeLockSlip: 0,
+          driveWheelSpin: 0,
+          scrubIntensity: 0,
+          surfaceKind: "asphalt"
+        },
+        frontRight: {
+          slipAngleRad: 0,
+          brakeLockSlip: 0,
+          driveWheelSpin: 0,
+          scrubIntensity: 0,
+          surfaceKind: "asphalt"
+        },
+        rearLeft: {
+          slipAngleRad: 0,
+          brakeLockSlip: 0,
+          driveWheelSpin: 0,
+          scrubIntensity: 0,
+          surfaceKind: "asphalt"
+        },
+        rearRight: {
+          slipAngleRad: 0,
+          brakeLockSlip: 0,
+          driveWheelSpin: 0,
+          scrubIntensity: 0,
+          surfaceKind: "asphalt"
+        }
+      },
+      scraping: {
+        active: false,
+        kind: "none",
+        wheel: null,
+        side: null,
+        grazing: false,
+        intensity: 0,
+        tangentialSpeedMps: 0,
+        closingSpeedMps: 0,
+        attackAngleRad: 0,
+        worldX: 0,
+        worldZ: 0,
+        normalX: 0,
+        normalZ: 0,
+        steerKickRad: 0,
+        rollImpulse: 0,
+        pitchImpulse: 0,
+        heaveImpulse: 0
+      }
+    };
+  }
+  function computeWheelInteractionState(before, after, command, suspension, wheelLoadsN, {
+    surface = null,
+    contact = null,
+    curbScrub = null,
+    scraping = null,
+    driverCommand = null,
+    dt = STEP
+  } = {}) {
+    const safeDt = Number.isFinite(dt) && dt > 0 ? dt : STEP;
+    const surfaceKind = surface && typeof surface === "object" ? surface.surfaceKind ?? surface.kind ?? "asphalt" : "asphalt";
+    const gripMult = surface && typeof surface === "object" && Number.isFinite(surface.gripMultiplier) ? clamp(surface.gripMultiplier, 0.3, 1.2) : 1;
+    const oldSpeed = Number.isFinite(before?.speed) ? before.speed : 0;
+    const newSpeed = Number.isFinite(after?.speed) ? after.speed : 0;
+    const avgSpeed = (oldSpeed + newSpeed) * 0.5;
+    const absSpeed = Math.abs(avgSpeed);
+    const maxAbsSpeed = Math.max(Math.abs(oldSpeed), Math.abs(newSpeed));
+    const rawScrape = contact?.scraping ?? scraping ?? (curbScrub?.active ? curbScrub : null);
+    const scrapeActive = Boolean(rawScrape?.active);
+    const yaw = angleDelta(after?.heading ?? 0, before?.heading ?? 0);
+    const yawRate = yaw / safeDt;
+    const lateralAccel = avgSpeed * yawRate;
+    const hasContactRebound = Boolean(contact) || scrapeActive || Boolean(before?.vehicle?.interaction?.scraping?.active) || Boolean(suspension?.active);
+    const steeredLatAccel = hasContactRebound ? avgSpeed * avgSpeed * Math.tan(clamp(after?.steer ?? 0, -0.7, 0.7)) / Math.max(1.5, PLAYER_VEHICLE.wheelbaseM) : lateralAccel;
+    const signedAccel = (newSpeed - oldSpeed) / safeDt;
+    const decel = !contact ? Math.max(0, (Math.abs(oldSpeed) - Math.abs(newSpeed)) / safeDt) : 0;
+    const accelMag = !contact ? Math.max(0, (Math.abs(newSpeed) - Math.abs(oldSpeed)) / safeDt) : 0;
+    const effectiveCmd = driverCommand ?? command;
+    const requested = Number.isFinite(effectiveCmd?.targetSpeed) ? effectiveCmd.targetSpeed : 0;
+    const reversing = oldSpeed * requested < 0;
+    const driverHoldingForwardThrottle = Boolean(
+      driverCommand && requested > 0.15 && oldSpeed >= -0.05 && !reversing
+    );
+    const slowing = !driverHoldingForwardThrottle && (Math.abs(requested) < Math.abs(oldSpeed) - 1e-6 || reversing);
+    const brake2 = Number.isFinite(effectiveCmd?.brake) ? clamp(effectiveCmd.brake, 0, 1) : !contact && !effectiveCmd?.coasting && slowing && Math.abs(oldSpeed) > 0.2 ? clamp(Math.max(0.6, decel / 6.5), 0, 1) : 0;
+    const chaseSlipRad = (Number.isFinite(after?.chaseSlipRad) ? after.chaseSlipRad : 0) + (Number.isFinite(after?.arcadeSlip) ? after.arcadeSlip : 0);
+    const wheels = {};
+    let maxSlipAngleRad = 0;
+    for (let i = 0; i < WHEEL_LAYOUT.length; i++) {
+      const [name, sideSign, axleSign] = WHEEL_LAYOUT[i];
+      const loadN = wheelLoadsN && Number.isFinite(wheelLoadsN[name]) ? wheelLoadsN[name] : STATIC_WHEEL_LOAD_N;
+      const unloadRatio = clamp(STATIC_WHEEL_LOAD_N / Math.max(400, loadN), 0.65, 1.55);
+      const dynamicCornerSlip = maxAbsSpeed > 0.8 ? clamp(
+        -(steeredLatAccel / (8 * gripMult)) * 0.085 * (axleSign > 0 ? 1.06 : 0.96) * unloadRatio + chaseSlipRad,
+        -0.45,
+        0.45
+      ) : 0;
+      const absWheelSlip = Math.abs(dynamicCornerSlip);
+      if (absWheelSlip > maxSlipAngleRad) maxSlipAngleRad = absWheelSlip;
+      const brakeLockSlip = brake2 > 0.05 && absSpeed > 0.5 && decel > 0.8 ? clamp(
+        (decel / Math.max(2.4, 7.2 * gripMult) - 0.32) * 1.18 * brake2 * unloadRatio,
+        0,
+        1
+      ) : 0;
+      const driveWheelSpin = !contact && accelMag > 0.4 ? clamp(
+        (accelMag / Math.max(1.6, 3.1 * gripMult) - 0.42) * 0.92 * unloadRatio,
+        0,
+        1
+      ) : 0;
+      let scrubIntensity = 0;
+      if (scrapeActive) {
+        const baseInt = clamp(rawScrape.intensity ?? 0, 0, 1);
+        if (rawScrape.wheel === name) {
+          scrubIntensity = baseInt;
+        } else if (rawScrape.side === "left" && sideSign < 0 || rawScrape.side === "right" && sideSign > 0) {
+          scrubIntensity = baseInt * (rawScrape.kind === "curb" ? 0.35 : 0.6);
+        }
+      }
+      wheels[name] = {
+        slipAngleRad: round4(dynamicCornerSlip),
+        brakeLockSlip: round4(brakeLockSlip),
+        driveWheelSpin: round4(driveWheelSpin),
+        scrubIntensity: round4(scrubIntensity),
+        surfaceKind
+      };
+    }
+    let tireSmokeIntensity = 0;
+    let scrapeSmokeIntensity = 0;
+    const suppressDrySmoke = surfaceKind === "water" || surfaceKind === "sand";
+    if (!suppressDrySmoke) {
+      let cornerSmoke = 0;
+      if (!contact && !scrapeActive) {
+        const absLat = Math.abs(steeredLatAccel);
+        const absSlip = hasContactRebound ? 0 : Math.abs(chaseSlipRad);
+        if (maxAbsSpeed > 1.5 && (absLat > 4.6 || absSlip > 0.085)) {
+          const latFactor = absLat > 4.6 ? clamp((absLat - 4.6) / 3.4, 0, 1) : 0;
+          const slipFactor = absSlip > 0.085 ? clamp((absSlip - 0.085) / 0.065, 0, 1) : 0;
+          cornerSmoke = 0.25 + 0.75 * Math.max(latFactor, slipFactor);
+        }
+      }
+      let brakeSmoke = 0;
+      if (surfaceKind === "asphalt" || surfaceKind === "cobble") {
+        if (brake2 > 0.5 && absSpeed > 7.5 && decel > 5.8) {
+          const decelFactor = clamp(
+            (decel - 5.8) / 2 + (absSpeed - 7.5) / 18 * 0.45,
+            0,
+            1
+          );
+          brakeSmoke = clamp(0.2 + 0.55 * decelFactor, 0.2, 0.75);
+        }
+      }
+      if (scrapeActive && (rawScrape.tangentialSpeedMps ?? 0) > 2.2) {
+        const tangFactor = clamp(
+          (rawScrape.tangentialSpeedMps - 2.2) / 9.5 * 0.7 + (rawScrape.intensity ?? 0) * 0.3,
+          0,
+          1
+        );
+        scrapeSmokeIntensity = clamp(0.35 + 0.6 * tangFactor, 0.35, 0.95);
+      }
+      tireSmokeIntensity = clamp(Math.max(cornerSmoke, brakeSmoke), 0, 1);
+    }
+    const scrapingSummary = scrapeActive ? {
+      active: true,
+      kind: rawScrape.kind ?? "wall",
+      wheel: rawScrape.wheel ?? null,
+      side: rawScrape.side ?? null,
+      grazing: Boolean(rawScrape.grazing),
+      intensity: round4(rawScrape.intensity ?? 0),
+      tangentialSpeedMps: round4(rawScrape.tangentialSpeedMps ?? 0),
+      closingSpeedMps: round4(rawScrape.closingSpeedMps ?? 0),
+      attackAngleRad: round4(rawScrape.attackAngleRad ?? 0),
+      worldX: round4(rawScrape.worldX ?? after?.x ?? 0),
+      worldZ: round4(rawScrape.worldZ ?? after?.z ?? 0),
+      normalX: round4(rawScrape.normalX ?? 0),
+      normalZ: round4(rawScrape.normalZ ?? 0),
+      steerKickRad: round4(rawScrape.steerKickRad ?? 0),
+      rollImpulse: round4(rawScrape.rollImpulse ?? 0),
+      pitchImpulse: round4(rawScrape.pitchImpulse ?? 0),
+      heaveImpulse: round4(rawScrape.heaveImpulse ?? 0)
+    } : {
+      active: false,
+      kind: "none",
+      wheel: null,
+      side: null,
+      grazing: false,
+      intensity: 0,
+      tangentialSpeedMps: 0,
+      closingSpeedMps: 0,
+      attackAngleRad: 0,
+      worldX: 0,
+      worldZ: 0,
+      normalX: 0,
+      normalZ: 0,
+      steerKickRad: 0,
+      rollImpulse: 0,
+      pitchImpulse: 0,
+      heaveImpulse: 0
+    };
+    const steerKickRad = round4(
+      (scrapeActive ? rawScrape.steerKickRad ?? 0 : 0) + (curbScrub?.active && curbScrub !== rawScrape ? curbScrub.steerKickRad ?? 0 : 0)
+    );
+    return {
+      surfaceKind,
+      tireSmokeIntensity: round4(tireSmokeIntensity),
+      scrapeSmokeIntensity: round4(scrapeSmokeIntensity),
+      steerKickRad,
+      lateralAccelMps2: round4(lateralAccel),
+      longitudinalAccelMps2: round4(signedAccel),
+      maxSlipAngleRad: round4(maxSlipAngleRad),
+      wheels,
+      scraping: scrapingSummary
+    };
+  }
+
   // src/core/vehicle.js
   var approach = (a, b, amount) => a + clamp(b - a, -amount, amount);
   var fixedPathGeometry = /* @__PURE__ */ new WeakMap();
   var immutablePaths = /* @__PURE__ */ new WeakSet();
-  var contactSlide = /* @__PURE__ */ new WeakMap();
   function copyVehicleMotion(source, target) {
-    if (contactSlide.has(source)) contactSlide.set(target, contactSlide.get(source));
-    else contactSlide.delete(target);
-    return target;
+    return copyContactSlide(source, target);
   }
   function clearVehicleMotion(body) {
-    contactSlide.delete(body);
+    deleteContactSlide(body);
   }
   function markImmutablePath(path) {
     for (let i = 0; i < path.length; i++) Object.freeze(path[i]);
@@ -1922,6 +3217,7 @@
     return geometry;
   }
   function vehicleProbe(body, speed) {
+    const spec = body.spec && typeof body.spec === "object" && body.spec.wheelInteractionPhysics !== void 0 ? body.spec : body.spec;
     return copyVehicleMotion(body, {
       x: body.x,
       z: body.z,
@@ -1929,59 +3225,151 @@
       speed,
       steer: body.steer,
       maxSpeed: body.maxSpeed,
-      spec: body.spec,
+      spec,
       type: body.type,
       length: body.length,
       width: body.width,
       radius: body.radius,
       ...body.arcadeSlip ? { arcadeSlip: body.arcadeSlip } : {},
       ...body.realisticDynamics !== void 0 ? { realisticDynamics: body.realisticDynamics } : {},
+      ...body.wheelInteractionPhysics !== void 0 ? { wheelInteractionPhysics: body.wheelInteractionPhysics } : {},
       ...body.chaseSlipRad !== void 0 ? { chaseSlipRad: body.chaseSlipRad } : {}
     });
   }
   function integrateVehicle(body, command, dt, out = null) {
     if (!Number.isFinite(dt) || dt < 0)
       throw new RangeError("Vehicle integration needs a nonnegative step");
-    const spec = body.spec == null ? VEHICLE : { ...VEHICLE, ...body.spec };
-    const realistic = spec.realisticDynamics === true;
+    const rawSpec = body.spec;
+    const realistic = rawSpec?.realisticDynamics === true;
+    const specBraking = rawSpec?.braking !== void 0 ? rawSpec.braking : VEHICLE.braking;
+    const specSteerRate = rawSpec?.steerRate !== void 0 ? rawSpec.steerRate : VEHICLE.steerRate;
+    const specMaxSteer = rawSpec?.maxSteer !== void 0 ? rawSpec.maxSteer : VEHICLE.maxSteer;
+    const specReverseSpeed = rawSpec?.reverseSpeed !== void 0 ? rawSpec.reverseSpeed : VEHICLE.reverseSpeed;
+    const specAcceleration = rawSpec?.acceleration !== void 0 ? rawSpec.acceleration : VEHICLE.acceleration;
+    const specWheelbase = rawSpec?.wheelbase !== void 0 ? rawSpec.wheelbase : VEHICLE.wheelbase;
+    const specTireGrip = rawSpec?.tireGripMps2 !== void 0 ? rawSpec.tireGripMps2 : VEHICLE.tireGripMps2;
+    const specContactResponse = rawSpec?.contactResponse !== void 0 ? rawSpec.contactResponse : VEHICLE.contactResponse;
     const explicitDeceleration = Object.prototype.hasOwnProperty.call(command, "decelerationMps2");
-    if (explicitDeceleration && (!Number.isFinite(spec.braking) || spec.braking <= 0 || !Number.isFinite(command.decelerationMps2) || command.decelerationMps2 <= 0 || command.decelerationMps2 > spec.braking))
+    if (explicitDeceleration && (!Number.isFinite(specBraking) || specBraking <= 0 || !Number.isFinite(command.decelerationMps2) || command.decelerationMps2 <= 0 || command.decelerationMps2 > specBraking))
       throw new RangeError("Explicit vehicle deceleration must be finite, positive and at most spec.braking");
     const absSpeed = Math.abs(body.speed ?? 0);
-    const effectiveSteerRate = realistic && absSpeed > 11 ? spec.steerRate * clamp(1.08 - 0.011 * Math.max(0, absSpeed - 11), 0.72, 1) : spec.steerRate;
-    const effectiveMaxSteer = realistic && absSpeed > 11 ? spec.maxSteer * clamp(1 - 9e-3 * Math.max(0, absSpeed - 14), 0.74, 1) : spec.maxSteer;
+    const effectiveSteerRate = realistic && absSpeed > 11 ? specSteerRate * clamp(1.08 - 0.011 * Math.max(0, absSpeed - 11), 0.72, 1) : specSteerRate;
+    const effectiveMaxSteer = realistic && absSpeed > 11 ? specMaxSteer * clamp(1 - 9e-3 * Math.max(0, absSpeed - 14), 0.74, 1) : specMaxSteer;
     const steer = approach(
       body.steer ?? 0,
       clamp(Number.isFinite(command.steer) ? command.steer : 0, -effectiveMaxSteer, effectiveMaxSteer),
       effectiveSteerRate * dt
     );
+    const rawSurface = realistic && command?.surface && typeof command.surface === "object" ? command.surface : null;
+    const surfaceKind = rawSurface ? rawSurface.surfaceKind ?? rawSurface.kind ?? "asphalt" : "asphalt";
+    const surfGripMult = rawSurface ? clamp(Number.isFinite(rawSurface.gripMultiplier) ? rawSurface.gripMultiplier : 1, 0.3, 1.2) : 1;
+    const surfGradeSin = rawSurface ? clamp(Number.isFinite(rawSurface.gradeSin) ? rawSurface.gradeSin : 0, -0.35, 0.35) : 0;
+    const surfRollingDrag = rawSurface && Number.isFinite(rawSurface.rollingDragMps2) ? Math.max(0, rawSurface.rollingDragMps2) : 0;
+    const surfHydroCoeff = rawSurface && Number.isFinite(rawSurface.hydroDragCoeff) ? Math.max(0, rawSurface.hydroDragCoeff) : 0;
+    const hasActiveSurface = Boolean(
+      rawSurface && (surfGripMult !== 1 || surfGradeSin !== 0 || surfRollingDrag !== 0 || surfHydroCoeff !== 0 || surfaceKind === "water")
+    );
+    const maxForwardSpeed = (body.maxSpeed ?? 13.89) * (hasActiveSurface && surfGradeSin < -0.02 ? 1.12 : 1);
     const requested = clamp(
       Number.isFinite(command.targetSpeed) ? command.targetSpeed : 0,
-      -spec.reverseSpeed,
-      body.maxSpeed ?? 13.89
+      -specReverseSpeed,
+      maxForwardSpeed
     );
     const coastingDrag = realistic && command.coasting === true && !explicitDeceleration && Math.abs(requested) < 0.05 && absSpeed > 0.2;
-    const braking = explicitDeceleration ? command.decelerationMps2 : coastingDrag ? 1.65 + 18e-4 * (body.speed ?? 0) ** 2 : spec.braking;
-    const reversing = (body.speed ?? 0) * requested < 0;
+    const braking = explicitDeceleration ? command.decelerationMps2 : coastingDrag ? 1.65 + 18e-4 * (body.speed ?? 0) ** 2 : specBraking;
+    const v0 = body.speed ?? 0;
+    const reversing = v0 * requested < 0;
     const target = reversing ? 0 : requested;
     const slowing = Math.abs(target) < absSpeed || reversing;
-    const rate = slowing ? braking : spec.acceleration;
-    const grip = realistic && Number.isFinite(spec.tireGripMps2) && spec.tireGripMps2 > 0 ? spec.tireGripMps2 : Infinity;
-    const speed = approach(
-      body.speed ?? 0,
-      target,
-      Math.min(rate, grip) * dt
-    );
-    const average = (speed + (body.speed ?? 0)) / 2;
+    const rate = slowing ? braking : specAcceleration;
+    const baseGrip = realistic ? Number.isFinite(specTireGrip) && specTireGrip > 0 ? specTireGrip : hasActiveSurface ? 8 : Infinity : Infinity;
+    const grip = hasActiveSurface && Number.isFinite(baseGrip) ? baseGrip * surfGripMult : baseGrip;
+    let speed;
+    let tireLongitudinal = 0;
+    if (!hasActiveSurface || dt === 0) {
+      speed = approach(v0, target, Math.min(rate, grip) * dt);
+      tireLongitudinal = dt > 0 ? Math.abs(speed - v0) / dt : 0;
+    } else {
+      const slopeAccel = -9.81 * surfGradeSin;
+      const hydroDrag = surfHydroCoeff * absSpeed * absSpeed;
+      if (command.coasting === true && !explicitDeceleration && Math.abs(requested) < 0.05) {
+        const rollingWithGravity = slopeAccel !== 0 && v0 * slopeAccel >= 0;
+        const baseCoast = rollingWithGravity ? 0.32 + 25e-4 * v0 * v0 : absSpeed > 0.2 ? 1.65 + 18e-4 * v0 * v0 : 0.35;
+        const coastDecel = baseCoast + surfRollingDrag + hydroDrag;
+        if (absSpeed > 0) {
+          const dragStep = approach(v0, 0, coastDecel * dt);
+          if (dragStep === 0) {
+            const gravExcess = Math.max(0, Math.abs(slopeAccel) - (0.32 + surfRollingDrag));
+            speed = gravExcess > 0 ? Math.sign(slopeAccel) * gravExcess * dt : 0;
+          } else {
+            speed = dragStep + slopeAccel * dt;
+          }
+        } else {
+          const gravExcess = Math.max(0, Math.abs(slopeAccel) - (0.32 + surfRollingDrag));
+          speed = gravExcess > 0 ? Math.sign(slopeAccel) * gravExcess * dt : 0;
+        }
+        speed = clamp(speed, -specReverseSpeed, maxForwardSpeed);
+        tireLongitudinal = 0;
+      } else if (Math.abs(requested) < 1e-6) {
+        const brakeCap = Math.min(braking, grip);
+        const passiveAssist = Math.min(0.45, surfRollingDrag * 0.25 + hydroDrag * 0.02);
+        if (absSpeed < 0.08 && Math.abs(surfGradeSin) < 0.25 && Math.abs(slopeAccel) <= brakeCap) {
+          if (v0 === 0) {
+            speed = 0;
+          } else {
+            const dir = Math.sign(v0);
+            const netDecel = Math.max(0.5, brakeCap + passiveAssist - dir * slopeAccel);
+            speed = approach(v0, 0, netDecel * dt);
+          }
+        } else if (absSpeed > 0) {
+          const dir = Math.sign(v0);
+          const netDecel = brakeCap + passiveAssist - dir * slopeAccel;
+          if (netDecel >= 0) {
+            speed = approach(v0, 0, netDecel * dt);
+          } else {
+            speed = clamp(v0 + dir * -netDecel * dt, -specReverseSpeed, maxForwardSpeed);
+          }
+        } else {
+          const excess = Math.max(0, Math.abs(slopeAccel) - brakeCap);
+          speed = excess > 0 ? clamp(Math.sign(slopeAccel) * excess * dt, -specReverseSpeed, maxForwardSpeed) : 0;
+        }
+        tireLongitudinal = Math.min(grip, Math.abs(v0) > 0 ? Math.min(brakeCap, Math.abs(v0) / dt) : 0);
+      } else if (slowing) {
+        const dir = absSpeed > 0 ? Math.sign(v0) : Math.sign(requested);
+        const brakeCap = Math.min(braking, grip);
+        const passiveAssist = Math.min(0.45, surfRollingDrag * 0.25 + hydroDrag * 0.02);
+        const netDecel = brakeCap + passiveAssist - dir * slopeAccel;
+        if (netDecel >= 0) {
+          speed = approach(v0, target, netDecel * dt);
+        } else {
+          speed = clamp(v0 + dir * -netDecel * dt, -specReverseSpeed, maxForwardSpeed);
+        }
+        tireLongitudinal = Math.min(grip, Math.min(brakeCap, Math.abs(target - v0) / dt));
+      } else {
+        const wantDir = Math.sign(requested);
+        const driveCap = Math.min(specAcceleration, grip);
+        const neededAccel = Math.abs(requested - v0) / dt;
+        const driveDragFactor = 0.42 + 0.25 * clamp(absSpeed / 8, 0, 1);
+        const resistDecel = surfRollingDrag * driveDragFactor + hydroDrag;
+        const requiredDrive = Math.min(
+          driveCap,
+          neededAccel + resistDecel - Math.min(0, wantDir * slopeAccel)
+        );
+        const activeStep = v0 + wantDir * requiredDrive * dt + slopeAccel * dt;
+        speed = clamp(approach(activeStep, 0, resistDecel * dt), -specReverseSpeed, maxForwardSpeed);
+        tireLongitudinal = Math.min(requiredDrive, grip * 0.75);
+      }
+    }
+    const average = (speed + v0) / 2;
     const tangent = Math.tan(steer);
     let beta = Math.atan(0.5 * tangent);
-    let yawRate = average / spec.wheelbase * Math.cos(beta) * tangent;
-    if (realistic && Number.isFinite(spec.tireGripMps2) && spec.tireGripMps2 > 0) {
-      const longitudinal2 = dt > 0 ? Math.abs(speed - (body.speed ?? 0)) / dt : 0;
-      const lateralBudget = Math.sqrt(Math.max(0, spec.tireGripMps2 ** 2 - longitudinal2 ** 2));
-      const demanded = Math.abs(average * yawRate);
-      if (demanded > lateralBudget) {
-        const scale = lateralBudget / demanded;
+    let yawRate = average / specWheelbase * Math.cos(beta) * tangent;
+    const rawDemandedLat = Math.abs(average * yawRate);
+    let lateralBudget = Infinity;
+    if (realistic && Number.isFinite(grip) && grip > 0) {
+      lateralBudget = Math.sqrt(Math.max(0, grip ** 2 - tireLongitudinal ** 2));
+      if (rawDemandedLat > lateralBudget) {
+        const scale = lateralBudget / rawDemandedLat;
         yawRate *= scale;
         beta = Math.atan(Math.tan(beta) * scale);
       }
@@ -1991,7 +3379,17 @@
     let nextChaseSlip = 0;
     if (realistic) {
       const latAccel = average * yawRate;
-      const targetChaseSlip = Math.abs(latAccel) > 3.8 && average > 6 ? clamp(-Math.sign(latAccel) * (Math.abs(latAccel) - 3.8) * 0.016, -0.14, 0.14) : 0;
+      let targetChaseSlip = 0;
+      if (!hasActiveSurface) {
+        targetChaseSlip = Math.abs(latAccel) > 3.8 && average > 6 ? clamp(-Math.sign(latAccel) * (Math.abs(latAccel) - 3.8) * 0.016, -0.14, 0.14) : 0;
+      } else {
+        const effectiveLat = Math.abs(latAccel) / surfGripMult;
+        const slideOvershoot = Number.isFinite(lateralBudget) && rawDemandedLat > lateralBudget ? Math.min(3.6, (rawDemandedLat - lateralBudget) * Math.max(0, 1 - surfGripMult) * 0.65) : 0;
+        const equivLat = effectiveLat + slideOvershoot;
+        const slipBoost = surfaceKind === "water" ? 1.35 : 1;
+        const maxSlip = surfaceKind === "water" ? 0.22 : surfGripMult < 0.95 ? 0.18 : 0.14;
+        targetChaseSlip = equivLat > 3.8 && Math.abs(average) > 5.5 && latAccel !== 0 ? clamp(-Math.sign(latAccel) * (equivLat - 3.8) * 0.016 * slipBoost, -maxSlip, maxSlip) : 0;
+      }
       const prevChaseSlip = body.chaseSlipRad ?? 0;
       const rawChaseSlip = prevChaseSlip + (targetChaseSlip - prevChaseSlip) * (1 - Math.exp(-8.5 * dt));
       nextChaseSlip = Math.abs(rawChaseSlip) < 1e-12 ? 0 : rawChaseSlip;
@@ -2006,13 +3404,13 @@
     result.speed = speed;
     if (drift || body.arcadeSlip !== void 0) result.arcadeSlip = slip;
     if (realistic) result.chaseSlipRad = nextChaseSlip;
-    if (spec.contactResponse === "inelastic-slide-v1") {
-      const oldSlide = contactSlide.get(body) ?? 0;
+    if (specContactResponse === "inelastic-slide-v1") {
+      const oldSlide = getContactSlide(body);
       const slide = approach(oldSlide, 0, 3 * dt);
       result.x += Math.cos(midHeading) * (oldSlide + slide) * dt / 2;
       result.z -= Math.sin(midHeading) * (oldSlide + slide) * dt / 2;
-      if (slide) contactSlide.set(result, slide);
-      else contactSlide.delete(result);
+      if (slide) setContactSlide(result, slide);
+      else deleteContactSlide(result);
     }
     return result;
   }
@@ -2020,14 +3418,22 @@
     if (!Number.isFinite(dt) || dt <= 0)
       throw new RangeError("Contact needs a positive step");
     if (overlaps(before, obstacle)) return null;
+    const scrubEnabled = (before.spec?.wheelInteractionPhysics ?? before.wheelInteractionPhysics) === WHEEL_SCRUB_MODE;
+    const obstacleSpeed = obstacle.speed ?? 0;
+    const obsVx = Number.isFinite(obstacle.vx) ? obstacle.vx : Math.sin(obstacle.heading ?? 0) * obstacleSpeed;
+    const obsVz = Number.isFinite(obstacle.vz) ? obstacle.vz : Math.cos(obstacle.heading ?? 0) * obstacleSpeed;
+    const obsEnd = scrubEnabled && obstacle.type !== "static" && (Math.abs(obsVx) > 1e-9 || Math.abs(obsVz) > 1e-9) ? { ...obstacle, x: obstacle.x + obsVx * dt, z: obstacle.z + obsVz * dt } : obstacle;
+    const obsTravel = obsEnd === obstacle ? 0 : Math.hypot(obsVx * dt, obsVz * dt);
     const travel2 = distance(before, proposed) + Math.abs(angleDelta(proposed.heading, before.heading)) * Math.hypot(before.length, before.width) / 2;
-    if (travel2 < 1e-10) return null;
-    const steps = Math.max(1, Math.ceil(travel2 / 0.04));
+    if (travel2 + obsTravel < 1e-10) return null;
+    const obsAt = (t) => obsEnd === obstacle ? obstacle : interpolate(obstacle, obsEnd, t);
+    const steps = Math.max(1, Math.ceil((travel2 + obsTravel) / 0.04));
     let low = 0;
     let high = null;
     for (let i = 1; i <= steps; i++) {
-      if (overlaps(interpolate(before, proposed, i / steps), obstacle)) {
-        high = i / steps;
+      const t = i / steps;
+      if (overlaps(interpolate(before, proposed, t), obsAt(t))) {
+        high = t;
         low = (i - 1) / steps;
         break;
       }
@@ -2035,15 +3441,16 @@
     if (high === null) return null;
     for (let i = 0; i < 32; i++) {
       const middle = (low + high) / 2;
-      if (overlaps(interpolate(before, proposed, middle), obstacle)) high = middle;
+      if (overlaps(interpolate(before, proposed, middle), obsAt(middle))) high = middle;
       else low = middle;
     }
     const body = interpolate(before, proposed, low);
+    const touchObstacle = obsAt(low);
     const a = corners(body);
-    const b = corners(obstacle);
+    const b = corners(touchObstacle);
     let separation = -Infinity;
     let normal2;
-    for (const shape2 of [body, obstacle]) {
+    for (const shape2 of [body, touchObstacle]) {
       for (const offset2 of [0, Math.PI / 2]) {
         const axis = {
           x: Math.sin((shape2.heading ?? 0) + offset2),
@@ -2064,21 +3471,34 @@
     const forward2 = normal2.x * Math.sin(body.heading) + normal2.z * Math.cos(body.heading);
     const right = normal2.x * Math.cos(body.heading) - normal2.z * Math.sin(body.heading);
     const side = Math.abs(forward2) >= Math.abs(right) ? forward2 > 0 ? "front" : "rear" : right > 0 ? "right" : "left";
-    const obstacleSpeed = obstacle.speed ?? 0;
-    const vx = (proposed.x - before.x) / dt - Math.sin(obstacle.heading ?? 0) * obstacleSpeed;
-    const vz = (proposed.z - before.z) / dt - Math.cos(obstacle.heading ?? 0) * obstacleSpeed;
+    const vx = (proposed.x - before.x) / dt - obsVx;
+    const vz = (proposed.z - before.z) / dt - obsVz;
     const closingSpeedMps = Math.max(0, vx * normal2.x + vz * normal2.z);
     if (before.spec?.contactResponse === "inelastic-slide-v1") {
+      const mass2 = Number.isFinite(before.spec.massKg) && before.spec.massKg > 0 ? before.spec.massKg : PLAYER_VEHICLE.massKg;
+      const contactMech = resolveObstacleContactMechanics(
+        mass2,
+        obstacle,
+        closingSpeedMps,
+        scrubEnabled,
+        dt
+      );
+      const otherMass = contactMech.obsMassKg;
+      const reducedMass = contactMech.reducedMassKg;
       const incoming = { x: (proposed.x - before.x) / dt, z: (proposed.z - before.z) / dt };
+      const normalDelta = contactMech.egoNormalDelta;
+      const sharedNormalImpulseNs = contactMech.egoNormalImpulseNs;
+      const actorNetNormalImpulseNs = contactMech.actorNetNormalImpulseNs;
       const velocity = {
-        x: incoming.x - normal2.x * closingSpeedMps,
-        z: incoming.z - normal2.z * closingSpeedMps
+        x: incoming.x - normal2.x * normalDelta,
+        z: incoming.z - normal2.z * normalDelta
       };
       const incomingSpeed = Math.hypot(incoming.x, incoming.z);
+      const maxNormalSpeed = scrubEnabled && contactMech.obsMomentumShare > 0 ? Math.max(incomingSpeed, Math.hypot(velocity.x, velocity.z)) : incomingSpeed;
       const outgoingSpeed = Math.hypot(velocity.x, velocity.z);
-      if (outgoingSpeed > incomingSpeed) {
-        velocity.x *= incomingSpeed / outgoingSpeed;
-        velocity.z *= incomingSpeed / outgoingSpeed;
+      if (outgoingSpeed > maxNormalSpeed && outgoingSpeed > 0) {
+        velocity.x *= maxNormalSpeed / outgoingSpeed;
+        velocity.z *= maxNormalSpeed / outgoingSpeed;
       }
       const remaining = dt * (1 - low);
       const slid = {
@@ -2086,7 +3506,7 @@
         x: body.x + velocity.x * remaining,
         z: body.z + velocity.z * remaining
       };
-      const accepted = overlaps(slid, obstacle) ? body : slid;
+      const accepted = overlaps(slid, obstacle) || overlaps(slid, obsEnd) ? body : slid;
       const s = Math.sin(body.heading), c = Math.cos(body.heading);
       const response = {
         ...accepted,
@@ -2096,26 +3516,44 @@
       };
       if (Math.abs(response.speed) < 1e-12) response.speed = 0;
       const slide = velocity.x * c - velocity.z * s;
-      if (Math.abs(slide) > 1e-12) contactSlide.set(response, slide);
-      const mass2 = Number.isFinite(before.spec.massKg) && before.spec.massKg > 0 ? before.spec.massKg : PLAYER_VEHICLE.massKg;
-      const otherMass = obstacle.type === "static" ? Infinity : obstacle.spec?.massKg ?? (obstacle.kind === "tuktuk" ? 620 : 1450);
-      const reducedMass = Number.isFinite(otherMass) && otherMass > 0 ? mass2 * otherMass / (mass2 + otherMass) : mass2;
-      return {
+      if (Math.abs(slide) > 1e-12) setContactSlide(response, slide);
+      const baseResult = {
         body: response,
         hitId: obstacle.id,
         side,
         normal: normal2,
         closingSpeedMps,
+        otherX: touchObstacle.x,
+        otherZ: touchObstacle.z,
         energyJ: 0.5 * reducedMass * closingSpeedMps ** 2,
+        sharedNormalImpulseNs,
+        actorNetNormalImpulseNs,
+        stictionBroken: contactMech.stictionBroken,
+        egoMassKg: mass2,
+        otherMassKg: otherMass,
         contactFraction: low,
-        proposedTravelM: distance(before, proposed)
+        proposedTravelM: distance(before, proposed),
+        relativeTravelM: travel2 + obsTravel
       };
+      registerContactContext(baseResult, {
+        touchBody: body,
+        incomingVelocity: incoming,
+        baseVelocity: velocity,
+        incomingSpeed: maxNormalSpeed,
+        remainingDt: remaining
+      });
+      if (scrubEnabled) {
+        return applyScrapingContactResponse(before, baseResult, touchObstacle, dt);
+      }
+      return baseResult;
     }
     return {
       body: { ...body, speed: 0, reason: "vehicle-contact", blockedBy: obstacle.id },
       hitId: obstacle.id,
       side,
       normal: normal2,
+      otherX: obstacle.x,
+      otherZ: obstacle.z,
       closingSpeedMps,
       energyJ: 0.5 * PLAYER_VEHICLE.massKg * closingSpeedMps ** 2,
       proposedTravelM: distance(before, proposed)
@@ -2215,9 +3653,28 @@
   var TACTICAL_PURSUIT_MODE = "gta-tactical-v1";
   var SQUAD_BY_STAR = Object.freeze([0, 4, 6, 8, 11, 14]);
   var SEARCH_FAN_ANGLES = Object.freeze([0, 0.58, -0.58, 1.15, -1.15, 1.75, -1.75, Math.PI]);
-  var OVERTAKE_STEER_OFFSETS = Object.freeze([0.09, -0.09, 0.15, -0.15, 0.22, -0.22, 0.38, -0.38, 0.55, -0.55]);
+  var OVERTAKE_STEER_OFFSETS = Object.freeze([0.08, -0.08, 0.15, -0.15, 0.24, -0.24, 0.38, -0.38, 0.54, -0.54, 0.68, -0.68]);
   var LOOKAHEAD_DISTANCES = Object.freeze([8, 18, 30]);
   var staticReachCache = /* @__PURE__ */ new WeakMap();
+  var tacticalRoadListCache = /* @__PURE__ */ new WeakMap();
+  function getCachedTacticalRoadLists(rawRoads) {
+    if (!Array.isArray(rawRoads) || rawRoads.length === 0) {
+      return { roads: [], standardRoads: [] };
+    }
+    let cached = tacticalRoadListCache.get(rawRoads);
+    const len = rawRoads.length;
+    const first = rawRoads[0];
+    const last = rawRoads[len - 1];
+    if (!cached || cached.len !== len || cached.first !== first || cached.last !== last) {
+      const drivableRoads = rawRoads.filter((r) => r && !r.parkingBay && !r.supportApron);
+      const roads = drivableRoads.length > 0 ? drivableRoads : rawRoads;
+      const standardRoads = roads.filter((r) => r.axis != null || isDiagonalRoad(r));
+      cached = { len, first, last, roads, standardRoads };
+      tacticalRoadListCache.set(rawRoads, cached);
+    }
+    return cached;
+  }
+  var roadJunctionCache = /* @__PURE__ */ new WeakMap();
   function headingTo(from, to) {
     return Math.atan2(to.x - from.x, to.z - from.z);
   }
@@ -2457,6 +3914,138 @@
     }
     return clamp(Math.max(spd + 5.2, 21), 17, top);
   }
+  function tacticalSurgePace(pursuit, car, reportSpeed = 0, range = 30, headingError = 0) {
+    const base = tacticalPatrolPace(pursuit, car, reportSpeed, range);
+    const top = car?.maxSpeed ?? base;
+    const straightAligned = Math.abs(headingError) < 0.14 && Math.abs(car?.steer ?? 0) < 0.1;
+    if (car?.unitType === "interceptor" && straightAligned && range > 8.5) {
+      return top;
+    }
+    if (straightAligned && range > 16) {
+      return top;
+    }
+    return base;
+  }
+  function getWorldJunctions(world) {
+    if (Array.isArray(world?.pursuit?.junctions) && world.pursuit.junctions.length > 0) {
+      return world.pursuit.junctions;
+    }
+    const roads = world?.drivingRoads;
+    if (!Array.isArray(roads) || roads.length === 0) return [];
+    const cached = roadJunctionCache.get(roads);
+    if (cached && cached.len === roads.length) return cached.junctions;
+    const nonApron = roads.filter((r) => r && !r.supportApron && !r.parkingBay);
+    const junctions = [];
+    for (let i = 0; i < nonApron.length; i++) {
+      for (let j = i + 1; j < nonApron.length; j++) {
+        const hit = roadIntersection(nonApron[i], nonApron[j], 0.5);
+        if (hit && !junctions.some((p) => Math.hypot(p.x - hit.x, p.z - hit.z) < 0.8)) {
+          junctions.push({ x: hit.x, z: hit.z });
+        }
+      }
+    }
+    roadJunctionCache.set(roads, { len: roads.length, junctions });
+    return junctions;
+  }
+  function planTacticalInterceptAim(world, car, report, slotIndex = 0) {
+    if (!report) return { x: 0, z: 0, heading: 0, role: "LEAD", horizonS: 0, junctionIntercept: false };
+    const unitsInContact = world?.pursuit?.response?.unitsInContact;
+    if (unitsInContact !== void 0 && unitsInContact <= 0) {
+      const order = car?.gtaAI?.order ?? slotIndex;
+      return { ...selectTacticalSearchTarget(world, car, report, order), role: "SEARCH", horizonS: 0, junctionIntercept: false };
+    }
+    const rawSpeed = Number.isFinite(report.speed) ? report.speed : 0;
+    const vx = Number.isFinite(report.vx) ? report.vx : Math.sin(report.heading ?? 0) * rawSpeed;
+    const vz = Number.isFinite(report.vz) ? report.vz : Math.cos(report.heading ?? 0) * rawSpeed;
+    const velMag = Math.hypot(vx, vz);
+    const heading2 = velMag > 0.8 ? Math.atan2(vx, vz) : report.heading ?? 0;
+    const fx = Math.sin(heading2);
+    const fz = Math.cos(heading2);
+    const rx = Math.cos(heading2);
+    const rz = -Math.sin(heading2);
+    const range = car && Number.isFinite(car.x) && Number.isFinite(car.z) ? distance(car, report) : 24;
+    const slot = Math.max(0, Math.trunc(slotIndex || 0));
+    if (slot === 0) {
+      const leadHorizonS = clamp(0.34 + range * 0.015, 0.3, 1.08);
+      const leadDist = clamp((velMag > 0.2 ? velMag : rawSpeed) * leadHorizonS, -10, 19);
+      const rawAim2 = {
+        x: report.x + fx * leadDist,
+        z: report.z + fz * leadDist,
+        heading: heading2
+      };
+      const resolved2 = resolveTacticalRoadAim(world, car, rawAim2, { vx: fx * Math.max(velMag, 10), vz: fz * Math.max(velMag, 10) });
+      return {
+        x: resolved2.x,
+        z: resolved2.z,
+        heading: resolved2.heading ?? heading2,
+        role: "LEAD",
+        horizonS: leadHorizonS,
+        junctionIntercept: false
+      };
+    }
+    const horizonS = slot === 1 ? clamp(1.65 + range * 6e-3, 1.6, 2.15) : slot === 2 ? clamp(2.15 + range * 8e-3, 2.05, 2.6) : clamp(1.75 + slot % 3 * 0.35, 1.6, 2.6);
+    const projSpeed = Math.max(velMag, Math.abs(rawSpeed), 9.5);
+    const projDist = clamp(projSpeed * horizonS, 15, 86);
+    const projPoint = {
+      x: report.x + fx * projDist,
+      z: report.z + fz * projDist
+    };
+    const side = car?.squadSide || (slot % 2 === 1 ? 1 : -1);
+    const junctions = getWorldJunctions(world);
+    let bestJunction = null;
+    let bestJScore = Infinity;
+    const minFwd = Math.max(11, projSpeed * 0.85);
+    const maxFwd = Math.max(30, projDist + 22);
+    for (let i = 0; i < junctions.length; i++) {
+      const j = junctions[i];
+      const jx = j.x - report.x;
+      const jz = j.z - report.z;
+      const fwd = jx * fx + jz * fz;
+      if (fwd < minFwd || fwd > maxFwd) continue;
+      const lat = Math.abs(jx * rx + jz * rz);
+      if (lat > 16.5) continue;
+      const dProj = Math.hypot(j.x - projPoint.x, j.z - projPoint.z) + lat * 0.65;
+      if (dProj < bestJScore) {
+        bestJScore = dProj;
+        bestJunction = j;
+      }
+    }
+    let rawAim;
+    if (bestJunction) {
+      if (slot === 2 || car?.squadRole === "INTERCEPTOR") {
+        rawAim = {
+          x: bestJunction.x + fx * 3.8 + rx * (side * 2.8),
+          z: bestJunction.z + fz * 3.8 + rz * (side * 2.8),
+          heading: heading2
+        };
+      } else {
+        rawAim = {
+          x: bestJunction.x - fx * 2.6 + rx * (side * 4.5),
+          z: bestJunction.z - fz * 2.6 + rz * (side * 4.5),
+          heading: heading2
+        };
+      }
+    } else {
+      const lateralOffsetM = slot === 1 ? side * 4.3 : slot === 2 ? side * 3.4 : side * 4.8;
+      rawAim = {
+        x: projPoint.x + rx * lateralOffsetM,
+        z: projPoint.z + rz * lateralOffsetM,
+        heading: heading2
+      };
+    }
+    const resolved = resolveTacticalRoadAim(world, car, rawAim, {
+      vx: fx * projSpeed,
+      vz: fz * projSpeed
+    });
+    return {
+      x: resolved.x,
+      z: resolved.z,
+      heading: resolved.heading ?? heading2,
+      role: slot === 1 ? "FLANK" : slot === 2 ? "CUTOFF" : "CONTAIN",
+      horizonS,
+      junctionIntercept: Boolean(bestJunction)
+    };
+  }
   function canPatrolUseCurbPrivilege(world, car) {
     return Boolean(
       isTacticalPursuit(world?.pursuit) && world?.pursuit?.gta?.curb && car?.gtaAI && !car.gtaRoadblock && car.aiState !== "WRECKED"
@@ -2597,14 +4186,12 @@
   function resolveTacticalRoadAim(world, car, aim, velocity = null) {
     if (!aim) return { x: 0, z: 0, snapped: false, roadId: null };
     const rawRoads = world?.drivingRoads ?? world?.roads ?? [];
-    const drivableRoads = rawRoads.filter((r) => r && !r.parkingBay && !r.supportApron);
-    const roads = drivableRoads.length > 0 ? drivableRoads : rawRoads;
+    const { roads, standardRoads } = getCachedTacticalRoadLists(rawRoads);
     if (roads.length === 0) {
       return { x: aim.x, z: aim.z, snapped: false, roadId: null };
     }
     const carWidth = car?.width ?? 1.9;
     const carLength = car?.length ?? 4.5;
-    const standardRoads = roads.filter((r) => r.axis != null || isDiagonalRoad(r));
     const statics = world?.statics ?? [];
     const probe = {
       x: aim.x,
@@ -2656,6 +4243,12 @@
         for (let sideIdx = 0; sideIdx < sides.length; sideIdx++) {
           const side = sides[sideIdx];
           let cand = snapPoseOnRoad(road4, sample, side, carWidth, carLength);
+          if (bestScore < Infinity) {
+            const rawDistAim = Math.hypot(aim.x - cand.centerX, aim.z - cand.centerZ);
+            const rawDistCar = hasCarPose ? Math.hypot(car.x - cand.centerX, car.z - cand.centerZ) : 0;
+            const minPossibleScore = Math.max(0, rawDistAim - 8) - (speed > 1 ? 14.35 : 0.35) + 0.18 * Math.max(0, rawDistCar - 8);
+            if (minPossibleScore >= bestScore) continue;
+          }
           let candBox = {
             x: cand.x,
             z: cand.z,
@@ -2720,12 +4313,30 @@
     }
     return best ?? { x: aim.x, z: aim.z, snapped: false, roadId: null };
   }
+  var overtakeDecisionCache = /* @__PURE__ */ new WeakMap();
   function tacticalTrafficOvertake(world, car, baseSteer, desiredSpeed) {
     if (!world || !car || !Number.isFinite(desiredSpeed) || desiredSpeed <= 0) return null;
-    const dt = 0.14;
-    const substeps = 8;
     const maxSteer = car.spec?.maxSteer ?? VEHICLE.maxSteer;
     const base = clamp(Number.isFinite(baseSteer) ? baseSteer : 0, -maxSteer, maxSteer);
+    if (Number.isSafeInteger(world.tick)) {
+      const cached = overtakeDecisionCache.get(car);
+      if (cached && world.tick > cached.tick && world.tick - cached.tick <= 3 && cached.actorsLen === (world.actors?.length ?? 0) && Math.abs(cached.base - base) <= 0.08) {
+        return cached.result;
+      }
+    }
+    const saveOvertake = (result) => {
+      if (Number.isSafeInteger(world.tick)) {
+        overtakeDecisionCache.set(car, {
+          tick: world.tick,
+          actorsLen: world.actors?.length ?? 0,
+          base,
+          result
+        });
+      }
+      return result;
+    };
+    const dt = 0.14;
+    const substeps = 8;
     const curSpeed = Number.isFinite(car.speed) ? car.speed : desiredSpeed;
     const checkSpeed = Math.max(desiredSpeed, curSpeed, 10);
     const forwardRange = Math.max(30, checkSpeed * 1.15);
@@ -2771,7 +4382,23 @@
         }
       }
     }
-    if (forwardBlockers.length === 0) return null;
+    const nearbyStatics = queryNearbyStatics(world, car, searchRadius);
+    const candidateStatics = [];
+    const cornerHazardStatics = [];
+    for (let i = 0; i < nearbyStatics.length; i++) {
+      const st = nearbyStatics[i];
+      if (!st) continue;
+      const stRadius = Math.hypot(st.width ?? 0, st.length ?? 0) * 0.5;
+      const centerGap = Math.hypot(st.x - car.x, st.z - car.z) - stRadius;
+      if (centerGap <= forwardRange + 8) {
+        candidateStatics.push(st);
+        if (st.kind !== "parked-vehicle" && centerGap <= 28) {
+          const fwd = (st.x - car.x) * sin0 + (st.z - car.z) * cos0;
+          if (fwd + stRadius > -1) cornerHazardStatics.push(st);
+        }
+      }
+    }
+    if (forwardBlockers.length === 0 && cornerHazardStatics.length === 0) return saveOvertake(null);
     const startBox = { x: car.x, z: car.z, heading: heading0, width, length };
     for (let p = 0; p < pedestrians.length; p++) {
       const ped = pedestrians[p];
@@ -2797,25 +4424,25 @@
       if (!blockerFound) {
         for (let b = 0; b < forwardBlockers.length; b++) {
           const obs = forwardBlockers[b];
+          const stalled = obs.type === "static" || Math.abs(obs.speed ?? 0) < 1.5 || (obs.wait ?? 0) > 0.3;
+          const triggerGap = stalled ? 0.92 : 0.62;
           const movedObs = obs.type === "static" ? obs : advanceActorPose(obs, elapsed);
-          if (gapBetween(baseProbe, obs) <= 0.62 || gapBetween(baseProbe, movedObs) <= 0.62) {
+          if (gapBetween(baseProbe, obs) <= triggerGap || gapBetween(baseProbe, movedObs) <= triggerGap) {
+            blockerFound = true;
+            break;
+          }
+        }
+      }
+      if (!blockerFound && step <= 7) {
+        for (let c = 0; c < cornerHazardStatics.length; c++) {
+          if (overlaps(baseProbe, normalizeRect(cornerHazardStatics[c]), 0.32)) {
             blockerFound = true;
             break;
           }
         }
       }
     }
-    if (!blockerFound) return null;
-    const nearbyStatics = queryNearbyStatics(world, car, searchRadius);
-    const candidateStatics = [];
-    for (let i = 0; i < nearbyStatics.length; i++) {
-      const st = nearbyStatics[i];
-      if (!st) continue;
-      const stRadius = Math.hypot(st.width ?? 0, st.length ?? 0) * 0.5;
-      if (Math.hypot(st.x - car.x, st.z - car.z) - stRadius <= forwardRange + 8) {
-        candidateStatics.push(st);
-      }
-    }
+    if (!blockerFound) return saveOvertake(null);
     const candidateSteers = [];
     const pushSteer = (val) => {
       const clamped = clamp(val, -maxSteer, maxSteer);
@@ -2915,7 +4542,9 @@
         }
       }
     }
-    return best ? { steer: best.steer, targetSpeed: best.targetSpeed, reason: "tactical-overtake" } : null;
+    return saveOvertake(
+      best ? { steer: best.steer, targetSpeed: best.targetSpeed, reason: "tactical-overtake" } : null
+    );
   }
   function selectTacticalSearchTarget(world, car, lastSeen, unitIndex = 0) {
     const safeSeen = lastSeen ?? { x: 0, z: 0, vx: 0, vz: 0, speed: 14, heading: 0, lastSeenTick: 0 };
@@ -3997,6 +5626,49 @@
   }
 
   // src/core/pursuit-gta.js
+  var gtaScrapeState = /* @__PURE__ */ new WeakMap();
+  var civilianGtaSlip = /* @__PURE__ */ new WeakMap();
+  function setCivilianGtaImpulse(actor, impulse) {
+    if (!actor || typeof actor !== "object" || !impulse) return;
+    const slipMps = Number.isFinite(impulse.gtaSlipMps) ? impulse.gtaSlipMps : 0;
+    const yawRate = Number.isFinite(impulse.gtaYawRate) ? impulse.gtaYawRate : 0;
+    if (Math.abs(slipMps) < 1e-4 && Math.abs(yawRate) < 1e-4) {
+      civilianGtaSlip.delete(actor);
+    } else {
+      civilianGtaSlip.set(actor, { slipMps, yawRate });
+    }
+  }
+  function clearCivilianGtaSlips(actors) {
+    if (!Array.isArray(actors)) return;
+    for (let i = 0; i < actors.length; i++) {
+      if (actors[i]) civilianGtaSlip.delete(actors[i]);
+    }
+  }
+  function hasCivilianGtaSlip(actor) {
+    return Boolean(actor && civilianGtaSlip.has(actor));
+  }
+  function integrateCivilianGtaSlip(actor, next) {
+    const state = actor ? civilianGtaSlip.get(actor) : null;
+    if (!state) return;
+    const slip = state.slipMps * Math.exp(-3.8 * STEP);
+    const yaw = state.yawRate * Math.exp(-3 * STEP);
+    next.x += Math.cos(next.heading) * slip * STEP;
+    next.z -= Math.sin(next.heading) * slip * STEP;
+    next.heading += yaw * STEP;
+    if (Math.abs(slip) < 1e-4 && Math.abs(yaw) < 1e-4) {
+      civilianGtaSlip.delete(actor);
+    } else {
+      const updated = { slipMps: slip, yawRate: yaw };
+      civilianGtaSlip.set(actor, updated);
+      if (next && typeof next === "object") civilianGtaSlip.set(next, updated);
+    }
+  }
+  function consumeGtaPlayerScrape(pursuit) {
+    if (!pursuit) return null;
+    const entry = gtaScrapeState.get(pursuit) ?? null;
+    if (entry) gtaScrapeState.delete(pursuit);
+    return entry;
+  }
   var GtaChaseConfig = Object.freeze({
     wantedLevelStart: 1,
     wantedLevelMax: 5,
@@ -4374,7 +6046,9 @@
     const report = s.response.lastSeen ?? s.playerStart;
     const range = distance(car, report), rel = gtaLocal2(report, car);
     const reportSpeed = Math.abs(report.speed);
-    const pace = (isAggressiveChase(s) || tactical) && tracked ? aggressivePatrolPace(s, car, reportSpeed, range) : tactical && !tracked ? Math.min(car.maxSpeed, 25.5 * config.npcSpeedMultiplier) : Math.min(car.maxSpeed, Math.max(
+    const activeContact = (s.response?.unitsInContact ?? 0) > 0;
+    const reportHeadingErr = Math.abs(angleDelta(headingTo2(car, report), car.heading ?? 0));
+    const pace = tactical && tracked && activeContact ? Math.max(aggressivePatrolPace(s, car, reportSpeed, range), tacticalSurgePace(s, car, reportSpeed, range, reportHeadingErr)) : (isAggressiveChase(s) || tactical) && tracked ? aggressivePatrolPace(s, car, reportSpeed, range) : tactical && !tracked ? Math.min(car.maxSpeed, 25.5 * config.npcSpeedMultiplier) : Math.min(car.maxSpeed, Math.max(
       5.5,
       (dispatch && tracked ? reportSpeed * 1.14 : reportSpeed) + 2.8 + range * 0.15
     ) * config.npcSpeedMultiplier);
@@ -4388,6 +6062,50 @@
       } else {
         const sector2 = (ai.order + Math.floor(s.gta.lostTicks / 210)) % 4;
         aim = state === "SEARCH" ? gtaOffset(report, sector2 < 2 ? 13 : -13, sector2 % 2 ? 9 : -9) : report;
+      }
+    } else if (tactical && activeContact) {
+      const roleSlot = car.squadRole === "PRIMARY_CHASER" ? 0 : car.squadRole === "FLANKER" ? 1 : car.squadRole === "INTERCEPTOR" ? 2 : 3 + ai.order % 3;
+      const effectiveSlot = s.wantedLevel >= 2 ? roleSlot : ai.order === 0 || car.squadRole === "PRIMARY_CHASER" ? 0 : 1 + ai.order % 2;
+      const tacticalAim = planTacticalInterceptAim(world, car, report, effectiveSlot);
+      aim = tacticalAim;
+      if (effectiveSlot === 1) {
+        state = "FLANK";
+      } else if (effectiveSlot === 2) {
+        state = "BLOCK_INTERCEPT";
+        if (rel.forward > 6 && distance(car, aim) < 5.5) {
+          const inward = angleDelta(headingTo2(car, report), car.heading);
+          command = { steer: clamp(inward, -0.55, 0.55), targetSpeed: distance(car, aim) < 2.8 ? 0 : 1.8 };
+        }
+      } else {
+        state = "PURSUIT";
+      }
+      const pit = seen && config.enablePitManeuver && s.wantedLevel >= 2 && car.unitType !== "swat" && car.squadRole === "PRIMARY_CHASER" && report.speed > 2.8 && rel.forward >= -4.5 && rel.forward < -0.5 && Math.abs(rel.right) > 1.2 && Math.abs(rel.right) < 4.8 && Math.abs(car.speed - report.speed) < 6.5 && Math.abs(angleDelta(report.heading, car.heading)) < 0.57;
+      const ramAim = gtaOffset(report, clamp(report.speed * 0.28, -3, 5));
+      const ram = seen && config.enableRamming && s.wantedLevel >= 3 && (car.unitType === "swat" || s.wantedLevel >= 4 && car.squadRole !== "PRIMARY_CHASER") && car.speed >= 5 && range <= 19 && rel.forward < 3 && Math.abs(angleDelta(headingTo2(car, ramAim), car.heading)) < 0.48 && canDriveDirect(world, car, ramAim, true);
+      if (pit) {
+        state = "PIT_MANEUVER";
+        aim = gtaOffset(report, Math.max(2.5, report.speed * 0.48), Math.sign(rel.right) * 0.28);
+        command = directCommand(car, aim, report.speed + 4, 0, dispatch, lateralAccel);
+      } else if (seen && (ai.commitUntil > tick || ram && tick >= (ai.nextRam ?? 0))) {
+        if (!(ai.commitUntil > tick)) {
+          ai.commitUntil = tick + 38;
+          ai.nextRam = tick + 105;
+          ai.ramAim = ramAim;
+        }
+        if (canDriveDirect(world, car, ai.ramAim, true)) {
+          state = "RAM";
+          command = directCommand(car, ai.ramAim, car.maxSpeed, 0, dispatch, lateralAccel);
+        } else ai.commitUntil = null;
+      }
+      if (!command && canDriveDirect(world, car, aim)) {
+        if (car.path.length) {
+          car.path = [];
+          car.cursor = 0;
+          ai.nextPlan = 0;
+        }
+        const aimError = Math.abs(angleDelta(headingTo2(car, aim), car.heading));
+        const directLatAccel = aimError < 0.09 ? 11.6 : lateralAccel;
+        command = directCommand(car, aim, pace, steerBias, dispatch, directLatAccel);
       }
     } else {
       const lead = tactical ? clamp(report.speed * clamp(0.4 + range * 0.017, 0.38, 1.32), -14, 22) : clamp(report.speed * clamp(0.35 + range * 0.015, 0.35, 1.1), -12, 12);
@@ -4483,15 +6201,16 @@
     const energyJ = inverseMass > 0 ? 0.5 * closingSpeed2 ** 2 / inverseMass : 0;
     return { energyJ, severity: clamp(energyJ / 42e3, 0, 1) };
   }
-  function gtaVelocity(actor, heading2 = actor.heading) {
-    const speed = actor.speed ?? 0, slip = actor.gtaSlipMps ?? 0;
+  function gtaVelocity(actor, heading2 = actor.heading, fallbackActor = null) {
+    const speed = actor.speed ?? 0;
+    const slip = actor.gtaSlipMps ?? civilianGtaSlip.get(actor)?.slipMps ?? (fallbackActor ? civilianGtaSlip.get(fallbackActor)?.slipMps : 0) ?? 0;
     const s = Math.sin(heading2 ?? 0), c = Math.cos(heading2 ?? 0);
     return { x: s * speed + c * slip, z: c * speed - s * slip };
   }
   function velocityAtContact(motion2, pose5) {
-    if (motion2.impulse) return gtaVelocity(motion2.impulse, pose5.heading);
+    if (motion2.impulse) return gtaVelocity(motion2.impulse, pose5.heading, motion2.a);
     if (motion2.stop < 1 || isGtaStationary(motion2.a)) return { x: 0, z: 0 };
-    return gtaVelocity(motion2.next, pose5.heading);
+    return gtaVelocity(motion2.next, pose5.heading, motion2.a);
   }
   function leverArm(pose5, other) {
     const dx = other.x - pose5.x, dz = other.z - pose5.z;
@@ -4507,10 +6226,12 @@
     const sin = Math.sin(pose5.heading), cos = Math.cos(pose5.heading);
     const forward2 = delta * (nx * sin + nz * cos), lateral2 = delta * (nx * cos - nz * sin);
     const spin = (arm.forward * lateral2 - arm.lateral * forward2) / (actor.length ** 2 / 8);
+    const maxFwd = (Number.isFinite(actor.maxSpeed) ? actor.maxSpeed : 20) + 5;
+    const prevYaw = motion2.impulse?.gtaYawRate ?? motion2.next.gtaYawRate ?? civilianGtaSlip.get(actor)?.yawRate ?? 0;
     motion2.impulse = {
-      speed: clamp(velocity.x * sin + velocity.z * cos + forward2, -(actor.spec?.reverseSpeed ?? VEHICLE.reverseSpeed) * 2, actor.maxSpeed + 5),
+      speed: clamp(velocity.x * sin + velocity.z * cos + forward2, -(actor.spec?.reverseSpeed ?? VEHICLE.reverseSpeed) * 2, maxFwd),
       gtaSlipMps: clamp(velocity.x * cos - velocity.z * sin + lateral2, -GTA_SLIP_LIMIT, GTA_SLIP_LIMIT),
-      gtaYawRate: clamp((motion2.impulse?.gtaYawRate ?? motion2.next.gtaYawRate ?? 0) + spin * (pit ? 2.6 : 1), -GTA_YAW_LIMIT, GTA_YAW_LIMIT)
+      gtaYawRate: clamp(prevYaw + spin * (pit ? 2.6 : 1), -GTA_YAW_LIMIT, GTA_YAW_LIMIT)
     };
   }
   function gtaPreviewLateralPush(patrol2, lead, normal2) {
@@ -4567,15 +6288,100 @@
     const patrol2 = other && pursuit.patrols.has(other);
     const egoPose = a.a === player ? pa : pb, otherPose = a.a === player ? pb : pa;
     const egoArm = other ? leverArm(egoPose, otherPose) : null;
+    if (other && other.type !== "pedestrian") {
+      const outNx = a.a === player ? -x : x;
+      const outNz = a.a === player ? -z : z;
+      const relVx = va.x - vb.x;
+      const relVz = va.z - vb.z;
+      const tangentialSpeedMps = Math.abs(relVx * outNz - relVz * outNx);
+      if (other.type === "vehicle" || other.kind === "parked-vehicle" || patrol2) {
+        recordActorImpactReaction(other, {
+          normalX: -outNx,
+          normalZ: -outNz,
+          closingSpeedMps: closingSpeed2,
+          tangentialSpeedMps,
+          egoMassKg: PLAYER_VEHICLE.massKg,
+          tick: world.tick
+        });
+        world._activeJoltActors?.add(other);
+      }
+      if (closingSpeed2 >= 0.45 || tangentialSpeedMps >= 1.1) {
+        const sin = Math.sin(egoPose.heading ?? 0);
+        const cos = Math.cos(egoPose.heading ?? 0);
+        const worldX = egoPose.x + (egoArm?.lateral ?? 0) * cos + (egoArm?.forward ?? 0) * sin;
+        const worldZ = egoPose.z - (egoArm?.lateral ?? 0) * sin + (egoArm?.forward ?? 0) * cos;
+        const wheels = computeWheelWorldPositions(egoPose);
+        let wheel = "frontRight";
+        let bestDist = Infinity;
+        for (const [wName, wp] of Object.entries(wheels)) {
+          const d = Math.hypot(worldX - wp.x, worldZ - wp.z);
+          if (d < bestDist) {
+            bestDist = d;
+            wheel = wName;
+          }
+        }
+        const inNx = -outNx;
+        const inNz = -outNz;
+        const nFwd = inNx * sin + inNz * cos;
+        const nRight = inNx * cos - inNz * sin;
+        const side = Math.abs(nFwd) >= Math.abs(nRight) ? nFwd > 0 ? "front" : "rear" : nRight > 0 ? "right" : "left";
+        const intensity = clamp(tangentialSpeedMps / 11 * 0.72 + closingSpeed2 / 8 * 0.48, 0.12, 1);
+        const prevScrape = gtaScrapeState.get(pursuit);
+        if (!prevScrape || intensity >= prevScrape.intensity) {
+          gtaScrapeState.set(pursuit, {
+            active: true,
+            kind: patrol2 || other.type === "vehicle" || other.kind === "parked-vehicle" ? "vehicle" : other.gtaRoadblock || other.kind === "barrier" ? "barrier" : "wall",
+            wheel,
+            side,
+            intensity,
+            tangentialSpeedMps,
+            closingSpeedMps: closingSpeed2,
+            worldX,
+            worldZ,
+            normalX: outNx,
+            normalZ: outNz,
+            steerKickRad: clamp(-Math.sign(egoArm?.lateral || nRight || 1) * 0.065 * intensity, -0.09, 0.09),
+            rollImpulse: clamp(-nRight * 0.24 * intensity, -0.38, 0.38),
+            pitchImpulse: clamp(nFwd * 0.18 * intensity, -0.28, 0.28)
+          });
+        }
+      }
+    }
+    const scrubTwoBody = world.config?.interactionProfile === WHEEL_SCRUB_MODE;
+    if (!other && scrubTwoBody && (ownedA || ownedB)) {
+      const patrolMotion = ownedA ? a : b;
+      const civBody = ownedA ? b.a : a.a;
+      if (civBody && (civBody.type === "vehicle" || civBody.kind === "parked-vehicle")) {
+        const civNx = ownedA ? x : -x;
+        const civNz = ownedA ? z : -z;
+        const relVx = va.x - vb.x;
+        const relVz = va.z - vb.z;
+        const tangentialSpeedMps = Math.abs(relVx * civNz - relVz * civNx);
+        recordActorImpactReaction(civBody, {
+          normalX: civNx,
+          normalZ: civNz,
+          closingSpeedMps: closingSpeed2,
+          tangentialSpeedMps,
+          egoMassKg: mass(patrolMotion.a),
+          tick: world.tick
+        });
+        world._activeJoltActors?.add(civBody);
+      }
+    }
     const isPit = Boolean(patrol2 && other.aiState === "PIT_MANEUVER" && pursuit.gta.config.enablePitManeuver && (!pursuit.response.dispatch || pursuit.response.sightedBy.has(other)) && closingSpeed2 > 0.65 && egoArm.forward < -egoPose.length * 0.14 && Math.abs(x * Math.cos(egoPose.heading) - z * Math.sin(egoPose.heading)) > 0.65);
-    const ma = mass(a.a), mb = mass(b.a);
+    const ma = scrubTwoBody && a.a?.type === "vehicle" && a.a.gtaMassKg == null ? resolveVehicleBodyMassKg(a.a) : mass(a.a);
+    const mb = scrubTwoBody && b.a?.type === "vehicle" && b.a.gtaMassKg == null ? resolveVehicleBodyMassKg(b.a) : mass(b.a);
     const shareA = Number.isFinite(mb) ? mb / (ma + mb) : 1;
     const shareB = Number.isFinite(ma) ? ma / (ma + mb) : 1;
     const invA = isGtaStationary(a.a) ? 0 : 1 / ma, invB = isGtaStationary(b.a) ? 0 : 1 / mb;
     if (closingSpeed2 > 0 && invA + invB > 0) {
       const impulse = Math.min(42, closingSpeed2) * (isPit ? 1.38 : 1.17) / (invA + invB);
-      if (ownedA) shove(a, pa, va, leverArm(pa, pb), x, z, -impulse * invA, isPit && a.a === player);
-      if (ownedB) shove(b, pb, vb, leverArm(pb, pa), x, z, impulse * invB, isPit && b.a === player);
+      if (ownedA || scrubTwoBody && a.a?.type === "vehicle") {
+        shove(a, pa, va, leverArm(pa, pb), x, z, -impulse * invA, isPit && a.a === player);
+      }
+      if (ownedB || scrubTwoBody && b.a?.type === "vehicle") {
+        shove(b, pb, vb, leverArm(pb, pa), x, z, impulse * invB, isPit && b.a === player);
+      }
     }
     const damageA = ownedA ? damage(world, a, b.a, closingSpeed2, shareA) : 0;
     const damageB = ownedB ? damage(world, b, a.a, closingSpeed2, shareB) : 0;
@@ -4869,7 +6675,133 @@
   // src/core/pedestrian.js
   var WALK_TURNS = [0, -0.5, 0.5, -1, 1, -1.6, 1.6, -2.2, 2.2, Math.PI];
   var pose = (road4, along2, side, offset2) => roadPointAt(road4, along2, side * offset2);
+  var FAR_PED_LOD_DIST_SQ = 95 * 95;
+  var ROAD_GRID_CELL2 = 40;
+  var EMPTY_ROADS = Object.freeze([]);
+  var roadSpatialGridCache = /* @__PURE__ */ new WeakMap();
+  var distantPedNearbyCache = /* @__PURE__ */ new WeakMap();
+  var pedStaticNearbyCache = /* @__PURE__ */ new WeakMap();
+  var distantPedLodCache = /* @__PURE__ */ new WeakMap();
+  var crowdAheadRouteMap = /* @__PURE__ */ new WeakMap();
+  function localRoadsNear(roads, p) {
+    if (!Array.isArray(roads) || roads.length <= 16) return roads;
+    let grid2 = roadSpatialGridCache.get(roads);
+    if (!grid2 || grid2.len !== roads.length) {
+      const map = /* @__PURE__ */ new Map();
+      for (let i = 0; i < roads.length; i++) {
+        const r = roads[i];
+        if (!r) continue;
+        const rect = roadRect(r, -4);
+        const x0 = Math.floor(rect.minX / ROAD_GRID_CELL2);
+        const x1 = Math.floor(rect.maxX / ROAD_GRID_CELL2);
+        const z0 = Math.floor(rect.minZ / ROAD_GRID_CELL2);
+        const z1 = Math.floor(rect.maxZ / ROAD_GRID_CELL2);
+        for (let cx2 = x0; cx2 <= x1; cx2++) {
+          for (let cz2 = z0; cz2 <= z1; cz2++) {
+            const key3 = cx2 << 16 ^ cz2 & 65535;
+            let bucket = map.get(key3);
+            if (!bucket) {
+              bucket = [];
+              map.set(key3, bucket);
+            }
+            bucket.push(r);
+          }
+        }
+      }
+      grid2 = { len: roads.length, map };
+      roadSpatialGridCache.set(roads, grid2);
+    }
+    const cx = Math.floor(p.x / ROAD_GRID_CELL2);
+    const cz = Math.floor(p.z / ROAD_GRID_CELL2);
+    return grid2.map.get(cx << 16 ^ cz & 65535) ?? EMPTY_ROADS;
+  }
+  function hashPedestrianStride(id) {
+    const s = String(id ?? "");
+    let h = 2166136261;
+    for (let i = 0; i < s.length; i++) {
+      h ^= s.charCodeAt(i);
+      h = Math.imul(h, 16777619);
+    }
+    return h & 3;
+  }
+  function createPedestrian(options2 = {}) {
+    const {
+      id = "person-0",
+      kind = PEOPLE_MODELS[0],
+      x = 0,
+      z = 0,
+      along: along2 = 0,
+      side = 1,
+      roadId = null,
+      heading: heading2 = 0,
+      walkwayId = null,
+      roadPreference = "avenue",
+      road: road4 = null,
+      speed = 0,
+      walkSpeed = 1.35,
+      phase = 0,
+      reason = "walking",
+      target = null,
+      pause = 0,
+      crossing: crossing3 = false,
+      motionMode = "ambient",
+      motionTimeS = 0
+    } = options2;
+    const person = {
+      id,
+      type: "pedestrian",
+      kind,
+      x,
+      z,
+      along: along2,
+      side,
+      roadId,
+      heading: heading2,
+      walkwayId,
+      roadPreference,
+      road: road4,
+      speed,
+      walkSpeed,
+      phase,
+      distance: 0,
+      wait: 0,
+      reason,
+      target,
+      pause,
+      crossing: crossing3,
+      motionMode
+    };
+    person.body = createPedestrianBody(person);
+    person.radius = person.body.radiusM;
+    person.motionTimeS = motionTimeS;
+    person.accelerationMps2 = 0;
+    return person;
+  }
+  function registerCrowdAheadRoute(person, waypoints, initialIndex = 1) {
+    if (!person?.body || !Array.isArray(waypoints) || waypoints.length < 2) return;
+    const idx = (initialIndex % waypoints.length + waypoints.length) % waypoints.length;
+    const wp = waypoints[idx];
+    person.target = { x: wp.x, z: wp.z };
+    person.crossing = Boolean(wp.crossing);
+    person.pause = 0;
+    if (person.walkRoute) person.walkRoute = [person.target];
+    crowdAheadRouteMap.set(person.body, { waypoints, index: idx });
+  }
+  function isCrowdAheadPedestrian(person) {
+    return Boolean(person?.body && crowdAheadRouteMap.has(person.body));
+  }
+  function advanceCrowdAheadWaypoint(person, route = person?.body ? crowdAheadRouteMap.get(person.body) : null) {
+    if (!person || !route || !Array.isArray(route.waypoints) || route.waypoints.length < 2) return false;
+    route.index = (route.index + 1) % route.waypoints.length;
+    const wp = route.waypoints[route.index];
+    person.target = { x: wp.x, z: wp.z };
+    person.crossing = Boolean(wp.crossing);
+    person.pause = 0;
+    if (person.walkRoute) person.walkRoute = [person.target];
+    return true;
+  }
   function nextWalk(world, person) {
+    if (advanceCrowdAheadWaypoint(person)) return;
     person.walkRoute = null;
     const road4 = person.road;
     person.walkDirection ??= person.phase < 0.5 ? -1 : 1;
@@ -4899,19 +6831,39 @@
       person.pause = world.rng.next() < 0.1 ? world.rng.range(0.4, 1.2) : 0;
     }
   }
-  var distantPedNearbyCache = /* @__PURE__ */ new WeakMap();
-  function nearbyBodies(world, p) {
-    const canCache = (world.config?.cityVersion ?? 0) >= 5 && world.pursuit?.gta?.config?.tacticalPursuit === "gta-tactical-v1" && Math.hypot(p.x - world.player.x, p.z - world.player.z) > 65;
+  function nearbyBodies(world, p, allowFarCache = false) {
+    const cacheKey = p.body ?? p;
+    const canCache = allowFarCache || (world.config?.cityVersion ?? 0) >= 5 && world.environment === "metro" && world.player != null && (p.x - world.player.x) ** 2 + (p.z - world.player.z) ** 2 > FAR_PED_LOD_DIST_SQ;
     if (canCache) {
-      const cached = distantPedNearbyCache.get(p);
+      const cached = distantPedNearbyCache.get(cacheKey);
       if (cached && cached.until > world.tick) return cached.nearby;
     }
     const nearby = world.actorIndex.near(p, 28);
     const self2 = nearby.indexOf(p);
     if (self2 !== -1) nearby.splice(self2, 1);
-    for (const body of world.staticIndex.near(p, 34)) nearby.push(body);
+    if (self2 === -1 && p.id) {
+      const byId = nearby.findIndex((a) => a.id === p.id);
+      if (byId !== -1) nearby.splice(byId, 1);
+    }
+    let localStatics;
+    if ((world.config?.cityVersion ?? 0) >= 5 && world.environment === "metro") {
+      let stEntry = pedStaticNearbyCache.get(cacheKey);
+      if (!stEntry || stEntry.staticIndex !== world.staticIndex || (p.x - stEntry.x) ** 2 + (p.z - stEntry.z) ** 2 > 4) {
+        stEntry = {
+          staticIndex: world.staticIndex,
+          x: p.x,
+          z: p.z,
+          statics: world.staticIndex.near(p, 34)
+        };
+        pedStaticNearbyCache.set(cacheKey, stEntry);
+      }
+      localStatics = stEntry.statics;
+    } else {
+      localStatics = world.staticIndex.near(p, 34);
+    }
+    for (let i = 0; i < localStatics.length; i++) nearby.push(localStatics[i]);
     if (canCache) {
-      distantPedNearbyCache.set(p, { nearby, until: world.tick + 4 });
+      distantPedNearbyCache.set(cacheKey, { nearby, until: world.tick + 4 });
     }
     return nearby;
   }
@@ -4943,7 +6895,29 @@
     const district = world.environment === "egypt" || world.environment === "metro";
     const metro = world.environment === "metro";
     const body = p.body ??= createPedestrianBody(p);
-    const stop = (reason) => move(world, p, body, p.heading, 0, reason, null, district, reuseProposal);
+    const crowdRoute = crowdAheadRouteMap.get(body) ?? null;
+    if (crowdRoute && (!p.target || distance(p, p.target) < 0.65)) {
+      advanceCrowdAheadWaypoint(p, crowdRoute);
+    }
+    const metroLod = metro && (world.config?.cityVersion ?? 0) >= 5 && world.player != null;
+    const farFromPlayer = metroLod && (p.x - world.player.x) ** 2 + (p.z - world.player.z) ** 2 > FAR_PED_LOD_DIST_SQ;
+    let lod = null;
+    if (farFromPlayer) {
+      lod = distantPedLodCache.get(body);
+      if (!lod) {
+        lod = {
+          stride: hashPedestrianStride(p.id),
+          tick: -99,
+          targetHeading: p.heading ?? 0,
+          targetSpeed: 0,
+          close: [],
+          looking: false,
+          reason: "walking"
+        };
+        distantPedLodCache.set(body, lod);
+      }
+    }
+    const stop = (reason2) => move(world, p, body, p.heading, 0, reason2, lod?.close ?? null, district, reuseProposal);
     if (p.motionMode === "stop")
       return stop(p.speed > 0 ? "stopping" : "stopped");
     if (p.pause > 0) {
@@ -4951,18 +6925,41 @@
       return stop("waiting");
     }
     let remaining = distance(p, p.target);
-    if (district && p.district?.holdAtTarget && remaining < Math.max(
+    if (!crowdRoute && district && p.district?.holdAtTarget && remaining < Math.max(
       0.22,
       p.speed ** 2 / (2 * body.maxDecelerationMps2) + p.speed * STEP + 0.04
     ))
       return stop("district-target");
     if (remaining < 0.22) {
-      if (p.crossing) p.side = -p.side;
-      p.along = p.road ? roadProject(p.road, p).along : 0;
-      world.nextWalk(p);
-      if (p.pause > 0) return stop("waiting");
+      if (crowdRoute) {
+        advanceCrowdAheadWaypoint(p, crowdRoute);
+      } else {
+        if (p.crossing) p.side = -p.side;
+        p.along = p.road ? roadProject(p.road, p).along : 0;
+        world.nextWalk(p);
+        if (p.pause > 0) return stop("waiting");
+      }
       remaining = distance(p, p.target);
       if (remaining < 0.22) return stop("waiting");
+    }
+    if (farFromPlayer && (world.tick + lod.stride & 3) !== 0 && world.tick - lod.tick <= 3 && remaining > 1.2 && p.reason !== "blocked") {
+      if (lod.looking) return stop("looking");
+      const heading3 = p.heading + clamp(
+        angleDelta(lod.targetHeading, p.heading),
+        -body.maxTurnRateRadS * STEP,
+        body.maxTurnRateRadS * STEP
+      );
+      return move(
+        world,
+        p,
+        body,
+        heading3,
+        lod.targetSpeed,
+        lod.reason,
+        lod.close,
+        district,
+        reuseProposal
+      );
     }
     const curbTarget = metro && p.walkRoute?.[0] ? p.walkRoute[0] : p.target;
     const curbDistance = Math.max(1e-3, curbTarget === p.target ? remaining : distance(p, curbTarget));
@@ -4973,41 +6970,55 @@
         p.speed ** 2 / (2 * body.maxDecelerationMps2) + p.speed * STEP + p.radius + 0.1
       )
     );
-    if (!(district && p.district?.yieldAtCurb === false) && !pointOnRoad(p, world.roads) && pointOnRoad(
+    const localRoads = metroLod ? localRoadsNear(world.roads, p) : world.roads;
+    if (localRoads.length > 0 && !(district && p.district?.yieldAtCurb === false) && !pointOnRoad(p, localRoads) && pointOnRoad(
       {
         x: p.x + (curbTarget.x - p.x) / (metro ? curbDistance : remaining) * approach3,
         z: p.z + (curbTarget.z - p.z) / (metro ? curbDistance : remaining) * approach3
       },
-      world.roads
+      localRoads
     )) {
-      const danger = world.actors.some(
+      const vehicleCandidates = metroLod && world.actorIndex ? world.actorIndex.near(p, 86) : world.actors;
+      const danger = vehicleCandidates.some(
         (a) => a.type === "vehicle" && a.speed > 0.4 && distance(p, a) < Math.max(5, a.speed * 2.2) && (p.x - a.x) * Math.sin(a.heading) + (p.z - a.z) * Math.cos(a.heading) > -2
       );
-      if (danger) return stop("looking");
+      if (danger) {
+        if (lod) {
+          lod.tick = world.tick;
+          lod.looking = true;
+        }
+        return stop("looking");
+      }
     }
-    const nearby = nearbyBodies(world, p);
-    const waypoint = district && p.district?.routeConstrained ? p.walkRoute?.[0] ?? p.target : walkingWaypoint(world, p, nearby);
-    const desired = Math.atan2(waypoint.x - p.x, waypoint.z - p.z);
+    const nearby = nearbyBodies(world, p, farFromPlayer);
     const close = nearby.filter((a) => {
       const range = a.type === "static" ? 10 : 5;
       const dx = a.x - p.x, dz = a.z - p.z;
       return Math.abs(dx) <= range && Math.abs(dz) <= range && Math.hypot(dx, dz) < range;
     });
+    const hasReusableRouteHead = Array.isArray(p.walkRoute) && p.walkRoute.length > 0 && distance(p, p.walkRoute[0]) > 0.65;
+    const waypoint = crowdRoute ? p.target : district && p.district?.routeConstrained && hasReusableRouteHead || metroLod && close.length === 0 && hasReusableRouteHead ? p.walkRoute[0] : walkingWaypoint(world, p, nearby);
+    const desired = Math.atan2(waypoint.x - p.x, waypoint.z - p.z);
     let targetHeading = desired, best = Infinity;
-    const probeLength = Math.min(0.95, distance(p, waypoint));
-    const previousHeading = p.walkHeading ?? p.heading;
-    const probe = { x: 0, z: 0 };
-    const allowMarginExit = canLeaveWalkMargin(world, p);
-    for (const turn2 of WALK_TURNS) {
-      const heading3 = desired + turn2;
-      probe.x = p.x + Math.sin(heading3) * probeLength;
-      probe.z = p.z + Math.cos(heading3) * probeLength;
-      const partialScore = distance(probe, waypoint) + Math.abs(turn2) * 0.08 + (turn2 > 0 ? 0.03 : 0);
-      if (partialScore >= best) continue;
-      const score = partialScore + Math.abs(angleDelta(heading3, previousHeading)) * 0.24;
-      if (score < best && !walkSegmentBlocker(p, p, probe, close, 0.12, allowMarginExit)) {
-        best = score;
-        targetHeading = heading3;
+    if (metroLod && close.length === 0 && hasReusableRouteHead) {
+      best = 0;
+      targetHeading = desired;
+    } else {
+      const probeLength = Math.min(0.95, distance(p, waypoint));
+      const previousHeading = p.walkHeading ?? p.heading;
+      const probe = { x: 0, z: 0 };
+      const allowMarginExit = crowdRoute ? true : canLeaveWalkMargin(world, p);
+      for (const turn2 of WALK_TURNS) {
+        const heading3 = desired + turn2;
+        probe.x = p.x + Math.sin(heading3) * probeLength;
+        probe.z = p.z + Math.cos(heading3) * probeLength;
+        const partialScore = distance(probe, waypoint) + Math.abs(turn2) * 0.08 + (turn2 > 0 ? 0.03 : 0);
+        if (partialScore >= best) continue;
+        const score = partialScore + Math.abs(angleDelta(heading3, previousHeading)) * 0.24;
+        if (score < best && !walkSegmentBlocker(p, p, probe, close, 0.12, allowMarginExit)) {
+          best = score;
+          targetHeading = heading3;
+        }
       }
     }
     if (best !== Infinity) p.walkHeading = targetHeading;
@@ -5024,14 +7035,23 @@
     );
     const requestedSpeed = p.motionMode === "jog" ? Math.max(walkingSpeed, body.jogSpeedMps) : walkingSpeed;
     const targetSpeed = best === Infinity ? 0 : requestedSpeed * Math.max(0, Math.cos(turn)) ** 3;
+    const reason = best === Infinity ? "yielding" : p.crossing ? "crossing" : "walking";
+    if (lod) {
+      lod.tick = world.tick;
+      lod.looking = false;
+      lod.targetHeading = targetHeading;
+      lod.targetSpeed = targetSpeed;
+      lod.close = close;
+      lod.reason = reason;
+    }
     return move(
       world,
       p,
       body,
       heading2,
       targetSpeed,
-      best === Infinity ? "yielding" : p.crossing ? "crossing" : "walking",
-      nearby,
+      reason,
+      metroLod ? close : nearby,
       district,
       reuseProposal
     );
@@ -5567,8 +7587,119 @@
   // src/core/vehicle-state.js
   var wheelNames = ["frontLeft", "frontRight", "rearLeft", "rearRight"];
   var damageSides = ["front", "rear", "left", "right"];
+  var glassPartIds = [
+    "headlampLeft",
+    "headlampRight",
+    "windshield",
+    "tailLampLeft",
+    "tailLampRight"
+  ];
   var staticWheelLoad = PLAYER_VEHICLE.massKg * 9.81 / 4;
   var tau = Math.PI * 2;
+  var VEHICLE_PART_IDS = Object.freeze([
+    "hood",
+    "frontBumper",
+    "grille",
+    "headlampLeft",
+    "headlampRight",
+    "windshield",
+    "mirrorLeft",
+    "mirrorRight",
+    "doorLeft",
+    "doorRight",
+    "rearBumper",
+    "rearHatch",
+    "spareCarrier",
+    "tailLampLeft",
+    "tailLampRight",
+    "exhaust",
+    "radiator"
+  ]);
+  var PART_LABELS = Object.freeze({
+    hood: "Hood",
+    frontBumper: "Front bumper",
+    grille: "Grille",
+    headlampLeft: "Left headlamp",
+    headlampRight: "Right headlamp",
+    windshield: "Windshield",
+    mirrorLeft: "Left mirror",
+    mirrorRight: "Right mirror",
+    doorLeft: "Left door",
+    doorRight: "Right door",
+    rearBumper: "Rear bumper",
+    rearHatch: "Rear hatch",
+    spareCarrier: "Spare carrier",
+    tailLampLeft: "Left tail lamp",
+    tailLampRight: "Right tail lamp",
+    exhaust: "Exhaust",
+    radiator: "Radiator"
+  });
+  function createPartDamageState() {
+    return {
+      hood: { damage: 0, state: "intact", unlatched: false, detached: false },
+      frontBumper: {
+        damage: 0,
+        state: "intact",
+        unclippedLeft: false,
+        unclippedRight: false,
+        detached: false
+      },
+      grille: { damage: 0, state: "intact", cracked: false, detached: false },
+      headlampLeft: { damage: 0, state: "intact", cracked: false, shattered: false },
+      headlampRight: { damage: 0, state: "intact", cracked: false, shattered: false },
+      windshield: { damage: 0, state: "intact", cracked: false, shattered: false },
+      mirrorLeft: { damage: 0, state: "intact", dangling: false, detached: false },
+      mirrorRight: { damage: 0, state: "intact", dangling: false, detached: false },
+      doorLeft: { damage: 0, state: "intact", ajar: false, claddingLoose: false },
+      doorRight: { damage: 0, state: "intact", ajar: false, claddingLoose: false },
+      rearBumper: {
+        damage: 0,
+        state: "intact",
+        unclippedLeft: false,
+        unclippedRight: false,
+        detached: false
+      },
+      rearHatch: { damage: 0, state: "intact", ajar: false, glassCracked: false },
+      spareCarrier: { damage: 0, state: "intact", tilted: false, detached: false },
+      tailLampLeft: { damage: 0, state: "intact", cracked: false, shattered: false },
+      tailLampRight: { damage: 0, state: "intact", cracked: false, shattered: false },
+      exhaust: { damage: 0, state: "intact", sagging: false, detached: false },
+      radiator: { damage: 0, state: "intact", leaking: false }
+    };
+  }
+  function cloneParts(parts) {
+    const fresh = createPartDamageState();
+    if (!parts || typeof parts !== "object") return fresh;
+    for (const id of VEHICLE_PART_IDS) {
+      if (parts[id] && typeof parts[id] === "object") {
+        fresh[id] = { ...fresh[id], ...parts[id] };
+      }
+    }
+    return fresh;
+  }
+  function cloneLastImpact(lastImpact) {
+    if (!lastImpact) return null;
+    return {
+      ...lastImpact,
+      ...Array.isArray(lastImpact.brokenParts) ? { brokenParts: [...lastImpact.brokenParts] } : {},
+      ...Array.isArray(lastImpact.detachedParts) ? { detachedParts: [...lastImpact.detachedParts] } : {}
+    };
+  }
+  function cloneDamage(previousDamage) {
+    const source = previousDamage ?? {};
+    return {
+      front: source.front ?? 0,
+      rear: source.rear ?? 0,
+      left: source.left ?? 0,
+      right: source.right ?? 0,
+      total: source.total ?? 0,
+      impactCount: source.impactCount ?? 0,
+      lastImpact: cloneLastImpact(source.lastImpact ?? null),
+      brokenCount: source.brokenCount ?? 0,
+      detachedCount: source.detachedCount ?? 0,
+      parts: cloneParts(source.parts)
+    };
+  }
   function createVehicleState() {
     return {
       wheelAngles: { frontLeft: 0, frontRight: 0 },
@@ -5595,8 +7726,244 @@
         right: 0,
         total: 0,
         impactCount: 0,
-        lastImpact: null
+        lastImpact: null,
+        brokenCount: 0,
+        detachedCount: 0,
+        parts: createPartDamageState()
+      },
+      interaction: createDefaultWheelInteractionState(),
+      nitroCharge: 1,
+      nitroActive: false,
+      nitroIntensity: 0,
+      nitroSuppressedByPedestrian: false
+    };
+  }
+  function round42(value) {
+    if (!Number.isFinite(value)) return 0;
+    const rounded = Math.round(value * 1e4) / 1e4;
+    return Object.is(rounded, -0) ? 0 : rounded;
+  }
+  function addPartDamage(part, delta) {
+    if (!Number.isFinite(delta) || delta <= 0) return;
+    part.damage = clamp(part.damage + delta, 0, 1);
+  }
+  function derivePartState(part) {
+    if (part.detached) return "detached";
+    if (part.shattered) return "shattered";
+    if (part.unlatched) return "unlatched";
+    if (part.ajar) return "ajar";
+    if (part.dangling) return "dangling";
+    if ((part.unclippedLeft || part.unclippedRight) && part.damage >= 0.85) return "crushed";
+    if (part.unclippedLeft || part.unclippedRight) return "unclipped";
+    if (part.leaking) return "leaking";
+    if (part.tilted) return "tilted";
+    if (part.sagging) return "sagging";
+    if (part.cracked || part.glassCracked) return "cracked";
+    if (part.damage >= 0.05) return "dented";
+    return "intact";
+  }
+  function updateHoodFlags(part) {
+    if (part.damage >= 0.32) part.unlatched = true;
+    if (part.damage >= 0.85) part.detached = true;
+  }
+  function updateBumperFlags(part, leftBias, rightBias) {
+    if (part.damage >= 0.28 && leftBias >= 0.7) part.unclippedLeft = true;
+    if (part.damage >= 0.28 && rightBias >= 0.7) part.unclippedRight = true;
+  }
+  function updateGrilleFlags(part) {
+    if (part.damage >= 0.2) part.cracked = true;
+    if (part.damage >= 0.78) part.detached = true;
+  }
+  function updateHeadlampFlags(part) {
+    if (part.damage >= 0.2) part.cracked = true;
+    if (part.damage >= 0.4) part.shattered = true;
+  }
+  function updateWindshieldFlags(part) {
+    if (part.damage >= 0.24) part.cracked = true;
+    if (part.damage >= 0.62) part.shattered = true;
+  }
+  function updateMirrorFlags(part) {
+    if (part.damage >= 0.18) part.dangling = true;
+    if (part.damage >= 0.48) part.detached = true;
+  }
+  function updateDoorFlags(part) {
+    if (part.damage >= 0.34) part.ajar = true;
+    if (part.damage >= 0.46) part.claddingLoose = true;
+  }
+  function updateRearHatchFlags(part) {
+    if (part.damage >= 0.34) part.ajar = true;
+    if (part.damage >= 0.26) part.glassCracked = true;
+  }
+  function updateSpareCarrierFlags(part) {
+    if (part.damage >= 0.24) part.tilted = true;
+    if (part.damage >= 0.68) part.detached = true;
+  }
+  function updateTailLampFlags(part) {
+    if (part.damage >= 0.2) part.cracked = true;
+    if (part.damage >= 0.38) part.shattered = true;
+  }
+  function updateExhaustFlags(part) {
+    if (part.damage >= 0.26) part.sagging = true;
+    if (part.damage >= 0.82) part.detached = true;
+  }
+  function updateRadiatorFlags(part) {
+    if (part.damage >= 0.36) part.leaking = true;
+  }
+  function resolveImpactOffsets(impact = {}, after = null) {
+    const halfWidth = PLAYER_VEHICLE.widthM / 2;
+    const halfLength = PLAYER_VEHICLE.lengthM / 2;
+    const hasExplicitLat = Number.isFinite(impact.lateralOffsetM);
+    const hasExplicitLong = Number.isFinite(impact.longitudinalOffsetM);
+    let derivedLat = 0;
+    let derivedLong = 0;
+    if ((!hasExplicitLat || !hasExplicitLong) && after && Number.isFinite(impact.otherX) && Number.isFinite(impact.otherZ) && Number.isFinite(after.x) && Number.isFinite(after.z)) {
+      const heading2 = Number.isFinite(after.heading) ? after.heading : 0;
+      const s = Math.sin(heading2);
+      const c = Math.cos(heading2);
+      const dx = impact.otherX - after.x;
+      const dz = impact.otherZ - after.z;
+      derivedLat = clamp(dx * c - dz * s, -halfWidth, halfWidth);
+      derivedLong = clamp(dx * s + dz * c, -halfLength, halfLength);
+    } else if ((!hasExplicitLat || !hasExplicitLong) && impact.normal && Number.isFinite(impact.normal.x) && Number.isFinite(impact.normal.z)) {
+      const heading2 = Number.isFinite(after?.heading) ? after.heading : 0;
+      const s = Math.sin(heading2);
+      const c = Math.cos(heading2);
+      const nForward = impact.normal.x * s + impact.normal.z * c;
+      const nRight = impact.normal.x * c - impact.normal.z * s;
+      if (impact.side === "front" || impact.side === "rear") {
+        derivedLat = clamp(nRight * halfWidth * Math.SQRT2, -halfWidth, halfWidth);
+      } else if (impact.side === "left" || impact.side === "right") {
+        derivedLong = clamp(nForward * halfLength * Math.SQRT2, -halfLength, halfLength);
       }
+    }
+    const lateralOffsetM = hasExplicitLat ? clamp(impact.lateralOffsetM, -halfWidth, halfWidth) : derivedLat;
+    const longitudinalOffsetM = hasExplicitLong ? clamp(impact.longitudinalOffsetM, -halfLength, halfLength) : derivedLong;
+    return {
+      lateralOffsetM: Object.is(lateralOffsetM, -0) ? 0 : lateralOffsetM,
+      longitudinalOffsetM: Object.is(longitudinalOffsetM, -0) ? 0 : longitudinalOffsetM
+    };
+  }
+  function applyLocalizedPartDamage(damage2, impact = {}, after = null) {
+    if (!damage2.parts) damage2.parts = createPartDamageState();
+    const parts = damage2.parts;
+    const prevState = {};
+    const prevDetached = {};
+    const prevShattered = {};
+    for (const id of VEHICLE_PART_IDS) {
+      prevState[id] = parts[id].state;
+      prevDetached[id] = Boolean(parts[id].detached);
+      prevShattered[id] = Boolean(parts[id].shattered);
+    }
+    const side = impact.side;
+    const energyJ = Number.isFinite(impact.energyJ) ? Math.max(0, impact.energyJ) : 0;
+    const energyNorm = clamp(energyJ / 45e3, 0, 1.8);
+    const { lateralOffsetM, longitudinalOffsetM } = resolveImpactOffsets(impact, after);
+    const latNorm = clamp(lateralOffsetM / (PLAYER_VEHICLE.widthM * 0.45), -1, 1);
+    const leftBias = clamp(
+      1 - Math.max(0, latNorm) * 0.72 + Math.max(0, -latNorm) * 0.45,
+      0.25,
+      1.45
+    );
+    const rightBias = clamp(
+      1 - Math.max(0, -latNorm) * 0.72 + Math.max(0, latNorm) * 0.45,
+      0.25,
+      1.45
+    );
+    const centerBias = clamp(1.12 - Math.abs(latNorm) * 0.45, 0.55, 1.15);
+    if (side === "front") {
+      addPartDamage(parts.frontBumper, energyNorm * 0.95);
+      updateBumperFlags(parts.frontBumper, leftBias, rightBias);
+      addPartDamage(parts.grille, energyNorm * 0.88 * centerBias);
+      updateGrilleFlags(parts.grille);
+      addPartDamage(parts.hood, energyNorm * 0.85 * centerBias);
+      updateHoodFlags(parts.hood);
+      addPartDamage(parts.headlampLeft, energyNorm * 0.92 * leftBias);
+      updateHeadlampFlags(parts.headlampLeft);
+      addPartDamage(parts.headlampRight, energyNorm * 0.92 * rightBias);
+      updateHeadlampFlags(parts.headlampRight);
+      addPartDamage(parts.windshield, Math.max(0, energyNorm - 0.22) * 0.78);
+      updateWindshieldFlags(parts.windshield);
+      addPartDamage(parts.radiator, Math.max(0, energyNorm - 0.18) * 0.85 * centerBias);
+      updateRadiatorFlags(parts.radiator);
+      if (Math.abs(latNorm) > 0.45 && energyNorm > 0.35) {
+        const cornerMirror = latNorm < 0 ? parts.mirrorLeft : parts.mirrorRight;
+        addPartDamage(cornerMirror, 0.42 * energyNorm);
+        updateMirrorFlags(cornerMirror);
+      }
+    } else if (side === "rear") {
+      addPartDamage(parts.rearBumper, energyNorm * 0.95);
+      updateBumperFlags(parts.rearBumper, leftBias, rightBias);
+      addPartDamage(parts.rearHatch, energyNorm * 0.88 * centerBias);
+      updateRearHatchFlags(parts.rearHatch);
+      addPartDamage(parts.spareCarrier, energyNorm * 0.82 * centerBias);
+      updateSpareCarrierFlags(parts.spareCarrier);
+      addPartDamage(parts.tailLampLeft, energyNorm * 0.9 * leftBias);
+      updateTailLampFlags(parts.tailLampLeft);
+      addPartDamage(parts.tailLampRight, energyNorm * 0.9 * rightBias);
+      updateTailLampFlags(parts.tailLampRight);
+      addPartDamage(parts.exhaust, energyNorm * 0.76);
+      updateExhaustFlags(parts.exhaust);
+    } else if (side === "left" || side === "right") {
+      const isLeft = side === "left";
+      const door = isLeft ? parts.doorLeft : parts.doorRight;
+      const mirror = isLeft ? parts.mirrorLeft : parts.mirrorRight;
+      addPartDamage(door, energyNorm * 0.92);
+      updateDoorFlags(door);
+      addPartDamage(mirror, energyNorm * 1.05);
+      updateMirrorFlags(mirror);
+      const longNorm = clamp(
+        longitudinalOffsetM / (PLAYER_VEHICLE.lengthM * 0.42),
+        -1,
+        1
+      );
+      if (longNorm > 0.25) {
+        const headlamp = isLeft ? parts.headlampLeft : parts.headlampRight;
+        addPartDamage(headlamp, 0.55 * energyNorm);
+        updateHeadlampFlags(headlamp);
+        addPartDamage(parts.frontBumper, 0.55 * energyNorm);
+        updateBumperFlags(parts.frontBumper, isLeft ? 1 : 0, isLeft ? 0 : 1);
+      } else if (longNorm < -0.25) {
+        const tailLamp = isLeft ? parts.tailLampLeft : parts.tailLampRight;
+        addPartDamage(tailLamp, 0.55 * energyNorm);
+        updateTailLampFlags(tailLamp);
+        addPartDamage(parts.rearBumper, 0.55 * energyNorm);
+        updateBumperFlags(parts.rearBumper, isLeft ? 1 : 0, isLeft ? 0 : 1);
+      }
+      if (energyNorm >= 0.65) {
+        addPartDamage(parts.windshield, energyNorm * 0.42);
+        updateWindshieldFlags(parts.windshield);
+      }
+    }
+    const brokenParts = [];
+    const detachedParts = [];
+    let brokenCount = 0;
+    let detachedCount = 0;
+    let shatteredGlass = false;
+    for (const id of VEHICLE_PART_IDS) {
+      const part = parts[id];
+      part.state = derivePartState(part);
+      if (part.state !== "intact") brokenCount++;
+      if (part.detached === true) detachedCount++;
+      if (part.state !== prevState[id] && part.state !== "intact") {
+        brokenParts.push(id);
+      }
+      if (!prevDetached[id] && part.detached === true) {
+        detachedParts.push(id);
+      }
+    }
+    for (const id of glassPartIds) {
+      if (!prevShattered[id] && parts[id].shattered === true) {
+        shatteredGlass = true;
+      }
+    }
+    damage2.brokenCount = brokenCount;
+    damage2.detachedCount = detachedCount;
+    return {
+      lateralOffsetM: round42(lateralOffsetM),
+      longitudinalOffsetM: round42(longitudinalOffsetM),
+      brokenParts,
+      detachedParts,
+      shatteredGlass
     };
   }
   function wheelAngles(steer) {
@@ -5623,13 +7990,37 @@
       velocity: Math.abs(speed) < 1e-12 ? 0 : speed
     };
   }
-  function dent(damage2, side, closingSpeedMps, energyJ, tick) {
+  function dent(damage2, impact, tick, after, mergeSameStep = false) {
+    const { side, closingSpeedMps, energyJ } = impact;
     damage2[side] = clamp(damage2[side] + energyJ / 45e3, 0, 1);
     damage2.total = 1 - damageSides.reduce((p, part) => p * (1 - damage2[part]), 1);
     damage2.impactCount++;
-    damage2.lastImpact = { side, closingSpeedMps, energyJ, tick };
+    const prevStepImpact = mergeSameStep ? damage2.lastImpact : null;
+    const localized = applyLocalizedPartDamage(damage2, impact, after);
+    const brokenParts = prevStepImpact ? [.../* @__PURE__ */ new Set([...prevStepImpact.brokenParts, ...localized.brokenParts])] : localized.brokenParts;
+    const detachedParts = prevStepImpact ? [.../* @__PURE__ */ new Set([...prevStepImpact.detachedParts, ...localized.detachedParts])] : localized.detachedParts;
+    damage2.lastImpact = {
+      side,
+      closingSpeedMps,
+      energyJ,
+      tick,
+      lateralOffsetM: localized.lateralOffsetM,
+      longitudinalOffsetM: localized.longitudinalOffsetM,
+      brokenParts,
+      detachedParts,
+      shatteredGlass: Boolean(prevStepImpact?.shatteredGlass || localized.shatteredGlass)
+    };
   }
-  function advanceVehicleState(before, after, command, dt, { tick = 0, contact = null, freshImpacts = null, contactSeparated = false } = {}) {
+  function advanceVehicleState(before, after, command, dt, {
+    tick = 0,
+    contact = null,
+    freshImpacts = null,
+    contactSeparated = false,
+    surface = null,
+    curbScrub = null,
+    scraping = null,
+    driverCommand = null
+  } = {}) {
     if (!Number.isFinite(dt) || dt <= 0)
       throw new RangeError("Vehicle state needs a positive fixed step");
     const previous = before.vehicle ?? createVehicleState();
@@ -5643,34 +8034,71 @@
     const speed = after.speed ?? 0;
     const oldSpeed = before.speed ?? 0;
     const averageSpeed = (speed + oldSpeed) / 2;
+    const absSpeed = Math.abs(averageSpeed);
     const acceleration = clamp((speed - oldSpeed) / dt, -9, 9);
     const lateral2 = clamp(averageSpeed * yaw / dt, -8, 8);
-    const dy = (after.y ?? 0) - (before.y ?? 0);
+    const hasSurface = Boolean(surface && typeof surface === "object");
+    const terrainDeltaY = hasSurface ? (Number.isFinite(surface.dhdx) ? surface.dhdx : 0) * dx + (Number.isFinite(surface.dhdz) ? surface.dhdz : 0) * dz : 0;
+    const dy = (after.y ?? 0) - (before.y ?? 0) - terrainDeltaY;
     const hasCurbStep = Math.abs(dy) > 2e-3;
     const stepRate = hasCurbStep ? dy / Math.max(dt, 1 / 60) : 0;
     const heaveImpulse = hasCurbStep ? -clamp(stepRate * 0.38, -0.45, 0.45) : 0;
     const forwardSign = forwardTravel < -1e-6 || Math.abs(forwardTravel) <= 1e-6 && averageSpeed < 0 ? -1 : 1;
     const pitchImpulse = hasCurbStep ? -forwardSign * clamp(stepRate * 0.12, -0.18, 0.18) : 0;
+    let surfaceHeaveImpulse = 0;
+    let surfaceRollImpulse = 0;
+    let surfacePitchImpulse = 0;
+    let slopePitchBias = 0;
+    let slopeRollBias = 0;
+    let gradeLoadTransfer = 0;
+    if (hasSurface) {
+      const gradeSin = Number.isFinite(surface.gradeSin) ? clamp(surface.gradeSin, -0.35, 0.35) : 0;
+      const camberSin = Number.isFinite(surface.camberSin) ? clamp(surface.camberSin, -0.35, 0.35) : 0;
+      slopePitchBias = clamp(-gradeSin * 0.22, -0.04, 0.04);
+      slopeRollBias = clamp(-camberSin * 0.14, -0.025, 0.025);
+      gradeLoadTransfer = PLAYER_VEHICLE.massKg * 9.81 * gradeSin * PLAYER_VEHICLE.centerOfMassHeightM / (2 * PLAYER_VEHICLE.wheelbaseM);
+      if (absSpeed > 0.4) {
+        const roughAmp = Number.isFinite(surface.roughnessAmp) ? Math.max(0, surface.roughnessAmp) : 0;
+        const roughFreq = Number.isFinite(surface.roughnessFreq) ? Math.max(0, surface.roughnessFreq) : 8;
+        const roughScale = roughAmp * clamp(absSpeed / 10, 0, 1.3);
+        const phase = (after.x ?? 0) * 1.7 + (after.z ?? 0) * 2.3 + tick * 0.45 * roughFreq * dt;
+        surfaceHeaveImpulse += Math.sin(phase) * clamp(roughScale * 2.4, -0.12, 0.12);
+        surfaceRollImpulse += Math.cos(phase * 1.37 + 0.6) * clamp(roughScale * 3.2, -0.16, 0.16);
+        surfacePitchImpulse += Math.sin(phase * 0.83 - 0.4) * clamp(roughScale * 1.8, -0.1, 0.1);
+        if (previous.surface && Number.isFinite(previous.surface.gradeSin)) {
+          const dGrade = gradeSin - previous.surface.gradeSin;
+          if (Math.abs(dGrade) > 1e-5) {
+            surfaceHeaveImpulse += clamp(-dGrade * absSpeed * 0.35, -0.18, 0.18);
+          }
+        }
+      }
+    }
+    const activeScrape = contact?.scraping ?? scraping ?? (curbScrub?.active ? curbScrub : null);
+    const extraCurb = curbScrub?.active && curbScrub !== activeScrape ? curbScrub : null;
+    const scrapePitchImpulse = (activeScrape?.active ? activeScrape.pitchImpulse ?? 0 : 0) + (extraCurb ? extraCurb.pitchImpulse ?? 0 : 0);
+    const scrapeRollImpulse = (activeScrape?.active ? activeScrape.rollImpulse ?? 0 : 0) + (extraCurb ? extraCurb.rollImpulse ?? 0 : 0);
+    const scrapeHeaveImpulse = (activeScrape?.active ? activeScrape.heaveImpulse ?? 0 : 0) + (extraCurb ? extraCurb.heaveImpulse ?? 0 : 0);
+    const scrapeSteerKickRad = (activeScrape?.active ? activeScrape.steerKickRad ?? 0 : 0) + (extraCurb ? extraCurb.steerKickRad ?? 0 : 0);
     const load = previous.suspension;
     const pitch = spring(
       load.pitchRad,
-      load.pitchVelocityRadS + pitchImpulse,
-      clamp(-acceleration * 95e-4, -0.068, 0.068),
+      load.pitchVelocityRadS + pitchImpulse + surfacePitchImpulse + scrapePitchImpulse,
+      clamp(-acceleration * 95e-4 + slopePitchBias, -0.068, 0.068),
       11,
       0.072,
       dt
     );
     const roll = spring(
       load.rollRad,
-      load.rollVelocityRadS,
-      clamp(lateral2 * 0.0115, -0.078, 0.078),
+      load.rollVelocityRadS + surfaceRollImpulse + scrapeRollImpulse,
+      clamp(lateral2 * 0.0115 + slopeRollBias, -0.078, 0.078),
       10,
       0.082,
       dt
     );
     const heave = spring(
       load.heaveM,
-      load.heaveVelocityMps + heaveImpulse,
+      load.heaveVelocityMps + heaveImpulse + surfaceHeaveImpulse + scrapeHeaveImpulse,
       contact ? -0.035 : -Math.min(0.018, Math.abs(acceleration) * 12e-4 + Math.abs(lateral2) * 1e-3),
       13,
       0.04,
@@ -5679,7 +8107,7 @@
     const wheelOffsetsM = {};
     const wheelLoadsN = {};
     const weight = PLAYER_VEHICLE.massKg * 9.81;
-    const foreTransfer = PLAYER_VEHICLE.massKg * acceleration * PLAYER_VEHICLE.centerOfMassHeightM / (2 * PLAYER_VEHICLE.wheelbaseM);
+    const foreTransfer = PLAYER_VEHICLE.massKg * acceleration * PLAYER_VEHICLE.centerOfMassHeightM / (2 * PLAYER_VEHICLE.wheelbaseM) + gradeLoadTransfer;
     const sideTransfer = PLAYER_VEHICLE.massKg * lateral2 * PLAYER_VEHICLE.centerOfMassHeightM / (2 * PLAYER_VEHICLE.trackM);
     for (const name of wheelNames) {
       const front = name.startsWith("front");
@@ -5698,12 +8126,17 @@
     }
     const loadScale = weight / Object.values(wheelLoadsN).reduce((a, b) => a + b, 0);
     for (const name of wheelNames) wheelLoadsN[name] *= loadScale;
-    const requested = Number.isFinite(command.targetSpeed) ? command.targetSpeed : 0;
+    const effectiveControlCmd = driverCommand ?? command;
+    const requested = Number.isFinite(effectiveControlCmd.targetSpeed) ? effectiveControlCmd.targetSpeed : 0;
     const reversing = oldSpeed * requested < 0;
-    const slowing = Math.abs(requested) < Math.abs(oldSpeed) || reversing;
+    const driverHoldingForward = Boolean(
+      driverCommand && requested > 0.15 && oldSpeed >= -0.05 && !reversing
+    );
+    const slowing = !driverHoldingForward && (Math.abs(requested) < Math.abs(oldSpeed) || reversing);
+    const stoppedAtContact = Boolean(contact && Math.abs(speed) <= 0.25);
     const controls = {
-      throttle: !contact && !slowing && Math.abs(requested) > Math.abs(oldSpeed) + 1e-8 ? 1 : 0,
-      brake: contact || slowing && Math.abs(oldSpeed) > 1e-8 ? 1 : 0,
+      throttle: !stoppedAtContact && (driverHoldingForward || !slowing && Math.abs(requested) > 0.05 && (Math.abs(requested) > Math.abs(oldSpeed) + 1e-8 || Boolean(contact))) ? 1 : 0,
+      brake: stoppedAtContact || slowing && Math.abs(oldSpeed) > 1e-8 ? 1 : 0,
       gear: Math.abs(speed) > 1e-8 ? speed > 0 ? "D" : "R" : requested === 0 ? "N" : requested > 0 ? "D" : "R"
     };
     let latchedContact = previous.contact;
@@ -5712,17 +8145,23 @@
       const released = before.spec?.contactResponse === "inelastic-slide-v1" ? contactSeparated : Math.hypot(dx2, dz2) > 0.25;
       if (released) latchedContact = null;
     }
-    const damage2 = { ...previous.damage };
+    const damage2 = cloneDamage(previous.damage);
     if (freshImpacts) {
-      for (const { side, closingSpeedMps, energyJ } of freshImpacts) {
-        if (closingSpeedMps >= 0.35) dent(damage2, side, closingSpeedMps, energyJ, tick);
+      let appliedInStep = 0;
+      for (const impact of freshImpacts) {
+        if (impact.closingSpeedMps >= 0.35 && damageSides.includes(impact.side)) {
+          dent(damage2, impact, tick, after, appliedInStep > 0);
+          appliedInStep++;
+        }
       }
     }
     if (contact) {
       const closingSpeedMps = Math.max(0, contact.closingSpeedMps);
-      if (!freshImpacts && closingSpeedMps >= 0.35 && Math.abs(oldSpeed) >= 0.15 && contact.proposedTravelM > 1e-8 && latchedContact?.hitId !== contact.hitId && damageSides.includes(contact.side)) {
+      const scrubEnabled = (before.spec?.wheelInteractionPhysics ?? before.wheelInteractionPhysics) === WHEEL_SCRUB_MODE;
+      const hasMotion = scrubEnabled ? (contact.relativeTravelM ?? contact.proposedTravelM ?? 0) > 1e-8 : Math.abs(oldSpeed) >= 0.15 && contact.proposedTravelM > 1e-8;
+      if (!freshImpacts && closingSpeedMps >= 0.35 && hasMotion && latchedContact?.hitId !== contact.hitId && damageSides.includes(contact.side)) {
         const energyJ = before.spec?.contactResponse === "inelastic-slide-v1" ? Math.max(0, Number.isFinite(contact.energyJ) ? contact.energyJ : 0) : 0.5 * PLAYER_VEHICLE.massKg * closingSpeedMps ** 2;
-        dent(damage2, contact.side, closingSpeedMps, energyJ, tick);
+        dent(damage2, { ...contact, closingSpeedMps, energyJ }, tick, after, false);
       }
       latchedContact = {
         hitId: contact.hitId,
@@ -5732,23 +8171,54 @@
         ...before.spec?.contactResponse === "inelastic-slide-v1" ? { normal: { ...contact.normal } } : {}
       };
     }
+    const suspension = {
+      pitchRad: pitch.value,
+      rollRad: roll.value,
+      heaveM: heave.value,
+      pitchVelocityRadS: pitch.velocity,
+      rollVelocityRadS: roll.velocity,
+      heaveVelocityMps: heave.velocity,
+      wheelOffsetsM
+    };
+    const interaction = computeWheelInteractionState(
+      before,
+      after,
+      command,
+      suspension,
+      wheelLoadsN,
+      { surface, contact, curbScrub, scraping, driverCommand, dt }
+    );
+    const rawSteeringWheelRad = steer * PLAYER_VEHICLE.steeringRatio + scrapeSteerKickRad * (PLAYER_VEHICLE.steeringRatio * 0.55);
+    const steeringWheelRad = Object.is(rawSteeringWheelRad, -0) ? 0 : rawSteeringWheelRad;
     return {
       wheelAngles: wheelAngles(steer),
       wheelSpinRad: (previous.wheelSpinRad + signedTravel / (PLAYER_VEHICLE.wheelRadiusM * (before.giantScale ?? 1))) % tau,
-      steeringWheelRad: steer * PLAYER_VEHICLE.steeringRatio,
-      suspension: {
-        pitchRad: pitch.value,
-        rollRad: roll.value,
-        heaveM: heave.value,
-        pitchVelocityRadS: pitch.velocity,
-        rollVelocityRadS: roll.velocity,
-        heaveVelocityMps: heave.velocity,
-        wheelOffsetsM
-      },
+      steeringWheelRad,
+      suspension,
       wheelLoadsN,
       controls,
       contact: latchedContact,
-      damage: damage2
+      damage: damage2,
+      interaction,
+      nitroCharge: Number.isFinite(after?.nitroCharge) ? after.nitroCharge : Number.isFinite(before?.nitroCharge) ? before.nitroCharge : previous.nitroCharge ?? 1,
+      nitroActive: Boolean(after?.nitroActive ?? before?.nitroActive ?? false),
+      nitroIntensity: Number.isFinite(after?.nitroIntensity) ? after.nitroIntensity : Number.isFinite(before?.nitroIntensity) ? before.nitroIntensity : 0,
+      nitroSuppressedByPedestrian: Boolean(
+        after?.nitroSuppressedByPedestrian ?? before?.nitroSuppressedByPedestrian ?? false
+      ),
+      ...hasSurface ? {
+        surface: {
+          kind: surface.surfaceKind ?? surface.kind ?? "asphalt",
+          gripMultiplier: round42(surface.gripMultiplier ?? 1),
+          rollingDragMps2: round42(surface.rollingDragMps2 ?? 0),
+          gradeSin: round42(surface.gradeSin ?? 0),
+          gradePct: round42((surface.gradeSin ?? 0) * 100),
+          camberSin: round42(surface.camberSin ?? 0),
+          elevationM: round42(surface.elevationM ?? 0),
+          waterDepthM: round42(surface.waterDepthM ?? 0),
+          sandDepthM: round42(surface.sandDepthM ?? 0)
+        }
+      } : {}
     };
   }
 
@@ -5904,12 +8374,79 @@
   }
 
   // src/core/spatial-index.js
+  var SNAPSHOTS = /* @__PURE__ */ new WeakMap();
   var SpatialIndex = class {
     constructor(items = [], size = 12) {
       this.size = size;
       this.invSize = 1 / size;
+      this.itemCount = items.length;
+      if (Array.isArray(items)) {
+        const snap = items.slice();
+        const n = snap.length;
+        const st = new Array(n);
+        const sx = new Float64Array(n);
+        const sz = new Float64Array(n);
+        const sw = new Float64Array(n);
+        const sl = new Float64Array(n);
+        let maxHalfDiag = 0;
+        for (let i = 0; i < n; i++) {
+          const it = snap[i];
+          if (!it) continue;
+          st[i] = it.type;
+          sx[i] = it.x;
+          sz[i] = it.z;
+          const isPed = it.type === "pedestrian";
+          const w = isPed ? it.radius ?? 0 : it.width ?? 0;
+          const l = isPed ? 0 : it.length ?? 0;
+          sw[i] = w;
+          sl[i] = l;
+          const r = isPed ? w : Math.hypot(w * 0.5, l * 0.5);
+          if (Number.isFinite(r) && r > maxHalfDiag) maxHalfDiag = r;
+        }
+        SNAPSHOTS.set(this, { snap, st, sx, sz, sw, sl });
+        this.maxHalfDiag = maxHalfDiag;
+      } else {
+        this.maxHalfDiag = 0;
+      }
       this.cells = /* @__PURE__ */ new Map();
       for (let i = 0; i < items.length; i++) this.add(items[i]);
+    }
+    get snapshot() {
+      return SNAPSHOTS.get(this)?.snap ?? null;
+    }
+    matchesItems(items) {
+      const rec = SNAPSHOTS.get(this);
+      if (!Array.isArray(items) || !rec || items.length !== rec.snap.length) return false;
+      const { snap, st, sx, sz, sw, sl } = rec;
+      for (let i = 0; i < snap.length; i++) {
+        const it = items[i];
+        if (it !== snap[i]) return false;
+        if (it) {
+          if (it.type !== st[i]) return false;
+          if (!Object.is(it.x, sx[i]) || !Object.is(it.z, sz[i])) return false;
+          const isPed = it.type === "pedestrian";
+          if (!Object.is(isPed ? it.radius ?? 0 : it.width ?? 0, sw[i])) return false;
+          if (!isPed && !Object.is(it.length ?? 0, sl[i])) return false;
+        }
+      }
+      return true;
+    }
+    isAppendedSuperset(items) {
+      const rec = SNAPSHOTS.get(this);
+      if (!Array.isArray(items) || !rec || items.length < rec.snap.length) return false;
+      const { snap, st, sx, sz, sw, sl } = rec;
+      for (let i = 0; i < snap.length; i++) {
+        const it = items[i];
+        if (it !== snap[i]) return false;
+        if (it) {
+          if (it.type !== st[i]) return false;
+          if (!Object.is(it.x, sx[i]) || !Object.is(it.z, sz[i])) return false;
+          const isPed = it.type === "pedestrian";
+          if (!Object.is(isPed ? it.radius ?? 0 : it.width ?? 0, sw[i])) return false;
+          if (!isPed && !Object.is(it.length ?? 0, sl[i])) return false;
+        }
+      }
+      return true;
     }
     add(item) {
       const x = Math.floor(item.x * this.invSize), z = Math.floor(item.z * this.invSize);
@@ -7763,8 +10300,8 @@
   var METRO_POPULATION_LIMITS = Object.freeze({ traffic: 96, pedestrians: 120 });
   var RUSH_CITY_POPULATION_LIMITS = Object.freeze({ traffic: 96, pedestrians: 144 });
   var RUSH_CITY_POPULATION_DEFAULTS = Object.freeze({ traffic: 36, pedestrians: 80 });
-  var GRAND_CITY_POPULATION_LIMITS = Object.freeze({ traffic: 140, pedestrians: 220 });
-  var GRAND_CITY_POPULATION_DEFAULTS = Object.freeze({ traffic: 68, pedestrians: 135 });
+  var GRAND_CITY_POPULATION_LIMITS = Object.freeze({ traffic: 140, pedestrians: 280 });
+  var GRAND_CITY_POPULATION_DEFAULTS = Object.freeze({ traffic: 68, pedestrians: 190 });
   var avenue = (id, axis, fixed, min, max, width, laneOffsetM, speedLimitMps) => ({
     id,
     axis,
@@ -8662,11 +11199,12 @@
     }
     const hotspotWalkCandidates = [];
     const cityWalkCandidates = [];
-    for (let round = 0; round < 28; round++) {
-      for (const [i, line] of addedWalkways.entries()) {
+    const allCandidateLines = city.walkways.filter((line) => !line.crosswalk);
+    for (let round = 0; round < 52; round++) {
+      for (const [i, line] of allCandidateLines.entries()) {
         const span2 = line.max - line.min;
         if (span2 < 6) continue;
-        const fraction = ((round * 11 + i * 7 + 3) % 29 + 0.5) / 29;
+        const fraction = ((round * 17 + i * 11 + 5) % 53 + 0.5) / 53;
         const along2 = line.min + 1.2 + fraction * (span2 - 2.4);
         const pt = walkwayPointAt(line, along2);
         const pose5 = {
@@ -8677,10 +11215,10 @@
           roadId: line.roadId,
           heading: pt.heading,
           walkwayId: line.id,
-          roadPreference: line.roadPreference
+          roadPreference: line.roadPreference ?? "market"
         };
         if (inCrowdHotspot(pose5)) hotspotWalkCandidates.push(pose5);
-        else cityWalkCandidates.push(pose5);
+        else if (addedWalkways.includes(line)) cityWalkCandidates.push(pose5);
       }
     }
     const hotspotPool = [...crosswalkCandidates, ...hotspotWalkCandidates];
@@ -8726,10 +11264,11 @@
       walkerIndex.add(pose5);
       return true;
     };
+    const poolTarget = Math.max(target, 320);
     let hCursor = 0;
     let cCursor = 0;
     let hotspotCount = 0;
-    while (pedestrians.length < target && (hCursor < hotspotPool.length || cCursor < nonHotspotPool.length)) {
+    while (pedestrians.length < poolTarget && (hCursor < hotspotPool.length || cCursor < nonHotspotPool.length)) {
       const wantHotspot = hCursor < hotspotPool.length && (cCursor >= nonHotspotPool.length || hotspotCount / Math.max(1, pedestrians.length + 1) < 0.475);
       if (wantHotspot) {
         while (hCursor < hotspotPool.length) {
@@ -8753,7 +11292,21 @@
         }
       }
     }
-    return pedestrians;
+    if (pedestrians.length < 300) {
+      throw new Error(`Grand Metro v5 pedestrian spawn pool (${pedestrians.length}) must be >= 300`);
+    }
+    const activeSpawns = pedestrians.slice(0, target);
+    Object.defineProperty(activeSpawns, "poolSize", {
+      value: pedestrians.length,
+      enumerable: false,
+      configurable: true
+    });
+    Object.defineProperty(city, "pedestrianSpawnPool", {
+      value: pedestrians,
+      enumerable: false,
+      configurable: true
+    });
+    return activeSpawns;
   }
   var grandTemplateCache = /* @__PURE__ */ new Map();
   function tagTemplateArray(arr, key3) {
@@ -8769,7 +11322,10 @@
       ...template,
       drivingRoads: tagTemplateArray(template.drivingRoads.slice(), `${cacheKey}:drivingRoads`),
       roads: tagTemplateArray(template.roads.slice(), `${cacheKey}:roads`),
-      statics: tagTemplateArray(template.statics.slice(), `${cacheKey}:statics`),
+      statics: tagTemplateArray(
+        template.statics.map((s) => s.kind === "parked-vehicle" ? { ...s } : s),
+        `${cacheKey}:statics`
+      ),
       places: template.places.slice(),
       playerStart: { ...template.playerStart },
       walkways: template.walkways.slice(),
@@ -8788,6 +11344,18 @@
       trafficSpawns: template.trafficSpawns.slice(),
       pedestrianSpawns: template.pedestrianSpawns.slice()
     };
+    if (template.pedestrianSpawnPool) {
+      Object.defineProperty(copy2.pedestrianSpawns, "poolSize", {
+        value: template.pedestrianSpawnPool.length,
+        enumerable: false,
+        configurable: true
+      });
+      Object.defineProperty(copy2, "pedestrianSpawnPool", {
+        value: template.pedestrianSpawnPool.slice(),
+        enumerable: false,
+        configurable: true
+      });
+    }
     if (template.cautionZones) copy2.cautionZones = template.cautionZones.slice();
     if (template.caseAnchors) copy2.caseAnchors = template.caseAnchors.slice();
     return copy2;
@@ -9123,6 +11691,8 @@
   var RECOVERY_M = 8;
   var MAX_ROAD_GRAPHS = 32;
   var roadGraphCache = /* @__PURE__ */ new Map();
+  var roadTurnGeomCache = /* @__PURE__ */ new Map();
+  var roadTurnStaticOkCache = /* @__PURE__ */ new Map();
   var frozenRoadsSigCache = /* @__PURE__ */ new WeakMap();
   var staticIndexCache = /* @__PURE__ */ new WeakMap();
   var f64Buf = new Float64Array(1);
@@ -9361,7 +11931,7 @@
         }
       }
     }
-    graph = { nodes, links, linkCells, singleSegments: /* @__PURE__ */ new Map(), staticVer: staticEntry.version, roadsSig };
+    graph = { nodes, links, linkCells, singleSegments: /* @__PURE__ */ new Map(), staticVer: staticEntry.version, staticEntry, roadsSig };
     if (cached.shapes.size >= 12) cached.shapes.delete(cached.shapes.keys().next().value);
     cached.shapes.set(shapeKey, graph);
     return graph;
@@ -9443,56 +12013,143 @@
       outset: dot({ x: end.x - outLane.x, z: end.z - outLane.z }, outgoing.direction)
     };
   }
-  function clearPose(district, shape2, point2, yaw) {
-    const pose5 = {
-      type: shape2.type,
-      x: point2.x,
-      z: point2.z,
-      heading: yaw,
-      width: shape2.width,
-      length: shape2.length,
-      radius: shape2.radius
-    };
-    if (!bodyOnRoad(pose5, district.roads, 0.12)) return false;
-    const statics = district.statics;
-    if (!statics || !statics.length) return true;
-    const entry = lookupStaticEntryFast(statics);
-    const poseReach = pose5.type === "pedestrian" ? pose5.radius ?? 0 : Math.hypot(pose5.width ?? 0, pose5.length ?? 0) * 0.5;
+  var _navPoseScratch = {
+    type: "vehicle",
+    x: 0,
+    z: 0,
+    heading: 0,
+    width: 0,
+    length: 0,
+    radius: 0
+  };
+  function clearStaticsOnly(entry, shape2, point2, yaw) {
+    if (!entry || !entry.len) return true;
+    _navPoseScratch.type = shape2.type;
+    _navPoseScratch.x = point2.x;
+    _navPoseScratch.z = point2.z;
+    _navPoseScratch.heading = yaw;
+    _navPoseScratch.width = shape2.width;
+    _navPoseScratch.length = shape2.length;
+    _navPoseScratch.radius = shape2.radius;
+    const poseReach = shape2.type === "pedestrian" ? shape2.radius ?? 0 : Math.hypot(shape2.width ?? 0, shape2.length ?? 0) * 0.5;
     if (poseReach + 0.12 <= STATIC_PAD_M) {
-      const k = Math.floor(pose5.x * STATIC_INV_CELL) << 16 ^ Math.floor(pose5.z * STATIC_INV_CELL) & 65535;
+      const k = Math.floor(point2.x * STATIC_INV_CELL) << 16 ^ Math.floor(point2.z * STATIC_INV_CELL) & 65535;
       const bucket = entry.cells.get(k);
       if (!bucket) return true;
       for (let i = 0; i < bucket.length; i++) {
-        if (overlaps(pose5, bucket[i], 0.12)) return false;
+        if (overlaps(_navPoseScratch, bucket[i], 0.12)) return false;
       }
       return true;
     }
-    const near = entry.index.near(pose5, entry.reach + poseReach + 0.3);
+    const near = entry.index.near(_navPoseScratch, entry.reach + poseReach + 0.3);
     for (let i = 0; i < near.length; i++) {
-      if (overlaps(pose5, near[i], 0.12)) return false;
+      if (overlaps(_navPoseScratch, near[i], 0.12)) return false;
     }
     return true;
+  }
+  function clearRoadOnly(roads, shape2, point2, yaw) {
+    _navPoseScratch.type = shape2.type;
+    _navPoseScratch.x = point2.x;
+    _navPoseScratch.z = point2.z;
+    _navPoseScratch.heading = yaw;
+    _navPoseScratch.width = shape2.width;
+    _navPoseScratch.length = shape2.length;
+    _navPoseScratch.radius = shape2.radius;
+    return bodyOnRoad(_navPoseScratch, roads, 0.12);
+  }
+  function clearPose(district, shape2, point2, yaw) {
+    if (!clearRoadOnly(district.roads, shape2, point2, yaw)) return false;
+    const statics = district.statics;
+    if (!statics || !statics.length) return true;
+    return clearStaticsOnly(lookupStaticEntryFast(statics), shape2, point2, yaw);
   }
   function clearPath(district, body, path) {
+    const entry = district.statics?.length ? lookupStaticEntryFast(district.statics) : null;
     for (let i = 1; i < path.length; i++) {
       const yaw = Math.atan2(path[i].x - path[i - 1].x, path[i].z - path[i - 1].z);
-      if (!clearPose(district, body, path[i], yaw)) return false;
+      if (!clearRoadOnly(district.roads, body, path[i], yaw)) return false;
+      if (entry && !clearStaticsOnly(entry, body, path[i], yaw)) return false;
     }
     return true;
   }
-  function allowedTurn(district, body, incoming, outgoing) {
+  function allowedTurn(district, body, incoming, outgoing, roadsSigHint = null, staticEntryHint = null) {
     if (incoming.turnCache.has(outgoing.id)) return incoming.turnCache.get(outgoing.id);
-    const turn = turnBetween(incoming, outgoing);
-    const guide = [];
-    if (turn) {
-      append(guide, turn.start);
-      for (const point2 of turn.points) append(guide, point2);
-      append(guide, turn.end);
+    const rSig = roadsSigHint ?? roadsSignature(district.roads);
+    const geomKey = `${rSig}:${body.type ?? "v"}:${body.length}:${body.width}:${body.radius ?? 0}:${incoming.id}->${outgoing.id}`;
+    let baseGeom = roadTurnGeomCache.get(geomKey);
+    if (baseGeom === void 0) {
+      const turn = turnBetween(incoming, outgoing);
+      const guide = [];
+      let guideYaws = null;
+      let roadValid = false;
+      if (turn && turn.inset + 2.2 <= incoming.length && turn.outset + 2.2 <= outgoing.length) {
+        append(guide, turn.start);
+        for (const point2 of turn.points) append(guide, point2);
+        append(guide, turn.end);
+        roadValid = turn.points.every((p) => clearRoadOnly(district.roads, body, p, p.heading ?? incoming.heading));
+        if (roadValid) {
+          guideYaws = new Float64Array(guide.length);
+          for (let i = 1; i < guide.length; i++) {
+            const yaw = Math.atan2(guide[i].x - guide[i - 1].x, guide[i].z - guide[i - 1].z);
+            guideYaws[i] = yaw;
+            if (!clearRoadOnly(district.roads, body, guide[i], yaw)) {
+              roadValid = false;
+              break;
+            }
+          }
+        }
+      }
+      baseGeom = roadValid ? { turn, guide, guideYaws } : null;
+      if (roadTurnGeomCache.size >= 4096) {
+        roadTurnGeomCache.delete(roadTurnGeomCache.keys().next().value);
+      }
+      roadTurnGeomCache.set(geomKey, baseGeom);
     }
-    const valid = turn && turn.inset + 2.2 <= incoming.length && turn.outset + 2.2 <= outgoing.length && turn.points.every((p) => clearPose(district, body, p, p.heading ?? incoming.heading)) && clearPath(district, body, guide);
-    if (valid) Object.assign(turn, { guide, heads: /* @__PURE__ */ new Map(), bridges: /* @__PURE__ */ new Map(), tails: /* @__PURE__ */ new Map() });
-    incoming.turnCache.set(outgoing.id, valid ? turn : null);
-    return valid ? turn : null;
+    if (!baseGeom) {
+      incoming.turnCache.set(outgoing.id, null);
+      return null;
+    }
+    const entry = staticEntryHint ?? (district.statics?.length ? lookupStaticEntryFast(district.statics) : null);
+    if (entry && entry.len > 0) {
+      const stKey = `${geomKey}#${entry.version}`;
+      let stOk = roadTurnStaticOkCache.get(stKey);
+      if (stOk === void 0) {
+        stOk = true;
+        const { turn, guide, guideYaws } = baseGeom;
+        for (let i = 0; i < turn.points.length; i++) {
+          const p = turn.points[i];
+          if (!clearStaticsOnly(entry, body, p, p.heading ?? incoming.heading)) {
+            stOk = false;
+            break;
+          }
+        }
+        if (stOk) {
+          for (let i = 1; i < guide.length; i++) {
+            if (!clearStaticsOnly(entry, body, guide[i], guideYaws[i])) {
+              stOk = false;
+              break;
+            }
+          }
+        }
+        if (roadTurnStaticOkCache.size >= 8192) {
+          roadTurnStaticOkCache.delete(roadTurnStaticOkCache.keys().next().value);
+        }
+        roadTurnStaticOkCache.set(stKey, stOk);
+      }
+      if (!stOk) {
+        incoming.turnCache.set(outgoing.id, null);
+        return null;
+      }
+    }
+    const resolvedTurn = {
+      ...baseGeom.turn,
+      guide: baseGeom.guide,
+      heads: /* @__PURE__ */ new Map(),
+      bridges: /* @__PURE__ */ new Map(),
+      tails: /* @__PURE__ */ new Map()
+    };
+    incoming.turnCache.set(outgoing.id, resolvedTurn);
+    return resolvedTurn;
   }
   function attachments(district, graph, pose5, body, isGoal) {
     if (![pose5.x, pose5.z].every(Number.isFinite) || !clearPose(district, body, pose5, pose5.heading ?? body.heading ?? 0)) return [];
@@ -9516,7 +12173,7 @@
   function routePath(district, graph, body, goal, links, startAlong, endAlong) {
     const transitions = [];
     for (let i = 1; i < links.length; i++) {
-      const turn = allowedTurn(district, body, links[i - 1], links[i]);
+      const turn = allowedTurn(district, body, links[i - 1], links[i], graph.roadsSig, graph.staticEntry);
       if (!turn) return [];
       transitions.push(turn);
     }
@@ -9637,8 +12294,14 @@
     }
     const best = /* @__PURE__ */ new Map();
     const occupancy = /* @__PURE__ */ new Map();
+    const vehicles = [];
+    for (let aIdx = 0; aIdx < actors.length; aIdx++) {
+      const actor = actors[aIdx];
+      if (actor.type !== "pedestrian" && actor.id !== body.id) vehicles.push(actor);
+    }
     while (open.length) {
       const current = heapPop(open);
+      if (current.parent && current.cost > (best.get(current.link.id) ?? Infinity)) continue;
       const end = endByLink.get(current.link.id);
       if (end && (current.parent || end.along > current.start.along + 0.75)) {
         const links = [];
@@ -9647,14 +12310,17 @@
         if (path.length > 2) return path;
       }
       for (const next of current.link.to.outgoing) {
-        const turn = allowedTurn(district, body, current.link, next);
+        const turn = allowedTurn(district, body, current.link, next, graph.roadsSig, graph.staticEntry);
         if (!turn || !current.parent && current.link.length - current.start.along < turn.inset + 0.5) continue;
         let occupied = occupancy.get(next);
         if (occupied === void 0) {
           occupied = 0;
           const midpoint = laneAt(next, next.length / 2);
-          for (const actor of actors)
-            if (actor.id !== body.id && actor.type !== "pedestrian" && distance(actor, midpoint) < 9) occupied++;
+          const mx = midpoint.x, mz = midpoint.z;
+          for (let vIdx = 0; vIdx < vehicles.length; vIdx++) {
+            const actor = vehicles[vIdx];
+            if (Math.abs(actor.x - mx) < 9 && Math.abs(actor.z - mz) < 9 && distance(actor, midpoint) < 9) occupied++;
+          }
           occupancy.set(next, occupied);
         }
         const length = current.parent ? current.link.length : current.link.length - current.start.along;
@@ -10220,21 +12886,18 @@
     const result = [{ x: car.x, z: car.z, heading: car.heading }];
     const distances = [0];
     const fromIndices = [-1];
-    let geometry = null, tail = -1;
+    let geometry = null, tail = -1, lazyManual = null, lazyRay = null;
     const manual = car === world.player && world.mode === "manual";
     if (manual) {
       const sign = (world.input?.targetSpeed ?? car.speed) < 0 ? -1 : 1;
       const probe = vehicleProbe(car, sign * Math.max(1.2, Math.abs(car.speed)));
-      const command = { targetSpeed: probe.speed, steer: world.input?.steer ?? 0 };
-      let travelled = 0;
-      for (let i = 0; i < 500 && travelled < 90; i++) {
-        const x = probe.x, z = probe.z;
-        command.targetSpeed = probe.speed;
-        integrateVehicle(probe, command, Math.min(0.16, 0.3 / Math.abs(probe.speed)), probe);
-        travelled += Math.hypot(x - probe.x, z - probe.z);
-        result.push({ x: probe.x, z: probe.z, heading: probe.heading });
-        distances.push(travelled);
-      }
+      lazyManual = {
+        probe,
+        command: { targetSpeed: probe.speed, steer: world.input?.steer ?? 0 },
+        step: 0,
+        travelled: 0,
+        maxTravelM: Math.min(90, horizonM)
+      };
     } else if (car.path?.length > 1) {
       geometry = pathGeometry(car.path);
       const cursor = car.cursor ?? 0;
@@ -10257,18 +12920,41 @@
     } else {
       const sign = car.speed < 0 ? -1 : 1;
       const s = Math.sin(car.heading), c = Math.cos(car.heading);
-      for (let d = 0.5; d <= 90; d += 0.5) {
-        result.push({
-          x: car.x + s * d * sign,
-          z: car.z + c * d * sign,
-          heading: car.heading
-        });
-        distances.push(d);
-      }
+      lazyRay = {
+        x0: car.x,
+        z0: car.z,
+        sx: s * sign,
+        cz: c * sign,
+        heading: car.heading,
+        d: 0.5,
+        maxD: Math.min(90, horizonM)
+      };
     }
-    return { points: result, distances, geometry, fromIndices, tail, horizonM };
+    return { points: result, distances, geometry, fromIndices, tail, horizonM, lazyManual, lazyRay };
   }
   function extendTrajectory(path) {
+    if (path.lazyManual) {
+      const m = path.lazyManual;
+      if (m.step >= 500 || m.travelled >= m.maxTravelM) return false;
+      const probe = m.probe;
+      const x = probe.x, z = probe.z;
+      m.command.targetSpeed = probe.speed;
+      integrateVehicle(probe, m.command, Math.min(0.16, 0.3 / Math.abs(probe.speed)), probe);
+      m.travelled += Math.hypot(x - probe.x, z - probe.z);
+      m.step++;
+      path.points.push({ x: probe.x, z: probe.z, heading: probe.heading });
+      path.distances.push(m.travelled);
+      return true;
+    }
+    if (path.lazyRay) {
+      const r = path.lazyRay;
+      if (r.d > r.maxD) return false;
+      const d = r.d;
+      r.d += 0.5;
+      path.points.push({ x: r.x0 + r.sx * d, z: r.z0 + r.cz * d, heading: r.heading });
+      path.distances.push(d);
+      return true;
+    }
     const from = path.tail;
     if (from < 0 || path.geometry.next[from] < 0) return false;
     const distances = path.distances, travelled = distances[distances.length - 1];
@@ -10354,11 +13040,19 @@
   }
   function storageBlocker(world, car, route, zone) {
     if (!route.hasExit) return zone.id;
-    const obstacles = (world.actors ?? []).filter((actor) => actor.id !== car.id).concat(world.statics ?? []);
-    for (const pose5 of route.exitSamples) {
+    const actors = world.actors ?? [];
+    const statics = world.statics ?? [];
+    for (let pIdx = 0; pIdx < route.exitSamples.length; pIdx++) {
+      const pose5 = route.exitSamples[pIdx];
       if (!bodyOnRoad(pose5, world.roads, 0.12)) return zone.id;
-      const blocker = obstacles.find((other) => overlaps(pose5, other, 0.12));
-      if (blocker) return blocker.id;
+      for (let aIdx = 0; aIdx < actors.length; aIdx++) {
+        const other = actors[aIdx];
+        if (other.id !== car.id && overlaps(pose5, other, 0.12)) return other.id;
+      }
+      for (let sIdx = 0; sIdx < statics.length; sIdx++) {
+        const other = statics[sIdx];
+        if (overlaps(pose5, other, 0.12)) return other.id;
+      }
     }
     return null;
   }
@@ -10468,6 +13162,27 @@
     }
     return fallback.length ? markImmutablePath(fallback) : fallback;
   }
+  var excludedZoneProfileCache = /* @__PURE__ */ new WeakMap();
+  function getExcludedSingleLaneProfile(district, zone) {
+    let byZone = excludedZoneProfileCache.get(district);
+    if (!byZone) {
+      byZone = /* @__PURE__ */ new Map();
+      excludedZoneProfileCache.set(district, byZone);
+    }
+    const cacheKey = `${zone.id}:${district.drivingRoads.length}`;
+    if (byZone.has(cacheKey)) return byZone.get(cacheKey);
+    const roads = district.drivingRoads.filter((road4) => {
+      if (zone.kind !== "single-lane" || road4.flow || (road4.laneOffsetM ?? 0) !== 0)
+        return true;
+      if (isDiagonalRoad(road4)) {
+        return road4.x1 < zone.minX || road4.x1 > zone.maxX || road4.x2 < zone.minX || road4.x2 > zone.maxX || road4.z1 < zone.minZ || road4.z1 > zone.maxZ || road4.z2 < zone.minZ || road4.z2 > zone.maxZ;
+      }
+      return road4.axis === "z" ? road4.fixed < zone.minX || road4.fixed > zone.maxX || road4.min < zone.minZ || road4.max > zone.maxZ : road4.fixed < zone.minZ || road4.fixed > zone.maxZ || road4.min < zone.minX || road4.max > zone.maxX;
+    });
+    const profile = roads.length < district.drivingRoads.length ? { ...district, drivingRoads: roads } : null;
+    byZone.set(cacheKey, profile);
+    return profile;
+  }
   function replanQueuedVehicle(world, car, zone, queuedRoute, waitS = 0) {
     if (car.district.caseId && !car.district.allowReroute) return false;
     if (!queuedRoute || !storageBlocker(world, car, queuedRoute, zone)) return false;
@@ -10480,15 +13195,8 @@
     if (!goal) return false;
     const remaining = car.parking ? trajectoryLength(forwardPath(world, car, Infinity)) : null;
     const district = world.district;
-    const roads = district.drivingRoads.filter((road4) => {
-      if (zone.kind !== "single-lane" || road4.flow || (road4.laneOffsetM ?? 0) !== 0)
-        return true;
-      if (isDiagonalRoad(road4)) {
-        return road4.x1 < zone.minX || road4.x1 > zone.maxX || road4.x2 < zone.minX || road4.x2 > zone.maxX || road4.z1 < zone.minZ || road4.z1 > zone.maxZ || road4.z2 < zone.minZ || road4.z2 > zone.maxZ;
-      }
-      return road4.axis === "z" ? road4.fixed < zone.minX || road4.fixed > zone.maxX || road4.min < zone.minZ || road4.max > zone.maxZ : road4.fixed < zone.minZ || road4.fixed > zone.maxZ || road4.min < zone.minX || road4.max > zone.maxX;
-    });
-    const profiles2 = roads.length < district.drivingRoads.length ? [{ ...district, drivingRoads: roads }, district] : [district];
+    const excludedProfile = zone.kind === "single-lane" ? getExcludedSingleLaneProfile(district, zone) : null;
+    const profiles2 = excludedProfile ? [excludedProfile, district] : [district];
     if (queuedRoute && storageBlocker(world, car, queuedRoute, zone)) {
       const alternative = withoutQueuedDeparture(world, queuedRoute);
       if (alternative) profiles2.push(alternative);
@@ -10513,9 +13221,43 @@
     return false;
   }
   function routeChanged(before, after) {
-    for (let i = 0; i < after.length; i += 8)
-      if (!before.some((point2) => (point2.x - after[i].x) ** 2 + (point2.z - after[i].z) ** 2 <= 1))
-        return true;
+    if (before.length <= 64 || after.length <= 64) {
+      for (let i = 0; i < after.length; i += 8)
+        if (!before.some((point2) => (point2.x - after[i].x) ** 2 + (point2.z - after[i].z) ** 2 <= 1))
+          return true;
+      return false;
+    }
+    const cells = /* @__PURE__ */ new Map();
+    for (let j = 0; j < before.length; j++) {
+      const pt = before[j];
+      const cx = Math.floor(pt.x * 0.5);
+      const cz = Math.floor(pt.z * 0.5);
+      const k = cx << 16 ^ cz & 65535;
+      let bucket = cells.get(k);
+      if (bucket) bucket.push(pt);
+      else cells.set(k, [pt]);
+    }
+    for (let i = 0; i < after.length; i += 8) {
+      const ax = after[i].x, az = after[i].z;
+      const cx0 = Math.floor(ax * 0.5), cz0 = Math.floor(az * 0.5);
+      let matched = false;
+      for (let dx = -1; dx <= 1 && !matched; dx++) {
+        const hi = cx0 + dx << 16;
+        for (let dz = -1; dz <= 1; dz++) {
+          const bucket = cells.get(hi ^ cz0 + dz & 65535);
+          if (!bucket) continue;
+          for (let b = 0; b < bucket.length; b++) {
+            const pt = bucket[b];
+            if ((pt.x - ax) ** 2 + (pt.z - az) ** 2 <= 1) {
+              matched = true;
+              break;
+            }
+          }
+          if (matched) break;
+        }
+      }
+      if (!matched) return true;
+    }
     return false;
   }
   function distanceInsideZone(path, zone) {
@@ -10903,7 +13645,9 @@
           ticket: entry.ticket,
           waitS: entry.waitS
         };
-        if (entry.waitS > 6 && (car !== world.player || world.mode === "auto" && car.district.allowReroute === true) && (!car.district.caseId || car.district.allowReroute) && car.district.reroutedTicket !== entry.ticket && car.speed < 0.08 && world.tick >= (car.district.nextReplanTick ?? 0)) {
+        const grandTacticalChase = (world.config?.cityVersion ?? 0) >= 5 && world.pursuit?.gta?.config?.tacticalPursuit === "gta-tactical-v1";
+        const farAmbientInChase = grandTacticalChase && car !== world.player && !world.pursuit?.patrols?.has?.(car) && (car.x - (world.player?.x ?? 0)) ** 2 + (car.z - (world.player?.z ?? 0)) ** 2 > 110 * 110;
+        if (!farAmbientInChase && entry.waitS > 6 && (car !== world.player || world.mode === "auto" && car.district.allowReroute === true) && (!car.district.caseId || car.district.allowReroute) && car.district.reroutedTicket !== entry.ticket && car.speed < 0.08 && world.tick >= (car.district.nextReplanTick ?? 0)) {
           car.district.nextReplanTick = world.tick + Math.ceil(6 / STEP);
           const previousPath = car.path;
           if (replanQueuedVehicle(world, car, zone, routes.get(`${zone.id}:${car.id}`), entry.waitS)) {
@@ -11598,6 +14342,1319 @@
     return proposal;
   }
 
+  // src/core/city-surfaces.js
+  var HALF_PI3 = Math.PI / 2;
+  var CELL_SIZE_M = 32;
+  var INV_CELL_SIZE = 1 / CELL_SIZE_M;
+  var DIAG_TALAAT = Math.atan2(298, 238 - (-112 - 4750 / 29));
+  var DIAG_BAZAAR = Math.atan2(124 - 300, 90 - -112);
+  var DIAG_CITADEL = Math.atan2(420 - -96, -112 - -420);
+  var SURFACE_SPECS = Object.freeze({
+    asphalt: Object.freeze({
+      kind: "asphalt",
+      label: "Asphalt",
+      gripMultiplier: 1,
+      rollingDragMps2: 0,
+      hydroDragCoeff: 0,
+      roughnessAmp: 2e-3,
+      roughnessFreq: 6
+    }),
+    cobble: Object.freeze({
+      kind: "cobble",
+      label: "Cobblestone & curb",
+      gripMultiplier: 0.87,
+      rollingDragMps2: 0.36,
+      hydroDragCoeff: 0,
+      roughnessAmp: 0.018,
+      roughnessFreq: 19
+    }),
+    sand: Object.freeze({
+      kind: "sand",
+      label: "Sandy street",
+      gripMultiplier: 0.62,
+      rollingDragMps2: 2.45,
+      hydroDragCoeff: 0.012,
+      roughnessAmp: 0.025,
+      roughnessFreq: 8.5
+    }),
+    water: Object.freeze({
+      kind: "water",
+      label: "Standing water",
+      gripMultiplier: 0.52,
+      rollingDragMps2: 0.78,
+      hydroDragCoeff: 0.052,
+      roughnessAmp: 7e-3,
+      roughnessFreq: 11
+    })
+  });
+  var DEFAULT_HILLS = Object.freeze([
+    {
+      id: "tahrir-overpass-ramp",
+      label: "Tahrir Overpass Ramp",
+      x: 24,
+      z: -112,
+      rx: 92,
+      rz: 46,
+      angle: 0,
+      heightM: 3.2
+    },
+    {
+      id: "citadel-ridge",
+      label: "Citadel & Mokattam Ridge",
+      x: 355,
+      z: -210,
+      rx: 165,
+      rz: 190,
+      angle: -0.45,
+      heightM: 4.4
+    },
+    {
+      id: "ramses-flyover",
+      label: "Ramses Flyover",
+      x: 88,
+      z: 238,
+      rx: 105,
+      rz: 52,
+      angle: 0.55,
+      heightM: 2.9
+    },
+    {
+      id: "nile-corniche-rise",
+      label: "Nile Corniche Rise",
+      x: -278,
+      z: 65,
+      rx: 54,
+      rz: 110,
+      angle: 0,
+      heightM: 2.4
+    },
+    {
+      id: "garden-city-knoll",
+      label: "Garden City Knoll",
+      x: -215,
+      z: -312,
+      rx: 95,
+      rz: 58,
+      angle: 0,
+      heightM: 2.3
+    },
+    {
+      id: "opera-approach-ramp",
+      label: "Opera Approach Ramp",
+      x: -380,
+      z: -165,
+      rx: 44,
+      rz: 52,
+      angle: 0,
+      heightM: 2.5
+    },
+    {
+      id: "azhar-bazaar-rise",
+      label: "Al-Azhar & Bazaar Rise",
+      x: 188,
+      z: 28,
+      rx: 54,
+      rz: 88,
+      angle: 0,
+      heightM: 2.6
+    },
+    {
+      id: "qasr-nile-embankment",
+      label: "Qasr El-Nil Embankment",
+      x: -435,
+      z: 114,
+      rx: 68,
+      rz: 82,
+      angle: -0.68,
+      heightM: 2.7
+    }
+  ]);
+  var DEFAULT_WATER_PUDDLES = Object.freeze([
+    {
+      id: "tahrir-west-puddle",
+      kind: "water",
+      shape: "ellipse",
+      roadId: "tahrir-boulevard",
+      x: -156,
+      z: -109.2,
+      heading: HALF_PI3,
+      halfWidth: 2.7,
+      halfLength: 7.6,
+      depthM: 0.035,
+      intensity: 0.95
+    },
+    {
+      id: "tahrir-gutter-puddle",
+      kind: "water",
+      shape: "ellipse",
+      roadId: "tahrir-boulevard",
+      x: -142,
+      z: -114.6,
+      heading: HALF_PI3,
+      halfWidth: 3.2,
+      halfLength: 8,
+      depthM: 0.03,
+      intensity: 0.9
+    },
+    {
+      id: "tahrir-ramp-west-basin",
+      kind: "water",
+      shape: "ellipse",
+      roadId: "tahrir-boulevard",
+      x: -74,
+      z: -113.2,
+      heading: HALF_PI3,
+      halfWidth: 4.1,
+      halfLength: 10.5,
+      depthM: 0.04,
+      intensity: 0.94
+    },
+    {
+      id: "tahrir-ramp-east-basin",
+      kind: "water",
+      shape: "ellipse",
+      roadId: "tahrir-boulevard",
+      x: 122,
+      z: -109.8,
+      heading: HALF_PI3,
+      halfWidth: 4,
+      halfLength: 10,
+      depthM: 0.038,
+      intensity: 0.92
+    },
+    {
+      id: "corniche-south-puddle",
+      kind: "water",
+      shape: "ellipse",
+      roadId: "corniche-avenue",
+      x: -275.4,
+      z: -198,
+      heading: 0,
+      halfWidth: 3.9,
+      halfLength: 11,
+      depthM: 0.036,
+      intensity: 0.92
+    },
+    {
+      id: "corniche-north-basin",
+      kind: "water",
+      shape: "strip",
+      roadId: "corniche-avenue",
+      x: -280.6,
+      z: 184,
+      heading: 0,
+      halfWidth: 3.6,
+      halfLength: 14,
+      depthM: 0.042,
+      intensity: 0.96
+    },
+    {
+      id: "civic-mid-puddle",
+      kind: "water",
+      shape: "ellipse",
+      roadId: "civic-avenue",
+      x: -180.6,
+      z: -34,
+      heading: 0,
+      halfWidth: 3.5,
+      halfLength: 9.2,
+      depthM: 0.032,
+      intensity: 0.88
+    },
+    {
+      id: "civic-hospital-puddle",
+      kind: "water",
+      shape: "ellipse",
+      roadId: "civic-avenue",
+      x: -185.2,
+      z: 146,
+      heading: 0,
+      halfWidth: 3.7,
+      halfLength: 10.4,
+      depthM: 0.035,
+      intensity: 0.9
+    },
+    {
+      id: "station-west-puddle",
+      kind: "water",
+      shape: "ellipse",
+      roadId: "station-avenue",
+      x: -242,
+      z: -72.8,
+      heading: HALF_PI3,
+      halfWidth: 3.6,
+      halfLength: 9.8,
+      depthM: 0.034,
+      intensity: 0.91
+    },
+    {
+      id: "station-east-puddle",
+      kind: "water",
+      shape: "strip",
+      roadId: "station-avenue",
+      x: -138,
+      z: -77.2,
+      heading: HALF_PI3,
+      halfWidth: 3.4,
+      halfLength: 11.5,
+      depthM: 0.033,
+      intensity: 0.89
+    },
+    {
+      id: "university-west-puddle",
+      kind: "water",
+      shape: "ellipse",
+      roadId: "university-avenue",
+      x: -332,
+      z: 92.2,
+      heading: HALF_PI3,
+      halfWidth: 3.8,
+      halfLength: 10.6,
+      depthM: 0.036,
+      intensity: 0.92
+    },
+    {
+      id: "university-central-puddle",
+      kind: "water",
+      shape: "ellipse",
+      roadId: "university-avenue",
+      x: -44,
+      z: 87.6,
+      heading: HALF_PI3,
+      halfWidth: 3.6,
+      halfLength: 9.4,
+      depthM: 0.031,
+      intensity: 0.87
+    },
+    {
+      id: "gateway-south-puddle",
+      kind: "water",
+      shape: "ellipse",
+      roadId: "gateway-avenue",
+      x: -93.6,
+      z: -246,
+      heading: 0,
+      halfWidth: 3.5,
+      halfLength: 9.6,
+      depthM: 0.034,
+      intensity: 0.9
+    },
+    {
+      id: "gateway-station-basin",
+      kind: "water",
+      shape: "strip",
+      roadId: "gateway-avenue",
+      x: -98.4,
+      z: 162,
+      heading: 0,
+      halfWidth: 3.7,
+      halfLength: 12.5,
+      depthM: 0.039,
+      intensity: 0.93
+    },
+    {
+      id: "clot-bey-west-puddle",
+      kind: "water",
+      shape: "ellipse",
+      roadId: "clot-bey-avenue",
+      x: -148,
+      z: 240.3,
+      heading: HALF_PI3,
+      halfWidth: 3.7,
+      halfLength: 10.8,
+      depthM: 0.035,
+      intensity: 0.9
+    },
+    {
+      id: "clot-bey-flyover-basin",
+      kind: "water",
+      shape: "strip",
+      roadId: "clot-bey-avenue",
+      x: -22,
+      z: 235.6,
+      heading: HALF_PI3,
+      halfWidth: 3.9,
+      halfLength: 13,
+      depthM: 0.041,
+      intensity: 0.95
+    },
+    {
+      id: "opera-ramp-basin",
+      kind: "water",
+      shape: "ellipse",
+      roadId: "opera-avenue",
+      x: -377.5,
+      z: -226,
+      heading: 0,
+      halfWidth: 3.6,
+      halfLength: 10.2,
+      depthM: 0.037,
+      intensity: 0.91
+    },
+    {
+      id: "garden-city-basin",
+      kind: "water",
+      shape: "ellipse",
+      roadId: "garden-city-avenue",
+      x: -108,
+      z: -314.2,
+      heading: HALF_PI3,
+      halfWidth: 3.8,
+      halfLength: 10.4,
+      depthM: 0.035,
+      intensity: 0.9
+    },
+    {
+      id: "nile-west-embankment-puddle",
+      kind: "water",
+      shape: "strip",
+      roadId: "nile-west-boulevard",
+      x: -517.4,
+      z: -38,
+      heading: 0,
+      halfWidth: 3.8,
+      halfLength: 13.5,
+      depthM: 0.04,
+      intensity: 0.94
+    },
+    {
+      id: "ramses-north-curb-puddle",
+      kind: "water",
+      shape: "ellipse",
+      roadId: "ramses-north-arterial",
+      x: 156,
+      z: 357.4,
+      heading: HALF_PI3,
+      halfWidth: 4,
+      halfLength: 11.2,
+      depthM: 0.036,
+      intensity: 0.91
+    }
+  ]);
+  var DEFAULT_SAND_ZONES = Object.freeze([
+    {
+      id: "tahrir-sand-drift",
+      kind: "sand",
+      shape: "ellipse",
+      roadId: "tahrir-boulevard",
+      x: -108,
+      z: -110.2,
+      heading: HALF_PI3 + 0.08,
+      halfWidth: 5.2,
+      halfLength: 14.5,
+      depthM: 0.04,
+      intensity: 0.92
+    },
+    {
+      id: "souq-west-sand-stretch",
+      kind: "sand",
+      shape: "strip",
+      roadId: "souq-collector",
+      x: -228,
+      z: 8,
+      heading: HALF_PI3,
+      halfWidth: 5.1,
+      halfLength: 32,
+      depthM: 0.045,
+      intensity: 0.95
+    },
+    {
+      id: "souq-east-sand-stretch",
+      kind: "sand",
+      shape: "strip",
+      roadId: "souq-collector",
+      x: -165,
+      z: 8,
+      heading: HALF_PI3,
+      halfWidth: 5.1,
+      halfLength: 31,
+      depthM: 0.042,
+      intensity: 0.93
+    },
+    {
+      id: "hussein-west-sand-stretch",
+      kind: "sand",
+      shape: "strip",
+      roadId: "hussein-collector",
+      x: 210,
+      z: 158,
+      heading: HALF_PI3,
+      halfWidth: 4.9,
+      halfLength: 60,
+      depthM: 0.046,
+      intensity: 0.95
+    },
+    {
+      id: "hussein-east-sand-stretch",
+      kind: "sand",
+      shape: "strip",
+      roadId: "hussein-collector",
+      x: 330,
+      z: 158,
+      heading: HALF_PI3,
+      halfWidth: 4.9,
+      halfLength: 60,
+      depthM: 0.05,
+      intensity: 0.97
+    },
+    {
+      id: "bazaar-slash-south-sand",
+      kind: "sand",
+      shape: "strip",
+      roadId: "bazaar-slash",
+      x: 256,
+      z: -61.5,
+      heading: DIAG_BAZAAR,
+      halfWidth: 4.4,
+      halfLength: 38,
+      depthM: 0.044,
+      intensity: 0.94
+    },
+    {
+      id: "bazaar-slash-north-sand",
+      kind: "sand",
+      shape: "strip",
+      roadId: "bazaar-slash",
+      x: 176.8,
+      z: 29.4,
+      heading: DIAG_BAZAAR,
+      halfWidth: 4.4,
+      halfLength: 36,
+      depthM: 0.042,
+      intensity: 0.92
+    },
+    {
+      id: "citadel-east-south-sand",
+      kind: "sand",
+      shape: "strip",
+      roadId: "citadel-east-ring",
+      x: 420,
+      z: -290,
+      heading: 0,
+      halfWidth: 6.2,
+      halfLength: 58,
+      depthM: 0.055,
+      intensity: 0.98
+    },
+    {
+      id: "citadel-east-mid-sand",
+      kind: "sand",
+      shape: "strip",
+      roadId: "citadel-east-ring",
+      x: 420,
+      z: -24,
+      heading: 0,
+      halfWidth: 6,
+      halfLength: 52,
+      depthM: 0.05,
+      intensity: 0.96
+    },
+    {
+      id: "citadel-east-north-sand",
+      kind: "sand",
+      shape: "strip",
+      roadId: "citadel-east-ring",
+      x: 420,
+      z: 245,
+      heading: 0,
+      halfWidth: 6.2,
+      halfLength: 56,
+      depthM: 0.052,
+      intensity: 0.97
+    },
+    {
+      id: "south-ring-west-drift",
+      kind: "sand",
+      shape: "strip",
+      roadId: "south-ring-arterial",
+      x: -335,
+      z: -420,
+      heading: HALF_PI3,
+      halfWidth: 6,
+      halfLength: 48,
+      depthM: 0.048,
+      intensity: 0.94
+    },
+    {
+      id: "south-ring-central-drift",
+      kind: "sand",
+      shape: "ellipse",
+      roadId: "south-ring-arterial",
+      x: 42,
+      z: -418.8,
+      heading: HALF_PI3 - 0.06,
+      halfWidth: 5.6,
+      halfLength: 34,
+      depthM: 0.045,
+      intensity: 0.92
+    },
+    {
+      id: "south-ring-east-drift",
+      kind: "sand",
+      shape: "strip",
+      roadId: "south-ring-arterial",
+      x: 315,
+      z: -420,
+      heading: HALF_PI3,
+      halfWidth: 6.2,
+      halfLength: 54,
+      depthM: 0.054,
+      intensity: 0.97
+    },
+    {
+      id: "citadel-diag-ridge-drift",
+      kind: "sand",
+      shape: "strip",
+      roadId: "citadel-diagonal",
+      x: 265.2,
+      z: -204.4,
+      heading: DIAG_CITADEL,
+      halfWidth: 5.6,
+      halfLength: 44,
+      depthM: 0.047,
+      intensity: 0.95
+    },
+    {
+      id: "abbassia-desert-drift",
+      kind: "sand",
+      shape: "ellipse",
+      roadId: "abbassia-avenue",
+      x: 301.2,
+      z: -265,
+      heading: 0.06,
+      halfWidth: 5.4,
+      halfLength: 28,
+      depthM: 0.043,
+      intensity: 0.91
+    },
+    {
+      id: "ramses-east-sand-drift",
+      kind: "sand",
+      shape: "strip",
+      roadId: "ramses-north-arterial",
+      x: 348,
+      z: 360,
+      heading: HALF_PI3,
+      halfWidth: 5.8,
+      halfLength: 42,
+      depthM: 0.046,
+      intensity: 0.93
+    }
+  ]);
+  var DEFAULT_COBBLE_ZONES = Object.freeze([
+    {
+      id: "khan-market-south-cobble",
+      kind: "cobble",
+      shape: "strip",
+      roadId: "khan-market-street",
+      x: 124,
+      z: -52,
+      heading: 0,
+      halfWidth: 5.3,
+      halfLength: 44,
+      depthM: 0.015,
+      intensity: 0.95
+    },
+    {
+      id: "khan-market-mid-cobble",
+      kind: "cobble",
+      shape: "strip",
+      roadId: "khan-market-street",
+      x: 124,
+      z: 58,
+      heading: 0,
+      halfWidth: 5.3,
+      halfLength: 48,
+      depthM: 0.016,
+      intensity: 0.96
+    },
+    {
+      id: "khan-market-north-cobble",
+      kind: "cobble",
+      shape: "strip",
+      roadId: "khan-market-street",
+      x: 124,
+      z: 176,
+      heading: 0,
+      halfWidth: 5.3,
+      halfLength: 42,
+      depthM: 0.015,
+      intensity: 0.94
+    },
+    {
+      id: "bab-el-louk-south-cobble",
+      kind: "cobble",
+      shape: "strip",
+      roadId: "bab-el-louk-link",
+      x: -32,
+      z: -246,
+      heading: 0,
+      halfWidth: 4.3,
+      halfLength: 46,
+      depthM: 0.014,
+      intensity: 0.92
+    },
+    {
+      id: "bab-el-louk-north-cobble",
+      kind: "cobble",
+      shape: "strip",
+      roadId: "bab-el-louk-link",
+      x: -32,
+      z: -138,
+      heading: 0,
+      halfWidth: 4.3,
+      halfLength: 42,
+      depthM: 0.014,
+      intensity: 0.93
+    },
+    {
+      id: "qasr-el-aini-west-cobble",
+      kind: "cobble",
+      shape: "strip",
+      roadId: "qasr-el-aini-collector",
+      x: -308,
+      z: -186,
+      heading: HALF_PI3,
+      halfWidth: 4.9,
+      halfLength: 46,
+      depthM: 0.014,
+      intensity: 0.91
+    },
+    {
+      id: "qasr-el-aini-east-cobble",
+      kind: "cobble",
+      shape: "strip",
+      roadId: "qasr-el-aini-collector",
+      x: -162,
+      z: -186,
+      heading: HALF_PI3,
+      halfWidth: 4.9,
+      halfLength: 44,
+      depthM: 0.014,
+      intensity: 0.92
+    },
+    {
+      id: "talaat-south-cobble",
+      kind: "cobble",
+      shape: "strip",
+      roadId: "talaat-diagonal",
+      x: -236.3,
+      z: -203.9,
+      heading: DIAG_TALAAT,
+      halfWidth: 5.6,
+      halfLength: 34,
+      depthM: 0.015,
+      intensity: 0.93
+    },
+    {
+      id: "talaat-midan-cobble",
+      kind: "cobble",
+      shape: "strip",
+      roadId: "talaat-diagonal",
+      x: -123,
+      z: -8.6,
+      heading: DIAG_TALAAT,
+      halfWidth: 5.8,
+      halfLength: 36,
+      depthM: 0.015,
+      intensity: 0.94
+    },
+    {
+      id: "azhar-mosque-cobble",
+      kind: "cobble",
+      shape: "strip",
+      roadId: "azhar-avenue",
+      x: 188,
+      z: -56,
+      heading: 0,
+      halfWidth: 5.8,
+      halfLength: 38,
+      depthM: 0.015,
+      intensity: 0.95
+    }
+  ]);
+  function cellKey(cx, cz) {
+    return cx + 32768 << 16 | cz + 32768 & 65535;
+  }
+  function smoothstep01(t) {
+    if (t <= 0) return 0;
+    if (t >= 1) return 1;
+    return t * t * (3 - 2 * t);
+  }
+  function lerp(a, b, t) {
+    return a + (b - a) * t;
+  }
+  function compileHill(raw) {
+    const angle = raw.angle ?? 0;
+    const cos = Math.cos(angle);
+    const sin = Math.sin(angle);
+    const rx = Math.max(1, raw.rx);
+    const rz = Math.max(1, raw.rz);
+    return {
+      id: raw.id,
+      label: raw.label ?? raw.id,
+      x: raw.x,
+      z: raw.z,
+      rx,
+      rz,
+      angle,
+      heightM: Math.max(0, raw.heightM),
+      cos,
+      sin,
+      invRx2: 1 / (rx * rx),
+      invRz2: 1 / (rz * rz),
+      boundX: Math.hypot(rx * cos, rz * sin),
+      boundZ: Math.hypot(rx * sin, rz * cos)
+    };
+  }
+  function hashPuddleId(str) {
+    let h = 2166136261;
+    const s = String(str ?? "");
+    for (let i = 0; i < s.length; i++) {
+      h = Math.imul(h ^ s.charCodeAt(i), 16777619);
+    }
+    return h >>> 0;
+  }
+  function puddleOrganicScale(angle, seed) {
+    const p1 = (seed & 255) * 0.0245;
+    const p2 = (seed >>> 8 & 255) * 0.0245;
+    const p3 = (seed >>> 16 & 255) * 0.0245;
+    return 0.88 + 0.07 * Math.sin(angle * 2 + p1) + 0.04 * Math.cos(angle * 3 - p2) + 0.03 * Math.sin(angle * 5 + p3);
+  }
+  function resolveZoneHalfWidth(zone) {
+    return Number.isFinite(zone?.halfWidth) && zone.halfWidth > 0 ? Math.max(0.25, zone.halfWidth) : Number.isFinite(zone?.width) && zone.width > 0 ? Math.max(0.25, zone.width * 0.5) : 3;
+  }
+  function resolveZoneHalfLength(zone) {
+    return Number.isFinite(zone?.halfLength) && zone.halfLength > 0 ? Math.max(0.25, zone.halfLength) : Number.isFinite(zone?.length) && zone.length > 0 ? Math.max(0.25, zone.length * 0.5) : 4.8;
+  }
+  function resolveSurfaceZoneHalfExtents(zone) {
+    return { halfWidth: resolveZoneHalfWidth(zone), halfLength: resolveZoneHalfLength(zone) };
+  }
+  function compileZone(raw, index = 0, fallbackKind = void 0) {
+    const heading2 = raw.heading ?? 0;
+    const cos = Math.cos(heading2);
+    const sin = Math.sin(heading2);
+    const { halfWidth, halfLength } = resolveSurfaceZoneHalfExtents(raw);
+    const boundX = Math.abs(cos) * halfWidth + Math.abs(sin) * halfLength;
+    const boundZ = Math.abs(sin) * halfWidth + Math.abs(cos) * halfLength;
+    const explicitSeed = Number.isFinite(raw.organicSeed);
+    return {
+      id: raw.id,
+      kind: raw.kind ?? fallbackKind,
+      shape: raw.shape ?? "ellipse",
+      roadId: raw.roadId ?? null,
+      x: raw.x,
+      z: raw.z,
+      heading: heading2,
+      halfWidth,
+      halfLength,
+      depthM: Math.max(0, raw.depthM ?? 0.02),
+      intensity: clamp(raw.intensity ?? 0.9, 0, 1),
+      cos,
+      sin,
+      invHalfWidth: 1 / halfWidth,
+      invHalfLength: 1 / halfLength,
+      cornerRadius: Math.min(halfWidth, halfLength) * 0.35,
+      featherM: Math.min(1.35, halfWidth * 0.28, halfLength * 0.24),
+      organicSeed: explicitSeed ? raw.organicSeed : hashPuddleId(raw.id ?? `puddle-${index}`),
+      _explicitSeed: explicitSeed,
+      _compiledHeading: heading2,
+      _compiledHW: halfWidth,
+      _compiledHL: halfLength,
+      boundX,
+      boundZ
+    };
+  }
+  function zoneBlendWeight(zone, x, z) {
+    const dx = x - zone.x;
+    if (dx <= -zone.boundX || dx >= zone.boundX) return 0;
+    const dz = z - zone.z;
+    if (dz <= -zone.boundZ || dz >= zone.boundZ) return 0;
+    const localX = dx * zone.cos - dz * zone.sin;
+    const localZ = dx * zone.sin + dz * zone.cos;
+    if (zone.kind === "water") {
+      const angRaw = Math.atan2(localX * zone.invHalfWidth, localZ * zone.invHalfLength);
+      const ang = angRaw < 0 ? angRaw + Math.PI * 2 : angRaw;
+      const lobe = Math.max(0.15, puddleOrganicScale(ang, zone.organicSeed) * 0.94);
+      const nx2 = localX * zone.invHalfWidth / lobe;
+      const nz2 = localZ * zone.invHalfLength / lobe;
+      const d22 = nx2 * nx2 + nz2 * nz2;
+      if (d22 >= 1) return 0;
+      return smoothstep01((1 - Math.sqrt(d22)) / 0.24);
+    }
+    if (zone.shape === "strip") {
+      const absX = Math.abs(localX);
+      const absZ = Math.abs(localZ);
+      if (absX >= zone.halfWidth || absZ >= zone.halfLength) return 0;
+      const r = zone.cornerRadius;
+      const qx = absX - (zone.halfWidth - r);
+      const qz = absZ - (zone.halfLength - r);
+      let marginM;
+      if (qx > 0 && qz > 0) {
+        const distCorner = Math.hypot(qx, qz);
+        if (distCorner >= r) return 0;
+        marginM = r - distCorner;
+      } else {
+        marginM = Math.min(zone.halfWidth - absX, zone.halfLength - absZ);
+      }
+      return smoothstep01(marginM / Math.max(0.15, zone.featherM));
+    }
+    if (zone.shape !== "ellipse") {
+      const absX = Math.abs(localX);
+      const absZ = Math.abs(localZ);
+      if (absX >= zone.halfWidth || absZ >= zone.halfLength) return 0;
+      const marginM = Math.min(zone.halfWidth - absX, zone.halfLength - absZ);
+      return Math.max(1e-4, smoothstep01(marginM / Math.max(0.15, zone.featherM)));
+    }
+    const nx = localX * zone.invHalfWidth;
+    const nz = localZ * zone.invHalfLength;
+    const d2 = nx * nx + nz * nz;
+    if (d2 >= 1) return 0;
+    const dNorm = Math.sqrt(d2);
+    return smoothstep01((1 - dNorm) / 0.24);
+  }
+  function createCityTerrain(roads = [], options2 = {}) {
+    const hillDefs = Array.isArray(options2.hills) ? options2.hills : DEFAULT_HILLS;
+    const puddleDefs = Array.isArray(options2.waterPuddles) ? options2.waterPuddles : DEFAULT_WATER_PUDDLES;
+    const sandDefs = Array.isArray(options2.sandZones) ? options2.sandZones : DEFAULT_SAND_ZONES;
+    const cobbleDefs = Array.isArray(options2.cobbleZones) ? options2.cobbleZones : DEFAULT_COBBLE_ZONES;
+    const hills = hillDefs.map(compileHill);
+    const waterPuddles = puddleDefs.map((z, i) => compileZone(z, i, "water"));
+    const sandZones = sandDefs.map((z, i) => compileZone(z, i, "sand"));
+    const cobbleZones = cobbleDefs.map((z, i) => compileZone(z, i, "cobble"));
+    const zones = [...waterPuddles, ...sandZones, ...cobbleZones];
+    const grid2 = /* @__PURE__ */ new Map();
+    for (let i = 0; i < zones.length; i++) {
+      const zone = zones[i];
+      const minCx = Math.floor((zone.x - zone.boundX - 1e-6) * INV_CELL_SIZE);
+      const maxCx = Math.floor((zone.x + zone.boundX + 1e-6) * INV_CELL_SIZE);
+      const minCz = Math.floor((zone.z - zone.boundZ - 1e-6) * INV_CELL_SIZE);
+      const maxCz = Math.floor((zone.z + zone.boundZ + 1e-6) * INV_CELL_SIZE);
+      for (let cx = minCx; cx <= maxCx; cx++) {
+        for (let cz = minCz; cz <= maxCz; cz++) {
+          const key3 = cellKey(cx, cz);
+          let bucket = grid2.get(key3);
+          if (!bucket) {
+            bucket = [];
+            grid2.set(key3, bucket);
+          }
+          bucket.push(zone);
+        }
+      }
+    }
+    let maxElevationM = 0;
+    for (let i = 0; i < hills.length; i++) {
+      const h = hills[i];
+      let peakHere = 0;
+      for (let j = 0; j < hills.length; j++) {
+        const other = hills[j];
+        const dx = h.x - other.x;
+        const dz = h.z - other.z;
+        const lx = dx * other.cos + dz * other.sin;
+        const lz = -dx * other.sin + dz * other.cos;
+        const u = lx * lx * other.invRx2 + lz * lz * other.invRz2;
+        if (u < 1) {
+          const w = 1 - u;
+          peakHere += other.heightM * w * w * w;
+        }
+      }
+      if (peakHere > maxElevationM) maxElevationM = peakHere;
+    }
+    const terrainObj = {
+      cellSizeM: CELL_SIZE_M,
+      roadCount: Array.isArray(roads) ? roads.length : 0,
+      hills,
+      waterPuddles,
+      sandZones,
+      cobbleZones,
+      zones,
+      grid: grid2,
+      maxElevationM,
+      maxElevation: maxElevationM
+    };
+    seedSurfaceGridCache(terrainObj, grid2);
+    return terrainObj;
+  }
+  function terrainElevationAt(terrain, x, z) {
+    if (!terrain || !Number.isFinite(x) || !Number.isFinite(z)) return 0;
+    const hills = terrain.hills;
+    if (!hills || hills.length === 0) return 0;
+    let elevationM = 0;
+    for (let i = 0; i < hills.length; i++) {
+      const hill = hills[i];
+      const dx = x - hill.x;
+      if (dx <= -hill.boundX || dx >= hill.boundX) continue;
+      const dz = z - hill.z;
+      if (dz <= -hill.boundZ || dz >= hill.boundZ) continue;
+      const lx = dx * hill.cos + dz * hill.sin;
+      const lz = -dx * hill.sin + dz * hill.cos;
+      const u = lx * lx * hill.invRx2 + lz * lz * hill.invRz2;
+      if (u < 1) {
+        const om = 1 - u;
+        elevationM += hill.heightM * om * om * om;
+      }
+    }
+    return elevationM > 0 ? elevationM : 0;
+  }
+  function sampleCitySurface(terrain, x, z, heading2 = 0, out = null) {
+    const result = out ?? {};
+    const asphalt = SURFACE_SPECS.asphalt;
+    if (!terrain || !Number.isFinite(x) || !Number.isFinite(z)) {
+      result.surfaceKind = "asphalt";
+      result.gripMultiplier = asphalt.gripMultiplier;
+      result.rollingDragMps2 = asphalt.rollingDragMps2;
+      result.hydroDragCoeff = asphalt.hydroDragCoeff;
+      result.roughnessAmp = asphalt.roughnessAmp;
+      result.roughnessFreq = asphalt.roughnessFreq;
+      result.elevationM = 0;
+      result.dhdx = 0;
+      result.dhdz = 0;
+      result.gradeSin = 0;
+      result.camberSin = 0;
+      result.gradePct = 0;
+      result.waterDepthM = 0;
+      result.sandDepthM = 0;
+      result.zoneId = null;
+      return result;
+    }
+    let elevationM = 0;
+    let dhdx = 0;
+    let dhdz = 0;
+    const hills = terrain.hills;
+    if (hills) {
+      for (let i = 0; i < hills.length; i++) {
+        const hill = hills[i];
+        const dx = x - hill.x;
+        if (dx <= -hill.boundX || dx >= hill.boundX) continue;
+        const dz = z - hill.z;
+        if (dz <= -hill.boundZ || dz >= hill.boundZ) continue;
+        const lx = dx * hill.cos + dz * hill.sin;
+        const lz = -dx * hill.sin + dz * hill.cos;
+        const u = lx * lx * hill.invRx2 + lz * lz * hill.invRz2;
+        if (u < 1) {
+          const om = 1 - u;
+          const om2 = om * om;
+          elevationM += hill.heightM * om2 * om;
+          const factor = -6 * hill.heightM * om2;
+          const dhdlx = factor * lx * hill.invRx2;
+          const dhdlz = factor * lz * hill.invRz2;
+          dhdx += dhdlx * hill.cos - dhdlz * hill.sin;
+          dhdz += dhdlx * hill.sin + dhdlz * hill.cos;
+        }
+      }
+    }
+    if (elevationM < 0) elevationM = 0;
+    const h = Number.isFinite(heading2) ? heading2 : 0;
+    let gradeSin = 0;
+    let camberSin = 0;
+    if (dhdx !== 0 || dhdz !== 0) {
+      const sh = Math.sin(h);
+      const ch = Math.cos(h);
+      const slopeFwd = dhdx * sh + dhdz * ch;
+      const slopeRight = dhdx * ch - dhdz * sh;
+      gradeSin = slopeFwd / Math.hypot(1, slopeFwd);
+      camberSin = slopeRight / Math.hypot(1, slopeRight);
+    }
+    let wWater = 0;
+    let wSand = 0;
+    let wCobble = 0;
+    let maxWaterDepth = 0;
+    let maxSandDepth = 0;
+    let waterZoneId = null;
+    let sandZoneId = null;
+    let cobbleZoneId = null;
+    const cx = Math.floor(x * INV_CELL_SIZE);
+    const cz = Math.floor(z * INV_CELL_SIZE);
+    const bucket = getOrBuildSurfaceGrid(terrain).get(cellKey(cx, cz));
+    if (bucket) {
+      for (let i = 0; i < bucket.length; i++) {
+        const zone = bucket[i];
+        const w = zoneBlendWeight(zone, x, z);
+        if (w <= 0) continue;
+        if (zone.kind === "water") {
+          if (w > wWater) {
+            wWater = w;
+            waterZoneId = zone.id;
+          }
+          const depth = zone.depthM * w;
+          if (depth > maxWaterDepth) maxWaterDepth = depth;
+        } else if (zone.kind === "sand") {
+          if (w > wSand) {
+            wSand = w;
+            sandZoneId = zone.id;
+          }
+          const depth = zone.depthM * w;
+          if (depth > maxSandDepth) maxSandDepth = depth;
+        } else if (zone.kind === "cobble") {
+          if (w > wCobble) {
+            wCobble = w;
+            cobbleZoneId = zone.id;
+          }
+        }
+      }
+    }
+    let gripMultiplier = asphalt.gripMultiplier;
+    let rollingDragMps2 = asphalt.rollingDragMps2;
+    let hydroDragCoeff = asphalt.hydroDragCoeff;
+    let roughnessAmp = asphalt.roughnessAmp;
+    let roughnessFreq = asphalt.roughnessFreq;
+    let surfaceKind = "asphalt";
+    let zoneId = null;
+    if (wCobble > 0) {
+      const cobble = SURFACE_SPECS.cobble;
+      gripMultiplier = lerp(gripMultiplier, cobble.gripMultiplier, wCobble);
+      rollingDragMps2 = lerp(rollingDragMps2, cobble.rollingDragMps2, wCobble);
+      hydroDragCoeff = lerp(hydroDragCoeff, cobble.hydroDragCoeff, wCobble);
+      roughnessAmp = lerp(roughnessAmp, cobble.roughnessAmp, wCobble);
+      roughnessFreq = lerp(roughnessFreq, cobble.roughnessFreq, wCobble);
+      surfaceKind = "cobble";
+      zoneId = cobbleZoneId;
+    }
+    if (wSand > 0) {
+      const sand = SURFACE_SPECS.sand;
+      gripMultiplier = lerp(gripMultiplier, sand.gripMultiplier, wSand);
+      rollingDragMps2 = lerp(rollingDragMps2, sand.rollingDragMps2, wSand);
+      hydroDragCoeff = lerp(hydroDragCoeff, sand.hydroDragCoeff, wSand);
+      roughnessAmp = lerp(roughnessAmp, sand.roughnessAmp, wSand);
+      roughnessFreq = lerp(roughnessFreq, sand.roughnessFreq, wSand);
+      surfaceKind = "sand";
+      zoneId = sandZoneId;
+    }
+    if (wWater > 0) {
+      const water = SURFACE_SPECS.water;
+      gripMultiplier = lerp(gripMultiplier, water.gripMultiplier, wWater);
+      rollingDragMps2 = lerp(rollingDragMps2, water.rollingDragMps2, wWater);
+      hydroDragCoeff = lerp(hydroDragCoeff, water.hydroDragCoeff, wWater);
+      roughnessAmp = lerp(roughnessAmp, water.roughnessAmp, wWater);
+      roughnessFreq = lerp(roughnessFreq, water.roughnessFreq, wWater);
+      surfaceKind = "water";
+      zoneId = waterZoneId;
+    }
+    result.surfaceKind = surfaceKind;
+    result.gripMultiplier = gripMultiplier;
+    result.rollingDragMps2 = rollingDragMps2;
+    result.hydroDragCoeff = hydroDragCoeff;
+    result.roughnessAmp = roughnessAmp;
+    result.roughnessFreq = roughnessFreq;
+    result.elevationM = elevationM;
+    result.dhdx = dhdx;
+    result.dhdz = dhdz;
+    result.gradeSin = gradeSin;
+    result.camberSin = camberSin;
+    result.gradePct = gradeSin * 100;
+    result.waterDepthM = maxWaterDepth;
+    result.sandDepthM = maxSandDepth;
+    result.zoneId = zoneId;
+    return result;
+  }
+  var syntheticGridCache = /* @__PURE__ */ new WeakMap();
+  function compileSyntheticLookupZone(raw, index, kind, prevId = void 0, prevSeed = void 0) {
+    const heading2 = Number.isFinite(raw?.heading) ? raw.heading : 0;
+    const cos = Math.cos(heading2);
+    const sin = Math.sin(heading2);
+    const { halfWidth, halfLength } = resolveSurfaceZoneHalfExtents(raw);
+    const x = raw?.x ?? 0;
+    const z = raw?.z ?? 0;
+    const boundX = Math.abs(cos) * halfWidth + Math.abs(sin) * halfLength;
+    const boundZ = Math.abs(sin) * halfWidth + Math.abs(cos) * halfLength;
+    const rawSeed = raw?.organicSeed;
+    const seedChangedExplicitly = prevSeed !== void 0 && !Object.is(rawSeed, prevSeed);
+    const idChanged = prevId !== void 0 && raw?.id !== prevId;
+    const autoDerivedFromId = raw?._explicitSeed === false;
+    const explicitSeed = seedChangedExplicitly ? Number.isFinite(rawSeed) : !autoDerivedFromId && Number.isFinite(rawSeed);
+    const organicSeed = explicitSeed ? rawSeed : idChanged || !Number.isFinite(rawSeed) ? hashPuddleId(raw?.id ?? `puddle-${index}`) : rawSeed;
+    return {
+      id: raw?.id,
+      kind,
+      shape: raw?.shape,
+      roadId: raw?.roadId ?? null,
+      x,
+      z,
+      heading: heading2,
+      halfWidth,
+      halfLength,
+      depthM: Math.max(0, raw?.depthM ?? 0.02),
+      intensity: clamp(raw?.intensity ?? 0.9, 0, 1),
+      cos,
+      sin,
+      invHalfWidth: 1 / halfWidth,
+      invHalfLength: 1 / halfLength,
+      cornerRadius: Math.min(halfWidth, halfLength) * 0.35,
+      featherM: Math.min(1.35, halfWidth * 0.28, halfLength * 0.24),
+      organicSeed,
+      _explicitSeed: explicitSeed,
+      _compiledHeading: heading2,
+      _compiledHW: halfWidth,
+      _compiledHL: halfLength,
+      boundX,
+      boundZ
+    };
+  }
+  function snapshotZoneList(arr) {
+    if (!Array.isArray(arr)) return null;
+    const n = arr.length;
+    const refs = arr.slice();
+    const ids = new Array(n);
+    const seeds = new Array(n);
+    const shapes = new Array(n);
+    const sx = new Float64Array(n);
+    const sz = new Float64Array(n);
+    const sh = new Float64Array(n);
+    const sw = new Float64Array(n);
+    const sl = new Float64Array(n);
+    const sd = new Float64Array(n);
+    let allCompiled = true;
+    for (let i = 0; i < n; i++) {
+      const z = refs[i];
+      if (z) {
+        if (typeof z.organicSeed !== "number" || typeof z.invHalfWidth !== "number" || !(typeof z.halfWidth === "number" && z.halfWidth >= 0.25) || !(typeof z.halfLength === "number" && z.halfLength >= 0.25) || typeof z.depthM !== "number") {
+          allCompiled = false;
+        }
+        ids[i] = z.id;
+        seeds[i] = z.organicSeed;
+        shapes[i] = z.shape;
+        sx[i] = z.x ?? 0;
+        sz[i] = z.z ?? 0;
+        sh[i] = z.heading ?? 0;
+        sw[i] = resolveZoneHalfWidth(z);
+        sl[i] = resolveZoneHalfLength(z);
+        sd[i] = Math.max(0, z.depthM ?? 0.02);
+      } else {
+        allCompiled = false;
+      }
+    }
+    return { arr, refs, ids, seeds, shapes, allCompiled, sx, sz, sh, sw, sl, sd };
+  }
+  function matchesCompiledZoneSnapshot(arr, snap) {
+    const refs = snap.refs;
+    const n = refs.length;
+    if (arr.length !== n) return false;
+    const { ids, seeds, shapes, sx, sz, sh, sw, sl, sd } = snap;
+    for (let i = 0; i < n; i++) {
+      const z = arr[i];
+      if (z !== refs[i] || z.x !== sx[i] || z.z !== sz[i] || z.heading !== sh[i] || z.halfWidth !== sw[i] || z.halfLength !== sl[i] || z.depthM !== sd[i] || z.shape !== shapes[i] || z.id !== ids[i] || z.organicSeed !== seeds[i]) {
+        return false;
+      }
+    }
+    return true;
+  }
+  function matchesZoneListSnapshot(arr, snap) {
+    if (!Array.isArray(arr)) return snap === null;
+    if (!snap || snap.arr !== arr) return false;
+    if (snap.allCompiled) return matchesCompiledZoneSnapshot(arr, snap);
+    const refs = snap.refs;
+    const n = refs.length;
+    if (arr.length !== n) return false;
+    const { ids, seeds, shapes, sx, sz, sh, sw, sl, sd } = snap;
+    for (let i = 0; i < n; i++) {
+      const z = arr[i];
+      if (z !== refs[i]) return false;
+      if (z) {
+        if (z.id !== ids[i] || !Object.is(z.organicSeed, seeds[i]) || z.shape !== shapes[i] || !Object.is(z.x ?? 0, sx[i]) || !Object.is(z.z ?? 0, sz[i]) || !Object.is(z.heading ?? 0, sh[i]) || !Object.is(resolveZoneHalfWidth(z), sw[i]) || !Object.is(resolveZoneHalfLength(z), sl[i]) || !Object.is(Math.max(0, z.depthM ?? 0.02), sd[i])) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+  var mruTerrain = null;
+  var mruRecord = null;
+  function seedSurfaceGridCache(terrain, grid2) {
+    const rec = {
+      wSnap: snapshotZoneList(terrain.waterPuddles),
+      sSnap: snapshotZoneList(terrain.sandZones),
+      cSnap: snapshotZoneList(terrain.cobbleZones),
+      grid: grid2
+    };
+    syntheticGridCache.set(terrain, rec);
+    mruTerrain = terrain;
+    mruRecord = rec;
+  }
+  function getOrBuildSurfaceGrid(terrain) {
+    const wArr = terrain.waterPuddles;
+    const sArr = terrain.sandZones;
+    const cArr = terrain.cobbleZones;
+    let cached = terrain === mruTerrain ? mruRecord : syntheticGridCache.get(terrain);
+    if (cached && matchesZoneListSnapshot(wArr, cached.wSnap) && matchesZoneListSnapshot(sArr, cached.sSnap) && matchesZoneListSnapshot(cArr, cached.cSnap)) {
+      mruTerrain = terrain;
+      mruRecord = cached;
+      return cached.grid;
+    }
+    const wList = Array.isArray(wArr) ? wArr : null;
+    const sList = Array.isArray(sArr) ? sArr : null;
+    const cList = Array.isArray(cArr) ? cArr : null;
+    const wLen = wList ? wList.length : 0;
+    const sLen = sList ? sList.length : 0;
+    const cLen = cList ? cList.length : 0;
+    const grid2 = /* @__PURE__ */ new Map();
+    const insertZone = (zone) => {
+      const minCx = Math.floor((zone.x - zone.boundX - 1e-6) * INV_CELL_SIZE);
+      const maxCx = Math.floor((zone.x + zone.boundX + 1e-6) * INV_CELL_SIZE);
+      const minCz = Math.floor((zone.z - zone.boundZ - 1e-6) * INV_CELL_SIZE);
+      const maxCz = Math.floor((zone.z + zone.boundZ + 1e-6) * INV_CELL_SIZE);
+      for (let cx = minCx; cx <= maxCx; cx++) {
+        for (let cz = minCz; cz <= maxCz; cz++) {
+          const key3 = cellKey(cx, cz);
+          let bucket = grid2.get(key3);
+          if (!bucket) {
+            bucket = [];
+            grid2.set(key3, bucket);
+          }
+          bucket.push(zone);
+        }
+      }
+    };
+    const prevWSnap = cached?.wSnap ?? null;
+    const prevSSnap = cached?.sSnap ?? null;
+    const prevCSnap = cached?.cSnap ?? null;
+    const compileWithPrev = (raw, i, kind, prevSnap) => {
+      const prevIdx = prevSnap && prevSnap.refs[i] === raw ? i : -1;
+      const prevId = prevIdx >= 0 ? prevSnap.ids[prevIdx] : void 0;
+      const prevSeed = prevIdx >= 0 ? prevSnap.seeds[prevIdx] : void 0;
+      const compiled = compileSyntheticLookupZone(raw, i, kind, prevId, prevSeed);
+      if (prevIdx >= 0 && raw?._explicitSeed === false && raw?.id !== prevId && Object.is(raw?.organicSeed, prevSeed) && typeof raw?.organicSeed === "number") {
+        try {
+          raw.organicSeed = compiled.organicSeed;
+        } catch {
+        }
+      } else if (prevIdx >= 0 && !Object.is(raw?.organicSeed, prevSeed) && Number.isFinite(raw?.organicSeed)) {
+        try {
+          raw._explicitSeed = true;
+        } catch {
+        }
+      }
+      return compiled;
+    };
+    if (wList) {
+      for (let i = 0; i < wLen; i++) {
+        if (wList[i]) insertZone(compileWithPrev(wList[i], i, "water", prevWSnap));
+      }
+    }
+    if (sList) {
+      for (let i = 0; i < sLen; i++) {
+        if (sList[i]) insertZone(compileWithPrev(sList[i], i, "sand", prevSSnap));
+      }
+    }
+    if (cList) {
+      for (let i = 0; i < cLen; i++) {
+        if (cList[i]) insertZone(compileWithPrev(cList[i], i, "cobble", prevCSnap));
+      }
+    }
+    cached = {
+      wSnap: snapshotZoneList(wList),
+      sSnap: snapshotZoneList(sList),
+      cSnap: snapshotZoneList(cList),
+      grid: grid2
+    };
+    syntheticGridCache.set(terrain, cached);
+    mruTerrain = terrain;
+    mruRecord = cached;
+    if (terrain.grid instanceof Map) {
+      terrain.grid = grid2;
+    }
+    return grid2;
+  }
+
   // src/core/pack-drills.js
   var PACK_DRILLS = Object.freeze([
     {
@@ -11863,10 +15920,72 @@
 
   // src/core/pursuit-controls.js
   var PURSUIT_STOP = Object.freeze({ steer: 0, throttle: 0, brake: 1, gear: 1 });
+  var NITRO_SPEC = Object.freeze({
+    durationS: 4.6,
+    rechargePerS: 0.16,
+    minEngageCharge: 0.18,
+    speedMultiplier: 1.34,
+    accelMultiplier: 1.72,
+    maxBoostSpeedMps: 38.5
+  });
   function validatePursuitAction(action) {
-    if (!action || Object.getPrototypeOf(action) !== Object.prototype || Object.keys(action).length !== 4 || ![action.steer, action.throttle, action.brake].every(Number.isFinite) || Math.abs(action.steer) > 1 || action.throttle < 0 || action.throttle > 1 || action.brake < 0 || action.brake > 1 || ![1, -1].includes(action.gear))
+    if (!action || Object.getPrototypeOf(action) !== Object.prototype)
+      throw new RangeError("Pursuit action needs normalized steering, throttle and brake, and gear 1 or -1");
+    const keys = Object.keys(action);
+    const hasNitro = Object.prototype.hasOwnProperty.call(action, "nitro");
+    if (keys.length !== (hasNitro ? 5 : 4) || ![action.steer, action.throttle, action.brake].every(Number.isFinite) || Math.abs(action.steer) > 1 || action.throttle < 0 || action.throttle > 1 || action.brake < 0 || action.brake > 1 || ![1, -1].includes(action.gear) || hasNitro && (typeof action.nitro !== "number" || !Number.isFinite(action.nitro) || action.nitro < 0 || action.nitro > 1))
       throw new RangeError("Pursuit action needs normalized steering, throttle and brake, and gear 1 or -1");
     return action;
+  }
+  function isNitroEngaged(pose5, action) {
+    const charge = Number.isFinite(pose5?.nitroCharge) ? pose5.nitroCharge : 1;
+    const canEngage = pose5?.nitroActive ? charge > 0.01 : charge >= NITRO_SPEC.minEngageCharge;
+    return Boolean(
+      canEngage && charge > 0.01 && (action?.nitro ?? 0) >= 0.5 && (action?.gear ?? 1) === 1 && (action?.throttle ?? 0) > 0.2 && (action?.brake ?? 0) === 0 && (pose5?.speed ?? 0) >= -0.5 && !pose5?.nitroSuppressedByPedestrian
+    );
+  }
+  function stepNitroTank(player, action, dt = STEP) {
+    if (!player || typeof player !== "object") return false;
+    const prevCharge = Number.isFinite(player.nitroCharge) ? player.nitroCharge : 1;
+    const prevActive = Boolean(player.nitroActive);
+    const prevIntensity = Number.isFinite(player.nitroIntensity) ? player.nitroIntensity : 0;
+    const suppressed = Boolean(player.nitroSuppressedByPedestrian);
+    const canEngage = prevActive ? prevCharge > 0.01 : prevCharge >= NITRO_SPEC.minEngageCharge;
+    const engaged = Boolean(
+      canEngage && prevCharge > 0.01 && (action?.nitro ?? 0) >= 0.5 && (action?.gear ?? 1) === 1 && (action?.throttle ?? 0) > 0.2 && (action?.brake ?? 0) === 0 && (player.speed ?? 0) >= -0.5 && !suppressed
+    );
+    if (engaged) {
+      player.nitroCharge = Math.max(0, prevCharge - dt / NITRO_SPEC.durationS);
+      player.nitroActive = player.nitroCharge > 0;
+      player.nitroIntensity = Math.min(1, prevIntensity + dt * 9);
+    } else {
+      player.nitroCharge = Math.min(1, prevCharge + dt * NITRO_SPEC.rechargePerS);
+      player.nitroActive = false;
+      player.nitroIntensity = Math.max(0, prevIntensity - dt * 6.5);
+    }
+    player.nitroSuppressedByPedestrian = suppressed;
+    return player.nitroActive;
+  }
+  function buildNitroBoostPose(actor, command, copyMotion = null) {
+    if (!command || !(command.accelMultiplier > 1) || !Number.isFinite(command.maxSpeed)) {
+      return null;
+    }
+    const baseSpec = actor.spec ?? null;
+    const baseAccel = baseSpec?.acceleration ?? VEHICLE.acceleration;
+    const boostedAccel = baseAccel * command.accelMultiplier;
+    const rawGrip = baseSpec?.tireGripMps2;
+    const boostedSpec = {
+      ...baseSpec ?? {},
+      acceleration: boostedAccel,
+      ...Number.isFinite(rawGrip) ? { tireGripMps2: Math.max(rawGrip, boostedAccel) } : {}
+    };
+    const boosted = {
+      ...actor,
+      maxSpeed: command.maxSpeed,
+      spec: boostedSpec
+    };
+    if (typeof copyMotion === "function") copyMotion(actor, boosted);
+    return boosted;
   }
   function pursuitCommand(body, action, dt = STEP) {
     const maxSteer = body.spec?.maxSteer ?? VEHICLE.maxSteer;
@@ -11877,6 +15996,26 @@
       decelerationMps2: (body.spec?.braking ?? VEHICLE.braking) * action.brake
     };
     const speed = body.speed ?? 0;
+    if ((action?.nitro ?? 0) >= 0.5 && isNitroEngaged(body, action)) {
+      const baseMaxSpeed = body.maxSpeed ?? 9.72;
+      const boostedMaxSpeed = Math.min(
+        NITRO_SPEC.maxBoostSpeedMps,
+        baseMaxSpeed * NITRO_SPEC.speedMultiplier
+      );
+      const baseAccel = body.spec?.acceleration ?? VEHICLE.acceleration;
+      const acceleration2 = baseAccel * NITRO_SPEC.accelMultiplier * action.throttle;
+      const targetSpeed2 = action.gear * clamp(
+        speed * action.gear + acceleration2 * dt,
+        acceleration2 * dt,
+        boostedMaxSpeed
+      );
+      return {
+        steer,
+        targetSpeed: targetSpeed2,
+        maxSpeed: boostedMaxSpeed,
+        accelMultiplier: NITRO_SPEC.accelMultiplier
+      };
+    }
     const limit = action.gear > 0 ? body.maxSpeed ?? 9.72 : body.spec?.reverseSpeed ?? VEHICLE.reverseSpeed;
     const acceleration = (body.spec?.acceleration ?? VEHICLE.acceleration) * action.throttle;
     const targetSpeed = action.throttle === 0 ? Math.sign(speed) * Math.max(0, Math.abs(speed) - 0.18 * dt) : action.gear * clamp(speed * action.gear + acceleration * dt, acceleration * dt, limit);
@@ -12861,6 +17000,7 @@
   // src/signal_processing/pursuit-scanner.js
   var PURSUIT_SCAN_RAYS = 72;
   var PURSUIT_SCAN_RANGE_M = 48;
+  var PURSUIT_LONG_RANGE_M = 104;
   var PURSUIT_SCAN_TICKS = 6;
   var PURSUIT_TRACK_TTL_S = 0.5;
   var RAY_STEP = 2 * Math.PI / PURSUIT_SCAN_RAYS;
@@ -12870,6 +17010,7 @@
   var TRACK_TTL_TICKS = Math.round(PURSUIT_TRACK_TTL_S / STEP);
   var MAX_TTC_S = 6;
   var EPS2 = 1e-9;
+  var BOUND_EPS = 1e-7;
   var zeroSmall = (n) => Math.abs(n) < EPS2 ? 0 : n;
   var direction2 = (angle) => ({
     right: zeroSmall(Math.sin(angle)),
@@ -12878,26 +17019,88 @@
   var beams = Array.from({ length: PURSUIT_SCAN_RAYS }, (_, i) => direction2(i * RAY_STEP));
   var pedBeams = Array.from({ length: PED_RAYS }, (_, i) => i % PED_RAYS_PER_PRIMARY ? direction2(i * PED_RAY_STEP) : beams[i / PED_RAYS_PER_PRIMARY]);
   var priority = { none: 0, civilian: 1, pedestrian: 2, police: 3, static: 4 };
-  function candidates(world, heading2, origin = world.player) {
-    const { player } = world, c = Math.cos(heading2), s = Math.sin(heading2);
+  var spatialIndexMetaCache = /* @__PURE__ */ new WeakMap();
+  var STATIC_NEAR_RADIUS_CAP_M = 24;
+  function getStaticIndexMeta(spatialIndex) {
+    let meta = spatialIndexMetaCache.get(spatialIndex);
+    if (meta) return meta;
+    if (!(spatialIndex?.cells instanceof Map) || typeof spatialIndex.near !== "function") return null;
+    const indexedSet = /* @__PURE__ */ new Set();
+    const largeStatics = [];
+    let maxSmallRadius = 0;
+    let first = void 0;
+    let last = void 0;
+    for (const bucket of spatialIndex.cells.values()) {
+      for (let i = 0; i < bucket.length; i++) {
+        const b = bucket[i];
+        if (!b || indexedSet.has(b)) continue;
+        if (indexedSet.size === 0) first = b;
+        last = b;
+        indexedSet.add(b);
+        const r = Math.hypot((b.width ?? 0) * 0.5, (b.length ?? 0) * 0.5);
+        if (Number.isFinite(r) && r > STATIC_NEAR_RADIUS_CAP_M) {
+          largeStatics.push(b);
+        } else if (Number.isFinite(r) && r > maxSmallRadius) {
+          maxSmallRadius = r;
+        }
+      }
+    }
+    meta = { indexedSet, largeStatics, count: indexedSet.size, maxSmallRadius, first, last };
+    spatialIndexMetaCache.set(spatialIndex, meta);
+    return meta;
+  }
+  function gatherCandidates(world, heading2, maxRangeM, origin, corridorHalfWidthM) {
+    const { player } = world;
+    const ox = origin.x, oz = origin.z;
+    const c = Math.cos(heading2), s = Math.sin(heading2);
     const shapes = [];
     function add(body, kind) {
       if (body === player) return;
-      const dx = body.x - origin.x, dz = body.z - origin.z;
-      const right = dx * c - dz * s, forward2 = dx * s + dz * c;
       const circle = kind === "pedestrian";
-      const w = body.width / 2, l = body.length / 2;
-      if (!circle && !(w > 0 && l > 0)) return;
-      const radius = circle ? body.radius : Math.hypot(w, l);
-      if (!Number.isFinite(radius) || !(radius > 0) || !(Math.hypot(dx, dz) <= PURSUIT_SCAN_RANGE_M + radius + EPS2)) return;
+      let w = 0, l = 0, maxHalfSpan = 0;
       if (circle) {
-        shapes.push({ kind, radius, right, forward: forward2 });
+        maxHalfSpan = body.radius;
+        if (!Number.isFinite(maxHalfSpan) || !(maxHalfSpan > 0)) return;
+      } else {
+        w = body.width / 2;
+        l = body.length / 2;
+        if (!(w > 0 && l > 0) || !Number.isFinite(w) || !Number.isFinite(l)) return;
+        maxHalfSpan = w + l;
+      }
+      const dx = body.x - ox, dz = body.z - oz;
+      const coarseLimit = maxRangeM + maxHalfSpan + BOUND_EPS;
+      if (!(Math.abs(dx) <= coarseLimit && Math.abs(dz) <= coarseLimit)) return;
+      const radius = circle ? maxHalfSpan : Math.hypot(w, l);
+      if (!Number.isFinite(radius) || !(radius > 0) || !(Math.hypot(dx, dz) <= maxRangeM + radius + EPS2)) return;
+      const right = dx * c - dz * s, forward2 = dx * s + dz * c;
+      if (corridorHalfWidthM !== null) {
+        if (forward2 + radius < -EPS2) return;
+        if (Math.abs(right) > corridorHalfWidthM + radius + BOUND_EPS) return;
+      }
+      if (circle) {
+        shapes.push({
+          kind,
+          right,
+          forward: forward2,
+          radius,
+          boundRadius: radius,
+          w: 0,
+          l: 0,
+          cos: 1,
+          sin: 0,
+          x: 0,
+          z: 0
+        });
       } else {
         const angle = (body.heading ?? 0) - heading2;
         if (!Number.isFinite(angle)) return;
         const cos = Math.cos(angle), sin = Math.sin(angle);
         shapes.push({
           kind,
+          right,
+          forward: forward2,
+          radius,
+          boundRadius: radius,
           w,
           l,
           cos,
@@ -12907,13 +17110,57 @@
         });
       }
     }
-    for (const body of world.statics) add(body, "static");
-    for (const body of world.actors) {
+    const { statics, actors, staticIndex, actorIndex } = world;
+    const addActorBody = (body) => {
+      if (!body) return;
       if (body.type === "pedestrian" || body.type === "static") add(body, body.type);
       else if (body.type === "vehicle")
         add(body, body.pursuitRole === "police" ? "police" : "civilian");
+    };
+    if (Array.isArray(statics) && statics.length > 24 && staticIndex) {
+      const sMeta = getStaticIndexMeta(staticIndex);
+      const isSuperset = sMeta && sMeta.count > 0 && typeof staticIndex.isAppendedSuperset === "function" && staticIndex.isAppendedSuperset(statics);
+      if (isSuperset) {
+        const nearStatics = staticIndex.near(origin, maxRangeM + sMeta.maxSmallRadius + 0.05);
+        const seen = /* @__PURE__ */ new Set();
+        for (let i = 0; i < nearStatics.length; i++) {
+          const st = nearStatics[i];
+          seen.add(st);
+          add(st, "static");
+        }
+        for (let i = 0; i < sMeta.largeStatics.length; i++) {
+          const st = sMeta.largeStatics[i];
+          if (!seen.has(st)) {
+            seen.add(st);
+            add(st, "static");
+          }
+        }
+        const snapLen = staticIndex.snapshot.length;
+        for (let i = snapLen; i < statics.length; i++) {
+          const st = statics[i];
+          if (!seen.has(st)) add(st, "static");
+        }
+      } else {
+        for (let i = 0; i < statics.length; i++) add(statics[i], "static");
+      }
+    } else if (Array.isArray(statics)) {
+      for (let i = 0; i < statics.length; i++) add(statics[i], "static");
+    } else if (statics) {
+      for (const body of statics) add(body, "static");
+    }
+    if (Array.isArray(actors) && actors.length > 32 && actorIndex && typeof actorIndex.near === "function" && typeof actorIndex.matchesItems === "function" && actorIndex.matchesItems(actors)) {
+      const actorPadM = Math.max(4.5, Number.isFinite(actorIndex.maxHalfDiag) ? actorIndex.maxHalfDiag : 4.5) + 0.1;
+      const nearActors = actorIndex.near(origin, maxRangeM + actorPadM);
+      for (let i = 0; i < nearActors.length; i++) addActorBody(nearActors[i]);
+    } else if (Array.isArray(actors)) {
+      for (let i = 0; i < actors.length; i++) addActorBody(actors[i]);
+    } else if (actors) {
+      for (const body of actors) addActorBody(body);
     }
     return shapes;
+  }
+  function candidates(world, heading2, origin = world.player) {
+    return gatherCandidates(world, heading2, PURSUIT_SCAN_RANGE_M, origin, null);
   }
   function circleHit({ right, forward: forward2, radius }, r, f) {
     const cross2 = right * f - forward2 * r;
@@ -12942,10 +17189,85 @@
     }
     return near <= far + EPS2 ? near : Infinity;
   }
+  var LONG_RANGE_CORRIDOR_OFFSETS_M = Object.freeze([-1.55, -1.03, -0.52, 0, 0.52, 1.03, 1.55]);
+  var NARROW_CENTER_OFFSET_M = Object.freeze([0]);
+  var FORWARD_UNIT_DIR = Object.freeze({ right: 0, forward: 1 });
+  var _shiftedCircleScratch = { right: 0, forward: 0, radius: 0 };
+  var _shiftedBoxScratch = { w: 0, l: 0, cos: 1, sin: 0, x: 0, z: 0 };
+  function candidatesWithinRange(world, heading2, maxRangeM, origin = world.player, corridorHalfWidthM = 1.55) {
+    return gatherCandidates(world, heading2, maxRangeM, origin, corridorHalfWidthM);
+  }
+  function firstReturnAtLateralOffset(shapes, offsetRightM, maxRangeM) {
+    let rangeM = maxRangeM, kind = "none";
+    for (let i = 0; i < shapes.length; i++) {
+      const body = shapes[i];
+      const relRight = body.right - offsetRightM;
+      if (Math.abs(relRight) > body.boundRadius + BOUND_EPS || body.forward - body.boundRadius > rangeM + BOUND_EPS) continue;
+      let hit;
+      if (body.kind === "pedestrian") {
+        _shiftedCircleScratch.right = relRight;
+        _shiftedCircleScratch.forward = body.forward;
+        _shiftedCircleScratch.radius = body.radius;
+        hit = circleHit(_shiftedCircleScratch, 0, 1);
+      } else {
+        _shiftedBoxScratch.w = body.w;
+        _shiftedBoxScratch.l = body.l;
+        _shiftedBoxScratch.cos = body.cos;
+        _shiftedBoxScratch.sin = body.sin;
+        _shiftedBoxScratch.x = body.x + offsetRightM * body.cos;
+        _shiftedBoxScratch.z = body.z + offsetRightM * body.sin;
+        hit = boxHit(_shiftedBoxScratch, 0, 1, rangeM);
+      }
+      if (hit > maxRangeM + EPS2) continue;
+      const measured2 = Math.min(hit, maxRangeM);
+      if (measured2 < rangeM || measured2 === rangeM && priority[body.kind] > priority[kind]) {
+        rangeM = measured2;
+        kind = body.kind;
+      }
+    }
+    return { rangeM, kind };
+  }
+  function sampleForwardLongRange(world, heading2) {
+    const offsets = world?.pursuit?.frozenDriver?._faultNarrowCenterBeamOnly ? NARROW_CENTER_OFFSET_M : LONG_RANGE_CORRIDOR_OFFSETS_M;
+    const corridorHalfWidthM = offsets.length === 1 ? 0 : 1.55;
+    const shapes = candidatesWithinRange(world, heading2, PURSUIT_LONG_RANGE_M + 4, world.player, corridorHalfWidthM);
+    let minCorridorM = PURSUIT_LONG_RANGE_M;
+    let pedestrianAheadM = null;
+    const beamRanges = [];
+    for (let i = 0; i < offsets.length; i++) {
+      const offsetRightM = offsets[i];
+      const hit = firstReturnAtLateralOffset(shapes, offsetRightM, PURSUIT_LONG_RANGE_M);
+      const fwdM = hit.rangeM * FORWARD_UNIT_DIR.forward;
+      beamRanges.push(Object.freeze({ offsetRightM, rangeM: hit.rangeM, forwardM: fwdM, kind: hit.kind }));
+      if (hit.kind !== "none" && fwdM < minCorridorM) {
+        minCorridorM = fwdM;
+      }
+      if (hit.kind === "pedestrian" && (pedestrianAheadM === null || fwdM < pedestrianAheadM)) {
+        pedestrianAheadM = fwdM;
+      }
+    }
+    return Object.freeze({
+      maxRangeM: PURSUIT_LONG_RANGE_M,
+      corridorHalfWidthM,
+      minCorridorM,
+      pedestrianAheadM,
+      beams: Object.freeze(beamRanges)
+    });
+  }
   function firstReturn(shapes, { right, forward: forward2 }) {
     let rangeM = PURSUIT_SCAN_RANGE_M, kind = "none";
-    for (const body of shapes) {
-      const hit = body.kind === "pedestrian" ? circleHit(body, right, forward2) : boxHit(body, right, forward2, rangeM);
+    for (let i = 0; i < shapes.length; i++) {
+      const body = shapes[i];
+      let hit;
+      if (body.kind === "pedestrian") {
+        hit = circleHit(body, right, forward2);
+      } else {
+        const dot2 = body.right * right + body.forward * forward2;
+        if (dot2 + body.boundRadius < -BOUND_EPS || dot2 - body.boundRadius > rangeM + BOUND_EPS) continue;
+        const perp = Math.abs(body.right * forward2 - body.forward * right);
+        if (perp > body.boundRadius + BOUND_EPS) continue;
+        hit = boxHit(body, right, forward2, rangeM);
+      }
       if (hit > PURSUIT_SCAN_RANGE_M + EPS2) continue;
       const measured2 = Math.min(hit, PURSUIT_SCAN_RANGE_M);
       if (measured2 < rangeM || measured2 === rangeM && priority[body.kind] > priority[kind]) {
@@ -12961,9 +17283,10 @@
   })])));
   function pedestrianReturns(shapes, rays) {
     let samples;
-    for (const body of shapes) {
+    for (let sIdx = 0; sIdx < shapes.length; sIdx++) {
+      const body = shapes[sIdx];
       if (body.kind !== "pedestrian") continue;
-      samples ??= new Array(PED_RAYS);
+      samples ??= new Array(PED_RAYS).fill(void 0);
       const coverage = (body.radius + EPS2) / Math.hypot(body.right, body.forward);
       const bearing = Math.atan2(body.right, body.forward);
       const half = Math.asin(Math.min(1, coverage));
@@ -13010,20 +17333,38 @@
     } else if (distance2 < best.second) best.second = distance2;
   }
   function correspond(current, previous, heading2) {
-    const from = options(current.length), to = options(previous.length);
-    const aligned = previous.map((point2) => {
-      const angle = heading2 - point2.heading, c = Math.cos(angle), s = Math.sin(angle);
-      return {
-        rightM: point2.rightM * c - point2.forwardM * s,
-        forwardM: point2.rightM * s + point2.forwardM * c
+    const curLen = current.length, prevLen = previous.length;
+    const from = options(curLen), to = options(prevLen);
+    const aligned = new Array(prevLen);
+    let cachedPointHeading = NaN, cachedCos = 1, cachedSin = 0;
+    for (let j = 0; j < prevLen; j++) {
+      const point2 = previous[j];
+      if (point2.heading !== cachedPointHeading) {
+        cachedPointHeading = point2.heading;
+        const angle = heading2 - cachedPointHeading;
+        cachedCos = Math.cos(angle);
+        cachedSin = Math.sin(angle);
+      }
+      aligned[j] = {
+        rightM: point2.rightM * cachedCos - point2.forwardM * cachedSin,
+        forwardM: point2.rightM * cachedSin + point2.forwardM * cachedCos
       };
-    });
-    for (const [i, point2] of current.entries()) {
-      for (const [j, old] of previous.entries()) {
+    }
+    const baseMaxD = 75 * STEP * PURSUIT_SCAN_TICKS;
+    for (let i = 0; i < curLen; i++) {
+      const point2 = current[i];
+      const spacing = point2.kind === "pedestrian" ? PED_RAY_STEP : RAY_STEP;
+      const maxD = baseMaxD + point2.rangeM * spacing;
+      const coarseMaxD = maxD + BOUND_EPS;
+      for (let j = 0; j < prevLen; j++) {
+        const old = previous[j];
         if (point2.kind !== old.kind) continue;
-        const d = Math.hypot(point2.rightM - aligned[j].rightM, point2.forwardM - aligned[j].forwardM);
-        const spacing = point2.kind === "pedestrian" ? PED_RAY_STEP : RAY_STEP;
-        if (d > 75 * STEP * PURSUIT_SCAN_TICKS + point2.rangeM * spacing) continue;
+        const al = aligned[j];
+        const dr = point2.rightM - al.rightM;
+        const df = point2.forwardM - al.forwardM;
+        if (Math.abs(dr) > coarseMaxD || Math.abs(df) > coarseMaxD) continue;
+        const d = Math.hypot(dr, df);
+        if (d > maxD) continue;
         offer(from[i], j, d);
         offer(to[j], i, d);
       }
@@ -13034,6 +17375,8 @@
     });
   }
   var vehicleForecastMotion = /* @__PURE__ */ new WeakMap();
+  var SIN_HALF_PED_STEP = Math.sin(PED_RAY_STEP / 2);
+  var SIN_HALF_RAY_STEP = Math.sin(RAY_STEP / 2);
   function track(point2, tick, match, previous) {
     const { kind, rightM, forwardM, rangeM } = point2;
     const motionKnown = match !== null && tick === point2.tick && point2.tick - previous[match.index].tick === PURSUIT_SCAN_TICKS;
@@ -13046,8 +17389,8 @@
       const closing = rangeM > 0 ? -(rightM * rightMps + forwardM * forwardMps) / rangeM : 0;
       if (closing > EPS2) ttcS = Math.min(MAX_TTC_S, rangeM / closing);
     }
-    const angularStep = kind === "pedestrian" ? PED_RAY_STEP : RAY_STEP;
-    const positionAllowanceM = Math.max(0.1, rangeM * Math.sin(angularStep / 2));
+    const halfStepSin = kind === "pedestrian" ? SIN_HALF_PED_STEP : SIN_HALF_RAY_STEP;
+    const positionAllowanceM = Math.max(0.1, rangeM * halfStepSin);
     const elapsedS = PURSUIT_SCAN_TICKS * STEP;
     const estimatedXMps = old ? (point2.worldX - old.worldX) / elapsedS : null;
     const estimatedZMps = old ? (point2.worldZ - old.worldZ) / elapsedS : null;
@@ -13134,8 +17477,9 @@
       const stale = previous.filter((_, i) => !matched.has(i)).sort((a, b) => b.tick - a.tick || a.rangeM - b.rangeM);
       const tracks = current.map((point2, i) => track(point2, tick, matches[i], previous));
       for (const point2 of stale) tracks.push(track(point2, tick, null, previous));
+      const longRangeForward = sampleForwardLongRange(world, heading2);
       this.#history = current.concat(stale);
-      this.#frame = Object.freeze({ tick, rays, tracks: Object.freeze(tracks) });
+      this.#frame = Object.freeze({ tick, rays, tracks: Object.freeze(tracks), longRangeForward });
       return this.#frame;
     }
   };
@@ -13425,7 +17769,17 @@
       contacts: /* @__PURE__ */ new Set(),
       near: /* @__PURE__ */ new Set(),
       navGraph: null,
-      junctions: scene.drivingRoads.filter((r) => r.axis === "x").flatMap((a) => scene.drivingRoads.filter((r) => r.axis === "z" && r.fixed >= a.min && r.fixed <= a.max && a.fixed >= r.min && a.fixed <= r.max).map((r) => ({ x: r.fixed, z: a.fixed })))
+      junctions: scene.drivingRoads.filter((r) => r.axis === "x").flatMap((a) => scene.drivingRoads.filter((r) => r.axis === "z" && r.fixed >= a.min && r.fixed <= a.max && a.fixed >= r.min && a.fixed <= r.max).map((r) => ({ x: r.fixed, z: a.fixed }))),
+      status: {
+        phase: "ready",
+        variant: options2.pursuitVariant ?? "legacy",
+        wantedLevel: level,
+        nitroCharge: 1,
+        nitroActive: false,
+        nitroIntensity: 0,
+        nitroSuppressedByPedestrian: false,
+        crowdAheadCount: 0
+      }
     };
     if (!pack) return state;
     state.packLab = true;
@@ -13671,6 +18025,7 @@
       state.lanes = streetLanes(world.drivingRoads, player);
       state.patrolMap = { roads: world.roads, drivingRoads: world.drivingRoads, statics: world.statics };
     }
+    syncPursuitStatus(world, state);
   }
   var roadAlong = (road4, point2) => isDiagonalRoad(road4) ? roadProject(road4, point2).along : point2[road4.axis];
   function lanePoint(lane2, along2) {
@@ -13965,7 +18320,9 @@
     return car;
   }
   function visibleGtaDeployment(world, state, position2) {
-    if (state.gta.config.ruleset !== "dispatch-v1" || world.tick === state.startedTick) return false;
+    const initialCallout = world.pursuit !== state && state.patrols.size === 0;
+    const verifiedOpeningVanguard = world.tick === state.startedTick && (state.response?.unitsInContact ?? 0) > 0;
+    if (state.gta.config.ruleset !== "dispatch-v1" || initialCallout || verifiedOpeningVanguard) return false;
     if (isTacticalPursuit(state)) {
       return distance(world.player, position2) < 26 || distance(world.player, position2) < 55 && !gtaDeploymentHidden(world, world.player, position2);
     }
@@ -13979,21 +18336,27 @@
     return limitedSpeed * accelerating + acceleration * accelerating ** 2 / 2 + cap * (seconds2 - accelerating);
   }
   function deployGtaPatrol(world, state, tactic, unitType, forwardOnly = false) {
-    if (isTacticalPursuit(state) && world.tick !== state.startedTick && !isDispatchTracked(state.response))
+    const initialAmbientBeatUnit = world.pursuit !== state && state.patrols.size === 0 && (state.response?.unitsInContact ?? 0) === 0;
+    if (isTacticalPursuit(state) && !initialAmbientBeatUnit && (!isDispatchTracked(state.response) || (state.response?.unitsInContact ?? 0) === 0))
       return null;
     const car = newGtaPatrol(world, state, unitType);
     const player = world.player;
-    const opening = state.gta.config.ruleset === "dispatch-v1" && world.tick === state.startedTick;
+    const opening = state.gta.config.ruleset === "dispatch-v1" && (world.pursuit !== state || world.tick === state.startedTick && (state.response?.unitsInContact ?? 0) > 0);
+    const distantBeatPatrol = initialAmbientBeatUnit && isTacticalPursuit(state);
     if (isAggressiveChase(state)) {
-      const { minRange, maxRange } = aggressiveDeploymentBounds(state, opening);
-      const slots2 = deploymentSlots({ lanes: car.gtaAI.lanes }, player, tactic, minRange, maxRange);
-      scoreAggressiveDeploymentSlots(world, state, car, player, slots2, tactic, opening, forwardOnly);
-      for (const { position: position2, score } of slots2) {
-        if (!Number.isFinite(score)) break;
-        Object.assign(car, position2);
-        if (visibleGtaDeployment(world, state, car) || !isFree(world, car, 0.65) || !bodyOnRoad(car, world.drivingRoads)) continue;
-        car.speed = aggressiveInitialSpeed(car, opening, state.wantedLevel);
-        return registerGtaPatrol(world, state, car);
+      const bounds = aggressiveDeploymentBounds(state, opening);
+      const rangesToTry = distantBeatPatrol ? [{ minRange: Math.max(bounds.minRange, 66.5), maxRange: 109.5, requireSight: true }] : [bounds];
+      for (const { minRange, maxRange, requireSight } of rangesToTry) {
+        const slots2 = deploymentSlots({ lanes: car.gtaAI.lanes }, player, tactic, minRange, maxRange);
+        scoreAggressiveDeploymentSlots(world, state, car, player, slots2, tactic, opening, forwardOnly);
+        for (const { position: position2, score } of slots2) {
+          if (!Number.isFinite(score)) break;
+          Object.assign(car, position2);
+          if (visibleGtaDeployment(world, state, car) || !isFree(world, car, 0.65) || !bodyOnRoad(car, world.drivingRoads) || requireSight && !gtaInSight({ ...world, pursuit: state }, car, player))
+            continue;
+          car.speed = aggressiveInitialSpeed(car, opening, state.wantedLevel);
+          return registerGtaPatrol(world, state, car);
+        }
       }
       return null;
     }
@@ -14002,8 +18365,8 @@
       { lanes: car.gtaAI.lanes },
       player,
       tactic,
-      Math.max(state.gta.config.minSpawnRadius, berth),
-      opening ? 66 : STREET_DEPLOY_RANGE_M
+      distantBeatPatrol ? Math.max(66.5, state.gta.config.minSpawnRadius, berth) : Math.max(state.gta.config.minSpawnRadius, berth),
+      distantBeatPatrol ? 109.5 : opening ? 66 : STREET_DEPLOY_RANGE_M
     );
     const others = [...state.patrols];
     const openingRoad = opening && (!others.length && tactic === "tail" || state.wantedLevel >= 4) && world.drivingRoads.find((road4) => !road4.parkingBay && !road4.supportApron && Math.abs(Math.cos(angleDelta(roadFrame(road4).heading, player.heading))) > 0.707 && pointOnRoad(player, [road4]));
@@ -14044,7 +18407,7 @@
     for (const { position: position2, score } of slots) {
       if (!Number.isFinite(score)) break;
       Object.assign(car, position2);
-      if (visibleGtaDeployment(world, state, car) || !isFree(world, car, 0.65) || !bodyOnRoad(car, world.drivingRoads)) continue;
+      if (visibleGtaDeployment(world, state, car) || !isFree(world, car, 0.65) || !bodyOnRoad(car, world.drivingRoads) || distantBeatPatrol && (distance(player, car) < 66.5 || !gtaInSight({ ...world, pursuit: state }, car, player))) continue;
       car.speed = Math.min(2, car.maxSpeed);
       return registerGtaPatrol(world, state, car);
     }
@@ -14172,13 +18535,14 @@
       world.staticIndex = new SpatialIndex(world.statics);
       gta.roadblock = null;
     }
-    if (isAggressiveChase(s)) {
+    const tacticalNoContact = isTacticalPursuit(s) && (s.response?.unitsInContact ?? 0) === 0;
+    if (isAggressiveChase(s) && !tacticalNoContact) {
       recycleTrailingChasePatrols(
         world,
         (tactic, unitType, forwardOnly) => deployGtaPatrol(world, s, tactic, unitType, forwardOnly),
         (old) => removeGtaPatrol(world, s, old)
       );
-    } else if (!coordinated) for (const car of [...s.patrols]) {
+    } else if (!coordinated && !tacticalNoContact) for (const car of [...s.patrols]) {
       if (isGtaStationary(car)) continue;
       const ai = car.gtaAI;
       ai.behindTicks = !s.response.sightedBy.has(car) && distance(car, player) > 95 && gtaLocal2(player, car).forward < 0 ? ai.behindTicks + 1 : 0;
@@ -14187,7 +18551,7 @@
       const replacement = deployGtaPatrol(world, s, "intercept", car.unitType, true);
       if (replacement) removeGtaPatrol(world, s, car);
     }
-    if (coordinated ? isDispatchTracked(s.response) : s.response.sightedBy.size) {
+    if (!tacticalNoContact && (coordinated ? isDispatchTracked(s.response) : s.response.sightedBy.size)) {
       placeGtaRoadblock(world);
       const reserve = coordinated && !isAggressiveChase(s) && !gta.roadblock && gtaRoadblocksEnabled(s) && tick - s.startedTick < ticks3(12) ? 2 : 0;
       const deficit = gtaPatrolTarget(s) - reserve - gtaPatrolCount(s);
@@ -14283,7 +18647,8 @@
         if (curb) state.gta.curb = curb;
         state.gta.fadeStars = level;
         const count = gtaPatrolTarget(state);
-        fillGtaPatrols(world, state, Math.max(0, count - (!isAggressiveChase(state) && gtaRoadblocksEnabled(state) ? 2 : 0)));
+        const initialCap = isTacticalPursuit(state) ? Math.min(1, count) : Math.max(0, count - (!isAggressiveChase(state) && gtaRoadblocksEnabled(state) ? 2 : 0));
+        fillGtaPatrols(world, state, initialCap);
         if (count && !state.patrols.size) throw new Error("No safe GTA patrol deployment");
         initializeGtaDurability(player, isAggressiveChase(state) ? Math.max(gtaConfig.playerMaxHealth, 180) : gtaConfig.playerMaxHealth, PLAYER_VEHICLE.massKg);
         if (isAggressiveChase(state)) {
@@ -14360,16 +18725,18 @@
     if (!rush && !gtaConfig) world.actors.push(...state.patrols);
     world.actorIndex = new SpatialIndex(world.actors);
     world.pursuit = state;
-    if (state.gta) {
-      placeGtaRoadblock(world);
-      const reserve = state.gta.config.ruleset === "dispatch-v1" && gtaRoadblocksEnabled(state) ? 2 : 0;
-      fillGtaPatrols(world, state, gtaPatrolTarget(state) - reserve - gtaPatrolCount(state));
-      world.actorIndex = new SpatialIndex(world.actors);
-    }
     if (state.response) {
       updatePursuitResponse(world, true);
       if (!state.gta) for (const patrol2 of state.patrols)
         patrol2.pursuitDrive.tracking = state.response.sightedBy.has(patrol2);
+    }
+    if (state.gta) {
+      placeGtaRoadblock(world);
+      const reserve = state.gta.config.ruleset === "dispatch-v1" && gtaRoadblocksEnabled(state) ? 2 : 0;
+      const openingTarget = isTacticalPursuit(state) ? Math.min(4, gtaPatrolTarget(state)) : gtaPatrolTarget(state) - reserve;
+      fillGtaPatrols(world, state, Math.max(0, openingTarget - gtaPatrolCount(state)));
+      world.actorIndex = new SpatialIndex(world.actors);
+      if (state.response) updatePursuitResponse(world, true);
     }
     if (state.gta) {
       world.updateSensors(false);
@@ -14390,6 +18757,7 @@
       clearVehicleMotion(player);
     }
     logEvent(world, "start", player);
+    syncPursuitStatus(world, state);
     return state;
   }
   function releaseStreetStatics(world) {
@@ -14425,12 +18793,14 @@
       world.player.maxSpeed = state.gta.normalMaxSpeed;
       if (Object.hasOwn(state.gta, "normalSpec")) world.player.spec = state.gta.normalSpec;
       world.player.gtaSlipMps = world.player.gtaYawRate = world.player.chaseSlipRad = 0;
+      clearCivilianGtaSlips(world.actors);
       state.gta.roadblock = null;
     }
     if (streetCitySpecs.has(state)) {
       world.player.spec = streetCitySpecs.get(state);
       clearVehicleMotion(world.player);
     }
+    world.player.nitroActive = false;
     state.reviewUntilTick = null;
     if (state.endedTick == null) {
       state.endedTick = world.tick;
@@ -14438,6 +18808,7 @@
     }
     world.actorIndex = new SpatialIndex(world.actors);
     world.staticIndex = new SpatialIndex(world.statics);
+    syncPursuitStatus(world, state);
     return true;
   }
   function returnEgoFromCityCurb(world, state) {
@@ -15196,19 +19567,57 @@
   var CONTACT_CELL_M = 8;
   var staticContactGrids = /* @__PURE__ */ new WeakMap();
   var distantActorCmdCache = /* @__PURE__ */ new WeakMap();
+  var patrolVisualCrashMap = /* @__PURE__ */ new WeakMap();
+  var impactGeometryMap = /* @__PURE__ */ new WeakMap();
+  function recordActorVisualCrash(actor, actorPose, otherPose, closingSpeedMps) {
+    if (!actor || !(closingSpeedMps >= 1.2)) return;
+    const delta = clamp((closingSpeedMps - 0.8) / 14, 0.08, 0.92);
+    const rel = gtaLocal2(actorPose, otherPose);
+    const side = Math.abs(rel.forward) >= Math.abs(rel.right) * 1.05 ? rel.forward >= 0 ? "front" : "rear" : rel.right >= 0 ? "right" : "left";
+    let entry = patrolVisualCrashMap.get(actor);
+    if (!entry) {
+      entry = { front: 0, rear: 0, left: 0, right: 0 };
+      patrolVisualCrashMap.set(actor, entry);
+    }
+    entry[side] = clamp(entry[side] + delta, 0, 1);
+  }
+  function recordPatrolVisualCrash(patrol2, patrolPose, otherPose, healthLost) {
+    if (!(healthLost > 0.2)) return;
+    const maxHealth = patrol2.maxHealth || 85;
+    const delta = clamp(healthLost / maxHealth * 1.45, 0, 1);
+    const rel = gtaLocal2(patrolPose, otherPose);
+    const side = Math.abs(rel.forward) >= Math.abs(rel.right) * 1.05 ? rel.forward >= 0 ? "front" : "rear" : rel.right >= 0 ? "right" : "left";
+    let entry = patrolVisualCrashMap.get(patrol2);
+    if (!entry) {
+      entry = { front: 0, rear: 0, left: 0, right: 0 };
+      patrolVisualCrashMap.set(patrol2, entry);
+    }
+    entry[side] = clamp(entry[side] + delta, 0, 1);
+  }
   var contactOrder = (a, b) => a - b;
-  function sweptContactBounds({ a, next, radius }) {
-    const circle = a.type === "pedestrian";
-    const sin = Math.abs(Math.sin(a.heading ?? 0)), cos = Math.abs(Math.cos(a.heading ?? 0));
-    const pad = 0.24 + (circle ? 0 : radius * Math.abs(angleDelta(next.heading ?? 0, a.heading ?? 0)));
-    const x = pad + (circle ? radius : (a.width * cos + a.length * sin) / 2);
-    const z = pad + (circle ? radius : (a.length * cos + a.width * sin) / 2);
-    return [
-      Math.min(a.x, next.x) - x,
-      Math.max(a.x, next.x) + x,
-      Math.min(a.z, next.z) - z,
-      Math.max(a.z, next.z) + z
-    ];
+  function sweptContactBoundsInto({ a, next, radius }, out, offset2) {
+    let x, z;
+    if (a.type === "pedestrian") {
+      x = z = 0.24 + radius;
+    } else {
+      const h = a.heading ?? 0;
+      const sin = Math.abs(Math.sin(h)), cos = Math.abs(Math.cos(h));
+      const dh = next.heading ?? 0;
+      const rawDiff = dh - h;
+      const absTurn = rawDiff > -Math.PI && rawDiff <= Math.PI ? Math.abs(rawDiff) : Math.abs(angleDelta(dh, h));
+      const pad = 0.24 + radius * absTurn;
+      x = pad + (a.width * cos + a.length * sin) / 2;
+      z = pad + (a.length * cos + a.width * sin) / 2;
+    }
+    out[offset2] = Math.min(a.x, next.x) - x;
+    out[offset2 + 1] = Math.max(a.x, next.x) + x;
+    out[offset2 + 2] = Math.min(a.z, next.z) - z;
+    out[offset2 + 3] = Math.max(a.z, next.z) + z;
+  }
+  function sweptContactBounds(plan) {
+    const out = [0, 0, 0, 0];
+    sweptContactBoundsInto(plan, out, 0);
+    return out;
   }
   function contactCellSpan(box3) {
     return box3.map((edge) => Math.floor(edge / CONTACT_CELL_M));
@@ -15265,14 +19674,10 @@
     for (let u = 0; u < usedKeys.length; u++) cells.get(usedKeys[u]).length = 0;
     usedKeys.length = 0;
     for (let i = 0; i < n; i++) {
-      const b = sweptContactBounds(moving[i]);
       const o = i * 4;
-      bounds[o] = b[0];
-      bounds[o + 1] = b[1];
-      bounds[o + 2] = b[2];
-      bounds[o + 3] = b[3];
-      const left = Math.floor(b[0] / CONTACT_CELL_M), right = Math.floor(b[1] / CONTACT_CELL_M);
-      const bottom = Math.floor(b[2] / CONTACT_CELL_M), top = Math.floor(b[3] / CONTACT_CELL_M);
+      sweptContactBoundsInto(moving[i], bounds, o);
+      const left = Math.floor(bounds[o] / CONTACT_CELL_M), right = Math.floor(bounds[o + 1] / CONTACT_CELL_M);
+      const bottom = Math.floor(bounds[o + 2] / CONTACT_CELL_M), top = Math.floor(bounds[o + 3] / CONTACT_CELL_M);
       spans[o] = left;
       spans[o + 1] = right;
       spans[o + 2] = bottom;
@@ -15322,8 +19727,30 @@
           }
         }
       }
-      candidates2.sort(contactOrder);
-      for (let c = 0; c < candidates2.length; c++) {
+      const cLen = candidates2.length;
+      if (cLen === 0) continue;
+      if (cLen === 2) {
+        if (candidates2[0] > candidates2[1]) {
+          const tmp = candidates2[0];
+          candidates2[0] = candidates2[1];
+          candidates2[1] = tmp;
+        }
+      } else if (cLen > 2) {
+        if (cLen <= 12) {
+          for (let aIdx = 1; aIdx < cLen; aIdx++) {
+            const val = candidates2[aIdx];
+            let bIdx = aIdx - 1;
+            while (bIdx >= 0 && candidates2[bIdx] > val) {
+              candidates2[bIdx + 1] = candidates2[bIdx];
+              bIdx--;
+            }
+            candidates2[bIdx + 1] = val;
+          }
+        } else {
+          candidates2.sort(contactOrder);
+        }
+      }
+      for (let c = 0; c < cLen; c++) {
         const j = candidates2[c];
         const b = j < n ? moving[j] : solids.plans[j - n];
         if (!a.travel && !b.travel) continue;
@@ -15391,7 +19818,7 @@
           pairs.push([a, b]);
       }
     }
-    let since = 0, playerHit = null;
+    let since = 0, playerHit = null, playerHitGeometry = null;
     const noContact = new Uint8Array(pairs.length);
     for (let n = 0; n < moving.length; n++) {
       let hit = null;
@@ -15417,10 +19844,23 @@
       const { a, b, time, overlapAt } = hit;
       const key3 = pairId(a.a, b.a);
       const fresh = !s.contacts.has(key3);
+      const paHit = poseAt(a, time), pbHit = poseAt(b, time);
+      const normalHit = normalAt(paHit, pbHit);
+      const hitClosingMps = closingSpeed(a, b, overlapAt, normalHit);
       if (gtaPairs) {
         gtaPairs.add(key3);
-        const pa = poseAt(a, time), pb = poseAt(b, time), normal2 = normalAt(pa, pb);
-        applyGtaContact(world, a, b, pa, pb, normal2, closingSpeed(a, b, overlapAt, normal2), fresh);
+        const hA = a.a.health ?? 0, hB = b.a.health ?? 0;
+        applyGtaContact(world, a, b, paHit, pbHit, normalHit, hitClosingMps, fresh);
+        if (s.patrols.has(a.a) && a.a.health < hA) recordPatrolVisualCrash(a.a, paHit, pbHit, hA - a.a.health);
+        if (s.patrols.has(b.a) && b.a.health < hB) recordPatrolVisualCrash(b.a, pbHit, paHit, hB - b.a.health);
+      }
+      if (fresh && hitClosingMps >= 1.2) {
+        if (a.a.type === "vehicle" && a.a !== world.player && a.a.pursuitRole !== "police" && !s.patrols?.has?.(a.a)) {
+          recordActorVisualCrash(a.a, paHit, pbHit, hitClosingMps);
+        }
+        if (b.a.type === "vehicle" && b.a !== world.player && b.a.pursuitRole !== "police" && !s.patrols?.has?.(b.a)) {
+          recordActorVisualCrash(b.a, pbHit, paHit, hitClosingMps);
+        }
       }
       if (a.a === world.player || b.a === world.player) {
         const [ego, other] = a.a === world.player ? [a, b] : [b, a];
@@ -15431,9 +19871,14 @@
           continue;
         }
         const impact = contactImpact(ego, other, time, overlapAt, world.tick + 1);
-        if (!playerHit || impact.severity > playerHit.severity) playerHit = impact;
+        const egoPoseAt = poseAt(ego, time), otherPoseAt = poseAt(other, time);
+        const hitGeom = { otherX: otherPoseAt.x, otherZ: otherPoseAt.z, normal: normalAt(egoPoseAt, otherPoseAt) };
+        if (!playerHit || impact.severity > playerHit.severity) {
+          playerHit = impact;
+          playerHitGeometry = hitGeom;
+        }
         if (fresh) {
-          freshImpacts?.push(impact);
+          freshImpacts?.push({ ...impact, ...hitGeom });
           const pack = isPackPursuit(s.variant), pedestrian = other.a.type === "pedestrian";
           if (!pack || !s.metrics.terminalCause || pedestrian && s.metrics.terminalCause !== "pedestrian-impact")
             s.metrics.impact = impact;
@@ -15510,6 +19955,7 @@
       if (b.a.type !== "static" && !b.hit && !bClearsStoppedA) b.hit = a.a.id;
       since = time;
     }
+    if (playerHit && playerHitGeometry) impactGeometryMap.set(playerHit, playerHitGeometry);
     return playerHit;
   }
   function updateClearance(world, playerMotion, plans, solids = []) {
@@ -15586,10 +20032,45 @@
         stop: 0,
         hit: null
       };
-      command = actor === world.player ? (pack ? packCommand : pursuitCommand)(actor, action, STEP) : gta ? world.pursuit.response.dispatch && gtaJunctionCommand(world, actor) || gtaPatrolCommand(world, actor, gtaStreetRoute, gtaDirectApproach, gtaSpacingSteer(actor, world.pursuit.patrols)) : !streetHooks || world.pursuit.patrols.has(actor) ? npcCommand(world, actor) : null;
+      const nitroAllowed = actor === world.player && (Boolean(world.pursuit.street && world.pursuit.variant && world.pursuit.variant !== "legacy") || Object.prototype.hasOwnProperty.call(action, "nitro"));
+      const playerAction = actor === world.player && !nitroAllowed && Object.prototype.hasOwnProperty.call(action, "nitro") ? { steer: action.steer, throttle: action.throttle, brake: action.brake, gear: action.gear } : action;
+      command = actor === world.player ? (pack ? packCommand : pursuitCommand)(actor, playerAction, STEP) : gta ? world.pursuit.response.dispatch && gtaJunctionCommand(world, actor) || gtaPatrolCommand(world, actor, gtaStreetRoute, gtaDirectApproach, gtaSpacingSteer(actor, world.pursuit.patrols)) : !streetHooks || world.pursuit.patrols.has(actor) ? npcCommand(world, actor) : null;
+      if (actor === world.player && pack && nitroAllowed && (playerAction.nitro ?? 0) >= 0.5 && isNitroEngaged(actor, playerAction) && command.targetSpeed > 0) {
+        const boostedMaxSpeed = Math.min(
+          NITRO_SPEC.maxBoostSpeedMps,
+          (actor.maxSpeed ?? 9.72) * NITRO_SPEC.speedMultiplier
+        );
+        command = {
+          ...command,
+          targetSpeed: boostedMaxSpeed,
+          maxSpeed: boostedMaxSpeed,
+          accelMultiplier: NITRO_SPEC.accelMultiplier
+        };
+      }
+      const nitroMaxSpeed = actor === world.player ? command.maxSpeed : void 0;
+      const nitroAccelMult = actor === world.player ? command.accelMultiplier : void 0;
       if (survival && actor === world.player && world.mode === "manual") command.arcadeDrift = true;
       if (streetHooks) command = streetHooks.vehicleCommand(actor, command);
       else if (pack && actor === world.player) command = world.safeSpeed(actor, command, false);
+      let pedSuppressedNitro = false;
+      if (actor === world.player && nitroAccelMult > 1) {
+        const blockedPed = command.blockedBy && world.actors.some(
+          (b) => b.id === command.blockedBy && b.type === "pedestrian"
+        );
+        if (blockedPed) {
+          pedSuppressedNitro = true;
+          if (command.maxSpeed !== void 0 || command.accelMultiplier !== void 0) {
+            const { maxSpeed: _m, accelMultiplier: _a, ...rest } = command;
+            command = rest;
+          }
+        } else if (command.targetSpeed > 0 && command.accelMultiplier === void 0) {
+          command = {
+            ...command,
+            maxSpeed: nitroMaxSpeed,
+            accelMultiplier: nitroAccelMult
+          };
+        }
+      }
       if (actor !== world.player && world.pursuit.response?.dispatch) {
         const preview = !gta && world.pursuit.gta.config.civilianCrossingPreview;
         if (preview === CIVILIAN_TIMED_YIELD) command = timedCivilianYield(world, actor, command);
@@ -15622,8 +20103,21 @@
         y: actor.y,
         supportHeightM: actor.supportHeightM
       }) : null;
-      next = integrateVehicle(actor, command, STEP, pose5);
+      if (world.terrain && (actor === world.player || gta)) {
+        const surface = sampleCitySurface(world.terrain, actor.x, actor.z, actor.heading);
+        command = { ...command, surface };
+      }
+      const nitroPose = actor === world.player && !pedSuppressedNitro ? buildNitroBoostPose(actor, command, copyVehicleMotion) : null;
+      next = integrateVehicle(nitroPose ?? actor, command, STEP, pose5);
+      if (nitroPose) {
+        next.maxSpeed = actor.maxSpeed;
+        next.spec = actor.spec;
+      }
+      if (pedSuppressedNitro) command = { ...command, _pedSuppressedNitro: true };
       if (gta) integrateGtaSlip(actor, next);
+      else if (world.config?.interactionProfile === WHEEL_SCRUB_MODE && actor.type === "vehicle") {
+        integrateCivilianGtaSlip(actor, next);
+      }
       const site = world.pursuit.gta?.curb;
       const curbActor = actor === world.player || canPatrolUseCurbPrivilege(world, actor);
       if (curbActor && site && nearCurb(site, actor)) {
@@ -15871,53 +20365,77 @@
     }
     if (s.survival) updateSurvivalBeforeMotion(world);
     if (!s.gta) updateEvents(world);
-    if (!world.actorIndex || world.actors.length !== actorsBeforeSquad || world.actors[0] !== firstBefore || world.actors[world.actors.length - 1] !== lastBefore || world.tick === s.startedTick) {
-      world.actorIndex = new SpatialIndex(world.actors);
-    }
-    const tacticalV5 = isTacticalPursuit(s) && (world.config?.cityVersion ?? 0) >= 5;
+    world.actorIndex = new SpatialIndex(world.actors);
+    const tacticalV5 = isTacticalPursuit(s) && (world.config?.cityVersion ?? 0) >= 5 && (world.actors?.length ?? 0) >= 220;
     const px = player.x, pz = player.z;
-    for (const a of world.actors) a.previous = copyPose(a);
+    for (let i = 0; i < world.actors.length; i++) {
+      const a = world.actors[i];
+      if (tacticalV5 && a !== player && a.previous) {
+        a.previous.x = a.x;
+        a.previous.z = a.z;
+        a.previous.heading = a.heading;
+        a.previous.speed = a.speed;
+        a.previous.y = a.y;
+      } else {
+        a.previous = copyPose(a);
+      }
+    }
     const plans = world.actors.map((a, idx) => {
-      if (tacticalV5 && a !== player && !s.patrols.has(a) && (world.tick + idx & 3) !== 0) {
+      const inPatrols = Boolean(s.patrols?.has?.(a));
+      if (tacticalV5 && a !== player && !inPatrols && !hasCivilianGtaSlip(a) && !isCrowdAheadPedestrian(a)) {
         const dx = a.x - px, dz = a.z - pz;
-        if (dx * dx + dz * dz > 115 * 115) {
-          const cached = distantActorCmdCache.get(a);
-          if (cached && world.tick - cached.tick <= 3) {
-            if (a.type === "pedestrian" && a.speed > 0 && (a.pause ?? 0) === 0 && a.target && Math.hypot(a.target.x - a.x, a.target.z - a.z) > 2.2) {
-              const next = {
-                ...a,
-                x: a.x + Math.sin(a.heading) * a.speed * STEP,
-                z: a.z + Math.cos(a.heading) * a.speed * STEP,
-                accelerationMps2: 0,
-                turnRateRadS: 0
-              };
-              const rad = shapeRadius(a);
-              return { a, next, command: null, guard: "clear", travel: travel(a, next, rad), radius: rad, stop: 1, hit: null };
-            }
-            if (a.type === "vehicle" && cached.cmd) {
-              const cmd = cached.cmd;
-              const rad = shapeRadius(a);
-              let next = integrateVehicle(a, cmd, STEP, Object.assign(vehicleProbe(a, a.speed), {
-                id: a.id,
-                kind: a.kind,
-                y: a.y,
-                supportHeightM: a.supportHeightM
-              }));
-              next.reason = cmd.reason ?? "driving";
-              next.blockedBy = cmd.blockedBy ?? null;
-              let swept = travel(a, next, rad), guard = "clear";
-              if (swept > 0 && !sweepSafe(a, next, [], world.roads).safe) {
-                guard = "road-boundary";
-                swept = 0;
-                next = { ...a, speed: 0, steer: next.steer, reason: guard, blockedBy: null };
+        const distSq = dx * dx + dz * dz;
+        const lodDistSq = a.type === "pedestrian" ? 65 * 65 : 72 * 72;
+        if (distSq > lodDistSq) {
+          const strideMask = distSq > 120 * 120 ? 7 : 3;
+          if ((world.tick + idx & strideMask) !== 0) {
+            const cached = distantActorCmdCache.get(a);
+            if (cached && world.tick - cached.tick <= strideMask) {
+              if (a.type === "pedestrian") {
+                if (a.speed === 0 && (a.pause ?? 0) > STEP) {
+                  const next = { ...a, pause: Math.max(0, a.pause - STEP) };
+                  const rad = shapeRadius(a);
+                  return { a, next, command: null, guard: "clear", travel: 0, radius: rad, stop: 1, hit: null };
+                }
+                const goal = a.target ?? a.walkGoal;
+                if (a.speed > 0 && (a.pause ?? 0) === 0 && goal && (goal.x - a.x) ** 2 + (goal.z - a.z) ** 2 > 4.84) {
+                  const next = {
+                    ...a,
+                    x: a.x + Math.sin(a.heading) * a.speed * STEP,
+                    z: a.z + Math.cos(a.heading) * a.speed * STEP,
+                    accelerationMps2: 0,
+                    turnRateRadS: 0
+                  };
+                  const rad = shapeRadius(a);
+                  return { a, next, command: null, guard: "clear", travel: travel(a, next, rad), radius: rad, stop: 1, hit: null };
+                }
               }
-              return { a, next, command: cmd, guard, travel: swept, radius: rad, stop: 1, hit: null };
+              if (a.type === "vehicle" && cached.cmd) {
+                const cmd = cached.cmd;
+                const rad = shapeRadius(a);
+                let next = integrateVehicle(a, cmd, STEP, Object.assign(vehicleProbe(a, a.speed), {
+                  id: a.id,
+                  kind: a.kind,
+                  y: a.y,
+                  supportHeightM: a.supportHeightM
+                }));
+                next.reason = cmd.reason ?? "driving";
+                next.blockedBy = cmd.blockedBy ?? null;
+                let swept = travel(a, next, rad), guard = "clear";
+                const onOwnRoad = a.road && bodyOnRoad(next, [a.road]);
+                if (swept > 0 && !onOwnRoad && !sweepSafe(a, next, [], world.roads).safe) {
+                  guard = "road-boundary";
+                  swept = 0;
+                  next = { ...a, speed: 0, steer: next.steer, reason: guard, blockedBy: null };
+                }
+                return { a, next, command: cmd, guard, travel: swept, radius: rad, stop: 1, hit: null };
+              }
             }
           }
         }
       }
       const plan = motionPlan(world, a, requested, streetHooks);
-      if (tacticalV5 && a !== player && !s.patrols.has(a)) {
+      if (tacticalV5 && a !== player) {
         distantActorCmdCache.set(a, { tick: world.tick, cmd: plan.command });
       }
       return plan;
@@ -15988,13 +20506,26 @@
     m.requestedAction = requested;
     s.action = ego.guard === "road-boundary" ? { ...requested, throttle: 0, brake: 1 } : requested;
     let moved = 0;
+    const gtaPlayerScrape = consumeGtaPlayerScrape(s);
     const reuseAcceptedPose = Boolean(s.response?.dispatch) || usesRushPace(s.variant);
     for (const p of plans) {
       const a = p.a, accepted = poseAt(p, 1);
       const next = reuseAcceptedPose && a !== accepted ? accepted : { ...accepted };
       const acceptedDistance = distance(a, next);
       const gtaBody = s.gta && (a === player || s.patrols.has(a));
-      if (p.hit) Object.assign(next, { ...gtaBody ? p.impulse : { speed: 0 }, reason: "contact", blockedBy: p.hit });
+      const civilianTwoBody = !gtaBody && s.gta && world.config?.interactionProfile === WHEEL_SCRUB_MODE && a.type === "vehicle" && Boolean(p.impulse);
+      if (p.hit) {
+        if (gtaBody) {
+          Object.assign(next, p.impulse, { reason: "contact", blockedBy: p.hit });
+        } else if (civilianTwoBody) {
+          next.speed = p.impulse.speed;
+          setCivilianGtaImpulse(a, p.impulse);
+          next.reason = "contact";
+          next.blockedBy = p.hit;
+        } else {
+          Object.assign(next, { speed: 0, reason: "contact", blockedBy: p.hit });
+        }
+      }
       if (gtaBody) {
         next.health = a.health;
         next.aiState = a.aiState;
@@ -16020,7 +20551,7 @@
       if (s.gta && a === player && world.mode === "manual") next.districtSources = null;
       else if (s.street && a.type === "vehicle") {
         const sources = p.command.districtSources ?? a.districtSources;
-        if (sources) next.districtSources = p.hit || p.guard !== "clear" ? { ...sources, finalMps: gtaBody ? Math.abs(next.speed) : 0, appliedSource: "physical-guard" } : sources;
+        if (sources) next.districtSources = p.hit || p.guard !== "clear" ? { ...sources, finalMps: gtaBody || civilianTwoBody ? Math.abs(next.speed) : 0, appliedSource: "physical-guard" } : sources;
       }
       if (a === player) {
         moved = acceptedDistance;
@@ -16033,10 +20564,44 @@
           blockedBy: applied.blockedBy ?? null,
           ...applied.decelerationMps2 === void 0 ? {} : { decelerationMps2: applied.decelerationMps2 }
         };
+        const playerSurface = world.terrain ? sampleCitySurface(world.terrain, next.x, next.z, next.heading) : null;
+        const nitroAllowed = Boolean(s.street && s.variant && s.variant !== "legacy") || Object.prototype.hasOwnProperty.call(requested, "nitro");
+        if (nitroAllowed) {
+          const baseSuppressed = Boolean(a.nitroSuppressedByPedestrian);
+          const stepSuppressed = Boolean(baseSuppressed || p.command?._pedSuppressedNitro);
+          next.nitroCharge = Number.isFinite(a.nitroCharge) ? a.nitroCharge : 1;
+          next.nitroActive = Boolean(a.nitroActive);
+          next.nitroIntensity = Number.isFinite(a.nitroIntensity) ? a.nitroIntensity : 0;
+          next.nitroSuppressedByPedestrian = stepSuppressed;
+          stepNitroTank(next, s.action, STEP);
+          next.nitroSuppressedByPedestrian = stepSuppressed;
+        } else {
+          next.nitroCharge = Number.isFinite(a.nitroCharge) ? a.nitroCharge : 1;
+          next.nitroActive = false;
+          next.nitroIntensity = Number.isFinite(a.nitroIntensity) ? a.nitroIntensity : 0;
+          next.nitroSuppressedByPedestrian = Boolean(a.nitroSuppressedByPedestrian);
+        }
+        let curbScrub = null;
+        if (world.config?.interactionProfile === WHEEL_SCRUB_MODE && s.gta?.curb) {
+          const manualCurbDeflect = world.mode === "manual" && !s.frozenDriver && !p.hit;
+          curbScrub = computeCurbWheelScrub(a, next, s.gta.curb, world.roads, STEP, {
+            applyDeflection: manualCurbDeflect
+          });
+          if (manualCurbDeflect && curbScrub.active && curbScrub.adjustedPose !== next) {
+            const safeScrub = sweepSafeWithCurbs(a, curbScrub.adjustedPose, null, world.roads, s.gta.curb);
+            if (safeScrub.safe) {
+              Object.assign(next, curbScrub.adjustedPose);
+              terrainOffsets = acceptCurbPose(s.gta.curb, world.roads, next);
+            }
+          }
+        }
         next.vehicle = advanceVehicleState(a, next, applied, STEP, {
           tick: world.tick + 1,
-          contact: impact ? { ...impact, hitId: impact.actorId, proposedTravelM: distance(a, p.next) } : null,
-          freshImpacts
+          contact: impact ? { ...impact, ...impactGeometryMap.get(impact) ?? {}, hitId: impact.actorId, proposedTravelM: distance(a, p.next) } : null,
+          freshImpacts,
+          surface: playerSurface,
+          curbScrub,
+          scraping: gtaPlayerScrape
         });
         if (terrainOffsets) {
           const suspension = next.vehicle.suspension;
@@ -16087,6 +20652,7 @@
       world.actorIndex = new SpatialIndex(world.actors);
     } else if (s.street && s.phase !== "running") cleanupStreetPursuit(world);
     else world.actorIndex = new SpatialIndex(world.actors);
+    syncPursuitStatus(world, s);
     world.updateSensors(world.tick % 6 === 0);
     if (s.street) return { distanceM: moved, impact };
   }
@@ -16142,6 +20708,532 @@
         appliedCommand: s.appliedCommand ? { ...s.appliedCommand } : null
       } : {}
     };
+  }
+  var crowdAheadRegistry = /* @__PURE__ */ new WeakMap();
+  function getCrowdAheadCount(world) {
+    const entry = world ? crowdAheadRegistry.get(world) : null;
+    if (!entry || entry.activeIds.size === 0) return 0;
+    const actors = world.actors ?? [];
+    if (entry.lastActorsLen !== actors.length) {
+      const stillPresent = /* @__PURE__ */ new Set();
+      for (let i = 0; i < actors.length; i++) {
+        const id = actors[i]?.id;
+        if (id && entry.activeIds.has(id)) stillPresent.add(id);
+      }
+      entry.activeIds = stillPresent;
+      entry.lastActorsLen = actors.length;
+    }
+    return entry.activeIds.size;
+  }
+  function syncPursuitStatus(world, state = world?.pursuit) {
+    if (!state) return null;
+    const player = world?.player;
+    const crowdAheadCount = world ? getCrowdAheadCount(world) : 0;
+    const status = state.status ?? (state.status = {
+      phase: state.phase,
+      variant: state.variant ?? "legacy",
+      wantedLevel: state.wantedLevel ?? state.level,
+      nitroCharge: 1,
+      nitroActive: false,
+      nitroIntensity: 0,
+      nitroSuppressedByPedestrian: false,
+      crowdAheadCount: 0
+    });
+    status.phase = state.phase;
+    status.variant = state.variant ?? "legacy";
+    status.wantedLevel = state.wantedLevel ?? state.level;
+    status.nitroCharge = Number.isFinite(player?.nitroCharge) ? player.nitroCharge : 1;
+    status.nitroActive = Boolean(player?.nitroActive);
+    status.nitroIntensity = Number.isFinite(player?.nitroIntensity) ? player.nitroIntensity : 0;
+    status.nitroSuppressedByPedestrian = Boolean(player?.nitroSuppressedByPedestrian);
+    status.crowdAheadCount = crowdAheadCount;
+    return status;
+  }
+  function scanPursuitWorld(world) {
+    const s = world?.pursuit;
+    if (!s?.gta || s.phase !== "running") return null;
+    s.gta.scanner = new PursuitScanner();
+    const scan = s.gta.scanner.sample(world);
+    s.gta.scan = scan;
+    return scan;
+  }
+  function spawnCrowdAhead(world, rawCount = 20) {
+    const targetCount = clamp(
+      Math.round(Number.isFinite(Number(rawCount)) ? Number(rawCount) : 20),
+      1,
+      40
+    );
+    const player = world.player;
+    let entry = crowdAheadRegistry.get(world);
+    if (!entry) {
+      entry = { waveSerial: 0, activeIds: /* @__PURE__ */ new Set(), lastActorsLen: 0 };
+      crowdAheadRegistry.set(world, entry);
+    }
+    const prevActiveIds = new Set(entry.activeIds);
+    const wave = entry.waveSerial + 1;
+    const rng = new Random(
+      `${world.config?.seed ?? "city"}:crowd-ahead:${world.tick}:${wave}:${Math.round(player.x * 100)}:${Math.round(player.z * 100)}`
+    );
+    const fx = Math.sin(player.heading ?? 0);
+    const fz = Math.cos(player.heading ?? 0);
+    const drivableRoads = (world.drivingRoads ?? world.roads ?? []).filter(
+      (r) => r && !r.parkingBay && !r.supportApron
+    );
+    const allRoads = world.roads ?? drivableRoads;
+    let baseRoad = drivableRoads[0] ?? allRoads[0] ?? null;
+    let bestRoadScore = -Infinity;
+    for (let i = 0; i < drivableRoads.length; i++) {
+      const r = drivableRoads[i];
+      const frame = roadFrame(r);
+      const proj = roadProject(r, player);
+      const outsideAlong = Math.max(0, frame.minAlong - proj.along, proj.along - frame.maxAlong);
+      const onCorridor = outsideAlong <= r.width * 0.75 && proj.absLateral <= r.width * 0.75;
+      const align = Math.abs(fx * frame.ux + fz * frame.uz);
+      const score = (onCorridor ? 100 : 0) + align * 20 - proj.absLateral - outsideAlong * 0.5;
+      if (score > bestRoadScore) {
+        bestRoadScore = score;
+        baseRoad = r;
+      }
+    }
+    const baseFrame = baseRoad ? roadFrame(baseRoad) : null;
+    const baseProj = baseRoad ? roadProject(baseRoad, player) : null;
+    const baseSign = baseFrame ? fx * baseFrame.ux + fz * baseFrame.uz >= 0 ? 1 : -1 : 1;
+    const startAlong = baseFrame ? clamp(baseProj.along, baseFrame.minAlong, baseFrame.maxAlong) : 0;
+    const availAhead = baseFrame ? baseSign > 0 ? baseFrame.maxAlong - startAlong : startAlong - baseFrame.minAlong : 0;
+    const turnBranches = [];
+    if (baseRoad && availAhead < 43) {
+      for (let i = 0; i < drivableRoads.length; i++) {
+        const other = drivableRoads[i];
+        if (other === baseRoad) continue;
+        const hit = roadIntersection(baseRoad, other, 1.5);
+        if (!hit) continue;
+        const distToJunc = (hit.alongA - startAlong) * baseSign;
+        if (distToJunc < -2 || distToJunc > 43) continue;
+        const oFrame = roadFrame(other);
+        const signs = other.flow ? [other.flow] : [1, -1];
+        for (const sgn of signs) {
+          const branchAvail = sgn > 0 ? oFrame.maxAlong - hit.alongB : hit.alongB - oFrame.minAlong;
+          if (branchAvail >= 8) {
+            turnBranches.push({
+              road: other,
+              frame: oFrame,
+              hitAlongB: hit.alongB,
+              sign: sgn,
+              distToJunc: Math.max(0, distToJunc),
+              avail: branchAvail
+            });
+          }
+        }
+      }
+    }
+    const vehicleObstacles = [];
+    const existingPedestrians = [];
+    for (let i = 0; i < world.actors.length; i++) {
+      const a = world.actors[i];
+      if (a.type === "vehicle") vehicleObstacles.push(a);
+      else if (a.type === "pedestrian" && !prevActiveIds.has(a.id)) existingPedestrians.push(a);
+    }
+    const solidBuildings = [];
+    for (let i = 0; i < world.statics.length; i++) {
+      const st = world.statics[i];
+      if (st.kind === "parked-vehicle") vehicleObstacles.push(st);
+      else solidBuildings.push(st);
+    }
+    const isSurfaceAndStaticClear = (x, z, pad = 0.28) => {
+      const pt = { x, z };
+      if (allRoads.length > 0 && !pointOnRoad(pt, allRoads, -1.55)) return false;
+      const probe = { type: "pedestrian", radius: 0.38, x, z };
+      for (let i = 0; i < solidBuildings.length; i++) {
+        const st = solidBuildings[i];
+        const maxSpan = ((st.width ?? 0) + (st.length ?? 0)) * 0.5 + 2;
+        if (Math.abs(st.x - x) > maxSpan || Math.abs(st.z - z) > maxSpan) continue;
+        if (overlaps(probe, st, pad)) return false;
+      }
+      for (let i = 0; i < vehicleObstacles.length; i++) {
+        const v = vehicleObstacles[i];
+        if (v === player) continue;
+        if (Math.abs(v.x - x) > 8 || Math.abs(v.z - z) > 8) continue;
+        if (overlaps(probe, v, 0.25)) return false;
+      }
+      return true;
+    };
+    const isSpawnClear = (x, z) => {
+      const pt = { x, z };
+      if (distance(pt, player) < 18.5) return false;
+      if (!isSurfaceAndStaticClear(x, z, 0.3)) return false;
+      const probe = { type: "pedestrian", radius: 0.38, x, z };
+      for (let i = 0; i < vehicleObstacles.length; i++) {
+        const v = vehicleObstacles[i];
+        if (distance(pt, v) < 2.2 || overlaps(probe, v, 0.45)) return false;
+      }
+      for (let i = 0; i < existingPedestrians.length; i++) {
+        if (distance(pt, existingPedestrians[i]) < 1.06) return false;
+      }
+      return true;
+    };
+    let negOffsetBlockers = 0;
+    let posOffsetBlockers = 0;
+    for (const obs of [...vehicleObstacles, ...solidBuildings]) {
+      if (obs === player) continue;
+      const dx = obs.x - player.x;
+      const dz = obs.z - player.z;
+      const fwd = dx * fx + dz * fz;
+      if (fwd < 8 || fwd > 52) continue;
+      const offset2 = baseRoad ? roadProject(baseRoad, obs).leftOffset : -dx * fz + dz * fx;
+      if (Math.abs(offset2) <= 9.5) {
+        const oncoming = obs.type === "vehicle" && fx * Math.sin(obs.heading ?? 0) + fz * Math.cos(obs.heading ?? 0) < -0.3;
+        const weight = oncoming ? 3 : 1;
+        if (offset2 < 0) negOffsetBlockers += weight;
+        else posOffsetBlockers += weight;
+      }
+    }
+    const openBypassOffsetSign = negOffsetBlockers !== posOffsetBlockers ? negOffsetBlockers < posOffsetBlockers ? -1 : 1 : rng.next() < 0.5 ? 1 : -1;
+    const playerBaseLat = baseRoad ? roadProject(baseRoad, player).leftOffset : 0;
+    const sampleCrowdLat = (halfW, walkerIdx = 99, attempt = 0) => {
+      const outerCrowdLim = halfW + 1.15;
+      const innerBypassEdge = Math.max(-1.2, Math.min(2.4, halfW - 3.6));
+      const crowdMin = openBypassOffsetSign > 0 ? -outerCrowdLim : -innerBypassEdge;
+      const crowdMax = openBypassOffsetSign > 0 ? innerBypassEdge : outerCrowdLim;
+      if (walkerIdx < 3 && attempt < 16) {
+        const anchor = clamp(playerBaseLat, crowdMin + 0.25, crowdMax - 0.25);
+        return clamp(anchor + rng.range(-0.45, 0.45), crowdMin, crowdMax);
+      }
+      return rng.range(crowdMin, crowdMax);
+    };
+    const sampleCorridorPose = (corridorDistM, branchChoice, walkerIdx = 99, attempt = 0) => {
+      if (baseRoad && corridorDistM <= availAhead - 1.2) {
+        const along2 = clamp(startAlong + baseSign * corridorDistM, baseFrame.minAlong + 1.2, baseFrame.maxAlong - 1.2);
+        const halfW2 = (baseRoad.width ?? 10) * 0.5;
+        const lat2 = sampleCrowdLat(halfW2, walkerIdx, attempt);
+        const pt = roadPointAt(baseRoad, along2, lat2);
+        return {
+          x: pt.x,
+          z: pt.z,
+          along: along2,
+          lat: lat2,
+          side: lat2 >= 0 ? 1 : -1,
+          road: baseRoad,
+          frame: baseFrame,
+          dirSign: baseSign,
+          onStraightCorridor: true,
+          corridorDistM
+        };
+      }
+      if (turnBranches.length > 0) {
+        const branch = turnBranches[branchChoice % turnBranches.length];
+        const rem = Math.max(2, corridorDistM - branch.distToJunc);
+        const along2 = clamp(
+          branch.hitAlongB + branch.sign * Math.min(rem, branch.avail - 1.5),
+          branch.frame.minAlong + 1.2,
+          branch.frame.maxAlong - 1.2
+        );
+        const halfW2 = (branch.road.width ?? 10) * 0.5;
+        const lat2 = sampleCrowdLat(halfW2);
+        const pt = roadPointAt(branch.road, along2, lat2);
+        return {
+          x: pt.x,
+          z: pt.z,
+          along: along2,
+          lat: lat2,
+          side: lat2 >= 0 ? 1 : -1,
+          road: branch.road,
+          frame: branch.frame,
+          dirSign: branch.sign,
+          onStraightCorridor: false,
+          corridorDistM
+        };
+      }
+      const rx = Math.cos(player.heading ?? 0);
+      const rz = -Math.sin(player.heading ?? 0);
+      const halfW = (baseRoad?.width ?? 10) * 0.5;
+      const lat = rng.range(-halfW - 1, halfW + 1);
+      return {
+        x: player.x + fx * corridorDistM + rx * lat,
+        z: player.z + fz * corridorDistM + rz * lat,
+        along: startAlong + baseSign * corridorDistM,
+        lat,
+        side: lat >= 0 ? 1 : -1,
+        road: baseRoad,
+        frame: baseFrame,
+        dirSign: baseSign,
+        onStraightCorridor: true,
+        corridorDistM
+      };
+    };
+    const buildWaypointsFor = (cand, index) => {
+      const waypoints = [{ x: cand.x, z: cand.z, crossing: index % 2 === 0 }];
+      const segRoad = cand.road;
+      const segFrame = cand.frame;
+      const halfW = (segRoad?.width ?? 10) * 0.5;
+      const isCrossing = index >= 3 && index % 2 === 0;
+      const innerEdge = Math.max(-1.2, Math.min(2.4, halfW - 3.6));
+      const minCrowdLat = openBypassOffsetSign > 0 ? -halfW - 1.2 : -innerEdge;
+      const maxCrowdLat = openBypassOffsetSign > 0 ? innerEdge : halfW + 1.2;
+      const tryAddPoint = (dAlong, targetLat, crossingFlag) => {
+        const clampedLat = clamp(targetLat, minCrowdLat, maxCrowdLat);
+        let pt;
+        if (segRoad && segFrame) {
+          const a = clamp(cand.along + dAlong, segFrame.minAlong + 1.4, segFrame.maxAlong - 1.4);
+          pt = roadPointAt(segRoad, a, clampedLat);
+        } else {
+          const rx = Math.cos(player.heading ?? 0);
+          const rz = -Math.sin(player.heading ?? 0);
+          pt = {
+            x: cand.x + fx * dAlong + rx * (clampedLat - cand.lat),
+            z: cand.z + fz * dAlong + rz * (clampedLat - cand.lat)
+          };
+        }
+        if (!isSurfaceAndStaticClear(pt.x, pt.z, 0.25)) return false;
+        if (waypoints.some((w) => distance(w, pt) < 3)) return false;
+        waypoints.push({ x: pt.x, z: pt.z, crossing: crossingFlag });
+        return true;
+      };
+      if (isCrossing) {
+        const oppSign = cand.lat >= 0 ? -1 : 1;
+        const lat1 = oppSign * rng.range(Math.max(1.8, halfW * 0.55), halfW + 1.15);
+        const d1 = rng.range(-5.5, 5.5);
+        tryAddPoint(d1, lat1, true);
+        tryAddPoint(d1 + (rng.next() < 0.5 ? 1 : -1) * rng.range(6, 12), lat1 * rng.range(0.65, 1), false);
+        tryAddPoint(rng.range(-4.5, 4.5), -lat1 * rng.range(0.4, 0.95), true);
+      } else {
+        const walkSign = rng.next() < 0.5 ? 1 : -1;
+        const d1 = walkSign * rng.range(8, 15);
+        const l1 = clamp(cand.lat + rng.range(-3.6, 3.6), -halfW - 1.15, halfW + 1.15);
+        tryAddPoint(d1, l1, Math.abs(l1 - cand.lat) > 2.2);
+        const d2 = walkSign * rng.range(3.5, 10.5);
+        const l2 = clamp(-cand.lat * 0.6 + rng.range(-2.8, 2.8), -halfW - 1.15, halfW + 1.15);
+        tryAddPoint(d2, l2, true);
+        tryAddPoint(-walkSign * rng.range(5, 11), cand.lat + rng.range(-1.8, 1.8), false);
+      }
+      if (waypoints.length < 2) {
+        for (const dAlong of [7, -7, 11, -11, 4.5, -4.5]) {
+          for (const tLat of [0, -halfW * 0.75, halfW * 0.75, -halfW - 0.9, halfW + 0.9]) {
+            if (tryAddPoint(dAlong, tLat, Math.abs(tLat - cand.lat) > 2) && waypoints.length >= 3) break;
+          }
+          if (waypoints.length >= 3) break;
+        }
+      }
+      return waypoints;
+    };
+    const ids = [];
+    const stagedPeople = [];
+    let minForwardM = Infinity;
+    let maxForwardM = -Infinity;
+    let maxAbsLateralM = 0;
+    const MAX_CROWD_LATERAL_M = 16;
+    const rxPlayer = Math.cos(player.heading ?? 0);
+    const rzPlayer = -Math.sin(player.heading ?? 0);
+    const forwardBandSegs = [];
+    for (let rIdx = 0; rIdx < drivableRoads.length; rIdx++) {
+      const r = drivableRoads[rIdx];
+      const rf = roadFrame(r);
+      const steps = Math.max(8, Math.ceil(rf.length / 6));
+      for (let s = 0; s <= steps; s++) {
+        const a = rf.minAlong + rf.length * s / steps;
+        const pt = roadPointAt(r, a, 0);
+        const fwd = (pt.x - player.x) * fx + (pt.z - player.z) * fz;
+        const lat = Math.abs((pt.x - player.x) * rxPlayer + (pt.z - player.z) * rzPlayer);
+        if (fwd >= 22.2 && fwd <= 41.8 && lat <= MAX_CROWD_LATERAL_M + 4) {
+          forwardBandSegs.push({ road: r, frame: rf, along: a });
+        }
+      }
+    }
+    for (let i = 0; i < targetCount; i++) {
+      const bandLo = 22.2 + 16.2 * i / targetCount;
+      const bandHi = 22.2 + 16.2 * (i + 1) / targetCount;
+      let chosen = null;
+      let chosenWaypoints = null;
+      let chosenForwardM = 0;
+      let chosenAbsLateralM = 0;
+      for (let attempt = 0; attempt < 360; attempt++) {
+        const corridorDistM = attempt < 32 ? rng.range(bandLo, bandHi) : rng.range(22.2, 41.6);
+        let cand;
+        if (attempt < 64) {
+          cand = sampleCorridorPose(corridorDistM, i + attempt, i, attempt);
+        } else if (attempt < 190 || forwardBandSegs.length === 0) {
+          const latSpan = attempt < 130 ? 10.5 : MAX_CROWD_LATERAL_M;
+          const lat = rng.range(-latSpan, latSpan);
+          const tx = player.x + fx * corridorDistM + rxPlayer * lat;
+          const tz = player.z + fz * corridorDistM + rzPlayer * lat;
+          let nearRoad = baseRoad;
+          let nearFrame = baseFrame;
+          let nearAlong = startAlong + baseSign * corridorDistM;
+          let nearLat = lat;
+          for (let rIdx = 0; rIdx < drivableRoads.length; rIdx++) {
+            const r = drivableRoads[rIdx];
+            if (pointOnRoad({ x: tx, z: tz }, [r], -1.45)) {
+              nearRoad = r;
+              nearFrame = roadFrame(r);
+              const pr = roadProject(r, { x: tx, z: tz });
+              nearAlong = pr.along;
+              nearLat = pr.leftOffset;
+              break;
+            }
+          }
+          cand = {
+            x: tx,
+            z: tz,
+            along: nearAlong,
+            lat: nearLat,
+            side: nearLat >= 0 ? 1 : -1,
+            road: nearRoad,
+            frame: nearFrame,
+            dirSign: baseSign,
+            onStraightCorridor: true,
+            corridorDistM
+          };
+        } else {
+          const seg = forwardBandSegs[(i * 13 + attempt) % forwardBandSegs.length];
+          const halfW = (seg.road.width ?? 10) * 0.5;
+          const along2 = clamp(seg.along + rng.range(-3.5, 3.5), seg.frame.minAlong + 1.2, seg.frame.maxAlong - 1.2);
+          const lat = rng.range(-halfW - 1.1, halfW + 1.1);
+          const pt = roadPointAt(seg.road, along2, lat);
+          cand = {
+            x: pt.x,
+            z: pt.z,
+            along: along2,
+            lat,
+            side: lat >= 0 ? 1 : -1,
+            road: seg.road,
+            frame: seg.frame,
+            dirSign: 1,
+            onStraightCorridor: false,
+            corridorDistM
+          };
+        }
+        const rawFwd = (cand.x - player.x) * fx + (cand.z - player.z) * fz;
+        const rawAbsLat = Math.abs((cand.x - player.x) * rxPlayer + (cand.z - player.z) * rzPlayer);
+        const euclidM = Math.hypot(cand.x - player.x, cand.z - player.z);
+        if (rawFwd < 22 || rawFwd > 42 || rawAbsLat > MAX_CROWD_LATERAL_M || euclidM < 22 || euclidM > 46)
+          continue;
+        if (!isSpawnClear(cand.x, cand.z)) continue;
+        const wps = buildWaypointsFor(cand, i);
+        if (wps.length < 2) continue;
+        chosen = cand;
+        chosenWaypoints = wps;
+        chosenForwardM = rawFwd;
+        chosenAbsLateralM = rawAbsLat;
+        break;
+      }
+      if (!chosen) continue;
+      const id = `crowd-ahead-${wave}-${ids.length + 1}`;
+      const walkSpeed = rng.range(1.18, 1.76);
+      const firstWp = chosenWaypoints[1];
+      const initHeading = Math.atan2(firstWp.x - chosen.x, firstWp.z - chosen.z);
+      const initSpeed = rng.range(0.92, Math.min(1.42, walkSpeed));
+      const nearestWalkwayId = world.district?.walkways?.find((w) => w.roadId === chosen.road?.id)?.id ?? null;
+      const person = createPedestrian({
+        id,
+        kind: PEOPLE_MODELS[(wave * 7 + i) % PEOPLE_MODELS.length],
+        x: chosen.x,
+        z: chosen.z,
+        along: chosen.along,
+        side: chosen.side,
+        roadId: chosen.road?.id ?? null,
+        heading: initHeading,
+        walkwayId: nearestWalkwayId,
+        roadPreference: chosen.road?.zone === "avenue" ? "avenue" : "market",
+        road: chosen.road,
+        speed: initSpeed,
+        walkSpeed,
+        phase: rng.next(),
+        reason: firstWp.crossing ? "crossing" : "walking",
+        target: { x: firstWp.x, z: firstWp.z },
+        pause: 0,
+        crossing: Boolean(firstWp.crossing),
+        motionMode: "ambient",
+        motionTimeS: world.tick * STEP
+      });
+      if (world.district) {
+        initializeDistrictActor(world, person);
+        person.district.holdAtTarget = false;
+        person.district.yieldAtCurb = false;
+        person.district.routeConstrained = true;
+        person.walkDirection = 1;
+        person.walkGoal = { x: firstWp.x, z: firstWp.z };
+        person.walkPlanTick = world.tick;
+        person.walkRoute = [{ x: firstWp.x, z: firstWp.z }];
+      }
+      registerCrowdAheadRoute(person, chosenWaypoints, 1);
+      person.previous = copyPose(person);
+      stagedPeople.push(person);
+      existingPedestrians.push(person);
+      ids.push(id);
+      if (chosenForwardM < minForwardM) minForwardM = chosenForwardM;
+      if (chosenForwardM > maxForwardM) maxForwardM = chosenForwardM;
+      if (chosenAbsLateralM > maxAbsLateralM) maxAbsLateralM = chosenAbsLateralM;
+    }
+    if (stagedPeople.length < targetCount) {
+      const failedSummary = {
+        ok: false,
+        reason: "no-reachable-road-in-forward-corridor",
+        tick: world.tick,
+        spawned: 0,
+        nearestForwardM: null,
+        farthestForwardM: null,
+        maxAbsLateralM: null,
+        corridorUx: baseFrame ? baseFrame.ux * baseSign : fx,
+        corridorUz: baseFrame ? baseFrame.uz * baseSign : fz,
+        ids: [],
+        preservedPreviousCount: prevActiveIds.size
+      };
+      world.lastCrowdSpawn = failedSummary;
+      syncPursuitStatus(world);
+      return failedSummary;
+    }
+    entry.waveSerial = wave;
+    if (prevActiveIds.size > 0) {
+      for (let i = world.actors.length - 1; i >= 0; i--) {
+        if (prevActiveIds.has(world.actors[i].id)) {
+          world.actors.splice(i, 1);
+        }
+      }
+      if (world.pursuit?.yieldingFor && prevActiveIds.has(world.pursuit.yieldingFor.id)) {
+        world.pursuit.yieldingFor = null;
+      }
+      entry.activeIds.clear();
+    }
+    for (let i = 0; i < stagedPeople.length; i++) {
+      world.actors.push(stagedPeople[i]);
+      entry.activeIds.add(stagedPeople[i].id);
+    }
+    entry.lastActorsLen = world.actors.length;
+    world.actorIndex = new SpatialIndex(world.actors);
+    world.updateSensors(false);
+    if (world.pursuit?.gta && world.pursuit.phase === "running") {
+      const freshScan = scanPursuitWorld(world);
+      const hasForwardScannedPed = Boolean(
+        freshScan?.rays?.some(
+          (r, rIdx) => (rIdx <= 8 || rIdx >= 64) && r.kind === "pedestrian" && r.rangeM <= 42
+        )
+      ) || Boolean(
+        freshScan?.tracks?.some(
+          (t) => t.kind === "pedestrian" && t.forwardM >= -1 && t.forwardM <= 42 && Math.abs(t.rightM) <= (player.width ?? 2) * 0.5 + 5.5
+        )
+      );
+      if (hasForwardScannedPed && !world.pursuit?.frozenDriver?._faultIgnorePedestrianNitroOnly) {
+        player.nitroActive = false;
+        player.nitroSuppressedByPedestrian = true;
+        if (world.pursuit.manualAction?.nitro) {
+          const { steer, throttle, brake: brake2, gear } = world.pursuit.manualAction;
+          world.pursuit.manualAction = { steer, throttle, brake: brake2, gear };
+        }
+      }
+    }
+    const summary = {
+      ok: true,
+      tick: world.tick,
+      spawned: ids.length,
+      nearestForwardM: ids.length > 0 ? minForwardM : null,
+      farthestForwardM: ids.length > 0 ? maxForwardM : null,
+      maxAbsLateralM: ids.length > 0 ? maxAbsLateralM : null,
+      corridorUx: baseFrame ? baseFrame.ux * baseSign : fx,
+      corridorUz: baseFrame ? baseFrame.uz * baseSign : fz,
+      ids: [...ids]
+    };
+    world.lastCrowdSpawn = summary;
+    syncPursuitStatus(world);
+    return summary;
   }
 
   // src/core/pursuit-policy.js
@@ -17946,6 +23038,9 @@
   var copyPose2 = (a) => ({
     id: a.id,
     type: a.type,
+    kind: a.kind,
+    vehicleKind: a.vehicleKind,
+    spec: a.spec,
     x: a.x,
     z: a.z,
     heading: a.heading,
@@ -17959,6 +23054,95 @@
       path.forEach(Object.freeze);
       Object.freeze(path);
     }
+  }
+  var manualControlMap = /* @__PURE__ */ new WeakMap();
+  var driveNitroMap = /* @__PURE__ */ new WeakMap();
+  var distantStaticClearCache = /* @__PURE__ */ new WeakMap();
+  var distantWorldVehicleCmdCache = /* @__PURE__ */ new WeakMap();
+  var vehicleSingleRoadCache = /* @__PURE__ */ new WeakMap();
+  var worldRoadGridCache = /* @__PURE__ */ new WeakMap();
+  function localVehicleRoads(roads, body) {
+    if (!Array.isArray(roads) || roads.length <= 16) return roads;
+    let grid2 = worldRoadGridCache.get(roads);
+    const CELL = 48;
+    if (!grid2 || grid2.len !== roads.length) {
+      const map = /* @__PURE__ */ new Map();
+      for (let i = 0; i < roads.length; i++) {
+        const r = roads[i];
+        if (!r) continue;
+        let minX, maxX, minZ, maxZ;
+        const pad = (r.width ?? 14) * 0.5 + 10;
+        if (r.axis === "z") {
+          minX = r.fixed - pad;
+          maxX = r.fixed + pad;
+          minZ = r.min - pad;
+          maxZ = r.max + pad;
+        } else if (r.axis === "x") {
+          minX = r.min - pad;
+          maxX = r.max + pad;
+          minZ = r.fixed - pad;
+          maxZ = r.fixed + pad;
+        } else if (r.axis === "diag") {
+          const rx2 = r.x2 ?? r.x1 + r.ux * r.length;
+          const rz2 = r.z2 ?? r.z1 + r.uz * r.length;
+          minX = Math.min(r.x1, rx2) - pad;
+          maxX = Math.max(r.x1, rx2) + pad;
+          minZ = Math.min(r.z1, rz2) - pad;
+          maxZ = Math.max(r.z1, rz2) + pad;
+        } else {
+          continue;
+        }
+        const x0 = Math.floor(minX / CELL);
+        const x1 = Math.floor(maxX / CELL);
+        const z0 = Math.floor(minZ / CELL);
+        const z1 = Math.floor(maxZ / CELL);
+        for (let cx2 = x0; cx2 <= x1; cx2++) {
+          for (let cz2 = z0; cz2 <= z1; cz2++) {
+            const key3 = cx2 << 16 ^ cz2 & 65535;
+            let bucket = map.get(key3);
+            if (!bucket) {
+              bucket = [];
+              map.set(key3, bucket);
+            }
+            bucket.push(r);
+          }
+        }
+      }
+      grid2 = { len: roads.length, map };
+      worldRoadGridCache.set(roads, grid2);
+    }
+    const cx = Math.floor(body.x / CELL);
+    const cz = Math.floor(body.z / CELL);
+    return grid2.map.get(cx << 16 ^ cz & 65535) ?? roads;
+  }
+  function bodyInsideSingleRoadFast(body, road4) {
+    if (!road4) return false;
+    const h = (road4.width ?? 0) * 0.5;
+    if (h <= 0) return false;
+    const heading2 = body.heading ?? 0;
+    const s = Math.sin(heading2);
+    const c = Math.cos(heading2);
+    const hw = (body.width ?? VEHICLE.width) * 0.5;
+    const hl = (body.length ?? VEHICLE.length) * 0.5;
+    const cw = Math.abs(c) * hw + Math.abs(s) * hl;
+    const sw = Math.abs(s) * hw + Math.abs(c) * hl;
+    if (road4.axis === "z") {
+      return body.x - cw >= road4.fixed - h && body.x + cw <= road4.fixed + h && body.z - sw >= road4.min - h && body.z + sw <= road4.max + h;
+    }
+    if (road4.axis === "x") {
+      return body.x - cw >= road4.min - h && body.x + cw <= road4.max + h && body.z - sw >= road4.fixed - h && body.z + sw <= road4.fixed + h;
+    }
+    if (road4.axis === "diag") {
+      const ux = road4.ux;
+      const uz = road4.uz;
+      const dx = body.x - road4.x1;
+      const dz = body.z - road4.z1;
+      const along2 = dx * ux + dz * uz;
+      const lat = Math.abs(-dx * uz + dz * ux);
+      const r = Math.hypot(hw, hl);
+      return along2 - r >= -h && along2 + r <= road4.length + h && lat + r <= h;
+    }
+    return false;
   }
   var World = class _World {
     constructor(options2 = {}, environment = "city") {
@@ -17974,8 +23158,16 @@
       if (grand) {
         if (options2.vehicleDynamics !== void 0 && !["legacy", "city-realism-v1"].includes(options2.vehicleDynamics))
           throw new Error("Unsupported City vehicle dynamics profile");
+        if (options2.terrainProfile !== void 0 && !["flat", "cairo-surfaces-v1"].includes(options2.terrainProfile))
+          throw new Error("Unsupported City terrain profile");
+        if (options2.interactionProfile !== void 0 && !["none", WHEEL_SCRUB_MODE].includes(options2.interactionProfile))
+          throw new Error("Unsupported City interaction profile");
         if (options2.vehicleDynamics !== "legacy")
           this.config.vehicleDynamics = "city-realism-v1";
+        if (this.config.vehicleDynamics === "city-realism-v1" && options2.terrainProfile !== "flat")
+          this.config.terrainProfile = "cairo-surfaces-v1";
+        if (this.config.vehicleDynamics === "city-realism-v1" && this.config.terrainProfile === "cairo-surfaces-v1" && options2.interactionProfile !== "none")
+          this.config.interactionProfile = WHEEL_SCRUB_MODE;
       }
       this.environment = environment;
       this.pursuit = environment === "pursuit" ? createPursuitState(options2) : null;
@@ -18044,6 +23236,11 @@
       this.junctionOwners = /* @__PURE__ */ new Map();
       this.statics = this.pursuit?.statics ?? this.district?.statics ?? visualScene?.statics ?? (environment === "city" ? cityFootprints(this.roads) : environment === "vehicle" ? [{ ...VEHICLE_TEST_BARRIER }] : []);
       this.staticIndex = new SpatialIndex(this.statics);
+      this.terrain = grand && this.config.terrainProfile === "cairo-surfaces-v1" ? createCityTerrain(this.roads, { seed: this.config.seed }) : null;
+      this.terrainElevationAt = this.terrain ? (x, z) => terrainElevationAt(this.terrain, x, z) : null;
+      this.curbs = grand && this.config.interactionProfile === WHEEL_SCRUB_MODE ? surveyMetroCurb(this, METRO_CITY_CURBS) : null;
+      this._activeJoltActors = /* @__PURE__ */ new Set();
+      this._surfaceScratch = {};
       this.metrics = {
         distance: 0,
         interventions: 0,
@@ -18120,7 +23317,8 @@
             realisticDynamics: true,
             tireGripMps2: 8,
             contactResponse: "inelastic-slide-v1",
-            massKg: PLAYER_VEHICLE.massKg
+            massKg: PLAYER_VEHICLE.massKg,
+            ...this.config.interactionProfile === WHEEL_SCRUB_MODE ? { wheelInteractionPhysics: WHEEL_SCRUB_MODE } : {}
           } : {}
         } : tuk ? { wheelbase: 1.9 } : null,
         maxSpeed: this.config.speedLimit / 3.6 * (tuk ? 0.7 : 1),
@@ -18134,9 +23332,38 @@
         ...id === "player" ? {
           height: PLAYER_VEHICLE.heightM,
           vehicle: createVehicleState(),
+          nitroCharge: 1,
+          nitroActive: false,
+          nitroIntensity: 0,
+          nitroSuppressedByPedestrian: false,
           ...this.config.vehicleDynamics === "city-realism-v1" ? { chaseSlipRad: 0 } : {}
         } : {}
       };
+    }
+    get crowdAheadCount() {
+      return getCrowdAheadCount(this);
+    }
+    setManualControl(control = {}) {
+      if (this.vehicleTest?.phase === "running") return false;
+      const rawThrottle = Number(control?.throttle) || 0;
+      const gear = control?.gear === -1 || control?.gear === void 0 && rawThrottle < 0 ? -1 : 1;
+      const throttle = clamp(Math.abs(rawThrottle), 0, 1);
+      const brake2 = clamp(Number(control?.brake) || 0, 0, 1);
+      const steer = clamp(Number(control?.steer) || 0, -1, 1);
+      const nitro = clamp(Number(control?.nitro) || 0, 0, 1);
+      const normalized = { steer, throttle, brake: brake2, gear, nitro };
+      this.mode = "manual";
+      driveNitroMap.delete(this);
+      manualControlMap.set(this, normalized);
+      const preview = pursuitCommand(this.player, normalized, STEP);
+      this.input = {
+        targetSpeed: preview.targetSpeed,
+        steer: preview.steer
+      };
+      if (this.pursuit?.phase === "running") {
+        this.pursuit.manualAction = { ...normalized };
+      }
+      return true;
     }
     updateSensors(filter = true) {
       const geometry = measureVehicleSensors(this, this.player);
@@ -18453,7 +23680,58 @@
         return true;
       }
       if (command.type === "vehicle-test") {
-        if (this.environment !== "vehicle" || command.operation !== "run" || this.vehicleTest.phase !== "ready")
+        if (this.environment !== "vehicle") return false;
+        if (command.operation === "reset") {
+          if (record)
+            this.events.push({ tick: this.tick, command: structuredClone(command) });
+          this.mode = "manual";
+          this.input = { targetSpeed: 0, steer: 0 };
+          Object.assign(this.player, {
+            x: vehicleStart.x,
+            z: vehicleStart.z,
+            y: 0,
+            heading: vehicleStart.heading,
+            speed: 0,
+            steer: 0,
+            path: [],
+            parking: null,
+            cursor: 0,
+            maxSpeed: this.config.speedLimit / 3.6,
+            spec: {
+              wheelbase: PLAYER_VEHICLE.wheelbaseM,
+              maxSteer: PLAYER_VEHICLE.maxSteerRad,
+              ...this.config.vehicleDynamics === "city-realism-v1" ? {
+                realisticDynamics: true,
+                tireGripMps2: 8,
+                contactResponse: "inelastic-slide-v1",
+                massKg: PLAYER_VEHICLE.massKg,
+                ...this.config.interactionProfile === WHEEL_SCRUB_MODE ? { wheelInteractionPhysics: WHEEL_SCRUB_MODE } : {}
+              } : {}
+            },
+            vehicle: createVehicleState(),
+            nitroCharge: 1,
+            nitroActive: false,
+            nitroIntensity: 0,
+            nitroSuppressedByPedestrian: false
+          });
+          manualControlMap.delete(this);
+          driveNitroMap.delete(this);
+          delete this.player.previous;
+          clearVehicleMotion(this.player);
+          this.destination = null;
+          this.routeRevision++;
+          Object.assign(this.vehicleTest, {
+            phase: "ready",
+            maxSpeedMps: 5,
+            startedTick: null,
+            contactTick: null,
+            impact: null,
+            error: null
+          });
+          this.updateSensors();
+          return true;
+        }
+        if (command.operation !== "run" || this.vehicleTest.phase !== "ready")
           return false;
         if (record)
           this.events.push({ tick: this.tick, command: structuredClone(command) });
@@ -18461,6 +23739,8 @@
           this.vehicleTest.error = "Stop and reset the car at the marked start before running";
           return false;
         }
+        const heavy = command.heavy === true;
+        if (command.heavy !== void 0 && typeof command.heavy !== "boolean") return false;
         this.mode = "manual";
         this.input = { targetSpeed: 0, steer: 0 };
         this.player.path = [];
@@ -18468,11 +23748,37 @@
         this.player.cursor = 0;
         this.destination = null;
         this.routeRevision++;
+        if (heavy) {
+          this.player.maxSpeed = Math.max(this.player.maxSpeed, 15.5);
+          this.player.spec = { ...this.player.spec, acceleration: 10.4 };
+        }
         Object.assign(this.vehicleTest, {
           phase: "running",
+          maxSpeedMps: heavy ? 15 : 5,
           startedTick: this.tick,
           error: null
         });
+        return true;
+      }
+      if (command.type === "spawn-crowd-ahead") {
+        if (["vision", "vehicle"].includes(this.environment)) return false;
+        const count = clamp(
+          Math.round(Number.isFinite(Number(command.count)) ? Number(command.count) : 20),
+          1,
+          40
+        );
+        spawnCrowdAhead(this, count);
+        if (record) {
+          this.events.push({ tick: this.tick, command: { type: "spawn-crowd-ahead", count } });
+        }
+        return true;
+      }
+      if (command.type === "manual") {
+        if (this.vehicleTest?.phase === "running") return false;
+        this.setManualControl(command);
+        if (record) {
+          this.events.push({ tick: this.tick, command: structuredClone(command) });
+        }
         return true;
       }
       if (this.vehicleTest?.phase === "running" && ["drive", "mode", "destination", "scenario"].includes(command.type))
@@ -18483,21 +23789,43 @@
         validatePolicy(command.weights);
       if (record)
         this.events.push({ tick: this.tick, command: structuredClone(command) });
-      if (command.type === "drive")
+      if (command.type === "drive") {
+        manualControlMap.delete(this);
+        const rawTargetSpeed = Number(command.targetSpeed) || 0;
+        const clampedSteer = clamp(
+          Number(command.steer) || 0,
+          -VEHICLE.maxSteer,
+          VEHICLE.maxSteer
+        );
+        if (command.nitro !== void 0) {
+          const nitro = clamp(Number(command.nitro) || 0, 0, 1);
+          const maxSteer = this.player.spec?.maxSteer ?? VEHICLE.maxSteer;
+          driveNitroMap.set(this, {
+            steer: clamp(clampedSteer / maxSteer, -1, 1),
+            throttle: rawTargetSpeed > 0 ? 1 : 0,
+            brake: 0,
+            gear: rawTargetSpeed < 0 ? -1 : 1,
+            nitro
+          });
+        } else {
+          driveNitroMap.delete(this);
+        }
         this.input = {
           targetSpeed: clamp(
-            Number(command.targetSpeed) || 0,
+            rawTargetSpeed,
             -2.5,
             this.player.maxSpeed
           ),
-          steer: clamp(
-            Number(command.steer) || 0,
-            -VEHICLE.maxSteer,
-            VEHICLE.maxSteer
-          )
+          steer: clampedSteer
         };
-      if (command.type === "mode")
+      }
+      if (command.type === "mode") {
         this.mode = command.mode === "auto" ? "auto" : "manual";
+        if (this.mode === "auto") {
+          manualControlMap.delete(this);
+          driveNitroMap.delete(this);
+        }
+      }
       if (command.type === "policy") {
         this.policy = command.weights ? validatePolicy(command.weights) : null;
         return true;
@@ -18512,7 +23840,10 @@
           if (this.player.speed === 0) this.visionLab.phase = "complete";
         }
         this.mode = "manual";
+        manualControlMap.delete(this);
+        driveNitroMap.delete(this);
         this.input = { targetSpeed: 0, steer: 0 };
+        if (Math.abs(this.player.speed) < 1e-8) clearVehicleMotion(this.player);
         this.player.path = [];
         this.player.parking = null;
         this.player.cursor = 0;
@@ -18639,6 +23970,9 @@
             learner?.weights ?? pursuit.policy,
             learner?.choose ?? pursuit.trainingChoice
           );
+          if (typeof pursuit.decision?.nitroSuppressedByPedestrian === "boolean") {
+            this.player.nitroSuppressedByPedestrian = pursuit.decision.nitroSuppressedByPedestrian;
+          }
           if (isCityHunt(pursuit.variant)) pursuit.recovery = pursuit.decision.recovery ?? null;
           learner?.record(pursuit.decision, pursuit.metrics);
           pursuit.nextDecisionTick = this.tick + PURSUIT_DECISION_TICKS;
@@ -18657,11 +23991,49 @@
         return;
       }
       if (!usesRushPace(pursuit.variant)) this.actorIndex = new SpatialIndex(this.actors);
+      const metroV5PursuitLod = (this.config.cityVersion ?? 0) >= 5 && this.environment === "metro";
       updateDistrictTraffic(this);
       let query;
       const targetBlocker = pursuit.response?.dispatch ? (target) => (query ??= createWalkTargetQuery(this.actors))(target) : void 0;
+      const pxPursuit = this.player?.x ?? 0;
+      const pzPursuit = this.player?.z ?? 0;
       stepPursuit(this, action, {
-        pedestrianMotion: (actor) => stepDistrictPedestrian(this, actor, targetBlocker),
+        pedestrianMotion: (actor) => {
+          if (isCrowdAheadPedestrian(actor)) return pedestrianMotion(this, actor, true);
+          if (metroV5PursuitLod) {
+            const distSq = (actor.x - pxPursuit) ** 2 + (actor.z - pzPursuit) ** 2;
+            if (distSq > 65 * 65 && actor.motionMode !== "stop") {
+              const idStr = actor.id ?? "";
+              const mask = distSq > 120 * 120 ? 7 : 3;
+              if ((this.tick + (idStr.charCodeAt(idStr.length - 1) || 0) & mask) !== 0) {
+                if (actor.speed === 0) {
+                  return {
+                    ...actor,
+                    pause: (actor.pause ?? 0) > 0 ? Math.max(0, actor.pause - STEP) : 0,
+                    accelerationMps2: 0,
+                    turnRateRadS: 0
+                  };
+                }
+                const walkRef = actor.walkRoute?.[0] ?? actor.target;
+                if (walkRef && (actor.pause ?? 0) === 0 && actor.reason !== "blocked" && (walkRef.x - actor.x) ** 2 + (walkRef.z - actor.z) ** 2 > 0.64) {
+                  const desiredH = Math.atan2(walkRef.x - actor.x, walkRef.z - actor.z);
+                  const maxTurn = (actor.body?.maxTurnRateRadS ?? 4.2) * STEP;
+                  const nextH = actor.heading + clamp(angleDelta(desiredH, actor.heading), -maxTurn, maxTurn);
+                  const stepM = actor.speed * STEP;
+                  return {
+                    ...actor,
+                    x: actor.x + Math.sin(nextH) * stepM,
+                    z: actor.z + Math.cos(nextH) * stepM,
+                    heading: nextH,
+                    accelerationMps2: 0,
+                    turnRateRadS: angleDelta(nextH, actor.heading) / STEP
+                  };
+                }
+              }
+            }
+          }
+          return stepDistrictPedestrian(this, actor, targetBlocker);
+        },
         vehicleCommand: (actor, requested) => pursuit.gta && (pursuit.patrols.has(actor) || actor === this.player && (this.mode === "manual" || pursuit.frozenDriver?.status === "active")) ? requested : actor.pursuitRole === "police" ? districtTrafficCommand(this, actor, requested) : this.districtDrivingCommand(
           actor,
           requested ?? this.followTrafficTrip(actor),
@@ -18692,21 +24064,115 @@
       };
       this.visualState = this.visualPredictor.snapshot(nowS, ownMotion);
       this.visualDecision = this.visualState.decision;
+      if (this._activeJoltActors?.size) {
+        let parkedDisplaced = false;
+        const scrubEnabled = this.config?.interactionProfile === WHEEL_SCRUB_MODE;
+        for (const jolted of this._activeJoltActors) {
+          const res = stepActorImpactReaction(jolted, STEP);
+          if (scrubEnabled && jolted.kind === "parked-vehicle" && res.stictionBroken && (Math.abs(res.lateralPushMps) > 0.04 || Math.abs(res.longitudinalPushMps) > 0.04 || Math.abs(res.yawPushRadS) > 0.03)) {
+            const nextH = (jolted.heading ?? 0) + res.yawPushRadS * STEP;
+            const sH = Math.sin(nextH);
+            const cH = Math.cos(nextH);
+            const cand = {
+              ...jolted,
+              x: jolted.x + (cH * res.lateralPushMps + sH * res.longitudinalPushMps) * STEP,
+              z: jolted.z + (-sH * res.lateralPushMps + cH * res.longitudinalPushMps) * STEP,
+              heading: nextH
+            };
+            const movesAwayOrClear = !overlaps(cand, this.player, 0.13) || distance(cand, this.player) >= distance(jolted, this.player) && !overlaps(cand, this.player, 0.01);
+            const nearStatics = this.staticIndex.near(cand, 11);
+            const clearStatics = !nearStatics.some((s) => s !== jolted && overlaps(cand, s));
+            const clearActors = !this.actors.some(
+              (a) => a !== this.player && overlaps(cand, a, a.type === "pedestrian" ? 0.35 : 0)
+            );
+            if (movesAwayOrClear && clearStatics && clearActors) {
+              jolted.x = cand.x;
+              jolted.z = cand.z;
+              jolted.heading = cand.heading;
+              parkedDisplaced = true;
+            }
+          }
+          if (!res.active) this._activeJoltActors.delete(jolted);
+        }
+        if (parkedDisplaced) {
+          this.staticIndex = new SpatialIndex(this.statics);
+        }
+      }
       if (this.cityEncounters) advanceCityEncounters(this);
       if (this.pursuit?.phase === "running") {
         this.stepPursuitMode(ownMotion, nowS);
         return;
       }
-      if (this.district) updateDistrictTraffic(this);
+      const metroV5 = this.environment === "metro" && (this.config?.cityVersion ?? 0) >= 5;
+      const ambientMetroV5 = metroV5 && !(this.districtCase && this.districtCase.id !== "ambient");
+      if (this.district && (!ambientMetroV5 || (this.tick & 3) === 0)) updateDistrictTraffic(this);
       if (this.environment !== "vehicle") updateScenarios(this);
       this.actorIndex = new SpatialIndex(this.actors);
-      this.updateJunctions();
-      const reserved = new SpatialIndex(this.actors.map(copyPose2));
-      for (const actor of this.actors) {
-        actor.previous = copyPose2(actor);
+      if (this.junctionGroups.length > 0) this.updateJunctions();
+      const playerStartX = this.player.x;
+      const playerStartZ = this.player.z;
+      let walkQuery = null;
+      const targetBlocker = ambientMetroV5 ? (target) => (walkQuery ??= createWalkTargetQuery(this.actors))(target) : void 0;
+      let reservedInput;
+      if (metroV5) {
+        const pool = this._reservedPosePool ??= [];
+        const n = this.actors.length;
+        while (pool.length < n) {
+          pool.push({
+            id: "",
+            type: "",
+            kind: void 0,
+            vehicleKind: void 0,
+            spec: null,
+            x: 0,
+            z: 0,
+            heading: 0,
+            speed: 0,
+            length: void 0,
+            width: void 0,
+            radius: void 0
+          });
+        }
+        if (pool.length > n) pool.length = n;
+        for (let i = 0; i < n; i++) {
+          const src = this.actors[i];
+          const dst = pool[i];
+          dst.id = src.id;
+          dst.type = src.type;
+          dst.kind = src.kind;
+          dst.vehicleKind = src.vehicleKind;
+          dst.spec = src.spec;
+          dst.x = src.x;
+          dst.z = src.z;
+          dst.heading = src.heading;
+          dst.speed = src.speed;
+          dst.length = src.length;
+          dst.width = src.width;
+          dst.radius = src.radius;
+        }
+        reservedInput = pool;
+      } else {
+        reservedInput = this.actors.map(copyPose2);
+      }
+      const reserved = new SpatialIndex(reservedInput);
+      for (let actorIdx = 0; actorIdx < this.actors.length; actorIdx++) {
+        const actor = this.actors[actorIdx];
+        if (metroV5 && actor !== this.player && actor.previous) {
+          actor.previous.x = actor.x;
+          actor.previous.z = actor.z;
+          actor.previous.heading = actor.heading;
+          actor.previous.speed = actor.speed;
+        } else {
+          actor.previous = copyPose2(actor);
+        }
         let next;
         let appliedCommand;
+        let manualActionForNitro = null;
+        let pedSuppressedNitro = false;
         let contact = null;
+        const actorDistSq = ambientMetroV5 && actor !== this.player ? (actor.x - playerStartX) ** 2 + (actor.z - playerStartZ) ** 2 : 0;
+        const strideMask = actorDistSq > 135 * 135 ? 15 : actorDistSq > 80 * 80 ? 7 : 3;
+        const nonStrideTick = ambientMetroV5 && (this.tick + actorIdx & strideMask) !== 0;
         let controlledTest = actor === this.player && this.vehicleTest?.phase === "running";
         if (controlledTest && this.tick - this.vehicleTest.startedTick >= this.vehicleTest.maxTicks) {
           this.vehicleTest.phase = "ready";
@@ -18715,74 +24181,243 @@
           controlledTest = false;
         }
         const physicalBarrier = actor === this.player && this.environment === "vehicle" && (controlledTest || this.vehicleTest.phase === "contact");
-        if (actor.type === "pedestrian") next = this.district ? this.districtCase && this.districtCase.id !== "ambient" ? advanceDistrictCase(this, actor) : stepDistrictPedestrian(this, actor) : this.visionLab ? advanceVisionActor(actor, STEP, {
-          timeS: (this.tick - this.visionLab.startedTick) * STEP,
-          tick: this.tick
-        }) : this.pedestrianMotion(actor);
-        else {
-          let command;
-          if (controlledTest)
-            command = {
-              targetSpeed: this.vehicleTest.maxSpeedMps,
-              steer: 0,
-              reason: "vehicle-test",
-              blockedBy: null
-            };
-          else if (actor === this.player && this.mode === "manual")
-            command = { ...this.input };
-          else {
-            if (!actor.path.length && actor !== this.player && !(this.districtCase && this.districtCase.id !== "ambient") && this.tick % 120 === 0)
-              this.assignTrafficRoute(actor);
-            if (this.district) freezePath(actor.path);
-            command = followPath(actor, actor.path, actor.cursor);
-            actor.cursor = command.cursor;
-            if (actor.parking && (!this.district || distance(actor, actor.parking) < 14 && Math.abs(angleDelta(actor.heading, actor.parking.heading)) < 0.35)) {
-              const toStop = (actor.parking.x - actor.x) * Math.sin(actor.parking.heading) + (actor.parking.z - actor.z) * Math.cos(actor.parking.heading);
-              command.targetSpeed = Math.min(
-                command.targetSpeed,
-                toStop < 26 ? 2.5 : actor.maxSpeed,
-                Math.sqrt(Math.max(0, toStop - 0.25) * 3.2)
-              );
+        if (actor.type === "pedestrian") {
+          const farPedFast = nonStrideTick && actorDistSq > 80 * 80 && !isCrowdAheadPedestrian(actor) && actor.motionMode !== "stop";
+          if (farPedFast && actor.speed === 0) {
+            if ((actor.pause ?? 0) > 0) {
+              actor.pause = Math.max(0, actor.pause - STEP);
             }
-            if (actor.path.length && (actor.parking ? Math.abs(actor.speed) < 0.05 && distance(actor, actor.parking) < 0.8 && (!this.district || Math.abs(angleDelta(actor.heading, actor.parking.heading)) <= 0.2) : command.remaining < 1.5)) {
-              if (actor === this.player) {
-                actor.path = [];
-                this.metrics.completedTrips++;
-                this.routeRevision++;
-                command.targetSpeed = 0;
-                actor.reason = "arrived";
-              } else {
-                this.metrics.trafficTrips++;
-                if (this.districtCase && this.districtCase.id !== "ambient") {
-                  actor.path = [];
-                  actor.districtTripCompleted = true;
-                  command.targetSpeed = 0;
+            actor.accelerationMps2 = 0;
+            actor.turnRateRadS = 0;
+            actor.motionTimeS = (this.tick + 1) * STEP;
+            actor.wait += STEP;
+            continue;
+          } else if (farPedFast && actor.speed > 0 && (actor.pause ?? 0) === 0 && actor.target && actor.reason !== "blocked") {
+            const walkRef = actor.walkRoute?.[0] ?? actor.target;
+            if ((walkRef.x - actor.x) ** 2 + (walkRef.z - actor.z) ** 2 > 0.64) {
+              const desiredH = Math.atan2(walkRef.x - actor.x, walkRef.z - actor.z);
+              const maxTurn = (actor.body?.maxTurnRateRadS ?? 4.2) * STEP;
+              const nextH = actor.heading + clamp(angleDelta(desiredH, actor.heading), -maxTurn, maxTurn);
+              const stepM = actor.speed * STEP;
+              const candX = actor.x + Math.sin(nextH) * stepM;
+              const candZ = actor.z + Math.cos(nextH) * stepM;
+              const cacheKey = actor.body ?? actor;
+              let stCache = distantStaticClearCache.get(cacheKey);
+              if (!stCache || stCache.staticIndex !== this.staticIndex || (actor.x - stCache.x) ** 2 + (actor.z - stCache.z) ** 2 > 1.44) {
+                const probe = {
+                  type: "pedestrian",
+                  x: actor.x,
+                  z: actor.z,
+                  radius: (actor.radius ?? 0.38) + 1.38
+                };
+                const candStatics = this.staticIndex.near(actor, 11);
+                const closeStatics = [];
+                for (let sIdx = 0; sIdx < candStatics.length; sIdx++) {
+                  if (overlaps(probe, candStatics[sIdx], 0.12)) {
+                    closeStatics.push(candStatics[sIdx]);
+                  }
+                }
+                stCache = { staticIndex: this.staticIndex, x: actor.x, z: actor.z, statics: closeStatics };
+                distantStaticClearCache.set(cacheKey, stCache);
+              }
+              const nearRes = reserved.near(actor, 4);
+              const rSelf = actor.radius ?? 0.38;
+              let hasCloseBody = stCache.statics.length > 0;
+              if (!hasCloseBody) {
+                for (let rIdx = 0; rIdx < nearRes.length; rIdx++) {
+                  const other = nearRes[rIdx];
+                  if (other.id === actor.id) continue;
+                  const dx = other.x - candX;
+                  const dz = other.z - candZ;
+                  if (other.type === "pedestrian") {
+                    const lim = rSelf + (other.radius ?? 0.38) + 0.13;
+                    if (Math.abs(dx) <= lim && Math.abs(dz) <= lim && dx * dx + dz * dz <= lim * lim) {
+                      hasCloseBody = true;
+                      break;
+                    }
+                  } else if (Math.abs(dx) <= 3.65 && Math.abs(dz) <= 3.65) {
+                    hasCloseBody = true;
+                    break;
+                  }
+                }
+              }
+              if (!hasCloseBody) {
+                actor.turnRateRadS = angleDelta(nextH, actor.heading) / STEP;
+                actor.heading = nextH;
+                actor.x = candX;
+                actor.z = candZ;
+                actor.accelerationMps2 = 0;
+                actor.motionTimeS = (this.tick + 1) * STEP;
+                actor.distance += stepM;
+                actor.wait = 0;
+                reserved.add({
+                  id: actor.id,
+                  type: actor.type,
+                  x: candX,
+                  z: candZ,
+                  heading: nextH,
+                  radius: actor.radius
+                });
+                continue;
+              }
+              next = {
+                ...actor,
+                x: candX,
+                z: candZ,
+                heading: nextH,
+                accelerationMps2: 0,
+                turnRateRadS: angleDelta(nextH, actor.heading) / STEP
+              };
+            } else {
+              next = stepDistrictPedestrian(this, actor, targetBlocker);
+            }
+          } else {
+            next = isCrowdAheadPedestrian(actor) ? this.pedestrianMotion(actor) : this.district ? this.districtCase && this.districtCase.id !== "ambient" ? advanceDistrictCase(this, actor) : stepDistrictPedestrian(this, actor, targetBlocker) : this.visionLab ? advanceVisionActor(actor, STEP, {
+              timeS: (this.tick - this.visionLab.startedTick) * STEP,
+              tick: this.tick
+            }) : this.pedestrianMotion(actor);
+          }
+        } else {
+          const cachedCarEntry = nonStrideTick && actor !== this.player && actorDistSq > 95 * 95 ? distantWorldVehicleCmdCache.get(actor) : null;
+          if (cachedCarEntry && this.tick - cachedCarEntry.tick <= strideMask && actor.reason !== "road-boundary" && actor.districtSources?.appliedSource !== "physical-guard" && actor.path.length > 2) {
+            appliedCommand = cachedCarEntry.cmd;
+            if (actor.speed === 0 && appliedCommand.targetSpeed === 0) {
+              actor.reason = appliedCommand.reason;
+              actor.blockedBy = appliedCommand.blockedBy;
+              actor.wait += STEP;
+              continue;
+            }
+            next = integrateVehicle(actor, appliedCommand, STEP);
+            next.reason = appliedCommand.reason;
+            next.blockedBy = appliedCommand.blockedBy;
+          } else {
+            let command;
+            const remCap = metroV5 && actor !== this.player ? (actor.maxSpeed ?? 15) ** 2 / 4 + 6 : Infinity;
+            if (controlledTest)
+              command = {
+                targetSpeed: this.vehicleTest.maxSpeedMps,
+                steer: 0,
+                reason: "vehicle-test",
+                blockedBy: null
+              };
+            else if (actor === this.player && this.mode === "manual") {
+              const explicitManual = manualControlMap.get(this);
+              const driveNitro = driveNitroMap.get(this);
+              if (explicitManual) {
+                manualActionForNitro = explicitManual;
+                command = pursuitCommand(actor, explicitManual, STEP);
+              } else if (driveNitro) {
+                manualActionForNitro = driveNitro;
+                if ((driveNitro.nitro ?? 0) >= 0.5 && isNitroEngaged(actor, driveNitro) && this.input.targetSpeed > 0) {
+                  const boostedMaxSpeed = Math.min(
+                    NITRO_SPEC.maxBoostSpeedMps,
+                    actor.maxSpeed * NITRO_SPEC.speedMultiplier
+                  );
+                  command = {
+                    targetSpeed: boostedMaxSpeed,
+                    steer: this.input.steer,
+                    maxSpeed: boostedMaxSpeed,
+                    accelMultiplier: NITRO_SPEC.accelMultiplier
+                  };
                 } else {
-                  this.assignTrafficRoute(actor);
-                  command = followPath(actor, actor.path, 0);
+                  command = { ...this.input };
+                }
+              } else {
+                command = { ...this.input };
+              }
+            } else {
+              if (!actor.path.length && actor !== this.player && !(this.districtCase && this.districtCase.id !== "ambient") && this.tick % 120 === 0)
+                this.assignTrafficRoute(actor);
+              if (this.district) freezePath(actor.path);
+              command = followPath(actor, actor.path, actor.cursor, false, remCap);
+              actor.cursor = command.cursor;
+              if (actor.parking && (!this.district || distance(actor, actor.parking) < 14 && Math.abs(angleDelta(actor.heading, actor.parking.heading)) < 0.35)) {
+                const toStop = (actor.parking.x - actor.x) * Math.sin(actor.parking.heading) + (actor.parking.z - actor.z) * Math.cos(actor.parking.heading);
+                command.targetSpeed = Math.min(
+                  command.targetSpeed,
+                  toStop < 26 ? 2.5 : actor.maxSpeed,
+                  Math.sqrt(Math.max(0, toStop - 0.25) * 3.2)
+                );
+              }
+              if (actor.path.length && (actor.parking ? Math.abs(actor.speed) < 0.05 && distance(actor, actor.parking) < 0.8 && (!this.district || Math.abs(angleDelta(actor.heading, actor.parking.heading)) <= 0.2) : command.remaining < 1.5)) {
+                if (actor === this.player) {
+                  actor.path = [];
+                  this.metrics.completedTrips++;
+                  this.routeRevision++;
+                  command.targetSpeed = 0;
+                  actor.reason = "arrived";
+                } else {
+                  this.metrics.trafficTrips++;
+                  if (this.districtCase && this.districtCase.id !== "ambient") {
+                    actor.path = [];
+                    actor.districtTripCompleted = true;
+                    command.targetSpeed = 0;
+                  } else {
+                    this.assignTrafficRoute(actor);
+                    if (this.district) freezePath(actor.path);
+                    command = followPath(actor, actor.path, 0, false, remCap);
+                  }
                 }
               }
             }
+            const preTargetSpeed = actor === this.player ? command.targetSpeed : void 0;
+            const preMaxSpeed = actor === this.player ? command.maxSpeed : void 0;
+            const preAccelMult = actor === this.player ? command.accelMultiplier : void 0;
+            if (actor === this.player && this.mode === "auto" && command.targetSpeed > 0)
+              command.targetSpeed = policySpeed(this, actor, command.targetSpeed);
+            if (actor === this.player && this.districtCase && this.districtCase.id !== "ambient")
+              command.targetSpeed = this.districtCase.error ? 0 : Math.min(command.targetSpeed, this.districtCase.requestedSpeedMps);
+            if (this.district) command = this.districtDrivingCommand(actor, command, ownMotion, nowS);
+            else {
+              const predictedBrake = !controlledTest && actor === this.player && this.visualMode === "vision-first" && this.visualDecision?.available === true && this.visualDecision.brake === true;
+              const reactiveCommand = controlledTest ? command : this.safeSpeed(actor, command);
+              if (actor === this.player && this.visionLab && reactiveCommand.targetSpeed < command.targetSpeed - 0.1 && this.visionLab.firstReactiveBrakeS === null)
+                this.visionLab.firstReactiveBrakeS = nowS;
+              const appliedVisualBrake = predictedBrake && reactiveCommand.targetSpeed > 0;
+              command = appliedVisualBrake ? { ...reactiveCommand, targetSpeed: 0, reason: "visual-prediction" } : reactiveCommand;
+              if (appliedVisualBrake && this.visionLab?.firstVisualBrakeS === null)
+                this.visionLab.firstVisualBrakeS = nowS;
+            }
+            if (actor === this.player && preAccelMult > 1) {
+              const blockedPed = command.blockedBy && this.actors.some(
+                (b) => b.id === command.blockedBy && b.type === "pedestrian"
+              );
+              if (blockedPed) {
+                pedSuppressedNitro = true;
+                if (command.maxSpeed !== void 0 || command.accelMultiplier !== void 0) {
+                  const { maxSpeed: _m, accelMultiplier: _a, ...rest } = command;
+                  command = rest;
+                }
+              } else if (command.targetSpeed > 0) {
+                const appliedSrc = command.districtSources?.appliedSource;
+                const safetyBraked = Boolean(
+                  appliedSrc === "reactive-safety" || appliedSrc === "camera-pixels" || appliedSrc === "both" || command.reason === "visual-prediction" || command.blockedBy && (this.actors.some((b) => b.id === command.blockedBy) || this.statics.some((s) => s.id === command.blockedBy))
+                );
+                command = {
+                  ...command,
+                  targetSpeed: safetyBraked ? command.targetSpeed : preTargetSpeed,
+                  maxSpeed: preMaxSpeed,
+                  accelMultiplier: preAccelMult
+                };
+              }
+            }
+            if (this.terrain && actor === this.player) {
+              const surface = sampleCitySurface(this.terrain, actor.x, actor.z, actor.heading, this._surfaceScratch);
+              command = { ...command, surface };
+            }
+            appliedCommand = command;
+            if (ambientMetroV5 && actor !== this.player) {
+              distantWorldVehicleCmdCache.set(actor, { tick: this.tick, cmd: command });
+            }
+            const nitroPose = actor === this.player && !pedSuppressedNitro ? buildNitroBoostPose(actor, command, copyVehicleMotion) : null;
+            next = integrateVehicle(nitroPose ?? actor, command, STEP);
+            if (nitroPose) {
+              next.maxSpeed = actor.maxSpeed;
+              next.spec = actor.spec;
+            }
+            next.reason = actor === this.player && !actor.path.length && this.destination && this.metrics.completedTrips ? "arrived" : command.reason;
+            next.blockedBy = command.blockedBy;
           }
-          if (actor === this.player && this.mode === "auto" && command.targetSpeed > 0)
-            command.targetSpeed = policySpeed(this, actor, command.targetSpeed);
-          if (actor === this.player && this.districtCase && this.districtCase.id !== "ambient")
-            command.targetSpeed = this.districtCase.error ? 0 : Math.min(command.targetSpeed, this.districtCase.requestedSpeedMps);
-          if (this.district) command = this.districtDrivingCommand(actor, command, ownMotion, nowS);
-          else {
-            const predictedBrake = !controlledTest && actor === this.player && this.visualMode === "vision-first" && this.visualDecision?.available === true && this.visualDecision.brake === true;
-            const reactiveCommand = controlledTest ? command : this.safeSpeed(actor, command);
-            if (actor === this.player && this.visionLab && reactiveCommand.targetSpeed < command.targetSpeed - 0.1 && this.visionLab.firstReactiveBrakeS === null)
-              this.visionLab.firstReactiveBrakeS = nowS;
-            const appliedVisualBrake = predictedBrake && reactiveCommand.targetSpeed > 0;
-            command = appliedVisualBrake ? { ...reactiveCommand, targetSpeed: 0, reason: "visual-prediction" } : reactiveCommand;
-            if (appliedVisualBrake && this.visionLab?.firstVisualBrakeS === null)
-              this.visionLab.firstVisualBrakeS = nowS;
-          }
-          appliedCommand = command;
-          next = integrateVehicle(actor, command, STEP);
-          next.reason = actor === this.player && !actor.path.length && this.destination && this.metrics.completedTrips ? "arrived" : command.reason;
-          next.blockedBy = command.blockedBy;
         }
         if (physicalBarrier) {
           const barrier2 = this.statics.find(
@@ -18793,11 +24428,95 @@
             if (contact) next = contact.body;
           }
         }
-        const nearby = reserved.near(actor, 8).filter((a) => a.id !== actor.id).concat(this.staticIndex.near(actor, 11)).filter(
-          (a) => !physicalBarrier || a.id !== this.vehicleTest.barrierId
-        );
+        let nearby;
+        if (metroV5 && actor.type === "pedestrian") {
+          const cacheKey = actor.body ?? actor;
+          let stCache = distantStaticClearCache.get(cacheKey);
+          if (!stCache || stCache.staticIndex !== this.staticIndex || (actor.x - stCache.x) ** 2 + (actor.z - stCache.z) ** 2 > 1.44) {
+            const probe = {
+              type: "pedestrian",
+              x: actor.x,
+              z: actor.z,
+              radius: (actor.radius ?? 0.38) + 1.38
+            };
+            const candStatics = this.staticIndex.near(actor, 11);
+            const closeStatics = [];
+            for (let sIdx = 0; sIdx < candStatics.length; sIdx++) {
+              if (overlaps(probe, candStatics[sIdx], 0.12)) {
+                closeStatics.push(candStatics[sIdx]);
+              }
+            }
+            stCache = {
+              staticIndex: this.staticIndex,
+              x: actor.x,
+              z: actor.z,
+              statics: closeStatics
+            };
+            distantStaticClearCache.set(cacheKey, stCache);
+          }
+          const nearRes = reserved.near(actor, 4);
+          const rSelf = actor.radius ?? 0.38;
+          nearby = [];
+          for (let rIdx = 0; rIdx < nearRes.length; rIdx++) {
+            const other = nearRes[rIdx];
+            if (other.id === actor.id) continue;
+            const dx = other.x - next.x;
+            const dz = other.z - next.z;
+            if (other.type === "pedestrian") {
+              const lim = rSelf + (other.radius ?? 0.38) + 0.16;
+              if (Math.abs(dx) <= lim && Math.abs(dz) <= lim && dx * dx + dz * dz <= lim * lim) {
+                nearby.push(other);
+              }
+            } else if (Math.abs(dx) <= 3.65 && Math.abs(dz) <= 3.65) {
+              nearby.push(other);
+            }
+          }
+          for (let sIdx = 0; sIdx < stCache.statics.length; sIdx++) {
+            nearby.push(stCache.statics[sIdx]);
+          }
+        } else if (metroV5 && actor !== this.player && actor.type === "vehicle") {
+          let stCache = distantStaticClearCache.get(actor);
+          const selfHalfDiag = Math.hypot(actor.width ?? 1.9, actor.length ?? 4.5) * 0.5;
+          if (!stCache || stCache.staticIndex !== this.staticIndex || (actor.x - stCache.x) ** 2 + (actor.z - stCache.z) ** 2 > 1.44) {
+            const probe = {
+              type: "pedestrian",
+              x: actor.x,
+              z: actor.z,
+              radius: selfHalfDiag + 1.45
+            };
+            const candStatics = this.staticIndex.near(actor, 11);
+            const closeStatics = [];
+            for (let sIdx = 0; sIdx < candStatics.length; sIdx++) {
+              if (overlaps(probe, candStatics[sIdx], 0.14)) {
+                closeStatics.push(candStatics[sIdx]);
+              }
+            }
+            stCache = { staticIndex: this.staticIndex, x: actor.x, z: actor.z, statics: closeStatics };
+            distantStaticClearCache.set(actor, stCache);
+          }
+          const nearRes = reserved.near(actor, 6);
+          nearby = [];
+          for (let rIdx = 0; rIdx < nearRes.length; rIdx++) {
+            const other = nearRes[rIdx];
+            if (other.id === actor.id) continue;
+            const dx = other.x - next.x;
+            const dz = other.z - next.z;
+            const lim = other.type === "pedestrian" ? selfHalfDiag + (other.radius ?? 0.38) + 0.35 : selfHalfDiag + 3.25;
+            if (Math.abs(dx) <= lim && Math.abs(dz) <= lim && dx * dx + dz * dz <= lim * lim) {
+              nearby.push(other);
+            }
+          }
+          for (let sIdx = 0; sIdx < stCache.statics.length; sIdx++) {
+            nearby.push(stCache.statics[sIdx]);
+          }
+        } else {
+          nearby = reserved.near(actor, 8).filter((a) => a.id !== actor.id).concat(this.staticIndex.near(actor, 11)).filter(
+            (a) => !physicalBarrier || a.id !== this.vehicleTest.barrierId
+          );
+        }
         if (actor === this.player && actor.spec?.contactResponse === "inelastic-slide-v1") {
           let firstFraction = Infinity;
+          let hitObstacle = null;
           for (const obstacle of nearby) {
             if (obstacle.type === "pedestrian") continue;
             const candidate = resolveVehicleContact(actor, next, obstacle, STEP);
@@ -18805,21 +24524,84 @@
               if (candidate.contactFraction < firstFraction) {
                 firstFraction = candidate.contactFraction;
                 contact = candidate;
+                hitObstacle = obstacle;
               }
             }
           }
-          if (contact) next = contact.body;
+          if (contact) {
+            next = contact.body;
+            const liveObstacle = hitObstacle && hitObstacle.type !== "static" ? this.actors.find((a) => a.id === hitObstacle.id) ?? hitObstacle : hitObstacle;
+            if (liveObstacle && (liveObstacle.type === "vehicle" || liveObstacle.kind === "parked-vehicle")) {
+              const tSlipSign = Math.sign(contact.scraping?.tangentialSlipSignedMps ?? 1) || 1;
+              const tx = contact.normal.z * tSlipSign;
+              const tz = -contact.normal.x * tSlipSign;
+              recordActorImpactReaction(liveObstacle, {
+                normalX: contact.normal.x,
+                normalZ: contact.normal.z,
+                closingSpeedMps: contact.closingSpeedMps,
+                tangentialSpeedMps: contact.scraping?.tangentialSpeedMps ?? 0,
+                tangentialDirX: tx,
+                tangentialDirZ: tz,
+                sharedImpulse: contact.sharedImpulse ?? null,
+                contactX: contact.scraping?.worldX ?? next.x,
+                contactZ: contact.scraping?.worldZ ?? next.z,
+                egoMassKg: PLAYER_VEHICLE.massKg,
+                tick: this.tick
+              });
+              this._activeJoltActors?.add(liveObstacle);
+            }
+            if (liveObstacle && (liveObstacle.type === "vehicle" || liveObstacle.kind === "parked-vehicle") && (contact.closingSpeedMps >= 1.2 || (contact.scraping?.tangentialSpeedMps ?? 0) >= 3.2) && actor.vehicle?.contact?.hitId !== contact.hitId) {
+              recordActorVisualCrash(
+                liveObstacle,
+                hitObstacle,
+                next,
+                Math.max(contact.closingSpeedMps, (contact.scraping?.tangentialSpeedMps ?? 0) * 0.35)
+              );
+            }
+          }
         }
-        const guard = sweepSafe(
+        const filteredNearby = (actor.type === "pedestrian" || metroV5 && actor !== this.player && !actor.spec?.contactResponse) && contact === null ? nearby : nearby.filter((a) => {
+          if (a.id === contact?.hitId) return false;
+          if (actor.spec?.contactResponse === "inelastic-slide-v1" && a.type !== "pedestrian" && overlaps(actor, a, 0.12) && distance(next, a) > distance(actor, a) + 1e-10 && !overlaps(next, a)) return false;
+          if (actor.spec?.contactResponse === "inelastic-slide-v1" && actor.spec?.wheelInteractionPhysics === WHEEL_SCRUB_MODE && a.type !== "pedestrian" && (overlaps(actor, a, 0.12) || this.mode === "manual" && overlaps(next, a, 0.12)) && !overlaps(actor, a) && !overlaps(next, a) && resolveVehicleContact(actor, next, a, STEP) === null) {
+            return false;
+          }
+          const latched = actor.spec?.contactResponse === "inelastic-slide-v1" ? actor.vehicle?.contact : null;
+          return !(a.id === latched?.hitId && latched.normal && (next.x - actor.x) * latched.normal.x + (next.z - actor.z) * latched.normal.z <= 1e-10 && !overlaps(next, a));
+        });
+        const allowCityCurb = Boolean(actor === this.player && this.curbs && this.mode === "manual" && !physicalBarrier);
+        let guardRoads = actor.type === "vehicle" ? this.roads : null;
+        const stationaryAmbientVehicle = metroV5 && actor !== this.player && actor.type === "vehicle" && actor.x === next.x && actor.z === next.z && actor.heading === next.heading;
+        if (metroV5 && !stationaryAmbientVehicle && actor !== this.player && actor.type === "vehicle") {
+          let entry = vehicleSingleRoadCache.get(actor);
+          if (entry?.road && bodyInsideSingleRoadFast(actor, entry.road) && bodyInsideSingleRoadFast(next, entry.road)) {
+            guardRoads = entry.arr;
+          } else if (!entry || this.tick >= entry.retryTick) {
+            let matched = null;
+            for (let rIdx = 0; rIdx < this.drivingRoads.length; rIdx++) {
+              const r = this.drivingRoads[rIdx];
+              if (bodyInsideSingleRoadFast(actor, r) && bodyInsideSingleRoadFast(next, r)) {
+                matched = { road: r, arr: [r], retryTick: 0 };
+                break;
+              }
+            }
+            if (matched) {
+              vehicleSingleRoadCache.set(actor, matched);
+              guardRoads = matched.arr;
+            } else {
+              const localRoads = localVehicleRoads(this.roads, actor);
+              vehicleSingleRoadCache.set(actor, { road: null, arr: localRoads, retryTick: this.tick + 4 });
+              guardRoads = localRoads;
+            }
+          } else if (entry?.arr) {
+            guardRoads = localVehicleRoads(this.roads, actor);
+          }
+        }
+        const guard = stationaryAmbientVehicle || metroV5 && actor.type === "pedestrian" && filteredNearby.length === 0 || metroV5 && actor !== this.player && actor.type === "vehicle" && guardRoads?.length === 1 && filteredNearby.length === 0 ? { safe: true } : allowCityCurb ? sweepSafeWithCurbs(actor, next, filteredNearby, this.roads, this.curbs) : sweepSafe(
           actor,
           next,
-          nearby.filter((a) => {
-            if (a.id === contact?.hitId) return false;
-            if (actor.spec?.contactResponse === "inelastic-slide-v1" && a.type !== "pedestrian" && overlaps(actor, a, 0.12) && distance(next, a) > distance(actor, a) + 1e-10 && !overlaps(next, a)) return false;
-            const latched = actor.spec?.contactResponse === "inelastic-slide-v1" ? actor.vehicle?.contact : null;
-            return !(a.id === latched?.hitId && latched.normal && (next.x - actor.x) * latched.normal.x + (next.z - actor.z) * latched.normal.z <= 1e-10 && !overlaps(next, a));
-          }),
-          actor.type === "vehicle" ? this.roads : null
+          filteredNearby,
+          guardRoads
         );
         if (!guard.safe) {
           contact = null;
@@ -18836,15 +24618,94 @@
           if (this.district && actor.districtSources)
             next.districtSources = { ...actor.districtSources, finalMps: 0, appliedSource: "physical-guard" };
         }
+        if (actor !== this.player && actor.type === "vehicle" && this.config?.interactionProfile === WHEEL_SCRUB_MODE && (!metroV5 || this._activeJoltActors?.has(actor))) {
+          const rx = getActorImpactReaction(actor);
+          const instantDv = consumeActorPendingLongDv(actor);
+          if (rx.active && (Math.abs(instantDv) > 1e-5 || Math.abs(rx.lateralPushMps) > 1e-4 || Math.abs(rx.longitudinalPushMps) > 1e-4 || Math.abs(rx.yawPushRadS) > 1e-4)) {
+            const basePose = guard.safe ? next : actor;
+            const shovedHeading = basePose.heading + rx.yawPushRadS * STEP;
+            const shS = Math.sin(shovedHeading);
+            const shC = Math.cos(shovedHeading);
+            const nextSpeedVal = clamp(
+              instantDv !== 0 ? (actor.speed ?? basePose.speed) + instantDv : basePose.speed,
+              -Math.max(4, (actor.maxSpeed ?? 16) * 0.35),
+              Math.max(actor.maxSpeed ?? 16, Math.abs(actor.speed ?? 0)) * 1.25
+            );
+            const shovedCandidate = {
+              ...basePose,
+              x: basePose.x + shC * rx.lateralPushMps * STEP + shS * rx.longitudinalPushMps * STEP,
+              z: basePose.z - shS * rx.lateralPushMps * STEP + shC * rx.longitudinalPushMps * STEP,
+              heading: shovedHeading,
+              speed: nextSpeedVal
+            };
+            const nonTouchingNearby = filteredNearby.filter((a) => !overlaps(actor, a, 0.12));
+            const zeroGapClear = !filteredNearby.some(
+              (a) => overlaps(shovedCandidate, a, a.type === "pedestrian" ? 0.35 : 0)
+            ) && !overlaps(shovedCandidate, this.player);
+            if (zeroGapClear && (!this.roads?.length || bodyOnRoad(shovedCandidate, this.roads)) && sweepSafe(actor, shovedCandidate, nonTouchingNearby, this.roads).safe) {
+              next = shovedCandidate;
+            }
+          }
+        }
         if (actor === this.player) {
+          let terrainOffsets = null;
+          let curbScrub = null;
+          if (allowCityCurb && guard.safe) {
+            terrainOffsets = acceptCurbPose(this.curbs, this.roads, next);
+            curbScrub = computeCurbWheelScrub(actor, next, this.curbs, this.roads, STEP, {
+              applyDeflection: !contact
+            });
+            if (curbScrub.active && curbScrub.adjustedPose !== next) {
+              const scrubGuard = sweepSafeWithCurbs(actor, curbScrub.adjustedPose, filteredNearby, this.roads, this.curbs);
+              if (scrubGuard.safe) {
+                next = curbScrub.adjustedPose;
+                terrainOffsets = acceptCurbPose(this.curbs, this.roads, next);
+              }
+            }
+          } else if (actor.curbSupportId && !this.pursuit) {
+            next.y = next.supportHeightM = 0;
+            next.curbSupportId = null;
+          }
           const latchedId = actor.vehicle?.contact?.hitId;
           const latchedObstacle = latchedId ? nearby.find((a) => a.id === latchedId) : null;
           const contactSeparated = actor.spec?.contactResponse === "inelastic-slide-v1" && latchedId != null && contact?.hitId !== latchedId && (!latchedObstacle || !overlaps(next, latchedObstacle, 2e-3));
+          const playerSurface = this.terrain ? sampleCitySurface(this.terrain, next.x, next.z, next.heading, this._surfaceScratch) : null;
+          const needNitroStep = Boolean(
+            manualActionForNitro || actor.nitroCharge < 1 || actor.nitroActive || actor.nitroIntensity > 0
+          );
+          if (needNitroStep && !controlledTest) {
+            const baseSuppressed = Boolean(actor.nitroSuppressedByPedestrian);
+            const stepSuppressed = Boolean(baseSuppressed || pedSuppressedNitro);
+            next.nitroCharge = Number.isFinite(actor.nitroCharge) ? actor.nitroCharge : 1;
+            next.nitroActive = Boolean(actor.nitroActive);
+            next.nitroIntensity = Number.isFinite(actor.nitroIntensity) ? actor.nitroIntensity : 0;
+            next.nitroSuppressedByPedestrian = stepSuppressed;
+            const actionToStep = !guard.safe || contact ? { ...manualActionForNitro ?? PURSUIT_STOP, throttle: 0, brake: 1 } : manualActionForNitro ?? PURSUIT_STOP;
+            stepNitroTank(next, actionToStep, STEP);
+            next.nitroSuppressedByPedestrian = stepSuppressed;
+          } else {
+            next.nitroCharge = Number.isFinite(actor.nitroCharge) ? actor.nitroCharge : 1;
+            next.nitroActive = false;
+            next.nitroIntensity = Number.isFinite(actor.nitroIntensity) ? actor.nitroIntensity : 0;
+            next.nitroSuppressedByPedestrian = Boolean(actor.nitroSuppressedByPedestrian);
+          }
           next.vehicle = advanceVehicleState(actor, next, appliedCommand, STEP, {
             tick: this.tick,
             contact,
-            contactSeparated
+            contactSeparated,
+            surface: playerSurface,
+            curbScrub,
+            scraping: contact?.scraping ?? null,
+            driverCommand: this.mode === "manual" && !controlledTest ? this.input : null
           });
+          if (terrainOffsets) {
+            const suspension = next.vehicle.suspension;
+            const { wheelOffsetsM } = suspension;
+            suspension.terrainOffsetsM = terrainOffsets;
+            const limit = PLAYER_VEHICLE.suspensionTravelM;
+            for (const wheel of Object.keys(terrainOffsets))
+              wheelOffsetsM[wheel] = clamp(wheelOffsetsM[wheel] + terrainOffsets[wheel], -limit, limit);
+          }
           if (contact && physicalBarrier) {
             this.vehicleTest.phase = "contact";
             this.vehicleTest.contactTick = this.tick;
@@ -18861,13 +24722,28 @@
           next.motionTimeS = (this.tick + 1) * STEP;
         }
         const oldPrevious = actor.previous;
-        copyVehicleMotion(next, actor);
+        if (actor.type !== "pedestrian") copyVehicleMotion(next, actor);
         Object.assign(actor, next, {
           previous: oldPrevious,
           distance: actor.distance + moved,
           wait: moved < 1e-3 ? actor.wait + STEP : 0
         });
-        reserved.add(copyPose2(actor));
+        if (moved > 0) reserved.add(
+          metroV5 ? {
+            id: actor.id,
+            type: actor.type,
+            kind: actor.kind,
+            vehicleKind: actor.vehicleKind,
+            spec: actor.spec,
+            x: actor.x,
+            z: actor.z,
+            heading: actor.heading,
+            speed: actor.speed,
+            length: actor.length,
+            width: actor.width,
+            radius: actor.radius
+          } : copyPose2(actor)
+        );
         if (actor === this.player) {
           this.metrics.distance += moved;
           if (moved < 1e-3 && this.mode === "auto" && actor.path.length)
@@ -18875,11 +24751,20 @@
         }
       }
       this.updateSensors(this.tick % 6 === 0);
+      const hasSignals = this.junctionGroups.length > 0;
+      let queueActors = this.actors;
+      if (metroV5) {
+        if (this._queueActorsSourceLen !== this.actors.length) {
+          this._queueVehicleActors = this.actors.filter((a) => a.type === "vehicle");
+          this._queueActorsSourceLen = this.actors.length;
+        }
+        queueActors = this._queueVehicleActors;
+      }
       Object.assign(
         this.metrics,
         trafficQueueStats(
-          this.actors,
-          (actor) => signalSpeedLimit(this, actor) === Infinity
+          queueActors,
+          hasSignals ? (actor) => signalSpeedLimit(this, actor) === Infinity : () => true
         )
       );
       this.metrics.peakTrafficWait = Math.max(
@@ -18887,6 +24772,7 @@
         this.metrics.longestCurrentTrafficWait
       );
       this.tick++;
+      if (this.pursuit) syncPursuitStatus(this);
       if (this.districtCase && this.districtCase.id !== "ambient") {
         const state = this.districtCase;
         const elapsedS = (this.tick - state.startedTick) * STEP;
@@ -18938,6 +24824,37 @@
             errors.push(`overlap:${actor.id}:${other.id}`);
       }
       return errors;
+    }
+    state() {
+      const crowdAheadCount = getCrowdAheadCount(this);
+      if (this.pursuit) syncPursuitStatus(this);
+      return {
+        tick: this.tick,
+        mode: this.mode,
+        environment: this.environment,
+        crowdAheadCount,
+        lastCrowdSpawn: this.lastCrowdSpawn ?? null,
+        player: {
+          id: this.player.id,
+          type: this.player.type,
+          x: this.player.x,
+          z: this.player.z,
+          y: this.player.y ?? 0,
+          heading: this.player.heading,
+          speed: this.player.speed,
+          steer: this.player.steer ?? 0,
+          maxSpeed: this.player.maxSpeed,
+          nitroCharge: this.player.nitroCharge,
+          nitroActive: this.player.nitroActive,
+          nitroIntensity: this.player.nitroIntensity,
+          nitroSuppressedByPedestrian: this.player.nitroSuppressedByPedestrian,
+          vehicle: this.player.vehicle ? structuredClone(this.player.vehicle) : null
+        },
+        pursuit: this.pursuit ? {
+          ...pursuitSnapshot(this),
+          status: { ...this.pursuit.status }
+        } : null
+      };
     }
     snapshot() {
       return {
@@ -19029,12 +24946,19 @@
           "pursuit-use",
           "pursuit-policy",
           "street-pursuit-start",
-          "street-pursuit-stop"
-        ].includes(event2.command?.type) || event2.command.type === "vehicle-test" && (data.environment !== "vehicle" || event2.command.operation !== "run"))
+          "street-pursuit-stop",
+          "spawn-crowd-ahead",
+          "manual"
+        ].includes(event2.command?.type) || event2.command.type === "vehicle-test" && (data.environment !== "vehicle" || !["run", "reset"].includes(event2.command.operation) || event2.command.heavy !== void 0 && typeof event2.command.heavy !== "boolean"))
           throw new Error("Invalid replay event");
         lastTick = event2.tick;
       }
-      const options2 = data.environment === "metro" && data.config?.cityVersion === 5 && data.config.vehicleDynamics === void 0 ? { ...data.config, vehicleDynamics: "legacy" } : data.config;
+      const options2 = data.environment === "metro" && data.config?.cityVersion === 5 ? {
+        ...data.config,
+        ...data.config.vehicleDynamics === void 0 ? { vehicleDynamics: "legacy" } : {},
+        ...data.config.terrainProfile === void 0 ? { terrainProfile: "flat" } : {},
+        ...data.config.interactionProfile === void 0 ? { interactionProfile: "none" } : {}
+      } : data.config;
       const world = new _World(options2, data.environment);
       let index = 0;
       while (world.tick < data.totalTicks) {
@@ -19071,6 +24995,105 @@
   var verifiedFrames = /* @__PURE__ */ new WeakSet();
   var trafficHistory = /* @__PURE__ */ new WeakMap();
   var angleStep = Math.PI * 2 / PURSUIT_SCAN_RAYS;
+  var LOCAL_NITRO_SPEC = Object.freeze({
+    speedMultiplier: 1.34,
+    accelMultiplier: 1.72,
+    maxBoostSpeedMps: 38.5,
+    minEngageCharge: 0.18
+  });
+  function stripNitro(action) {
+    if (!action || !Object.prototype.hasOwnProperty.call(action, "nitro")) return action;
+    const { steer, throttle, brake: brake2, gear } = action;
+    return { steer, throttle, brake: brake2, gear };
+  }
+  function boostAwarePursuitCommand(pose5, action, dt = STEP) {
+    const base4 = stripNitro(action);
+    if ((action?.nitro ?? 0) >= 0.5 && base4.brake === 0 && base4.gear === 1 && base4.throttle > 0) {
+      const baseMaxSpeed = pose5.maxSpeed ?? 9.72;
+      const boostedMaxSpeed = Math.min(
+        LOCAL_NITRO_SPEC.maxBoostSpeedMps,
+        baseMaxSpeed * LOCAL_NITRO_SPEC.speedMultiplier
+      );
+      const baseAccel = pose5.spec?.acceleration ?? VEHICLE.acceleration;
+      const boostedPose = {
+        ...pose5,
+        maxSpeed: boostedMaxSpeed,
+        spec: { ...pose5.spec ?? VEHICLE, acceleration: baseAccel * LOCAL_NITRO_SPEC.accelMultiplier }
+      };
+      return pursuitCommand(boostedPose, base4, dt);
+    }
+    return pursuitCommand(pose5, base4, dt);
+  }
+  function hasPedestrianNitroHazard(world, scan, reach) {
+    const { player, visualState } = world;
+    const halfW = (player.width ?? 1.85) * 0.5;
+    const inHazardZone = (right, forward2) => {
+      if (!Number.isFinite(right) || !Number.isFinite(forward2)) return false;
+      if (Math.hypot(right, forward2) <= Math.max(14, reach + 4)) return true;
+      return forward2 >= -1 && forward2 <= 42 && Math.abs(right) <= halfW + 4.8 + Math.max(0, forward2) * 0.16;
+    };
+    for (let i = 0; i < scan.rays.length; i++) {
+      const ray = scan.rays[i];
+      if (ray.kind !== "pedestrian") continue;
+      const angle = i * angleStep;
+      if (inHazardZone(ray.rangeM * Math.sin(angle), ray.rangeM * Math.cos(angle))) return true;
+    }
+    for (const track2 of scan.tracks) {
+      if (track2.kind !== "pedestrian") continue;
+      if (inHazardZone(track2.rightM, track2.forwardM)) return true;
+      if (track2.motionKnown && track2.ageS === 0) {
+        const vx = track2.rightMps + (player.gtaSlipMps ?? 0);
+        const vz = track2.forwardMps + (player.speed ?? 0);
+        if (Math.hypot(vx, vz) <= 5.5) {
+          for (const t of [0.4, 0.9, 1.4]) {
+            if (inHazardZone(track2.rightM + vx * t, track2.forwardM + vz * t)) return true;
+          }
+        }
+      }
+    }
+    if (visualState && visualState.available !== false) {
+      if (visualState.decision?.available === true && visualState.decision.brake === true) return true;
+      const c0 = Math.cos(player.heading ?? 0);
+      const s0 = Math.sin(player.heading ?? 0);
+      if (Array.isArray(visualState.forecasts)) {
+        for (const item of visualState.forecasts) {
+          if (!item || item.label && item.label !== "person" || item.qualified === false) continue;
+          if (Array.isArray(item.points)) {
+            for (const pt of item.points) {
+              if ((pt?.secondsAhead ?? 0) > 1.6 + 1e-6) continue;
+              const wx2 = pt?.x ?? pt?.xM;
+              const wz2 = pt?.z ?? pt?.zM;
+              if (Number.isFinite(wx2) && Number.isFinite(wz2)) {
+                const dx = wx2 - player.x, dz = wz2 - player.z;
+                if (inHazardZone(dx * c0 - dz * s0, dx * s0 + dz * c0)) return true;
+              } else if (inHazardZone(pt?.rightM, pt?.forwardM)) return true;
+            }
+          }
+          const wx = item.x ?? item.xM, wz = item.z ?? item.zM;
+          if (Number.isFinite(wx) && Number.isFinite(wz)) {
+            const dx = wx - player.x, dz = wz - player.z;
+            if (inHazardZone(dx * c0 - dz * s0, dx * s0 + dz * c0)) return true;
+          } else if (inHazardZone(item.lateralM ?? item.rightM, item.longitudinalM ?? item.forwardM)) {
+            return true;
+          }
+        }
+      }
+      if (Array.isArray(visualState.tracks)) {
+        for (const tr of visualState.tracks) {
+          if (!tr || tr.label && tr.label !== "person") continue;
+          const wx = tr.position?.x ?? tr.x ?? tr.xM;
+          const wz = tr.position?.z ?? tr.z ?? tr.zM;
+          if (Number.isFinite(wx) && Number.isFinite(wz)) {
+            const dx = wx - player.x, dz = wz - player.z;
+            if (inHazardZone(dx * c0 - dz * s0, dx * s0 + dz * c0)) return true;
+          } else if (inHazardZone(tr.lateralM ?? tr.rightM, tr.longitudinalM ?? tr.forwardM)) {
+            return true;
+          }
+        }
+      }
+    }
+    return false;
+  }
   function requireDispatchScan({ pursuit, tick }) {
     const scan = pursuit?.gta?.scan;
     const ageTicks = tick - scan?.tick;
@@ -19120,20 +25143,27 @@
     if (right <= 0 && forward2 <= 0) return Math.max(right, forward2);
     return Math.hypot(Math.max(0, right), Math.max(0, forward2));
   }
-  function stoppingSweep(world, scan, requested, reaction, reach, includeTraffic) {
-    const { player } = world;
-    const curb = world.pursuit?.gta?.curb;
-    const cityCurbs = curb?.mode === METRO_CITY_CURBS;
-    const startProbe = vehicleProbe(player, player.speed);
+  var sweepReturnsCache = /* @__PURE__ */ new WeakMap();
+  function getCachedSweepReturns(scan, player, startProbe, reach, includeTraffic, cityCurbs, ignorePedCollision) {
+    let byKey = sweepReturnsCache.get(scan);
+    if (!byKey) {
+      byKey = /* @__PURE__ */ new Map();
+      sweepReturnsCache.set(scan, byKey);
+    }
+    const key3 = `${reach}:${includeTraffic ? 1 : 0}:${cityCurbs ? 1 : 0}:${ignorePedCollision ? 1 : 0}:${player.x}:${player.z}:${player.heading}`;
+    let cached = byKey.get(key3);
+    if (cached) return cached;
     const returns = [];
     const alreadyClose = [];
-    for (const [i, ray] of scan.rays.entries()) {
-      if (ray.kind === "none" || ray.kind !== "static" && !includeTraffic || ray.rangeM > reach + player.length + 2) continue;
+    const halfSin = Math.sin(angleStep / 2);
+    for (let i = 0; i < scan.rays.length; i++) {
+      const ray = scan.rays[i];
+      if (ray.kind === "none" || ignorePedCollision && ray.kind === "pedestrian" || ray.kind !== "static" && !includeTraffic || ray.rangeM > reach + player.length + 2) continue;
       const heading2 = player.heading + i * angleStep;
       const point2 = {
         type: "pedestrian",
         kind: ray.kind,
-        radius: (cityCurbs ? ray.kind === "pedestrian" ? 0.06 : 0.01 : 0.1) + ray.rangeM * Math.sin(angleStep / 2) + (ray.kind === "static" ? 0 : cityCurbs ? ray.kind === "pedestrian" ? 0.28 : 0.01 : 0.18),
+        radius: (cityCurbs ? ray.kind === "pedestrian" ? 0.06 : 0.01 : 0.1) + ray.rangeM * halfSin + (ray.kind === "static" ? 0 : cityCurbs ? ray.kind === "pedestrian" ? 0.28 : 0.01 : 0.18),
         x: player.x + Math.sin(heading2) * ray.rangeM,
         z: player.z + Math.cos(heading2) * ray.rangeM
       };
@@ -19144,18 +25174,43 @@
         returns.push(point2);
       }
     }
-    const brake2 = { ...requested, throttle: 0, brake: 1 };
+    cached = { returns, alreadyClose };
+    if (byKey.size >= 8) byKey.clear();
+    byKey.set(key3, cached);
+    return cached;
+  }
+  function stoppingSweep(world, scan, requested, reaction, reach, includeTraffic) {
+    const { player } = world;
+    const ignorePedCollision = Boolean(world?.pursuit?.frozenDriver?._faultIgnorePedestrianCollisionOnly);
+    const curb = world.pursuit?.gta?.curb;
+    const cityCurbs = curb?.mode === METRO_CITY_CURBS;
+    const startProbe = vehicleProbe(player, player.speed);
+    const { returns, alreadyClose } = getCachedSweepReturns(
+      scan,
+      player,
+      startProbe,
+      reach,
+      includeTraffic,
+      cityCurbs,
+      ignorePedCollision
+    );
+    const brake2 = { ...stripNitro(requested), throttle: 0, brake: 1 };
     const delayTicks = Math.ceil(reaction / STEP);
+    const brakingDecel = Math.max(4, player.spec?.braking ?? VEHICLE.braking);
+    const maxSweepTicks = Math.max(
+      180,
+      delayTicks + Math.ceil((Math.abs(player.speed ?? 0) + 12) / (brakingDecel * STEP)) + 20
+    );
     let pose5 = { ...startProbe, gtaSlipMps: player.gtaSlipMps, gtaYawRate: player.gtaYawRate };
-    for (let ticksElapsed = 0; ticksElapsed < 180; ) {
+    for (let ticksElapsed = 0; ticksElapsed < maxSweepTicks; ) {
       const strideTicks = cityCurbs && ticksElapsed >= delayTicks + 4 ? 2 : 1;
       const dt = strideTicks * STEP;
       const action = ticksElapsed < delayTicks ? requested : brake2;
-      const next = integrateVehicle(pose5, pursuitCommand(pose5, action), dt);
+      const next = integrateVehicle(pose5, boostAwarePursuitCommand(pose5, action, dt), dt);
       for (let k = 0; k < strideTicks; k++) integrateGtaSlip(k === 0 ? pose5 : next, next);
       ticksElapsed += strideTicks;
       if (cityCurbs) {
-        if (!bodyOnRoad(next, world.roads) && Math.hypot(next.speed, next.gtaSlipMps ?? 0) > curb.maxPace + 1e-6)
+        if (Math.hypot(next.speed, next.gtaSlipMps ?? 0) > curb.maxPace + 1e-6 && !bodyOnRoad(next, world.roads))
           return false;
         if (!sweepSafeWithCurbs(pose5, next, returns, world.roads, curb).safe) return false;
         const sheddingOpposite = (player.speed ?? 0) * requested.gear < 0 && next.speed * (player.speed ?? 0) > 0;
@@ -19171,35 +25226,35 @@
     }
     return false;
   }
-  function guardDispatchAction(world, requested) {
-    const scan = requireDispatchScan(world);
-    const { player, tick } = world;
-    const ageTicks = tick - scan.tick;
-    const evidence = measuredLoadingTraffic(world, scan);
-    if (requested.brake === 1) return { action: requested, reason: null };
-    const speed = Math.abs(player.speed), direction3 = speed > 0.1 ? Math.sign(player.speed) : requested.gear;
+  function evaluateGuardCandidate(world, scan, ageTicks, evidence, candidate) {
+    const { player } = world;
+    const speed = Math.abs(player.speed), direction3 = speed > 0.1 ? Math.sign(player.speed) : candidate.gear;
     const braking = player.spec?.braking ?? VEHICLE.braking;
     const reaction = (ageTicks + PURSUIT_SCAN_TICKS) * STEP + 0.12;
     const length = player.length / 2, width = player.width / 2;
-    const reach = length + 0.65 + speed * reaction + speed * speed / (2 * braking);
-    const horizon = Math.min(3, reaction + speed / braking);
+    const boosted = (candidate.nitro ?? 0) >= 0.5 && candidate.brake === 0 && candidate.gear === 1 && candidate.throttle > 0;
+    const boostAccel = (player.spec?.acceleration ?? VEHICLE.acceleration) * LOCAL_NITRO_SPEC.accelMultiplier * candidate.throttle;
+    const postReactionSpeed = boosted ? Math.min(LOCAL_NITRO_SPEC.maxBoostSpeedMps, speed + boostAccel * reaction) : speed;
+    const reach = boosted ? length + 0.65 + 0.5 * (speed + postReactionSpeed) * reaction + postReactionSpeed * postReactionSpeed / (2 * braking) : length + 0.65 + speed * reaction + speed * speed / (2 * braking);
+    const horizon = Math.min(3, reaction + postReactionSpeed / braking);
     const sway = Math.abs(player.gtaSlipMps ?? 0) * reaction;
     const inside = (right, forward2, pad = 0) => {
       const along2 = forward2 * direction3;
       return along2 >= 0 && along2 <= reach + pad && Math.abs(right) <= width + 0.27 + sway + pad;
     };
-    const stop = (reason) => ({ action: { ...requested, throttle: 0, brake: 1 }, reason });
+    const stop = (reason) => ({ action: { ...stripNitro(candidate), throttle: 0, brake: 1 }, reason });
     let sweepReason = null;
+    const ignorePedCollision = Boolean(world?.pursuit?.frozenDriver?._faultIgnorePedestrianCollisionOnly);
     const cityCurbs = world.pursuit?.gta?.curb?.mode === METRO_CITY_CURBS;
-    const checkTurn = ageTicks === 0 && world.roads && (Math.abs(requested.steer) >= 0.1 || cityCurbs);
-    const pedestrianNear = scan.tracks.some((track2) => track2.kind === "pedestrian" && Math.hypot(track2.rightM, track2.forwardM) < reach + 4);
+    const checkTurn = ageTicks === 0 && world.roads && (Math.abs(candidate.steer) >= 0.1 || cityCurbs);
+    const pedestrianNear = !ignorePedCollision && scan.tracks.some((track2) => track2.kind === "pedestrian" && Math.hypot(track2.rightM, track2.forwardM) < reach + 4);
     const curvedEvasion = cityCurbs && ageTicks === 0 && Boolean(world.roads);
     const nearLoading = (index, vx = 0, vz = 0) => {
       const ray = scan.rays[index];
-      return checkTurn && !pedestrianNear && direction3 === 1 && requested.gear === 1 && speed <= 8 && ray.kind === "civilian" && evidence?.stable(index) && Math.abs(vz) <= 0.8 + ray.rangeM * 0.12 && Math.abs(vx) <= 0.7 + ray.rangeM * 0.55;
+      return checkTurn && !pedestrianNear && direction3 === 1 && candidate.gear === 1 && speed <= 8 && ray.kind === "civilian" && evidence?.stable(index) && Math.abs(vz) <= 0.8 + ray.rangeM * 0.12 && Math.abs(vx) <= 0.7 + ray.rangeM * 0.55;
     };
     for (const track2 of scan.tracks) {
-      if (track2.kind === "static") continue;
+      if (track2.kind === "static" || ignorePedCollision && track2.kind === "pedestrian") continue;
       const pedestrian = track2.kind === "pedestrian";
       const freshMotion = track2.motionKnown && track2.ageS === 0;
       let vx = track2.rightMps + (player.gtaSlipMps ?? 0);
@@ -19226,7 +25281,7 @@
     }
     for (let i = 0; i < scan.rays.length; i++) {
       const { rangeM, kind } = scan.rays[i];
-      if (kind === "none") continue;
+      if (kind === "none" || ignorePedCollision && kind === "pedestrian") continue;
       const angle = i * angleStep;
       if (!inside(rangeM * Math.sin(angle), rangeM * Math.cos(angle), kind === "pedestrian" ? 0.2 : 0)) continue;
       if (kind !== "static") {
@@ -19234,16 +25289,46 @@
         sweepReason = kind;
       } else sweepReason ??= "static";
     }
-    const sweepReaction = cityCurbs && ageTicks === 0 && requested.gear === -1 && speed <= 2.2 && !pedestrianNear ? PURSUIT_SCAN_TICKS * STEP : reaction;
-    if (sweepReason && (!checkTurn || !stoppingSweep(world, scan, requested, sweepReaction, reach, sweepReason !== "static")))
+    const sweepReaction = cityCurbs && ageTicks === 0 && candidate.gear === -1 && speed <= 2.2 && !pedestrianNear ? PURSUIT_SCAN_TICKS * STEP : reaction;
+    if (sweepReason && (!checkTurn || !stoppingSweep(world, scan, candidate, sweepReaction, reach, sweepReason !== "static")))
       return stop(sweepReason);
-    return { action: requested, reason: null };
+    return { action: candidate, reason: null };
+  }
+  function guardDispatchAction(world, requested) {
+    const scan = requireDispatchScan(world);
+    const { player, tick } = world;
+    const ageTicks = tick - scan.tick;
+    const evidence = measuredLoadingTraffic(world, scan);
+    if (requested.brake === 1) return { action: stripNitro(requested), reason: null };
+    const speed = Math.abs(player.speed ?? 0);
+    const braking = player.spec?.braking ?? VEHICLE.braking;
+    const reaction = (ageTicks + PURSUIT_SCAN_TICKS) * STEP + 0.12;
+    const baseReach = (player.length ?? 4.2) / 2 + 0.65 + speed * reaction + speed * speed / (2 * braking);
+    let candidate = requested;
+    if ((candidate.nitro ?? 0) >= 0.5) {
+      const minCharge = player.nitroActive ? 0.03 : LOCAL_NITRO_SPEC.minEngageCharge;
+      const insufficientCharge = Number.isFinite(player.nitroCharge) && player.nitroCharge < minCharge;
+      if (insufficientCharge || !world?.pursuit?.frozenDriver?._faultIgnorePedestrianNitroOnly && hasPedestrianNitroHazard(world, scan, baseReach)) {
+        candidate = stripNitro(candidate);
+      }
+    }
+    const verdict = evaluateGuardCandidate(world, scan, ageTicks, evidence, candidate);
+    if (verdict.reason && (candidate.nitro ?? 0) >= 0.5) {
+      const unboostedVerdict = evaluateGuardCandidate(world, scan, ageTicks, evidence, stripNitro(candidate));
+      if (verdict.reason === "pedestrian" && world?.pursuit?.frozenDriver?._faultIgnorePedestrianNitroOnly && !unboostedVerdict.reason) {
+        return { action: candidate, reason: null };
+      }
+      if (!unboostedVerdict.reason) return unboostedVerdict;
+      return unboostedVerdict;
+    }
+    return verdict;
   }
   function chooseSafeBrakingAction(world, scan, baseAction) {
+    const cleanBase = stripNitro(baseAction);
     const { player } = world;
     const curb = world.pursuit?.gta?.curb;
-    if (curb?.mode !== METRO_CITY_CURBS || baseAction.brake < 1 || Math.abs(player.speed) <= 1.1 || !world.roads)
-      return baseAction;
+    if (curb?.mode !== METRO_CITY_CURBS || cleanBase.brake < 1 || Math.abs(player.speed) <= 1.1 || !world.roads)
+      return cleanBase;
     const pedPoints = [];
     const c0 = Math.cos(player.heading), s0 = Math.sin(player.heading);
     for (let i = 0; i < scan.rays.length; i++) {
@@ -19268,14 +25353,14 @@
         }
       }
     }
-    if (!pedPoints.length) return baseAction;
-    const candidates2 = [baseAction.steer, 0, -0.45, 0.45, -0.9, 0.9];
-    let bestSteer = baseAction.steer;
+    if (!pedPoints.length) return cleanBase;
+    const candidates2 = [cleanBase.steer, 0, -0.45, 0.45, -0.9, 0.9];
+    let bestSteer = cleanBase.steer;
     let bestScore = -Infinity;
     const startProbe = vehicleProbe(player, player.speed);
     for (let idx = 0; idx < candidates2.length; idx++) {
       const steer = candidates2[idx];
-      const candidateAction = { ...baseAction, steer, throttle: 0, brake: 1 };
+      const candidateAction = { ...cleanBase, steer, throttle: 0, brake: 1 };
       let pose5 = { ...startProbe, gtaSlipMps: player.gtaSlipMps ?? 0, gtaYawRate: player.gtaYawRate ?? 0 };
       let minPedGap = Infinity;
       let supportedAll = true;
@@ -19294,14 +25379,14 @@
         if (Math.abs(pose5.speed) < 0.03 && Math.abs(pose5.gtaSlipMps ?? 0) < 0.03) break;
       }
       if (!supportedAll) continue;
-      if (idx === 0 && minPedGap >= 1.65) return baseAction;
-      const score = minPedGap - 0.06 * Math.abs(steer - baseAction.steer);
+      if (idx === 0 && minPedGap >= 1.65) return cleanBase;
+      const score = minPedGap - 0.06 * Math.abs(steer - cleanBase.steer);
       if (score > bestScore) {
         bestScore = score;
         bestSteer = steer;
       }
     }
-    return bestSteer === baseAction.steer ? baseAction : { ...baseAction, steer: bestSteer, throttle: 0, brake: 1 };
+    return bestSteer === cleanBase.steer ? cleanBase : { ...cleanBase, steer: bestSteer, throttle: 0, brake: 1 };
   }
   function selectDispatchMovement(world, requested, alternate = null) {
     const guarded = guardDispatchAction(world, requested);
@@ -19315,7 +25400,7 @@
     if (["PREDICTIVE_EVADE_LANE", "PREDICTIVE_CURB_BYPASS", "PREDICTIVE_REVERSE_ESCAPE"].includes(planner.reason)) {
       const checked = guardDispatchAction(world, planner.action);
       if (!checked.reason) return { action: checked.action, reason: null, planner };
-      const safeBrake = chooseSafeBrakingAction(world, scan, { ...planner.action, throttle: 0, brake: 1 });
+      const safeBrake = chooseSafeBrakingAction(world, scan, { ...stripNitro(planner.action), throttle: 0, brake: 1 });
       return {
         action: safeBrake,
         reason: checked.reason,
@@ -19328,12 +25413,25 @@
       return { ...guarded, planner: { ...planner, reason: "PREDICTIVE_VETO", guardReason: checked.reason } };
     }
     if (planner.reason === "PREDICTIVE_REVERSE_BLOCKED")
-      return { action: planner.action, reason: "reverse clearance", planner };
+      return { action: stripNitro(planner.action), reason: "reverse clearance", planner };
     if (planner.reason === "SAFETY_INTERVENTION") {
       const safeBrake = chooseSafeBrakingAction(world, scan, planner.action);
       return { action: safeBrake, reason: guarded.reason ?? "safety-intervention", planner };
     }
-    return planner.reason ? { ...guarded, planner } : guarded;
+    if (!planner.reason) {
+      if ((planner.action?.nitro ?? 0) >= 0.5 && !guarded.reason) {
+        const checkedNitro = guardDispatchAction(world, planner.action);
+        if (!checkedNitro.reason) return { action: checkedNitro.action, reason: null, planner };
+      }
+      if (planner.nitroSuppressedByPedestrian) {
+        return { ...guarded, action: stripNitro(guarded.action), planner };
+      }
+      if ((guarded.action?.nitro ?? 0) >= 0.5 && !(planner.action?.nitro >= 0.5)) {
+        return { ...guarded, action: stripNitro(guarded.action) };
+      }
+      return guarded;
+    }
+    return { ...guarded, planner };
   }
 
   // src/rl/pursuit-evasion.js
@@ -20062,13 +26160,21 @@
 
   // src/rl/pako-evasive-control.js
   var PAKO_EVASIVE_CONTROL = "pako-evasive-v2";
+  var LOCAL_NITRO_SPEC2 = Object.freeze({
+    durationS: 4.6,
+    rechargePerS: 0.16,
+    minEngageCharge: 0.18,
+    speedMultiplier: 1.34,
+    accelMultiplier: 1.72,
+    maxBoostSpeedMps: 38.5
+  });
   var ANGLE_STEP = 2 * Math.PI / PURSUIT_SCAN_RAYS;
   var CONE_RAD = 18 * Math.PI / 180;
   var CENTER_CONE_RAD = 6.5 * Math.PI / 180;
   var ACTION_TICKS_FORWARD = 12;
   var ACTION_TICKS_REVERSE = 10;
   var ACTION_TICKS_REVERSE_SHORT = 6;
-  var MAX_STOP_TICKS = 110;
+  var MAX_STOP_TICKS = 120;
   var RAY_MARGIN_M = 0.12;
   var PED_RAY_RANGE_M = 18;
   var PED_RAY_CORNER_MARGIN_M = 0.95;
@@ -20079,10 +26185,65 @@
   var VISUAL_PERSON_MARGIN_M = 1.1;
   var STATIC_ASPHALT_GAP_M = 0.14;
   var STATIC_CURB_GAP_M = 0.16;
-  var FORWARD_STEERS = Object.freeze([-1, -0.95, -0.72, -0.48, -0.25, 0, 0.25, 0.48, 0.72, 0.95, 1]);
-  var CONTROLLED_FAST_STEERS = Object.freeze([-1, -0.72, -0.25, 0, 0.25, 0.72, 1]);
-  var AUX_STEERS = Object.freeze([-1, -0.62, -0.22, 0, 0.22, 0.62, 1]);
-  var REVERSE_STEERS = Object.freeze([-1, -0.75, -0.4, 0, 0.4, 0.75, 1]);
+  var FORWARD_STEERS = Object.freeze([
+    -1,
+    -0.92,
+    -0.72,
+    -0.52,
+    -0.36,
+    -0.25,
+    0,
+    0.25,
+    0.36,
+    0.52,
+    0.72,
+    0.92,
+    1
+  ]);
+  var CURB_FAST_STEERS = Object.freeze([
+    -1,
+    -0.72,
+    -0.52,
+    -0.36,
+    -0.25,
+    0,
+    0.25,
+    0.36,
+    0.52,
+    0.72,
+    1
+  ]);
+  var HIGH_SPEED_ROAD_STEERS = Object.freeze([
+    -1,
+    -0.72,
+    -0.5,
+    -0.28,
+    0,
+    0.28,
+    0.5,
+    0.72,
+    1
+  ]);
+  var SMOOTH_CRUISE_STEERS = Object.freeze([
+    -1,
+    -0.72,
+    -0.52,
+    -0.36,
+    -0.22,
+    -0.14,
+    -0.06,
+    0,
+    0.06,
+    0.14,
+    0.22,
+    0.36,
+    0.52,
+    0.72,
+    1
+  ]);
+  var CONTROLLED_FAST_STEERS = Object.freeze([-1, -0.72, -0.45, -0.25, 0, 0.25, 0.45, 0.72, 1]);
+  var AUX_STEERS = Object.freeze([-1, -0.68, -0.38, -0.22, 0, 0.22, 0.38, 0.68, 1]);
+  var REVERSE_STEERS = Object.freeze([-1, -0.78, -0.52, -0.26, 0, 0.26, 0.52, 0.78, 1]);
   var SUPPORT_ROAD = Object.freeze({ supported: true, usesCurb: false });
   var SUPPORT_CURB = Object.freeze({ supported: true, usesCurb: true });
   var SUPPORT_NONE = Object.freeze({ supported: false, usesCurb: false });
@@ -20163,14 +26324,36 @@
       (_, i) => Object.freeze([Math.sin(i * ANGLE_STEP), Math.cos(i * ANGLE_STEP)])
     )
   );
+  var BEAM_X = new Float64Array(PURSUIT_SCAN_RAYS);
+  var BEAM_Z = new Float64Array(PURSUIT_SCAN_RAYS);
+  for (let i = 0; i < PURSUIT_SCAN_RAYS; i++) {
+    BEAM_X[i] = BEAMS[i][0];
+    BEAM_Z[i] = BEAMS[i][1];
+  }
   var escapeStates = /* @__PURE__ */ new WeakMap();
-  function makeAction(steer, throttle, brake2, gear) {
-    return validatePursuitAction({
+  function validateRequestedPursuitAction(action) {
+    if (action && Object.getPrototypeOf(action) === Object.prototype && Object.keys(action).length === 5 && Object.prototype.hasOwnProperty.call(action, "nitro")) {
+      if (!Number.isFinite(action.nitro) || action.nitro < 0 || action.nitro > 1) {
+        throw new RangeError("Pursuit action nitro must be a finite number in [0, 1]");
+      }
+      validatePursuitAction({
+        steer: action.steer,
+        throttle: action.throttle,
+        brake: action.brake,
+        gear: action.gear
+      });
+      return action;
+    }
+    return validatePursuitAction(action);
+  }
+  function makeAction(steer, throttle, brake2, gear, nitro = 0) {
+    const base = validatePursuitAction({
       steer: steer === 0 ? 0 : clamp(steer, -1, 1),
       throttle: throttle === 0 ? 0 : clamp(throttle, 0, 1),
       brake: brake2 === 0 ? 0 : clamp(brake2, 0, 1),
       gear: gear < 0 ? -1 : 1
     });
+    return nitro >= 0.5 ? { ...base, nitro: 1 } : base;
   }
   function pointOnCurbSiteXY(px, pz, s) {
     if (px < s.minX || px > s.maxX || pz < s.minZ || pz > s.maxZ) return false;
@@ -20201,10 +26384,22 @@
     if (Array.isArray(curb.courtyards)) return false;
     return pointOnCurbSiteXY(px, pz, curb);
   }
+  var _lastPointRect = null;
+  var _lastPointRectOwner = null;
   function pointInRects(px, pz, rects, pad = 0) {
+    if (_lastPointRectOwner === rects && _lastPointRect !== null) {
+      const lr = _lastPointRect;
+      if (px >= lr.minX - pad && px <= lr.maxX + pad && pz >= lr.minZ - pad && pz <= lr.maxZ + pad) {
+        return true;
+      }
+    }
     for (let i = 0; i < rects.length; i++) {
       const r = rects[i];
-      if (px >= r.minX - pad && px <= r.maxX + pad && pz >= r.minZ - pad && pz <= r.maxZ + pad) return true;
+      if (px >= r.minX - pad && px <= r.maxX + pad && pz >= r.minZ - pad && pz <= r.maxZ + pad) {
+        _lastPointRect = r;
+        _lastPointRectOwner = rects;
+        return true;
+      }
     }
     return false;
   }
@@ -20230,11 +26425,24 @@
     if (rects?.length && pointInRects(px, pz, rects, pad)) return true;
     return pointOnDiagRoads(px, pz, diagRoads, useMargin, pad);
   }
+  var _lastSingleRoadRect = null;
+  var _lastSingleRoadOwner = null;
   function poseInSingleRoadRectCoords(x0, z0, x1, z1, x2, z2, x3, z3, roadRects) {
+    if (_lastSingleRoadOwner === roadRects && _lastSingleRoadRect !== null) {
+      const lr = _lastSingleRoadRect;
+      if (x0 >= lr.minX && x0 <= lr.maxX && z0 >= lr.minZ && z0 <= lr.maxZ && x1 >= lr.minX && x1 <= lr.maxX && z1 >= lr.minZ && z1 <= lr.maxZ && x2 >= lr.minX && x2 <= lr.maxX && z2 >= lr.minZ && z2 <= lr.maxZ && x3 >= lr.minX && x3 <= lr.maxX && z3 >= lr.minZ && z3 <= lr.maxZ) {
+        return true;
+      }
+    }
+    const mx = (x0 + x2) * 0.5;
+    const mz = (z0 + z2) * 0.5;
     for (let i = 0; i < roadRects.length; i++) {
       const r = roadRects[i];
       if (r.axis === "diag") continue;
+      if (mx < r.minX || mx > r.maxX || mz < r.minZ || mz > r.maxZ) continue;
       if (x0 >= r.minX && x0 <= r.maxX && z0 >= r.minZ && z0 <= r.maxZ && x1 >= r.minX && x1 <= r.maxX && z1 >= r.minZ && z1 <= r.maxZ && x2 >= r.minX && x2 <= r.maxX && z2 >= r.minZ && z2 <= r.maxZ && x3 >= r.minX && x3 <= r.maxX && z3 >= r.minZ && z3 <= r.maxZ) {
+        _lastSingleRoadRect = r;
+        _lastSingleRoadOwner = roadRects;
         return true;
       }
     }
@@ -20400,9 +26608,14 @@
     roadRects.diagRoads = diagRoads;
     pointRoadRects.diagRoads = diagRoads;
     const statics = [];
-    const rawStatics = world.statics ?? [];
+    const closures = world.pursuit?.closures;
+    const roadblockBarrier = world.pursuit?.gta?.roadblock?.barrier;
+    const rawStatics = world.pursuit?.staticOverlay?.permanent ?? world.district?.statics ?? world.statics ?? [];
     for (let i = 0; i < rawStatics.length; i++) {
       const body = rawStatics[i];
+      if (!body || closures && closures.has(body) || body === roadblockBarrier || body.gtaRoadblock || body.kind === "roadblock" || typeof body.id === "string" && (body.id.startsWith("street-pursuit-") || body.id.includes("roadblock"))) {
+        continue;
+      }
       const isPed = body.type === "pedestrian";
       const half = isPed ? body.radius ?? 0.4 : Math.hypot(body.width ?? 0, body.length ?? 0) * 0.5;
       if (body.x + half >= minX && body.x - half <= maxX && body.z + half >= minZ && body.z - half <= maxZ) {
@@ -20502,7 +26715,7 @@
     }
     return false;
   }
-  function buildScanModel(scan, start) {
+  function buildScanModel(scan, start, ignorePedCollision = false) {
     const startBox = { x: 0, z: 0, heading: 0, width: start.width, length: start.length };
     const w0 = start.width / 2;
     const l0 = start.length / 2;
@@ -20513,7 +26726,8 @@
     const effectiveBeamLimit = new Float64Array(PURSUIT_SCAN_RAYS);
     const sectorConnected = new Uint8Array(PURSUIT_SCAN_RAYS);
     for (let i = 0; i < PURSUIT_SCAN_RAYS; i++) {
-      const ray = scan.rays[i];
+      const rawRay = scan.rays[i];
+      const ray = ignorePedCollision && rawRay.kind === "pedestrian" ? { kind: "none", rangeM: PURSUIT_SCAN_RANGE_M } : rawRay;
       const [bx, bz] = BEAMS[i];
       const farX = Math.abs(bx) < 1e-9 ? Infinity : w0 / Math.abs(bx);
       const farZ = Math.abs(bz) < 1e-9 ? Infinity : l0 / Math.abs(bz);
@@ -20532,7 +26746,9 @@
       if (ray.kind === "pedestrian" && ray.rangeM <= PED_RAY_RANGE_M) {
         pedRays.push({ x: rx, z: rz, rangeM: ray.rangeM });
       }
-      if (ray.kind !== "pedestrian" && ray.rangeM - sFar < RAY_MARGIN_M) {
+      if (ray.kind === "none") {
+        effectiveBeamLimit[i] = Infinity;
+      } else if (ray.kind !== "pedestrian" && ray.rangeM - sFar < RAY_MARGIN_M) {
         effectiveBeamLimit[i] = Math.max(0, ray.rangeM - 4e-3);
       } else {
         effectiveBeamLimit[i] = ray.rangeM - RAY_MARGIN_M;
@@ -20596,7 +26812,7 @@
     const elapsedS = PURSUIT_SCAN_TICKS * STEP;
     const freshTracks = [];
     for (const track2 of scan.tracks) {
-      if (track2.ageS !== 0 || track2.kind === "static") continue;
+      if (track2.ageS !== 0 || track2.kind === "static" || ignorePedCollision && track2.kind === "pedestrian") continue;
       const rangeM = Math.hypot(track2.rightM, track2.forwardM);
       let vx = 0;
       let vz = 0;
@@ -20651,6 +26867,9 @@
         forwardM: track2.forwardM,
         vx,
         vz,
+        relVx: Number.isFinite(track2.rightMps) ? track2.rightMps : 0,
+        relVz: Number.isFinite(track2.forwardMps) ? track2.forwardMps : 0,
+        ttcS: Number.isFinite(track2.ttcS) ? track2.ttcS : null,
         closingMps,
         forecastConfirmed,
         motionKnown: track2.motionKnown,
@@ -20670,6 +26889,12 @@
         if (lim < minConnectedBeamLimit) minConnectedBeamLimit = lim;
       }
     }
+    const activeRayIndices = [];
+    for (let i = 0; i < PURSUIT_SCAN_RAYS; i++) {
+      if (!closeNonPedBeam[i] && Number.isFinite(effectiveBeamLimit[i])) {
+        activeRayIndices.push(i);
+      }
+    }
     return {
       egoHeading: start.heading ?? 0,
       rays: scan.rays,
@@ -20679,6 +26904,7 @@
       pedRays,
       effectiveBeamLimit,
       closeNonPedBeam,
+      activeRayIndices,
       sectorConnected,
       minConnectedBeamLimit,
       freshTracks
@@ -21379,8 +27605,8 @@
     if (localForward <= 0) return localRight;
     return Math.hypot(localRight, localForward);
   }
-  function checkRayClearance(local2, scanModel, inActionWindow, prevSurfaceDists, sheddingOppositeSpeed = false, checkDrivenBumper = false, gear = 1) {
-    let minClearance = 3.05;
+  function checkRayClearance(local2, scanModel, inActionWindow, prevSurfaceDists, sheddingOppositeSpeed = false, checkDrivenBumper = false, gear = 1, minClearanceCap = 3.05) {
+    let minClearance = minClearanceCap < 3.05 ? minClearanceCap : 3.05;
     const c = Math.cos(local2.heading);
     const s = Math.sin(local2.heading);
     const w = local2.width * 0.5;
@@ -21432,38 +27658,79 @@
     }
     const r0 = -lx * c + lz * s;
     const f0 = -lx * s - lz * c;
-    for (let i = 0; i < PURSUIT_SCAN_RAYS; i++) {
-      if (scanModel.closeNonPedBeam[i]) continue;
-      const limitI = scanModel.effectiveBeamLimit[i];
-      if (limitI - maxFarPossible >= minClearance) continue;
-      const [bx, bz] = BEAMS[i];
-      if (Math.abs(lx * bz - lz * bx) > bodyDiagHalf || lx * bx + lz * bz < -bodyDiagHalf) continue;
-      const dr = bx * c - bz * s;
-      const df = bx * s + bz * c;
-      if (!(Math.abs(dr) < 1e-9 && Math.abs(r0) > w || Math.abs(df) < 1e-9 && Math.abs(f0) > l)) {
-        let near = 0;
-        let far = Infinity;
-        if (Math.abs(dr) >= 1e-9) {
-          const a = (-w - r0) / dr;
-          const b = (w - r0) / dr;
-          near = Math.max(near, a < b ? a : b);
-          far = Math.min(far, a > b ? a : b);
-        }
-        if (Math.abs(df) >= 1e-9) {
-          const a = (-l - f0) / df;
-          const b = (l - f0) / df;
-          near = Math.max(near, a < b ? a : b);
-          far = Math.min(far, a > b ? a : b);
-        }
-        if (far >= near) {
-          const gap = limitI - far;
-          if (gap <= 0) {
-            _rayResult.ok = false;
-            _rayResult.reason = "scan-clearance";
-            _rayResult.clearance = gap;
-            return _rayResult;
+    const activeRayIdx = scanModel.activeRayIndices;
+    if (activeRayIdx) {
+      for (let k = 0; k < activeRayIdx.length; k++) {
+        const i = activeRayIdx[k];
+        const limitI = scanModel.effectiveBeamLimit[i];
+        if (limitI - maxFarPossible >= minClearance) continue;
+        const bx = BEAM_X[i];
+        const bz = BEAM_Z[i];
+        if (Math.abs(lx * bz - lz * bx) > bodyDiagHalf || lx * bx + lz * bz < -bodyDiagHalf) continue;
+        const dr = bx * c - bz * s;
+        const df = bx * s + bz * c;
+        if (!(Math.abs(dr) < 1e-9 && Math.abs(r0) > w || Math.abs(df) < 1e-9 && Math.abs(f0) > l)) {
+          let near = 0;
+          let far = Infinity;
+          if (Math.abs(dr) >= 1e-9) {
+            const a = (-w - r0) / dr;
+            const b = (w - r0) / dr;
+            near = Math.max(near, a < b ? a : b);
+            far = Math.min(far, a > b ? a : b);
           }
-          if (gap < minClearance) minClearance = gap;
+          if (Math.abs(df) >= 1e-9) {
+            const a = (-l - f0) / df;
+            const b = (l - f0) / df;
+            near = Math.max(near, a < b ? a : b);
+            far = Math.min(far, a > b ? a : b);
+          }
+          if (far >= near) {
+            const gap = limitI - far;
+            if (gap <= 0) {
+              _rayResult.ok = false;
+              _rayResult.reason = "scan-clearance";
+              _rayResult.clearance = gap;
+              return _rayResult;
+            }
+            if (gap < minClearance) minClearance = gap;
+          }
+        }
+      }
+    } else {
+      for (let i = 0; i < PURSUIT_SCAN_RAYS; i++) {
+        if (scanModel.closeNonPedBeam[i]) continue;
+        const limitI = scanModel.effectiveBeamLimit[i];
+        if (limitI - maxFarPossible >= minClearance) continue;
+        const bx = BEAM_X[i];
+        const bz = BEAM_Z[i];
+        if (Math.abs(lx * bz - lz * bx) > bodyDiagHalf || lx * bx + lz * bz < -bodyDiagHalf) continue;
+        const dr = bx * c - bz * s;
+        const df = bx * s + bz * c;
+        if (!(Math.abs(dr) < 1e-9 && Math.abs(r0) > w || Math.abs(df) < 1e-9 && Math.abs(f0) > l)) {
+          let near = 0;
+          let far = Infinity;
+          if (Math.abs(dr) >= 1e-9) {
+            const a = (-w - r0) / dr;
+            const b = (w - r0) / dr;
+            near = Math.max(near, a < b ? a : b);
+            far = Math.min(far, a > b ? a : b);
+          }
+          if (Math.abs(df) >= 1e-9) {
+            const a = (-l - f0) / df;
+            const b = (l - f0) / df;
+            near = Math.max(near, a < b ? a : b);
+            far = Math.min(far, a > b ? a : b);
+          }
+          if (far >= near) {
+            const gap = limitI - far;
+            if (gap <= 0) {
+              _rayResult.ok = false;
+              _rayResult.reason = "scan-clearance";
+              _rayResult.clearance = gap;
+              return _rayResult;
+            }
+            if (gap < minClearance) minClearance = gap;
+          }
         }
       }
     }
@@ -21505,6 +27772,8 @@
         const clampedClear = boxDist > 0.01 ? boxDist : 0.01;
         if (clampedClear < minClearance) minClearance = clampedClear;
       } else {
+        const surfReach = bodyDiagHalf + RAY_MARGIN_M + minClearance;
+        if (Math.abs(pt.x - lx) >= surfReach || Math.abs(pt.z - lz) >= surfReach) continue;
         const lowerGap = pt.rangeM - pruneRange;
         if (lowerGap > 0 && lowerGap >= minClearance) continue;
         const boxDist = pointToBoxDistPrecomputed(pt.x, pt.z, lx, lz, c, s, w, l);
@@ -21518,8 +27787,12 @@
         if (gap < minClearance) minClearance = gap;
       }
     }
+    const bodyMargin = inActionWindow ? PED_RAY_CORNER_MARGIN_M : PED_TRACK_STOP_MARGIN_M;
+    const maxPedMargin = bodyMargin > PED_RAY_CORNER_MARGIN_M ? bodyMargin : PED_RAY_CORNER_MARGIN_M;
     for (let i = 0; i < scanModel.pedRays.length; i++) {
       const ped = scanModel.pedRays[i];
+      const pedReach = bodyDiagHalf + maxPedMargin + minClearance;
+      if (Math.abs(ped.x - lx) >= pedReach || Math.abs(ped.z - lz) >= pedReach) continue;
       for (let cIdx = 0; cIdx < 4; cIdx++) {
         const cornerGap = Math.hypot(_localCornerX[cIdx] - ped.x, _localCornerZ[cIdx] - ped.z) - PED_RAY_CORNER_MARGIN_M;
         if (cornerGap < 0) {
@@ -21530,7 +27803,6 @@
         }
         if (cornerGap < minClearance) minClearance = cornerGap;
       }
-      const bodyMargin = inActionWindow ? PED_RAY_CORNER_MARGIN_M : PED_TRACK_STOP_MARGIN_M;
       const bodyGap = pointToBoxDistPrecomputed(ped.x, ped.z, lx, lz, c, s, w, l) - bodyMargin;
       if (bodyGap < 0) {
         _rayResult.ok = false;
@@ -21545,6 +27817,7 @@
     _rayResult.clearance = minClearance;
     return _rayResult;
   }
+  var _segStaticBuf = [];
   function sweepSegmentSupportAndStatics(from, to, roads, curb, statics, stepSizeM = 0.12, roadRects = null, pointRoadRects = null) {
     const turn = angleDelta(to.heading, from.heading);
     const dx = to.x - from.x;
@@ -21558,6 +27831,57 @@
     probe.width = to.width;
     const pw = to.type === "pedestrian" ? Math.abs(to.radius ?? 0) : Math.abs(to.width ?? 0) * 0.5;
     const pl = to.type === "pedestrian" ? Math.abs(to.radius ?? 0) : Math.abs(to.length ?? 0) * 0.5;
+    let segStatics = statics;
+    if (statics.length > 0 && statics[0]?.aabbMinX !== void 0) {
+      const halfDiag = Math.hypot(pw, pl) + STATIC_CURB_GAP_M + 0.02;
+      const sMinX = Math.min(from.x, to.x) - halfDiag;
+      const sMaxX = Math.max(from.x, to.x) + halfDiag;
+      const sMinZ = Math.min(from.z, to.z) - halfDiag;
+      const sMaxZ = Math.max(from.z, to.z) + halfDiag;
+      _segStaticBuf.length = 0;
+      for (let j = 0; j < statics.length; j++) {
+        const entry = statics[j];
+        if (entry.aabbMaxX >= sMinX && entry.aabbMinX <= sMaxX && entry.aabbMaxZ >= sMinZ && entry.aabbMinZ <= sMaxZ) {
+          _segStaticBuf.push(entry);
+        }
+      }
+      segStatics = _segStaticBuf;
+    }
+    if (segStatics.length === 0 && roadRects?.length > 0 && Math.abs(turn) <= 0.14) {
+      const sf = Math.sin(from.heading), cf = Math.cos(from.heading);
+      const st = Math.sin(to.heading), ct = Math.cos(to.heading);
+      const cwf = cf * pw, swf = sf * pw, slf = sf * pl, clf = cf * pl;
+      const cwt = ct * pw, swt = st * pw, slt = st * pl, clt = ct * pl;
+      const fx = from.x, fz = from.z, tx = to.x, tz = to.z;
+      const sagPad = 5e-3;
+      const minAllX = Math.min(fx - cwf - slf, fx + cwf - slf, fx + cwf + slf, fx - cwf + slf, tx - cwt - slt, tx + cwt - slt, tx + cwt + slt, tx - cwt + slt) - sagPad;
+      const maxAllX = Math.max(fx - cwf - slf, fx + cwf - slf, fx + cwf + slf, fx - cwf + slf, tx - cwt - slt, tx + cwt - slt, tx + cwt + slt, tx - cwt + slt) + sagPad;
+      const minAllZ = Math.min(fz + swf - clf, fz - swf - clf, fz - swf + clf, fz + swf + clf, tz + swt - clt, tz - swt - clt, tz - swt + clt, tz + swt + clt) - sagPad;
+      const maxAllZ = Math.max(fz + swf - clf, fz - swf - clf, fz - swf + clf, fz + swf + clf, tz + swt - clt, tz - swt - clt, tz - swt + clt, tz + swt + clt) + sagPad;
+      for (let rIdx = 0; rIdx < roadRects.length; rIdx++) {
+        const r = roadRects[rIdx];
+        if (r.axis === "diag") continue;
+        if (minAllX >= r.minX && maxAllX <= r.maxX && minAllZ >= r.minZ && maxAllZ <= r.maxZ) {
+          _sweepResult.ok = true;
+          _sweepResult.reason = null;
+          _sweepResult.usesCurb = false;
+          _sweepResult.endUsesCurb = false;
+          return _sweepResult;
+        }
+      }
+      if (curb && Array.isArray(curb.courtyards) && !pointOnRoadRects(fx, fz, pointRoadRects ?? roadRects, roadRects.diagRoads, false, Math.hypot(pw, pl) + 0.1) && !pointOnRoadRects(tx, tz, pointRoadRects ?? roadRects, roadRects.diagRoads, false, Math.hypot(pw, pl) + 0.1)) {
+        for (let cIdx = 0; cIdx < curb.courtyards.length; cIdx++) {
+          const cRect = curb.courtyards[cIdx];
+          if (minAllX >= cRect.minX && maxAllX <= cRect.maxX && minAllZ >= cRect.minZ && maxAllZ <= cRect.maxZ) {
+            _sweepResult.ok = true;
+            _sweepResult.reason = null;
+            _sweepResult.usesCurb = true;
+            _sweepResult.endUsesCurb = true;
+            return _sweepResult;
+          }
+        }
+      }
+    }
     let usesCurb = false;
     let endUsesCurb = false;
     for (let i = 1; i <= steps; i++) {
@@ -21575,14 +27899,14 @@
       }
       usesCurb ||= support.usesCurb;
       endUsesCurb = support.usesCurb;
-      if (!statics.length) continue;
+      if (!segStatics.length) continue;
       const staticGap = support.usesCurb ? STATIC_CURB_GAP_M : STATIC_ASPHALT_GAP_M;
       const pc = Math.abs(Math.cos(probe.heading));
       const ps = Math.abs(Math.sin(probe.heading));
       const pExtX = pw * pc + pl * ps + staticGap + 1e-5;
       const pExtZ = pw * ps + pl * pc + staticGap + 1e-5;
-      for (let j = 0; j < statics.length; j++) {
-        const entry = statics[j];
+      for (let j = 0; j < segStatics.length; j++) {
+        const entry = segStatics[j];
         if (entry.aabbMinX !== void 0 && (probe.x + pExtX < entry.aabbMinX || probe.x - pExtX > entry.aabbMaxX || probe.z + pExtZ < entry.aabbMinZ || probe.z - pExtZ > entry.aabbMaxZ)) {
           continue;
         }
@@ -21921,12 +28245,12 @@
   function cellKeyForXY(x, z) {
     return `${Math.floor(x / VISITED_CELL_SIZE_M)}:${Math.floor(z / VISITED_CELL_SIZE_M)}`;
   }
-  function countOldCellVisits(cellKey, visitedCells, tick) {
+  function countOldCellVisits(cellKey2, visitedCells, tick) {
     if (!visitedCells?.length) return 0;
     let visits = 0;
     for (let i = 0; i < visitedCells.length; i++) {
       const entry = visitedCells[i];
-      if (entry.key !== cellKey) continue;
+      if (entry.key !== cellKey2) continue;
       if (tick - entry.lastTick <= REVISIT_MIN_AGE_TICKS) {
         return 0;
       }
@@ -22031,6 +28355,459 @@
       if (ttc < minTtc) minTtc = ttc;
     }
     return minTtc;
+  }
+  var PROACTIVE_TRACK_HORIZONS_S = Object.freeze([0.3, 0.7, 1.15]);
+  var NITRO_PED_HORIZONS_S = Object.freeze([0.4, 0.9, 1.4]);
+  function collectPedestrianSensorLocalPoints(start, scanModel, visualPoints, visualState, rawScan = null) {
+    const out = [];
+    const pushPt = (rx, fz) => {
+      if (Number.isFinite(rx) && Number.isFinite(fz)) {
+        out.push({ right: rx, forward: fz });
+      }
+    };
+    if (scanModel?.pedRays) {
+      for (let i = 0; i < scanModel.pedRays.length; i++) {
+        pushPt(scanModel.pedRays[i].x, scanModel.pedRays[i].z);
+      }
+    }
+    if (scanModel?.hitPoints) {
+      for (let i = 0; i < scanModel.hitPoints.length; i++) {
+        const pt = scanModel.hitPoints[i];
+        if (pt && pt.kind === "pedestrian") pushPt(pt.x, pt.z);
+      }
+    }
+    if (scanModel?.rays && scanModel.rays.length === PURSUIT_SCAN_RAYS) {
+      for (let i = 0; i < PURSUIT_SCAN_RAYS; i++) {
+        const ray = scanModel.rays[i];
+        if (ray && ray.kind === "pedestrian" && Number.isFinite(ray.rangeM)) {
+          pushPt(BEAMS[i][0] * ray.rangeM, BEAMS[i][1] * ray.rangeM);
+        }
+      }
+    }
+    if (scanModel?.freshTracks) {
+      for (let i = 0; i < scanModel.freshTracks.length; i++) {
+        const tr = scanModel.freshTracks[i];
+        if (!tr || tr.kind !== "pedestrian") continue;
+        pushPt(tr.rightM, tr.forwardM);
+        for (let hIdx = 0; hIdx < NITRO_PED_HORIZONS_S.length; hIdx++) {
+          const t = NITRO_PED_HORIZONS_S[hIdx];
+          pushPt(tr.rightM + (tr.vx ?? 0) * t, tr.forwardM + (tr.vz ?? 0) * t);
+        }
+      }
+    }
+    if (Array.isArray(rawScan?.tracks)) {
+      for (let i = 0; i < rawScan.tracks.length; i++) {
+        const tr = rawScan.tracks[i];
+        if (!tr || tr.kind !== "pedestrian" || (tr.ageS ?? 0) > 0.35) continue;
+        pushPt(tr.rightM, tr.forwardM);
+        if (tr.motionKnown) {
+          const vx = (tr.rightMps ?? 0) + (start.gtaSlipMps ?? 0);
+          const vz = (tr.forwardMps ?? 0) + (start.speed ?? 0);
+          if (Math.hypot(vx, vz) <= 5.5) {
+            for (let hIdx = 0; hIdx < NITRO_PED_HORIZONS_S.length; hIdx++) {
+              const t = NITRO_PED_HORIZONS_S[hIdx];
+              pushPt(tr.rightM + vx * t, tr.forwardM + vz * t);
+            }
+          }
+        }
+      }
+    }
+    const c0 = Math.cos(start.heading ?? 0);
+    const s0 = Math.sin(start.heading ?? 0);
+    if (Array.isArray(visualPoints)) {
+      for (let i = 0; i < visualPoints.length; i++) {
+        const vp = visualPoints[i];
+        if (!vp || !Number.isFinite(vp.x) || !Number.isFinite(vp.z)) continue;
+        const dx = vp.x - start.x;
+        const dz = vp.z - start.z;
+        pushPt(dx * c0 - dz * s0, dx * s0 + dz * c0);
+      }
+    }
+    if (visualState && visualState.available !== false) {
+      if (Array.isArray(visualState.forecasts)) {
+        for (let i = 0; i < visualState.forecasts.length; i++) {
+          const item = visualState.forecasts[i];
+          if (!item || item.label && item.label !== "person" || item.qualified === false) continue;
+          if (Array.isArray(item.points)) {
+            for (let j = 0; j < item.points.length; j++) {
+              const pt = item.points[j];
+              const ahead = pt?.secondsAhead ?? 0;
+              if (ahead > 1.6 + 1e-6) continue;
+              const wx2 = pt?.x ?? pt?.xM;
+              const wz2 = pt?.z ?? pt?.zM;
+              if (Number.isFinite(wx2) && Number.isFinite(wz2)) {
+                const dx = wx2 - start.x;
+                const dz = wz2 - start.z;
+                pushPt(dx * c0 - dz * s0, dx * s0 + dz * c0);
+              } else if (Number.isFinite(pt?.rightM) && Number.isFinite(pt?.forwardM)) {
+                pushPt(pt.rightM, pt.forwardM);
+              }
+            }
+          }
+          const wx = item.x ?? item.xM;
+          const wz = item.z ?? item.zM;
+          if (Number.isFinite(wx) && Number.isFinite(wz)) {
+            const dx = wx - start.x;
+            const dz = wz - start.z;
+            pushPt(dx * c0 - dz * s0, dx * s0 + dz * c0);
+          } else if (Number.isFinite(item.lateralM) && Number.isFinite(item.longitudinalM)) {
+            const vLat = Number.isFinite(item.lateralSpeedMps) ? item.lateralSpeedMps : 0;
+            const vLon = Number.isFinite(item.forwardSpeedMps) ? item.forwardSpeedMps : 0;
+            pushPt(item.lateralM, item.longitudinalM);
+            for (let hIdx = 0; hIdx < NITRO_PED_HORIZONS_S.length; hIdx++) {
+              const t = NITRO_PED_HORIZONS_S[hIdx];
+              pushPt(item.lateralM + vLat * t, item.longitudinalM + vLon * t);
+            }
+          } else if (Number.isFinite(item.rightM) && Number.isFinite(item.forwardM)) {
+            pushPt(item.rightM, item.forwardM);
+          }
+        }
+      }
+      if (Array.isArray(visualState.tracks)) {
+        for (let i = 0; i < visualState.tracks.length; i++) {
+          const tr = visualState.tracks[i];
+          if (!tr || tr.label && tr.label !== "person") continue;
+          const px = tr.position?.x ?? tr.x ?? tr.xM;
+          const pz = tr.position?.z ?? tr.z ?? tr.zM;
+          if (Number.isFinite(px) && Number.isFinite(pz)) {
+            const dx = px - start.x;
+            const dz = pz - start.z;
+            const rx = dx * c0 - dz * s0;
+            const fz = dx * s0 + dz * c0;
+            pushPt(rx, fz);
+            const vwx = tr.velocity?.x ?? 0;
+            const vwz = tr.velocity?.z ?? 0;
+            if (Number.isFinite(vwx) && Number.isFinite(vwz) && Math.hypot(vwx, vwz) <= 5.5) {
+              const vrx = vwx * c0 - vwz * s0;
+              const vfz = vwx * s0 + vwz * c0;
+              for (let hIdx = 0; hIdx < NITRO_PED_HORIZONS_S.length; hIdx++) {
+                const t = NITRO_PED_HORIZONS_S[hIdx];
+                pushPt(rx + vrx * t, fz + vfz * t);
+              }
+            }
+          } else if (Number.isFinite(tr.lateralM) && Number.isFinite(tr.longitudinalM)) {
+            pushPt(tr.lateralM, tr.longitudinalM);
+          } else if (Number.isFinite(tr.rightM) && Number.isFinite(tr.forwardM)) {
+            pushPt(tr.rightM, tr.forwardM);
+          }
+        }
+      }
+    }
+    return out;
+  }
+  function evaluateNitroSafetyAndOpportunity(start, action, scanModel, visualPoints, localGeometry, pursuerPressure, world, extra = null) {
+    const halfW = (start?.width ?? PLAYER_VEHICLE.widthM) * 0.5;
+    const pedPoints = collectPedestrianSensorLocalPoints(
+      start,
+      scanModel,
+      visualPoints,
+      world?.visualState,
+      world?.pursuit?.gta?.scan
+    );
+    let pedestrianAheadHazard = hasCameraCrossingConflict(world?.visualState);
+    let nearestPedForwardM = Infinity;
+    let nearestPedEuclideanM = Infinity;
+    let leftCorridorWeight = 0;
+    let rightCorridorWeight = 0;
+    for (let i = 0; i < pedPoints.length; i++) {
+      const { right, forward: forward2 } = pedPoints[i];
+      const euclid = Math.hypot(right, forward2);
+      if (euclid < nearestPedEuclideanM) nearestPedEuclideanM = euclid;
+      const corridorHalfW = halfW + 2.8 + Math.max(0, forward2) * 0.06;
+      const inWideForwardCorridor = forward2 >= -1 && forward2 <= 42 && Math.abs(right) <= corridorHalfW;
+      if (inWideForwardCorridor || euclid <= 8.5) {
+        pedestrianAheadHazard = true;
+      }
+      if (forward2 >= -0.5 && forward2 <= 42 && Math.abs(right) <= corridorHalfW) {
+        if (forward2 < nearestPedForwardM) nearestPedForwardM = Math.max(0, forward2);
+        const w = 1 / Math.max(3.5, Math.hypot(right, Math.max(0, forward2) * 0.65));
+        if (right <= 0.35) leftCorridorWeight += w;
+        if (right >= -0.35) rightCorridorWeight += w;
+      }
+    }
+    if (pedestrianAheadHazard && !world?.pursuit?.frozenDriver?._faultIgnorePedestrianNitroOnly) {
+      const preferredWeaveSign = Math.abs(leftCorridorWeight - rightCorridorWeight) > 0.02 ? leftCorridorWeight < rightCorridorWeight ? -1 : 1 : 0;
+      return {
+        engageNitro: false,
+        pedestrianAheadHazard: true,
+        nitroSuppressedByPedestrian: true,
+        nearestPedForwardM,
+        nearestPedEuclideanM,
+        preferredWeaveSign,
+        clearForwardM: 0
+      };
+    }
+    const charge = start?.nitroCharge ?? 1;
+    const minCharge = start?.nitroActive ? 0.03 : LOCAL_NITRO_SPEC2.minEngageCharge;
+    const startOnRoad = extra?.startOnRoad !== void 0 ? Boolean(extra.startOnRoad) : Boolean(
+      localGeometry?.roads?.length > 0 && poseOnRoadFast2(start, localGeometry.roads, localGeometry.roadRects)
+    );
+    const onCurbOrAlley = Boolean(extra?.usesCurbBypass) || Boolean(start?.curbSupportId) || !startOnRoad;
+    const inSharpTacticalHook = (extra?.tacticalTag === "los-break" || Boolean(extra?.inLosBreakCommit)) && Math.abs(action?.steer ?? 0) > 0.32;
+    if (!action || charge < minCharge || action.gear !== 1 || action.brake !== 0 || action.throttle < 0.45 || Math.abs(action.steer) > 0.32 || onCurbOrAlley || inSharpTacticalHook) {
+      return {
+        engageNitro: false,
+        pedestrianAheadHazard: false,
+        nitroSuppressedByPedestrian: false,
+        nearestPedForwardM,
+        nearestPedEuclideanM,
+        preferredWeaveSign: 0,
+        clearForwardM: 0
+      };
+    }
+    const maxSteer = start?.spec?.maxSteer ?? VEHICLE.maxSteer;
+    const aimOffset = action.steer * maxSteer * 0.5;
+    const aimHeading = (start?.heading ?? 0) + aimOffset;
+    const c = Math.cos(aimOffset);
+    const s = Math.sin(aimOffset);
+    const corridorHalf = halfW + 0.62;
+    const ignorePedNitro = Boolean(world?.pursuit?.frozenDriver?._faultIgnorePedestrianNitroOnly);
+    let detectedObstacleForwardM = Infinity;
+    if (scanModel?.rays && scanModel.rays.length === PURSUIT_SCAN_RAYS) {
+      for (let i = 0; i < PURSUIT_SCAN_RAYS; i++) {
+        const ray = scanModel.rays[i];
+        if (!ray || ray.kind === "none" || ignorePedNitro && ray.kind === "pedestrian") continue;
+        const rx = BEAMS[i][0] * ray.rangeM;
+        const rz = BEAMS[i][1] * ray.rangeM;
+        const right = rx * c - rz * s;
+        const forward2 = rx * s + rz * c;
+        if (forward2 > 0 && Math.abs(right) <= corridorHalf && forward2 < detectedObstacleForwardM) {
+          detectedObstacleForwardM = forward2;
+        }
+      }
+    }
+    if (scanModel?.freshTracks) {
+      for (let i = 0; i < scanModel.freshTracks.length; i++) {
+        const tr = scanModel.freshTracks[i];
+        if (!tr || ignorePedNitro && tr.kind === "pedestrian") continue;
+        const right0 = tr.rightM * c - tr.forwardM * s;
+        const forward0 = tr.rightM * s + tr.forwardM * c;
+        if (forward0 > 0 && Math.abs(right0) <= corridorHalf && forward0 < detectedObstacleForwardM) {
+          detectedObstacleForwardM = forward0;
+        }
+        if (tr.motionKnown) {
+          const rx1 = tr.rightM + (tr.vx ?? 0) * 0.5;
+          const fz1 = tr.forwardM + (tr.vz ?? 0) * 0.5;
+          const right1 = rx1 * c - fz1 * s;
+          const forward1 = rx1 * s + fz1 * c;
+          if (forward1 > 0 && Math.abs(right1) <= corridorHalf && forward1 < detectedObstacleForwardM) {
+            detectedObstacleForwardM = forward1;
+          }
+        }
+      }
+    }
+    if (localGeometry?.roads?.length > 0 || localGeometry?.statics?.length > 0) {
+      const sinA = Math.sin(aimHeading);
+      const cosA = Math.cos(aimHeading);
+      const statics = localGeometry.statics ?? [];
+      const roads = localGeometry.roads ?? [];
+      const roadRects = localGeometry.roadRects ?? null;
+      for (const d of [8, 16, 24, 34, 46]) {
+        const probe = {
+          x: start.x + sinA * d,
+          z: start.z + cosA * d,
+          heading: aimHeading,
+          width: start.width ?? PLAYER_VEHICLE.widthM,
+          length: start.length ?? PLAYER_VEHICLE.lengthM,
+          type: start.type ?? "vehicle"
+        };
+        if (roads.length > 0 && !poseOnRoadFast2(probe, roads, roadRects)) {
+          detectedObstacleForwardM = Math.min(detectedObstacleForwardM, d - 2);
+          break;
+        }
+        if (statics.length > 0 && poseHitsStaticsFast(probe, statics, 0.85)) {
+          detectedObstacleForwardM = Math.min(detectedObstacleForwardM, d - 2);
+          break;
+        }
+      }
+    }
+    const clearForwardM = Math.min(detectedObstacleForwardM, PURSUIT_SCAN_RANGE_M);
+    const rawScan = world?.pursuit?.gta?.scan ?? null;
+    const longRangeRadar = rawScan?.longRangeForward ?? null;
+    const anyPursuerInScan = Boolean(pursuerPressure?.anyPursuer || pursuerPressure?.active) || Boolean(scanModel?.rays?.some((r) => r && r.kind === "police")) || Boolean(scanModel?.freshTracks?.some((t) => t && t.kind === "police")) || Boolean(rawScan?.tracks?.some((t) => t && t.kind === "police")) || Boolean(longRangeRadar?.beams?.some((b) => b && b.kind === "police"));
+    const pursuitOpportunity = anyPursuerInScan;
+    const braking = Math.max(4.5, start?.spec?.braking ?? VEHICLE.braking);
+    const baseAccel = start?.spec?.acceleration ?? VEHICLE.acceleration;
+    const boostAccel = baseAccel * LOCAL_NITRO_SPEC2.accelMultiplier * action.throttle;
+    const curSpeed = Math.max(0, start?.speed ?? 0);
+    const postStepBoostSpeed = Math.min(
+      LOCAL_NITRO_SPEC2.maxBoostSpeedMps,
+      curSpeed + boostAccel * (PURSUIT_SCAN_TICKS * STEP)
+    );
+    const boostStopDistM = (start?.length ?? PLAYER_VEHICLE.lengthM) * 0.5 + 0.65 + postStepBoostSpeed * 0.2 + postStepBoostSpeed * postStepBoostSpeed / (2 * braking);
+    const longRangeClearM = longRangeRadar && (longRangeRadar.pedestrianAheadM === null || ignorePedNitro) && Math.abs(action?.steer ?? 0) <= 0.14 ? longRangeRadar.minCorridorM : PURSUIT_SCAN_RANGE_M - 1.5;
+    const observedSafeHorizonM = Math.min(detectedObstacleForwardM, longRangeClearM);
+    const withinSensorStoppingHorizon = boostStopDistM <= observedSafeHorizonM - 1.5;
+    const engageNitro = clearForwardM >= 25 && withinSensorStoppingHorizon && pursuitOpportunity;
+    return {
+      engageNitro,
+      pedestrianAheadHazard: false,
+      nitroSuppressedByPedestrian: false,
+      nearestPedForwardM,
+      nearestPedEuclideanM,
+      preferredWeaveSign: 0,
+      clearForwardM
+    };
+  }
+  function analyzeProactiveEvasionThreats(start, localGeometry, scanModel, localRoadHeading) {
+    const halfW = (start.width ?? PLAYER_VEHICLE.widthM) * 0.5;
+    const halfL = (start.length ?? PLAYER_VEHICLE.lengthM) * 0.5;
+    const laneCorridorHalfW = halfW + 0.78;
+    let forwardObstacleM = Infinity;
+    let forwardObstacleLatM = 0;
+    let sideRamThreat = false;
+    let sideRamRightSign = 0;
+    let minPoliceTtc = Infinity;
+    let minPolicePredGapM = Infinity;
+    for (let i = 0; i < PURSUIT_SCAN_RAYS; i++) {
+      const pt = scanModel.rayPoints[i];
+      if (!pt || pt.kind === "pedestrian") continue;
+      if (pt.z >= 2 && pt.z <= 38 && Math.abs(pt.x) <= laneCorridorHalfW) {
+        if (pt.z < forwardObstacleM) {
+          forwardObstacleM = pt.z;
+          forwardObstacleLatM = pt.x;
+        }
+      }
+    }
+    const egoSlip = start.gtaSlipMps ?? 0;
+    const egoFwd = start.speed ?? 0;
+    for (let i = 0; i < scanModel.freshTracks.length; i++) {
+      const tr = scanModel.freshTracks[i];
+      if (!tr || tr.kind !== "civilian" && tr.kind !== "police") continue;
+      const relClose = egoFwd - (tr.motionKnown ? tr.vz : 0);
+      if (tr.forwardM >= 1.8 && tr.forwardM <= 38.5 && (relClose > 0.65 || !tr.motionKnown || tr.forwardM <= 29)) {
+        let entersOwnLane = Math.abs(tr.rightM) <= laneCorridorHalfW + 0.18;
+        let projLat = tr.rightM;
+        if (!entersOwnLane && tr.motionKnown) {
+          for (let hIdx = 0; hIdx < PROACTIVE_TRACK_HORIZONS_S.length; hIdx++) {
+            const t = PROACTIVE_TRACK_HORIZONS_S[hIdx];
+            const px = tr.rightM + tr.vx * t - egoSlip * t;
+            const pz = tr.forwardM + tr.vz * t - egoFwd * t;
+            if (pz >= 0.5 && pz <= 36 && Math.abs(px) <= laneCorridorHalfW + 0.15) {
+              entersOwnLane = true;
+              projLat = px;
+              break;
+            }
+          }
+        }
+        if (entersOwnLane && tr.forwardM < forwardObstacleM) {
+          forwardObstacleM = tr.forwardM;
+          forwardObstacleLatM = projLat;
+        }
+      }
+      if (tr.kind === "police" && tr.rangeM <= 34) {
+        const isPureRearNonClosing = tr.forwardM < -halfL - 0.8 && (!tr.motionKnown || tr.closingMps <= 1.2);
+        if (!isPureRearNonClosing) {
+          const ttc = tr.ttcS !== null && tr.ttcS !== void 0 ? tr.ttcS : tr.closingMps > 0.35 ? Math.max(0, tr.initialGap) / tr.closingMps : Infinity;
+          if (ttc < minPoliceTtc) minPoliceTtc = ttc;
+          let minGap = tr.initialGap;
+          for (let hIdx = 0; hIdx < PROACTIVE_TRACK_HORIZONS_S.length; hIdx++) {
+            const t = PROACTIVE_TRACK_HORIZONS_S[hIdx];
+            const relX = tr.rightM + tr.vx * t - egoSlip * t;
+            const relZ = tr.forwardM + tr.vz * t - egoFwd * t;
+            const g = pointToBoxDistPrecomputed(relX, relZ, 0, 0, 1, 0, halfW, halfL);
+            if (g < minGap) minGap = g;
+          }
+          if (minGap < minPolicePredGapM) minPolicePredGapM = minGap;
+          if ((ttc <= 1.45 || minGap < 1.35) && Math.abs(tr.rightM) >= 0.35 && tr.forwardM >= -halfL - 1.2) {
+            sideRamThreat = true;
+            sideRamRightSign = tr.rightM >= 0 ? 1 : -1;
+          }
+        }
+      }
+    }
+    let leftOpenM = 0;
+    let rightOpenM = 0;
+    const { roads, roadRects, statics } = localGeometry;
+    if (roads.length > 0 && (forwardObstacleM <= 38.5 || sideRamThreat)) {
+      const sinR = Math.sin(localRoadHeading);
+      const cosR = Math.cos(localRoadHeading);
+      const cos0 = Math.cos(start.heading);
+      const sin0 = Math.sin(start.heading);
+      const relH = angleDelta(localRoadHeading, start.heading);
+      const lpc = Math.cos(relH);
+      const lps = Math.sin(relH);
+      const measureLaneOffsetReach = (lat) => {
+        let reachM = 0;
+        for (let d = 5; d <= 35; d += 3) {
+          const px = start.x + sinR * d + cosR * lat;
+          const pz = start.z + cosR * d - sinR * lat;
+          const probe = {
+            x: px,
+            z: pz,
+            heading: localRoadHeading,
+            width: start.width,
+            length: start.length,
+            type: start.type
+          };
+          if (!poseOnRoadFast2(probe, roads, roadRects) || poseHitsStaticsFast(probe, statics, STATIC_ASPHALT_GAP_M)) {
+            break;
+          }
+          const dx = px - start.x;
+          const dz = pz - start.z;
+          const lbx = dx * cos0 - dz * sin0;
+          const lbz = dx * sin0 + dz * cos0;
+          let blocked = false;
+          for (let i = 0; i < scanModel.hitPoints.length; i++) {
+            const pt = scanModel.hitPoints[i];
+            if (Math.abs(pt.z - lbz) > 4 || Math.abs(pt.x - lbx) > 3.5) continue;
+            const margin = pt.kind === "pedestrian" ? 1.45 : 0.32;
+            if (pointToBoxDistPrecomputed(pt.x, pt.z, lbx, lbz, lpc, lps, halfW, halfL) < margin) {
+              blocked = true;
+              break;
+            }
+          }
+          if (blocked) break;
+          const estT = clamp(d / Math.max(5.5, Math.abs(start.speed)), 0.3, 1.15);
+          for (let i = 0; i < scanModel.freshTracks.length; i++) {
+            const tr = scanModel.freshTracks[i];
+            const tx = tr.rightM + (tr.motionKnown ? tr.vx * estT : 0);
+            const tz = tr.forwardM + (tr.motionKnown ? tr.vz * estT : 0);
+            const margin = tr.kind === "pedestrian" ? 1.55 : 0.55;
+            if (pointToBoxDistPrecomputed(tx, tz, lbx, lbz, lpc, lps, halfW, halfL) < margin) {
+              blocked = true;
+              break;
+            }
+          }
+          if (blocked) break;
+          reachM = d;
+        }
+        return reachM;
+      };
+      const leftInnerM = measureLaneOffsetReach(-2.6);
+      const leftOuterM = measureLaneOffsetReach(-4.2);
+      const rightInnerM = measureLaneOffsetReach(2.6);
+      const rightOuterM = measureLaneOffsetReach(4.2);
+      leftOpenM = Math.max(leftInnerM, leftOuterM);
+      rightOpenM = Math.max(rightInnerM, rightOuterM);
+      var leftLaneCapacity = leftInnerM + 1.15 * leftOuterM;
+      var rightLaneCapacity = rightInnerM + 1.15 * rightOuterM;
+    }
+    const forwardLaneNeedsEarlyShift = forwardObstacleM >= 18 && forwardObstacleM <= 38 && (leftOpenM >= Math.min(30, forwardObstacleM + 5) || rightOpenM >= Math.min(30, forwardObstacleM + 5));
+    let preferredShiftSign = 0;
+    if (sideRamThreat) {
+      preferredShiftSign = -sideRamRightSign;
+    } else if (forwardLaneNeedsEarlyShift) {
+      const lCap = leftLaneCapacity ?? leftOpenM;
+      const rCap = rightLaneCapacity ?? rightOpenM;
+      if (lCap > rCap + 4) preferredShiftSign = -1;
+      else if (rCap > lCap + 4) preferredShiftSign = 1;
+      else if (Math.max(leftOpenM, rightOpenM) >= 14) {
+        preferredShiftSign = forwardObstacleLatM > 0.15 ? -1 : 1;
+      }
+    }
+    return {
+      active: forwardLaneNeedsEarlyShift || sideRamThreat,
+      forwardLaneNeedsEarlyShift,
+      forwardObstacleM,
+      sideRamThreat,
+      sideRamRightSign,
+      minPoliceTtc,
+      minPolicePredGapM,
+      leftOpenM,
+      rightOpenM,
+      preferredShiftSign
+    };
   }
   function findActiveCurbSite(pose5, curb) {
     if (!curb) return null;
@@ -22395,9 +29172,9 @@
     const pursuerX = losAlleyOnly ? start.x + Math.sin(pursuerPressure.dominantWorldBearing) * pursuerDist : 0;
     const pursuerZ = losAlleyOnly ? start.z + Math.cos(pursuerPressure.dominantWorldBearing) * pursuerDist : 0;
     const maxScanRad = 115 * Math.PI / 180;
-    const stepRad = 10 * Math.PI / 180;
+    const stepRad = 16 * Math.PI / 180;
     const candidates2 = [];
-    for (let deg = -115; deg <= 115; deg += 10) {
+    for (let deg = -112; deg <= 112; deg += 16) {
       candidates2.push(start.heading + deg * Math.PI / 180);
     }
     for (const cardinal of [0, Math.PI * 0.5, -Math.PI * 0.5, Math.PI]) {
@@ -22875,15 +29652,26 @@
     const actionTicks = options2?.actionTicks ?? (action.gear === -1 ? ACTION_TICKS_REVERSE : ACTION_TICKS_FORWARD);
     const brakeAction = { steer: action.steer, throttle: 0, brake: 1, gear: action.gear };
     const spec = ctx.spec;
-    const maxSpeedCmd = start.maxSpeed ?? 9.72;
-    const maxSpeedPlant = start.maxSpeed ?? 13.89;
+    const actionBoosted = action.gear === 1 && action.brake === 0 && action.throttle > 0 && ((action.nitro ?? 0) >= 0.5 || Boolean(start.nitroActive) && (start.nitroCharge ?? 1) >= 0.03);
+    const effectiveSpec = actionBoosted && (action.nitro ?? 0) >= 0.5 ? { ...spec, acceleration: spec.acceleration * LOCAL_NITRO_SPEC2.accelMultiplier } : spec;
+    const baseMaxCmd = start.maxSpeed ?? 9.72;
+    const baseMaxPlant = Math.max(start.maxSpeed ?? 13.89, Math.abs(start.speed));
+    const maxSpeedCmd = actionBoosted ? Math.min(LOCAL_NITRO_SPEC2.maxBoostSpeedMps, baseMaxCmd * LOCAL_NITRO_SPEC2.speedMultiplier) : baseMaxCmd;
+    const maxSpeedPlant = actionBoosted ? Math.max(
+      baseMaxPlant,
+      Math.min(LOCAL_NITRO_SPEC2.maxBoostSpeedMps, baseMaxPlant * LOCAL_NITRO_SPEC2.speedMultiplier)
+    ) : baseMaxPlant;
+    const maxStopTicks = Math.max(
+      MAX_STOP_TICKS,
+      Math.ceil((Math.max(Math.abs(start.speed), maxSpeedCmd) + 6) / (Math.max(4, spec.braking) * STEP)) + 16
+    );
     let pose5 = {
       x: start.x,
       z: start.z,
       heading: start.heading,
       steer: start.steer,
       speed: start.speed,
-      spec,
+      spec: effectiveSpec,
       gtaSlipMps: start.gtaSlipMps ?? 0,
       gtaYawRate: start.gtaYawRate ?? 0,
       type: start.type,
@@ -22897,8 +29685,10 @@
     let midActionPose = pose5;
     let actionLocalX = 0;
     let actionLocalZ = 0;
+    let midLocalX = 0;
+    let midLocalZ = 0;
     let usesCurb = false;
-    let minClearanceM = Infinity;
+    let minClearanceM = 3.05;
     let minPedGapM = ctx.pedProximity?.nearestM ?? Infinity;
     let travelM = 0;
     let stopped = false;
@@ -22916,19 +29706,25 @@
     for (let i = 0; i < nTrk; i++) {
       prevTrackDists[i] = scanModel.freshTracks[i].initialGap;
     }
-    for (let tick = 1; tick <= actionTicks + MAX_STOP_TICKS; tick++) {
+    for (let tick = 1; tick <= actionTicks + maxStopTicks; tick++) {
       const inActionWindow = tick <= actionTicks;
       const stepAction = inActionWindow ? action : brakeAction;
       let curbCap = 0;
       if (inActionWindow && stepAction.brake === 0 && curb && (Boolean(ctx.playerCurbSupportId) || !poseOnRoadFast2(pose5, localGeometry.roads, localGeometry.roadRects)) && Math.hypot(pose5.speed, pose5.gtaSlipMps) <= curbMaxPace + 1e-6) {
         curbCap = startPedInFront65 && Math.hypot(pose5.speed, pose5.gtaSlipMps) <= 3.8 ? Math.min(curbMaxPace, 3.4) : curbMaxPace;
       }
-      const next = stepPursuitPoseInto(pose5, nextBuf, stepAction, STEP, spec, maxSpeedCmd, maxSpeedPlant, curbCap);
+      const next = stepPursuitPoseInto(pose5, nextBuf, stepAction, STEP, effectiveSpec, maxSpeedCmd, maxSpeedPlant, curbCap);
       if (inActionWindow) travelM += Math.hypot(next.x - pose5.x, next.z - pose5.z);
-      if (tick === midActionTick) midActionPose = { ...next };
+      if (tick === midActionTick) {
+        midActionPose = { ...next };
+        const mdx = next.x - start.x;
+        const mdz = next.z - start.z;
+        midLocalX = mdx * cos0 - mdz * sin0;
+        midLocalZ = mdx * sin0 + mdz * cos0;
+      }
       if (tick === actionTicks) actionPose = { ...next };
       const settled = !inActionWindow && Math.abs(next.speed) < 0.03 && Math.abs(next.gtaSlipMps) < 0.03;
-      const shouldCheck = inActionWindow || settled || (tick - actionTicks) % 3 === 0 || tick === actionTicks + MAX_STOP_TICKS;
+      const shouldCheck = inActionWindow || settled || (tick - actionTicks) % 4 === 0 || tick === actionTicks + maxStopTicks;
       if (shouldCheck) {
         const swept = sweepSegmentSupportAndStatics(
           lastCheckedPose,
@@ -22936,7 +29732,7 @@
           localGeometry.roads,
           curb,
           localGeometry.statics,
-          inActionWindow ? 0.12 : 0.22,
+          inActionWindow ? 0.14 : 0.32,
           localGeometry.roadRects,
           localGeometry.pointRoadRects
         );
@@ -22966,7 +29762,8 @@
           prevSurfaceDists,
           sheddingOppositeSpeed,
           tick === actionTicks,
-          action.gear
+          action.gear,
+          minClearanceM
         );
         if (!rayCheck.ok) return { feasible: false, rejectReason: rayCheck.reason, usesCurb };
         if (rayCheck.clearance < minClearanceM) minClearanceM = rayCheck.clearance;
@@ -22978,15 +29775,20 @@
         const ls = Math.sin(_localBox.heading);
         const hw = _localBox.width * 0.5;
         const hl = _localBox.length * 0.5;
+        const boxHalfDiag = Math.hypot(hw, hl);
         if (inActionWindow) {
+          const pedSpan = boxHalfDiag + (minPedGapM < 6.55 ? minPedGapM : 6.55);
           for (let i = 0; i < scanModel.pedRays.length; i++) {
             const pr = scanModel.pedRays[i];
+            if (Math.abs(pr.x - _localBox.x) >= pedSpan || Math.abs(pr.z - _localBox.z) >= pedSpan) continue;
             const pDist = pointToBoxDistPrecomputed(pr.x, pr.z, _localBox.x, _localBox.z, lc, ls, hw, hl);
             if (pDist < minPedGapM) minPedGapM = pDist;
           }
         }
         for (let i = 0; i < nTrk; i++) {
           const tr = scanModel.freshTracks[i];
+          const reqMargin = tr.kind === "pedestrian" ? pedMargin : vehMargin;
+          const closeTrackedNonPed = tr.kind !== "pedestrian" && tr.initialGap < reqMargin;
           const alreadyCloseNonPed = tr.kind !== "pedestrian" && tr.initialGap < VEH_TRACK_ACTION_MARGIN_M;
           const isRearFollower = tr.kind !== "pedestrian" && direction3 * tr.forwardM < 0 && direction3 * tr.vz > 0;
           const suppressMotion = isRearFollower || alreadyCloseNonPed;
@@ -22995,12 +29797,16 @@
           const tProj = tr.kind === "pedestrian" ? t : Math.min(t, tr.forecastConfirmed ? 1.2 : 0.45);
           const tx = tr.rightM + vxRel * tProj;
           const tz = tr.forwardM + vzRel * tProj;
+          if (!closeTrackedNonPed) {
+            const pedCap = minPedGapM < 6.55 ? minPedGapM : 6.55;
+            const trkReach = boxHalfDiag + (inActionWindow && tr.kind === "pedestrian" ? Math.max(pedCap, reqMargin + minClearanceM) : reqMargin + minClearanceM);
+            if (Math.abs(tx - _localBox.x) >= trkReach || Math.abs(tz - _localBox.z) >= trkReach) continue;
+          }
           const boxDist = pointToBoxDistPrecomputed(tx, tz, _localBox.x, _localBox.z, lc, ls, hw, hl);
           if (inActionWindow && tr.kind === "pedestrian" && boxDist < minPedGapM) {
             minPedGapM = boxDist;
           }
-          const reqMargin = tr.kind === "pedestrian" ? pedMargin : vehMargin;
-          if (tr.kind !== "pedestrian" && tr.initialGap < reqMargin) {
+          if (closeTrackedNonPed) {
             const startGap = tr.initialGap;
             const prevDist = prevTrackDists[i];
             let stepOk;
@@ -23233,17 +30039,110 @@
       suppressFullAlign: Boolean(alleyGuide || curbGuide || ctx.asphaltAhead?.ownCorridorBlocked)
     }) : 0;
     let smoothSteerBonus = 0;
-    if (action.gear === 1 && action.brake < 0.65 && startOnRoad && !usesCurb && !curbGuide && !alleyGuide && !ctx.activeEscape && !ctx.asphaltAhead?.ownCorridorBlocked && !ctx.roadAheadBlocked && (ctx.minObstacleTtc ?? Infinity) > 2.2 && minPedGapM > 4.5 && (ctx.pedProximity?.nearestM ?? Infinity) > 4.5) {
+    const immediateEmergency = (ctx.frontBumperRangeM ?? Infinity) < 7.5 || (ctx.minObstacleTtc ?? Infinity) < 0.75 || (ctx.pedProximity?.nearestForwardCorridorM ?? Infinity) < 7.5 || minClearanceM < 0.65 || Math.abs(start.speed) < 2.8;
+    if (action.gear === 1 && !immediateEmergency && ctx.hasPrevSteer && !usesCurb && !curbGuide && !alleyGuide && !ctx.activeEscape) {
+      const prevSteer = ctx.prevSteer ?? ctx.prevSteerCmd ?? 0;
+      const dSteer = Math.abs(action.steer - prevSteer);
+      const openCruising = action.brake < 0.65 && startOnRoad && !ctx.asphaltAhead?.ownCorridorBlocked && !ctx.roadAheadBlocked && (ctx.minObstacleTtc ?? Infinity) > 2 && minPedGapM > 4.5 && (ctx.pedProximity?.nearestM ?? Infinity) > 4.5;
       if (losBreakBonus < 8) {
-        const continuityWeight = ctx.farRouteCtx?.turnAhead ? 0.75 : 2.4;
-        smoothSteerBonus = -continuityWeight * Math.abs(action.steer - (ctx.prevSteerCmd ?? 0));
+        const jerkWeight = openCruising ? ctx.farRouteCtx?.turnAhead ? 0.95 : 2.65 : (ctx.frontBumperRangeM ?? 0) >= 14 ? 0.75 : 0;
+        const signFlipExtra = jerkWeight > 0 && action.steer * prevSteer < -0.08 ? openCruising ? 1.65 : 0.55 : 0;
+        const headingFlipExtra = openCruising && Number.isFinite(ctx.prevTargetHeading) ? 0.35 * Math.abs(angleDelta(lookaheadHeading, ctx.prevTargetHeading)) : 0;
+        smoothSteerBonus = -jerkWeight * dSteer - signFlipExtra - headingFlipExtra;
       } else if (ctx.inLosBreakCommit && ctx.lastLosBreakSign !== 0 && action.steer * ctx.lastLosBreakSign < 0) {
-        smoothSteerBonus = -2.4 * Math.abs(action.steer - (ctx.prevSteerCmd ?? 0));
+        smoothSteerBonus = -2.4 * dSteer;
+      }
+    }
+    const endSlipMag = Math.abs(pose5.gtaSlipMps ?? 0);
+    const actionSlipMag = Math.abs(actionPose.gtaSlipMps ?? 0);
+    const latDemandMps2 = actionPose.speed * actionPose.speed * Math.abs(Math.tan(actionPose.steer)) / Math.max(2.2, spec.wheelbase ?? VEHICLE.wheelbase);
+    const excessLatDemand = Math.max(0, latDemandMps2 - 7.2);
+    const slipPenalty = -0.65 * endSlipMag - 0.35 * actionSlipMag - 0.18 * excessLatDemand;
+    let proactiveEvadeBonus = 0;
+    if (action.gear === 1 && !ctx.activeEscape) {
+      const pro = ctx.proactiveThreat;
+      const relLook = angleDelta(lookaheadHeading, start.heading);
+      const lookSin = Math.sin(relLook);
+      const lookCos = Math.cos(relLook);
+      const contSpeed = Math.max(2, actionPose.speed);
+      const cand03X = midLocalX + lookSin * contSpeed * Math.max(0, 0.3 - 0.5 * actionTime);
+      const cand03Z = midLocalZ + lookCos * contSpeed * Math.max(0, 0.3 - 0.5 * actionTime);
+      const cand07X = actionLocalX + lookSin * contSpeed * Math.max(0, 0.7 - actionTime);
+      const cand07Z = actionLocalZ + lookCos * contSpeed * Math.max(0, 0.7 - actionTime);
+      const cand115X = actionLocalX + lookSin * contSpeed * Math.max(0, 1.15 - actionTime);
+      const cand115Z = actionLocalZ + lookCos * contSpeed * Math.max(0, 1.15 - actionTime);
+      const hw = start.width * 0.5;
+      const hl = start.length * 0.5;
+      const cLook = Math.cos(relLook);
+      const sLook = Math.sin(relLook);
+      for (let i = 0; i < scanModel.freshTracks.length; i++) {
+        const tr = scanModel.freshTracks[i];
+        if (tr.kind !== "civilian" && tr.kind !== "police") continue;
+        if (tr.rangeM > 40) continue;
+        const isRearNonClosing = tr.forwardM < -hl - 0.6 && (!tr.motionKnown || tr.closingMps <= 1);
+        if (isRearNonClosing) continue;
+        const vx = tr.motionKnown ? tr.vx : 0;
+        const vz = tr.motionKnown ? tr.vz : 0;
+        const g03 = pointToBoxDistPrecomputed(tr.rightM + vx * 0.3, tr.forwardM + vz * 0.3, cand03X, cand03Z, cLook, sLook, hw, hl);
+        const g07 = pointToBoxDistPrecomputed(tr.rightM + vx * 0.7, tr.forwardM + vz * 0.7, cand07X, cand07Z, cLook, sLook, hw, hl);
+        const g115 = pointToBoxDistPrecomputed(tr.rightM + vx * 1.15, tr.forwardM + vz * 1.15, cand115X, cand115Z, cLook, sLook, hw, hl);
+        const minPredGap = Math.min(g03, g07, g115);
+        if (minPredGap < 1.35) {
+          const severity = tr.kind === "police" ? 3.2 : 2.5;
+          proactiveEvadeBonus -= severity * (1.35 - minPredGap);
+        } else if (tr.kind === "police" && (tr.closingMps > 0.8 || tr.ttcS !== null && tr.ttcS <= 1.45)) {
+          proactiveEvadeBonus += 0.9 * Math.min(2.2, minPredGap - 1.35);
+        }
+      }
+      if (pro?.active && !alleyGuide && !curbGuide) {
+        const roadRelAngle = angleDelta(lookaheadHeading, ctx.localRoadHeading ?? start.heading);
+        if (pro.sideRamThreat && pro.preferredShiftSign !== 0) {
+          if (action.steer * pro.preferredShiftSign > 0.06) {
+            proactiveEvadeBonus += 3.8 * Math.min(1, Math.abs(action.steer) / 0.45);
+          } else if (action.steer * pro.preferredShiftSign < -0.05) {
+            proactiveEvadeBonus -= 3.2;
+          }
+        } else if (pro.forwardLaneNeedsEarlyShift) {
+          const distAhead = pro.forwardObstacleM;
+          const gentleTargetMag = distAhead >= 26 ? 0.22 : distAhead >= 18 ? 0.36 : 0.52;
+          if (pro.preferredShiftSign !== 0) {
+            const signedSteer = action.steer * pro.preferredShiftSign;
+            const signedAngle = roadRelAngle * pro.preferredShiftSign;
+            if (signedSteer > 0.05 || signedAngle > 0.06) {
+              const shapeMatch = 1 - Math.min(1, Math.abs(Math.abs(action.steer) - gentleTargetMag) / 0.65);
+              proactiveEvadeBonus += (distAhead >= 24 ? 4.8 : 3.4) * (0.45 + 0.55 * shapeMatch);
+            } else if (Math.abs(action.steer) < 0.05 && Math.abs(roadRelAngle) < 0.05) {
+              proactiveEvadeBonus -= distAhead <= 34 ? 3.2 : 1.8;
+            }
+          }
+        }
+      }
+      proactiveEvadeBonus = clamp(proactiveEvadeBonus, -7.5, 7.5);
+    }
+    let pedestrianWeaveBonus = 0;
+    if (action.gear === 1 && ctx.pedSafetyCtx?.pedestrianAheadHazard && !usesCurb && !curbGuide && !alleyGuide) {
+      const nearPedFwdM = ctx.pedSafetyCtx.nearestPedForwardM;
+      const weaveSign = ctx.pedSafetyCtx.preferredWeaveSign ?? 0;
+      if (nearPedFwdM >= 8 && Math.abs(start.speed) >= 3.5) {
+        pedestrianWeaveBonus += 0.55 * Math.min(4.2, minPedGapM);
+        if (weaveSign !== 0 && minPedGapM >= 1.8) {
+          if (action.steer * weaveSign > 0.05) {
+            pedestrianWeaveBonus += 1.8 * Math.min(1, Math.abs(action.steer) / 0.32);
+          } else if (action.steer * weaveSign < -0.08) {
+            pedestrianWeaveBonus -= 1.4;
+          }
+        }
+      }
+      if (nearPedFwdM < 26 && action.brake === 0 && start.speed > 6.5) {
+        const safePedCruiseMps = clamp(5.2 + 0.32 * nearPedFwdM, 6.2, 12.8);
+        if (actionPose.speed > safePedCruiseMps) {
+          pedestrianWeaveBonus -= (actionPose.speed - safePedCruiseMps) * 1.5;
+        }
       }
     }
     const effectiveConeM = routeUsable && ctx.hasCrossRoadAhead && routeDelta >= 0.3 || Boolean(ctx.farRouteCtx?.turnAhead) ? Math.min(cone.blendedM, 24) + 0.12 * Math.max(0, cone.blendedM - 24) : cone.blendedM;
     const paceBonus = 0.45 * travelM + 0.55 * (action.brake === 0 ? action.throttle : -action.brake);
-    const score = 0.36 * effectiveConeM + progressionBonus + routeBonus + farEscapeBonus + revisitPenalty + smoothSteerBonus + threatBonus + fidelityBonus + curbOffset + curbGuideBonus + roadStayBonus + escapeMemoryBonus + losBreakBonus + paceBonus;
+    const score = 0.36 * effectiveConeM + progressionBonus + routeBonus + farEscapeBonus + revisitPenalty + smoothSteerBonus + slipPenalty + proactiveEvadeBonus + pedestrianWeaveBonus + threatBonus + fidelityBonus + curbOffset + curbGuideBonus + roadStayBonus + escapeMemoryBonus + losBreakBonus + paceBonus;
     return {
       feasible: true,
       rejectReason: null,
@@ -23261,6 +30160,7 @@
       directConeM,
       endPose: pose5,
       endHeading: pose5.heading,
+      lookaheadHeading,
       actionHeading: actionPose.heading,
       actionSpeed: actionPose.speed,
       score
@@ -23461,8 +30361,9 @@
     const crowdAhead = Boolean(
       openMainRoad && crowdBlockingCorridor && (pedClusters.length >= 2 || pedClusters.length >= 1 && tick <= (escapeState.crowdWaveUntilTick ?? -1))
     );
-    const crowdYieldActive = crowdAhead && !policeClosingClose && nearestPoliceM > 9.5;
-    const crowdDivertUrgent = crowdAhead && (policeClosingClose || nearestPoliceM <= 9.5);
+    const policePressingCrowd = policeClosingClose || nearestPoliceM <= 47.5;
+    const crowdYieldActive = crowdAhead && !policePressingCrowd;
+    const crowdDivertUrgent = crowdAhead && policePressingCrowd;
     return {
       crowdAhead,
       crowdYieldActive,
@@ -23544,12 +30445,13 @@
     return bestSteer;
   }
   function planPakoEvasiveAction(world, requestedAction) {
-    validatePursuitAction(requestedAction);
+    validateRequestedPursuitAction(requestedAction);
     if (world.pursuit?.phase && world.pursuit.phase !== "running") {
       return {
         action: makeAction(requestedAction.steer, requestedAction.throttle, requestedAction.brake, requestedAction.gear),
         reason: null,
         maneuver: "policy-direct",
+        nitroSuppressedByPedestrian: false,
         candidates: []
       };
     }
@@ -23561,7 +30463,10 @@
       length: player.length ?? PLAYER_VEHICLE.lengthM,
       steer: player.steer ?? 0,
       gtaSlipMps: player.gtaSlipMps ?? 0,
-      gtaYawRate: player.gtaYawRate ?? 0
+      gtaYawRate: player.gtaYawRate ?? 0,
+      nitroCharge: Number.isFinite(player.nitroCharge) ? player.nitroCharge : 1,
+      nitroActive: Boolean(player.nitroActive),
+      curbSupportId: player.curbSupportId ?? null
     };
     if (![
       start.x,
@@ -23578,17 +30483,19 @@
         action: { ...PURSUIT_STOP },
         reason: "SAFETY_INTERVENTION",
         maneuver: "invalid-odometry",
+        nitroSuppressedByPedestrian: false,
         candidates: []
       };
     }
+    const ignorePedCollision = Boolean(world?.pursuit?.frozenDriver?._faultIgnorePedestrianCollisionOnly);
     const localGeometry = filterLocalGeometry(world, start);
-    const scanModel = buildScanModel(scan, start);
-    const visualPoints = extractVisualForecastPoints(world.visualState, start);
-    const cameraConflict = hasCameraCrossingConflict(world.visualState);
+    const scanModel = buildScanModel(scan, start, ignorePedCollision);
+    const visualPoints = ignorePedCollision ? [] : extractVisualForecastPoints(world.visualState, start);
+    const cameraConflict = ignorePedCollision ? false : hasCameraCrossingConflict(world.visualState);
     const farRouteCtx = buildFarEscapeRouteContext(world, start);
     const routeHeading = farRouteCtx?.nearHeading ?? null;
     const startOnRoad = localGeometry.roads.length > 0 && poseOnRoadFast2(start, localGeometry.roads, localGeometry.roadRects);
-    const stateKey = world.pursuit;
+    const stateKey = world.pursuit ?? player;
     let escapeState = stateKey ? escapeStates.get(stateKey) : null;
     if (!escapeState) {
       const existingMem = world.pursuit?.gta?._evasiveMemory;
@@ -23596,7 +30503,9 @@
         history: [],
         blockedZones: [],
         visitedCells: Array.isArray(existingMem?.visitedCells) ? existingMem.visitedCells : [],
+        prevSteer: null,
         prevSteerCmd: null,
+        prevTargetHeading: null,
         active: null,
         noForwardStreak: 0,
         lastStreakTick: -1,
@@ -23627,7 +30536,9 @@
       escapeState.history.length = 0;
       escapeState.blockedZones.length = 0;
       escapeState.visitedCells.length = 0;
+      escapeState.prevSteer = null;
       escapeState.prevSteerCmd = null;
+      escapeState.prevTargetHeading = null;
       escapeState.active = null;
       escapeState.noForwardStreak = 0;
       escapeState.lastStreakTick = -1;
@@ -23663,6 +30574,15 @@
       escapeState.lastKTurnTick = world.tick;
       escapeState.noForwardStreak = 0;
     };
+    const setPlayerPedHoldFlag = (suppressed) => {
+      if (!player || typeof player !== "object") return;
+      const desc = Object.getOwnPropertyDescriptor(player, "nitroSuppressedByPedestrian");
+      if (desc && desc.writable || !desc && Object.isExtensible(player)) {
+        player.nitroSuppressedByPedestrian = Boolean(suppressed);
+      }
+    };
+    let resolvedPursuerPressure = null;
+    let resolvedInLosBreakCommit = false;
     const recordDecisionAndReturn = (result) => {
       const isCrowdHold = result.maneuver === "crowd-wait" || result.maneuver === "crowd-creep";
       if (isCrowdHold) escapeState.lastCrowdYieldTick = world.tick;
@@ -23673,7 +30593,58 @@
           escapeState.lastLosBreakSign = Math.sign(result.action.steer);
         }
       }
+      const base4 = makeAction(
+        result.action.steer,
+        result.action.throttle,
+        result.action.brake,
+        result.action.gear,
+        0
+      );
+      const nitroVerdict = evaluateNitroSafetyAndOpportunity(
+        start,
+        base4,
+        scanModel,
+        visualPoints,
+        localGeometry,
+        resolvedPursuerPressure,
+        world,
+        {
+          startOnRoad,
+          tacticalTag: result.tacticalTag ?? null,
+          inLosBreakCommit: resolvedInLosBreakCommit,
+          usesCurbBypass: result.reason === "PREDICTIVE_CURB_BYPASS"
+        }
+      );
+      if (nitroVerdict.pedestrianAheadHazard) {
+        result.action = base4;
+        result.nitroSuppressedByPedestrian = true;
+        setPlayerPedHoldFlag(true);
+      } else {
+        result.nitroSuppressedByPedestrian = false;
+        setPlayerPedHoldFlag(false);
+        if (nitroVerdict.engageNitro) {
+          const boosted = makeAction(
+            base4.steer,
+            Math.max(base4.throttle, 0.92),
+            base4.brake,
+            base4.gear,
+            1
+          );
+          const checkedBoost = guardDispatchAction(world, boosted);
+          if (checkedBoost.reason === null && (checkedBoost.action?.nitro ?? 0) >= 0.5) {
+            result.action = checkedBoost.action;
+            result.nitroEngaged = true;
+          } else {
+            result.action = base4;
+          }
+        } else {
+          result.action = base4;
+        }
+      }
+      const maxSteerRef = start.spec?.maxSteer ?? VEHICLE.maxSteer;
+      escapeState.prevSteer = result.action.steer;
       escapeState.prevSteerCmd = result.action.steer;
+      escapeState.prevTargetHeading = result.targetHeading ?? start.heading + result.action.steer * maxSteerRef * 0.65;
       const hist = escapeState.history;
       const prev = hist.length > 0 ? hist[hist.length - 1] : null;
       if (!prev || world.tick - prev.tick >= PURSUIT_SCAN_TICKS) {
@@ -23798,7 +30769,7 @@
       world.tick
     );
     const crowdYieldActive = crowdCtx.crowdYieldActive;
-    const recentlyCrowdYielded = crowdCtx.nearestPoliceM > 9.5 && (crowdYieldActive || world.tick - (escapeState.lastCrowdYieldTick ?? -9999) <= 48 || crowdHoldCount15 >= 4);
+    const recentlyCrowdYielded = crowdCtx.nearestPoliceM > 34 && (crowdYieldActive || world.tick - (escapeState.lastCrowdYieldTick ?? -9999) <= 48 || crowdHoldCount15 >= 4);
     const rawPingPongOscillation = !inCooldown && start.speed <= 1.35 && (gearFlips >= 3 && netDisp15 < 5.5 || gearFlips >= 2 && histLen >= 9 && netDisp10 < 5 && (Math.abs(start.speed) < 1.2 || pathDist15 > netDisp15 + 0.8) || !recentlyCrowdYielded && histLen >= 14 && netDisp15 < 3.2 && Math.abs(start.speed) < 1.35 && (pathDist15 > netDisp15 + 0.9 || (player.wait ?? 0) >= 0.35 || gearFlips >= 1));
     const suppressCurbForCrowdWait = crowdYieldActive && startOnRoad && !player.curbSupportId;
     const curbBypassGuide = suppressCurbForCrowdWait ? null : findClearCurbBypassGuide(
@@ -23847,14 +30818,34 @@
       world.tick
     );
     const minObstacleTtc = computeMinForwardObstacleTtc(start, scanModel);
-    const prevSteerCmd = escapeState.prevSteerCmd ?? clamp((start.steer ?? 0) / Math.max(0.1, resolvedSpec.maxSteer), -1, 1);
+    const hasPrevSteer = escapeState.prevSteer !== null;
+    const prevSteer = escapeState.prevSteer ?? escapeState.prevSteerCmd ?? clamp((start.steer ?? 0) / Math.max(0.1, resolvedSpec.maxSteer), -1, 1);
+    const prevSteerCmd = prevSteer;
+    const proactiveThreat = analyzeProactiveEvasionThreats(
+      start,
+      localGeometry,
+      scanModel,
+      localRoadHeading
+    );
+    const pedSafetyCtx = evaluateNitroSafetyAndOpportunity(
+      start,
+      null,
+      scanModel,
+      visualPoints,
+      localGeometry,
+      pursuerPressure,
+      world,
+      { startOnRoad }
+    );
     const smoothDeadbandAction = (act2) => {
-      if (act2.gear === 1 && act2.steer !== 0 && Math.abs(act2.steer * resolvedSpec.maxSteer) < STRAIGHT_DEADBAND_STEER_RAD && startOnRoad && !player.curbSupportId && !activeEscape && !curbBypassGuide && !alleyShortcutGuide && !asphaltAhead.ownCorridorBlocked && !roadAheadBlocked && minObstacleTtc > 2.2 && pedProximity.nearestM > 4.5 && !pursuerPressure.active && !farRouteCtx?.turnAhead && Math.abs(angleDelta(start.heading, localRoadHeading)) <= STRAIGHT_ALIGN_RAD && (routeHeading === null || Math.abs(angleDelta(routeHeading, localRoadHeading)) <= 0.16)) {
+      if (act2.gear === 1 && act2.steer !== 0 && Math.abs(act2.steer * resolvedSpec.maxSteer) < STRAIGHT_DEADBAND_STEER_RAD && startOnRoad && !player.curbSupportId && !activeEscape && !curbBypassGuide && !alleyShortcutGuide && !asphaltAhead.ownCorridorBlocked && !roadAheadBlocked && !proactiveThreat.active && minObstacleTtc > 2.2 && pedProximity.nearestM > 4.5 && !pursuerPressure.active && !farRouteCtx?.turnAhead && Math.abs(angleDelta(start.heading, localRoadHeading)) <= STRAIGHT_ALIGN_RAD && (routeHeading === null || Math.abs(angleDelta(routeHeading, localRoadHeading)) <= 0.16)) {
         return makeAction(0, act2.throttle, act2.brake, act2.gear);
       }
       return act2;
     };
     const inLosBreakCommit = world.tick - (escapeState.lastLosBreakTick ?? -9999) <= 90;
+    resolvedPursuerPressure = pursuerPressure;
+    resolvedInLosBreakCommit = inLosBreakCommit;
     const ctx = {
       start,
       spec: resolvedSpec,
@@ -23870,7 +30861,13 @@
       lastLosBreakSign: escapeState.lastLosBreakSign ?? 0,
       visitedCells: escapeState.visitedCells,
       minObstacleTtc,
+      frontBumperRangeM,
+      hasPrevSteer,
+      prevSteer,
       prevSteerCmd,
+      prevTargetHeading: escapeState.prevTargetHeading,
+      proactiveThreat,
+      pedSafetyCtx,
       asphaltAhead,
       crowdYieldActive,
       startOnRoad,
@@ -23888,7 +30885,7 @@
       pedProximity,
       tick: world.tick
     };
-    const checkLosBreakOpportunity = pursuerPressure.active && (hasCrossRoadAhead || Boolean(alleyShortcutGuide) || Boolean(localGeometry.curb?.courtyards?.length));
+    const checkLosBreakOpportunity = pursuerPressure.active && !onCurbNow && (hasCrossRoadAhead || Boolean(alleyShortcutGuide?.losShielded));
     const farRouteTurnUrgent = Boolean(
       farRouteCtx?.hasExplicitEscapeGoal && (farRouteCtx.turnImminent && Math.abs(
         angleDelta(
@@ -23897,12 +30894,58 @@
         )
       ) >= 0.18 || farRouteCtx.turnPreparing && Math.abs(start.speed) > 12.8)
     );
+    let forwardLaneClearM = PURSUIT_SCAN_RANGE_M;
+    const laneHalfCheck = start.width * 0.5 + 0.65;
+    for (let rIdx = 0; rIdx < PURSUIT_SCAN_RAYS; rIdx++) {
+      const r = scanModel.rays[rIdx];
+      if (!r || r.kind === "none") continue;
+      const rx = BEAMS[rIdx][0] * r.rangeM;
+      const rz = BEAMS[rIdx][1] * r.rangeM;
+      if (rz > 0 && Math.abs(rx) <= laneHalfCheck && rz < forwardLaneClearM) {
+        forwardLaneClearM = rz;
+      }
+    }
+    const horizonBraking = Math.max(4.5, resolvedSpec.braking ?? VEHICLE.braking);
+    const ignorePedNitro = Boolean(world?.pursuit?.frozenDriver?._faultIgnorePedestrianNitroOnly);
+    const longRangeRadar = scan?.longRangeForward ?? null;
+    const longRangeClearM = longRangeRadar && (longRangeRadar.pedestrianAheadM === null || ignorePedNitro) ? longRangeRadar.minCorridorM : PURSUIT_SCAN_RANGE_M - 4.5;
+    let openStraightRoadClear = forwardLaneClearM >= PURSUIT_SCAN_RANGE_M - 0.5 && longRangeClearM >= 60 && startOnRoad && !pedSafetyCtx.pedestrianAheadHazard && !farRouteCtx?.turnImminent && (start.nitroCharge ?? 0) >= (start.nitroActive ? 0.03 : LOCAL_NITRO_SPEC2.minEngageCharge);
+    if (openStraightRoadClear && localGeometry.roads?.length > 0) {
+      const sinH = Math.sin(start.heading);
+      const cosH = Math.cos(start.heading);
+      for (const d of [16, 32, 46]) {
+        const pProbe = {
+          x: start.x + sinH * d,
+          z: start.z + cosH * d,
+          heading: start.heading,
+          width: start.width,
+          length: start.length,
+          type: start.type
+        };
+        if (!poseOnRoadFast2(pProbe, localGeometry.roads, localGeometry.roadRects) || localGeometry.statics?.length > 0 && poseHitsStaticsFast(pProbe, localGeometry.statics, 0.85)) {
+          openStraightRoadClear = false;
+          break;
+        }
+      }
+    }
+    const usableHorizonM = openStraightRoadClear ? Math.min(92, Math.max(8, longRangeClearM - 10)) : Math.max(8, Math.min(frontConeMinM, PURSUIT_SCAN_RANGE_M - 4.5) - 5.2);
+    const maxHorizonSafeSpeedMps = Math.sqrt(2 * horizonBraking * usableHorizonM);
+    const overHorizonSpeed = start.speed > maxHorizonSafeSpeedMps + 0.4;
+    const pedAheadNeedsWeaveOrModeration = !ignorePedCollision && pedSafetyCtx.pedestrianAheadHazard && start.speed > 6.5 && pedSafetyCtx.nearestPedForwardM < 26;
     let directPassThroughAction = null;
-    if (!activeEscape && !rawPingPongOscillation && !requestedBlockedByMemory && !curbBypassGuide && !alleyShortcutGuide && !farRouteTurnUrgent && requestedAction.gear === 1 && requestedAction.brake === 0 && requestedAction.throttle >= 0.35 && !player.curbSupportId && startOnRoad && !cameraConflict && (player.wait ?? 0) < 0.35 && guardDispatchAction(world, requestedAction).reason === null) {
-      const direct = assessTrajectory(ctx, requestedAction, false, { computeDirectCone: true });
+    const rawCurbEarly = localGeometry.rawCurb;
+    const cityCurbsModeEarly = rawCurbEarly?.mode === "metro-city-curbs-v2";
+    if (!(pursuerPressure.active && cityCurbsModeEarly) && !activeEscape && !rawPingPongOscillation && !requestedBlockedByMemory && !curbBypassGuide && !alleyShortcutGuide && !farRouteTurnUrgent && !proactiveThreat.active && !pedAheadNeedsWeaveOrModeration && !overHorizonSpeed && requestedAction.gear === 1 && requestedAction.brake === 0 && requestedAction.throttle >= 0.35 && !player.curbSupportId && startOnRoad && !cameraConflict && (player.wait ?? 0) < 0.35 && guardDispatchAction(world, makeAction(requestedAction.steer, requestedAction.throttle, requestedAction.brake, requestedAction.gear)).reason === null) {
+      const cleanReq4 = makeAction(
+        requestedAction.steer,
+        requestedAction.throttle,
+        requestedAction.brake,
+        requestedAction.gear
+      );
+      const direct = assessTrajectory(ctx, cleanReq4, false, { computeDirectCone: true });
       const corridorM = forwardCorridorClearance(
         start,
-        requestedAction,
+        cleanReq4,
         scanModel,
         localGeometry.roads,
         localGeometry.roadRects,
@@ -23910,19 +30953,13 @@
       );
       const requiredCorridorM = Math.max(12, Math.abs(start.speed) * 2.5 + start.length / 2);
       const requiredRoadM = Math.min(18, Math.max(11, Math.abs(start.speed) * 1.9));
-      const roadClearEnough = corridorM >= Math.min(requiredCorridorM, requiredRoadM) && (corridorM >= requiredCorridorM || forwardCorridorClearance(start, requestedAction, scanModel, null, null, localGeometry.statics) >= requiredCorridorM && corridorM >= requiredRoadM);
+      const roadClearEnough = corridorM >= Math.min(requiredCorridorM, requiredRoadM) && (corridorM >= requiredCorridorM || forwardCorridorClearance(start, cleanReq4, scanModel, null, null, localGeometry.statics) >= requiredCorridorM && corridorM >= requiredRoadM);
       const stalled = direct.feasible && (direct.actionSpeed < 0.12 && Math.abs(start.speed) < 0.12 || direct.travelM < 0.02);
       const directRevisitsLoop = Boolean(direct.feasible && (direct.revisitPenalty ?? 0) < 0);
       if (direct.feasible && direct.directConeM >= 12 && roadClearEnough && !stalled && !directRevisitsLoop) {
-        const cleanDirect = smoothDeadbandAction(
-          makeAction(
-            requestedAction.steer,
-            requestedAction.throttle,
-            requestedAction.brake,
-            requestedAction.gear
-          )
-        );
-        if (!checkLosBreakOpportunity) {
+        const boostedReq4 = openStraightRoadClear && Math.abs(start.speed) >= 34.5 && Math.abs(cleanReq4.steer) <= 0.14 ? makeAction(cleanReq4.steer, 1, 0, 1) : cleanReq4;
+        const cleanDirect = smoothDeadbandAction(boostedReq4);
+        if (!(pursuerPressure.active && cityCurbsModeEarly) && !checkLosBreakOpportunity) {
           return recordDecisionAndReturn({
             action: cleanDirect,
             reason: null,
@@ -23942,7 +30979,21 @@
     const hasCityCurb = Array.isArray(rawCurb?.sites) || Array.isArray(rawCurb?.courtyards);
     const curbMaxPace = rawCurb ? rawCurb.maxPace ?? (hasCityCurb ? 14 : 2.8) : 14;
     const commitAimErr = activeEscape ? Math.abs(angleDelta(activeEscape.targetHeading, start.heading)) : 0;
-    const fastThrottle = activeEscape?.phase === "forward-commit" && commitAimErr <= 0.95 ? 1 : clamp(Math.max(0.78, requestedAction.throttle), 0, 1);
+    let fastThrottle = activeEscape?.phase === "forward-commit" && commitAimErr <= 0.95 || openStraightRoadClear ? 1 : clamp(Math.max(0.78, requestedAction.throttle), 0, 1);
+    if (!activeEscape && overHorizonSpeed) {
+      fastThrottle = Math.min(fastThrottle, start.speed > maxHorizonSafeSpeedMps + 2 ? 0 : 0.25);
+    }
+    const startPaceNow = Math.hypot(start.speed, start.gtaSlipMps);
+    if (!activeEscape && onCurbNow && rawCurb && startPaceNow >= curbMaxPace - 1.6) {
+      fastThrottle = Math.min(fastThrottle, startPaceNow >= curbMaxPace - 0.35 ? 0 : 0.22);
+    }
+    if (!activeEscape && pedSafetyCtx.pedestrianAheadHazard && pedSafetyCtx.nearestPedForwardM < 26 && start.speed > 6.5) {
+      const targetPedCruiseMps = clamp(5.2 + 0.32 * pedSafetyCtx.nearestPedForwardM, 6.2, 12.8);
+      if (start.speed > targetPedCruiseMps) {
+        const pedModThrottle = start.speed > targetPedCruiseMps + 1.5 ? 0.28 : clamp(0.42 + 0.018 * pedSafetyCtx.nearestPedForwardM, 0.42, 0.85);
+        fastThrottle = Math.min(fastThrottle, pedModThrottle);
+      }
+    }
     let bestForward = null;
     const forwardFeasible = [];
     const evaluateForwardProfile = (profileName, throttle, brake2, steers, options2 = null) => {
@@ -23970,14 +31021,19 @@
         }
       }
     };
+    const fullShieldRequired = cityCurbsMode || crowdYieldActive;
+    const pedShieldOnly = !fullShieldRequired && !ignorePedCollision && (pedSafetyCtx.pedestrianAheadHazard || crowdCtx.crowdAhead);
+    const shieldPedVetoForward = (fullShieldRequired || pedShieldOnly) && !ignorePedCollision && guardDispatchAction(world, makeAction(0, 0, 0, 1)).reason === "pedestrian";
     const resolveShieldSafeForward = () => {
       if (!forwardFeasible.length) return null;
+      if (shieldPedVetoForward) return null;
       forwardFeasible.sort((a, b) => b.score - a.score);
-      if (!cityCurbsMode && !crowdYieldActive) return forwardFeasible[0];
+      if (!fullShieldRequired && !pedShieldOnly) return forwardFeasible[0];
       for (let i = 0; i < forwardFeasible.length; i++) {
         const cand = forwardFeasible[i];
         if (cand._shieldChecked === void 0) {
-          cand._shieldChecked = guardDispatchAction(world, cand.action).reason === null;
+          const shieldReason = guardDispatchAction(world, cand.action).reason;
+          cand._shieldChecked = fullShieldRequired ? shieldReason === null : shieldReason !== "pedestrian";
           if (!cand._shieldChecked) {
             cand.feasible = false;
             cand.rejectReason = "shield-veto";
@@ -23987,48 +31043,68 @@
       }
       return null;
     };
-    let fastSteers = FORWARD_STEERS;
-    if (startOnRoad && !asphaltAhead.ownCorridorBlocked && !curbBypassGuide && !alleyShortcutGuide && !farRouteCtx?.turnAhead && minObstacleTtc > 2.2) {
-      const straightRef = routeHeading !== null && Math.abs(angleDelta(routeHeading, localRoadHeading)) <= 0.18 ? routeHeading : localRoadHeading;
-      const hErr = angleDelta(straightRef, start.heading);
-      if (Math.abs(hErr) > STRAIGHT_ALIGN_RAD && Math.abs(hErr) <= 0.32) {
-        const trimSteer = Number(clamp(hErr * 1.35, -0.14, 0.14).toFixed(3));
-        if (Math.abs(trimSteer * resolvedSpec.maxSteer) >= STRAIGHT_DEADBAND_STEER_RAD) {
-          fastSteers = [...FORWARD_STEERS, trimSteer];
+    if (!shieldPedVetoForward) {
+      let fastSteers = !onCurbNow && !curbBypassGuide && !pursuerPressure.active && !asphaltAhead.ownCorridorBlocked && !pedSafetyCtx.pedestrianAheadHazard && frontConeMinM >= 19.5 && !alleyShortcutGuide ? SMOOTH_CRUISE_STEERS : Math.abs(start.speed) >= 4 ? CURB_FAST_STEERS : FORWARD_STEERS;
+      if (startOnRoad && !asphaltAhead.ownCorridorBlocked && !curbBypassGuide && !alleyShortcutGuide && !farRouteCtx?.turnAhead && minObstacleTtc > 2.2) {
+        const straightRef = routeHeading !== null && Math.abs(angleDelta(routeHeading, localRoadHeading)) <= 0.18 ? routeHeading : localRoadHeading;
+        const hErr = angleDelta(straightRef, start.heading);
+        if (Math.abs(hErr) > STRAIGHT_ALIGN_RAD && Math.abs(hErr) <= 0.32) {
+          const trimSteer = Number(clamp(hErr * 1.35, -0.14, 0.14).toFixed(3));
+          if (Math.abs(trimSteer * resolvedSpec.maxSteer) >= STRAIGHT_DEADBAND_STEER_RAD) {
+            fastSteers = [...fastSteers, trimSteer];
+          }
         }
       }
-    }
-    evaluateForwardProfile("fast", fastThrottle, 0, fastSteers);
-    bestForward = resolveShieldSafeForward();
-    const controlledSteers = !checkLosBreakOpportunity && !farRouteTurnUrgent && bestForward && bestForward.corridorMinM >= 6.5 ? CONTROLLED_FAST_STEERS : FORWARD_STEERS;
-    evaluateForwardProfile("controlled", 0.48, 0, controlledSteers);
-    bestForward = resolveShieldSafeForward();
-    const needRouteCornerBrake = Boolean(
-      farRouteCtx?.hasExplicitEscapeGoal && (farRouteCtx.turnImminent || farRouteCtx.turnPreparing)
-    ) && Math.abs(start.speed) > 11.2;
-    if (checkLosBreakOpportunity && Math.abs(start.speed) > 13.5 && (!bestForward || (bestForward.losBreakBonus ?? 0) < 8) || needRouteCornerBrake) {
-      evaluateForwardProfile("corner-brake", 0, 0.45, FORWARD_STEERS);
+      evaluateForwardProfile("fast", fastThrottle, 0, fastSteers);
       bestForward = resolveShieldSafeForward();
-    }
-    if (crowdYieldActive && !bestForward && !cameraConflict && Math.abs(start.speed) <= 2.4 && crowdCtx.nearestPedForwardM >= 4) {
-      evaluateForwardProfile("crowd-creep", 0.2, 0, FORWARD_STEERS, { minRolloutSpeed: 0.85 });
-      bestForward = resolveShieldSafeForward();
-    }
-    const startPace = Math.hypot(start.speed, start.gtaSlipMps);
-    const pedNearCurb = pedProximity.nearestM <= 6.5;
-    const briskAlleyCruise = (Boolean(alleyShortcutGuide) || pursuerPressure.active) && !pedNearCurb && minBoxGapToStatics(start, localGeometry.statics, 2) >= 1.1;
-    if (rawCurb && (onCurbNow || Boolean(curbBypassGuide) || Boolean(alleyShortcutGuide) || !bestForward) && (startPace > curbMaxPace - 2.2 || pedNearCurb && (onCurbNow || Boolean(alleyShortcutGuide)) && Math.abs(start.speed) > 3.6 || !briskAlleyCruise && onCurbNow && Math.abs(start.speed) > 6.4 || curbBypassGuide?.mandatoryRejoin && Math.abs(start.speed) > 3.8)) {
-      const trimSteers = alleyShortcutGuide ? FORWARD_STEERS : AUX_STEERS;
-      evaluateForwardProfile("curb-trim", 0, 0.15, trimSteers);
-      bestForward = resolveShieldSafeForward();
-      if (!bestForward || startPace > curbMaxPace - 0.5 || pedNearCurb && Math.abs(start.speed) > 5.8) {
-        evaluateForwardProfile("curb-pace", 0, 0.45, trimSteers);
+      const alreadyAtCurbSpeedCap = onCurbNow && rawCurb && startPaceNow >= curbMaxPace - 0.15;
+      const skipControlled = alreadyAtCurbSpeedCap || (!checkLosBreakOpportunity || (bestForward?.losBreakBonus ?? 0) >= 8) && !farRouteTurnUrgent && !pedSafetyCtx.pedestrianAheadHazard && bestForward && bestForward.corridorMinM >= 9 && (bestForward.minClearanceM ?? 0) >= 0.85;
+      if (!skipControlled) {
+        const controlledSteers = bestForward != null || onCurbNow || Boolean(curbBypassGuide) ? CONTROLLED_FAST_STEERS : FORWARD_STEERS;
+        evaluateForwardProfile("controlled", 0.48, 0, controlledSteers);
         bestForward = resolveShieldSafeForward();
+      }
+      const needRouteCornerBrake = Boolean(
+        farRouteCtx?.hasExplicitEscapeGoal && (farRouteCtx.turnImminent || farRouteCtx.turnPreparing)
+      ) && Math.abs(start.speed) > 11.2;
+      const trimWeaveSteers = [-1, -0.78, -0.56, -0.36, -0.18, 0, 0.18, 0.36, 0.56, 0.78, 1];
+      let evaluatedBrake045 = false;
+      if (checkLosBreakOpportunity && !pedSafetyCtx.pedestrianAheadHazard && Math.abs(start.speed) > 13.5 && (!bestForward || (bestForward.losBreakBonus ?? 0) < 8) || needRouteCornerBrake) {
+        evaluatedBrake045 = true;
+        evaluateForwardProfile("corner-brake", 0, 0.45, AUX_STEERS);
+        bestForward = resolveShieldSafeForward();
+      }
+      if (!bestForward && !ignorePedCollision && (pedSafetyCtx.pedestrianAheadHazard || crowdCtx.crowdAhead) && !cameraConflict) {
+        if (Math.abs(start.speed) > 3.2) {
+          evaluateForwardProfile("ped-weave-trim", 0, 0.34, trimWeaveSteers, { minRolloutSpeed: 0.85 });
+          bestForward = resolveShieldSafeForward();
+        }
+        if (!bestForward && Math.abs(start.speed) <= 5.5) {
+          evaluateForwardProfile("ped-weave-creep", 0.24, 0, trimWeaveSteers, { minRolloutSpeed: 0.85 });
+          bestForward = resolveShieldSafeForward();
+        }
+      }
+      if (crowdYieldActive && !bestForward && !cameraConflict && Math.abs(start.speed) <= 2.4 && crowdCtx.nearestPedForwardM >= 4) {
+        evaluateForwardProfile("crowd-creep", 0.2, 0, AUX_STEERS, { minRolloutSpeed: 0.85 });
+        bestForward = resolveShieldSafeForward();
+      }
+      const startPace = Math.hypot(start.speed, start.gtaSlipMps);
+      const pedNearCurb = pedProximity.nearestM <= 6.5;
+      const briskAlleyCruise = (Boolean(alleyShortcutGuide) || pursuerPressure.active) && !pedNearCurb && minBoxGapToStatics(start, localGeometry.statics, 2) >= 1.1;
+      const needCurbPaceTrim = onCurbNow || !bestForward || Boolean(alleyShortcutGuide) || Boolean(curbBypassGuide?.mandatoryRejoin && Math.abs(start.speed) > 3.8);
+      if (rawCurb && needCurbPaceTrim && (!bestForward || !briskAlleyCruise && startPace > curbMaxPace - 0.45 || pedNearCurb && (onCurbNow || Boolean(alleyShortcutGuide)) && Math.abs(start.speed) > 3.6 || !briskAlleyCruise && onCurbNow && Math.abs(start.speed) > 6.4 || curbBypassGuide?.mandatoryRejoin && Math.abs(start.speed) > 3.8)) {
+        const trimSteers = AUX_STEERS;
+        evaluateForwardProfile("curb-trim", 0, 0.15, trimSteers);
+        bestForward = resolveShieldSafeForward();
+        if (!evaluatedBrake045 && (!bestForward || pedNearCurb && Math.abs(start.speed) > 5.8)) {
+          evaluateForwardProfile("curb-pace", 0, 0.45, trimSteers);
+          bestForward = resolveShieldSafeForward();
+        }
       }
     }
     let unstickEvaluated = false;
     const evaluateUnstickPivot = () => {
-      if (!crowdYieldActive && !unstickEvaluated && !bestForward && Math.abs(start.speed) <= 2.2) {
+      if (!shieldPedVetoForward && !crowdYieldActive && !unstickEvaluated && !bestForward && Math.abs(start.speed) <= 2.2) {
         unstickEvaluated = true;
         evaluateForwardProfile("unstick-pivot", 0.26, 0, FORWARD_STEERS, { minRolloutSpeed: 1.35 });
         bestForward = resolveShieldSafeForward();
@@ -24047,7 +31123,14 @@
         const nextAimErr = Math.abs(angleDelta(targetHeading, verdict.endHeading));
         const aimProgress = prevAimErr - nextAimErr;
         const steerTurnAlign = -steer * preferredTurnSign;
-        return steerGain * steerTurnAlign + 22 * aimProgress + 0.35 * verdict.travelM + 0.22 * rearCenterClearM + (verdict.usesCurb ? -1.4 : 0) + 0.5 * Math.min(3, verdict.minClearanceM);
+        const rearArcCone = coneStats(
+          scanModel,
+          start.heading,
+          verdict.endHeading + Math.PI,
+          start.width * 0.5 + 0.25
+        );
+        const revSteerContinuity = hasPrevSteer && activeEscape?.phase === "reverse" ? -0.85 * Math.abs(steer - prevSteer) : 0;
+        return steerGain * steerTurnAlign + 22 * aimProgress + 0.35 * verdict.travelM + 0.16 * rearCenterClearM + 0.24 * Math.min(20, rearArcCone.blendedM) + revSteerContinuity + (verdict.usesCurb ? -1.4 : 0) + 0.5 * Math.min(3, verdict.minClearanceM);
       };
       const revThrottle = start.speed <= -4.2 ? 0.35 : 0.95;
       for (const steer of REVERSE_STEERS) {
@@ -24173,10 +31256,10 @@
           candidates: candidates2
         });
       }
-      const readyEarly = Boolean(bestForward) && activeEscape.reverseMovingStartTick !== null && elapsedRev >= 22 && hasTurnClearance && (backedDistM >= 1.8 || rotatedRad >= 0.35 || backedDistM >= 1.4 && aimErrorRad <= 0.55) && bestForward.corridorMinM >= 8.5;
-      const readyMax = Boolean(bestForward) && (elapsedRev >= 72 || totalRevTicks >= 78);
+      const readyEarly = Boolean(bestForward) && activeEscape.reverseMovingStartTick !== null && elapsedRev >= 20 && hasTurnClearance && (backedDistM >= 1.75 || rotatedRad >= 0.34 || backedDistM >= 1.35 && aimErrorRad <= 0.55) && bestForward.corridorMinM >= 8.2;
+      const readyMax = Boolean(bestForward) && (elapsedRev >= 68 || totalRevTicks >= 76);
       let readyViaReverseStop = false;
-      if (!readyEarly && !readyMax && activeEscape.reverseMovingStartTick !== null && elapsedRev >= 22 && start.speed <= -1.8) {
+      if (!readyEarly && !readyMax && activeEscape.reverseMovingStartTick !== null && elapsedRev >= 20 && start.speed <= -1.75) {
         const stopPose = predictReverseStopPose(activeEscape.turnSign);
         if (stopPose) {
           const stopBackedM = Math.hypot(stopPose.x - activeEscape.originX, stopPose.z - activeEscape.originZ);
@@ -24331,7 +31414,7 @@
         triggeredByOscillation = !movingForwardClear && rawPingPongOscillation;
         shouldStartReverse = frontHitStall || triggeredByOscillation || stuckOnCurb || stalledInTightCorridor || !bestForward && Math.abs(start.speed) <= 1.35;
       }
-      if (crowdYieldActive && crowdCtx.nearestPoliceM > 9.5) {
+      if (crowdYieldActive && crowdCtx.nearestPoliceM > 47.5) {
         shouldStartReverse = false;
       }
       if (shouldStartReverse) {
@@ -24433,18 +31516,33 @@
       const isLosBreak = (bestForward.losBreakBonus ?? 0) >= 8;
       const tacticalTag = isLosBreak ? "los-break" : null;
       const mode = isLosBreak ? "los-break" : maneuver;
-      const outAction = isLosBreak || usesCurbBypass ? bestForward.action : smoothDeadbandAction(bestForward.action);
+      let outAction = isLosBreak || usesCurbBypass ? bestForward.action : smoothDeadbandAction(bestForward.action);
+      if (hasPrevSteer && !isLosBreak && !usesCurbBypass && !curbBypassGuide && !alleyShortcutGuide && !activeEscape && !asphaltAhead.ownCorridorBlocked && !roadAheadBlocked && !proactiveThreat.sideRamThreat && outAction.gear === 1 && outAction.brake === 0 && frontBumperRangeM >= 22 && minObstacleTtc >= 1.8 && (pedProximity.nearestForwardCorridorM ?? Infinity) >= 12) {
+        const maxSlewStep = frontBumperRangeM >= 30 && !proactiveThreat.active ? 0.22 : 0.34;
+        const rawDelta = outAction.steer - prevSteer;
+        if (Math.abs(rawDelta) > maxSlewStep) {
+          const slewedSteer = Number(clamp(prevSteer + Math.sign(rawDelta) * maxSlewStep, -1, 1).toFixed(3));
+          const slewedCandidate = smoothDeadbandAction(
+            makeAction(slewedSteer, outAction.throttle, outAction.brake, outAction.gear)
+          );
+          const slewedVerdict = assessTrajectory(ctx, slewedCandidate, false);
+          if (slewedVerdict.feasible && slewedVerdict.corridorMinM >= Math.min(12, bestForward.corridorMinM - 1.5) && guardDispatchAction(world, slewedCandidate).reason === null) {
+            outAction = slewedCandidate;
+          }
+        }
+      }
       return recordDecisionAndReturn({
         action: outAction,
         reason,
         maneuver,
         mode,
         tacticalTag,
+        targetHeading: bestForward.actionHeading ?? start.heading,
         losBreakBonus: bestForward.losBreakBonus ?? 0,
         candidates: candidates2
       });
     }
-    if (crowdYieldActive && crowdCtx.nearestPoliceM > 9.5) {
+    if (crowdYieldActive && crowdCtx.nearestPoliceM > 47.5) {
       const gapSteer = bestCrowdWaitSteer(
         scanModel,
         visualPoints,
@@ -25232,6 +32330,31 @@
   var QUALIFIED_REWARD = "qualified-progress-v2";
   var PRACTICE_REWARD = "maneuver-practice-v1";
   var CLEAN_ESCAPE_REWARD = "clean-escape-v1";
+  var SMOOTH_SMART_ESCAPE_REWARD = "smooth-smart-escape-v3";
+  function dispatchCommandAction(action) {
+    if (!action?.nitro) return action;
+    try {
+      return validatePursuitAction(action);
+    } catch {
+      const { steer, throttle, brake: brake2, gear } = action;
+      return { steer, throttle, brake: brake2, gear };
+    }
+  }
+  function validateStepInputAction(action) {
+    if (action && Object.getPrototypeOf(action) === Object.prototype && Object.keys(action).length === 5 && Object.prototype.hasOwnProperty.call(action, "nitro")) {
+      if (!Number.isFinite(action.nitro) || action.nitro < 0 || action.nitro > 1) {
+        throw new RangeError("Pursuit action nitro must be a finite number in [0, 1]");
+      }
+      const base = validatePursuitAction({
+        steer: action.steer,
+        throttle: action.throttle,
+        brake: action.brake,
+        gear: action.gear
+      });
+      return action.nitro >= 0.5 ? { ...base, nitro: action.nitro } : base;
+    }
+    return validatePursuitAction(action);
+  }
   var DISPATCH_OBSERVATION_SCHEMA = Object.freeze({
     version: "dispatch-scan-v3",
     source: "virtual first-return geometry",
@@ -25439,7 +32562,7 @@
         throw new TypeError("practiceProgress must be a boolean");
       if (practiceProgress && (options2.ruleset !== "dispatch-v1" || options2.maxActivePatrols !== 0))
         throw new TypeError("Progress practice is only available in no-patrol Dispatch drills");
-      if (rewardProfile !== void 0 && (rewardProfile !== CLEAN_ESCAPE_REWARD || !shield || options2.ruleset !== "dispatch-v1" || options2.maxActivePatrols === 0 || practiceProgress))
+      if (rewardProfile !== void 0 && (![CLEAN_ESCAPE_REWARD, SMOOTH_SMART_ESCAPE_REWARD].includes(rewardProfile) || !shield || options2.ruleset !== "dispatch-v1" || options2.maxActivePatrols === 0 || practiceProgress))
         throw new TypeError("Clean escape reward profile requires a guarded Metro Dispatch pursuit with patrols");
       if (scenario !== void 0 && (options2.ruleset !== "dispatch-v1" || scenario === "L12" && options2.maxActivePatrols < 1 || scenario === "L12-control" && options2.maxActivePatrols !== 0))
         throw new TypeError("Dispatch Lab scenario requires compatible pursuit settings");
@@ -25482,6 +32605,8 @@
       this.world = world;
       this.schema = options2.ruleset === "dispatch-v1" ? schema : GTA_OBSERVATION_SCHEMA;
       this.furthestM = 0;
+      this.prevPoliceGapM = null;
+      this.prevCmdSteer = 0;
       this.shield = shield;
       this.evasion = evasion;
       this.evasiveControl = evasiveControl;
@@ -25503,8 +32628,8 @@
       if (world?.pursuit.phase !== "running") throw new Error("Reset the GTA environment before stepping");
       if (!Number.isSafeInteger(actionRepeat) || actionRepeat < 1)
         throw new RangeError("actionRepeat must be a positive integer");
-      const requestedAction = { ...validatePursuitAction(action) }, events = [];
-      if (!this.shield) world.command({ type: "pursuit-drive", action: requestedAction }, false);
+      const requestedAction = { ...validateStepInputAction(action) }, events = [];
+      if (!this.shield) world.command({ type: "pursuit-drive", action: dispatchCommandAction(requestedAction) }, false);
       const dispatch = this.observationSchema !== GTA_OBSERVATION_SCHEMA;
       const rewardComponents = dispatch ? { progress: 0, time: 0, instability: 0, safety: 0, capture: 0, outcome: 0 } : null;
       const trace = this.decisionTrace;
@@ -25549,7 +32674,7 @@
         if (movement) {
           const { action: safe, reason } = movement;
           planner = movement.planner ?? null;
-          world.command({ type: "pursuit-drive", action: safe }, false);
+          world.command({ type: "pursuit-drive", action: dispatchCommandAction(safe) }, false);
           shieldTick = movement.tick;
           shieldReason = reason;
           if (reason) interventions++;
@@ -25596,6 +32721,73 @@
     }
     scoreDispatchTick(reward, beforeSteer, events) {
       const { player, pursuit } = this.world;
+      if (this.rewardProfile === SMOOTH_SMART_ESCAPE_REWARD) {
+        const separation2 = Math.min(140, distance(player, pursuit.playerStart));
+        if (pursuit.response.dispatch.escapeEligible) {
+          reward.progress += 0.08 * Math.max(0, separation2 - this.furthestM);
+        }
+        this.furthestM = Math.max(this.furthestM, separation2);
+        if (player.speed > 1.2 && pursuit.metrics.collisions === 0) {
+          reward.progress += 8e-3 * Math.min(22, player.speed) * STEP;
+        }
+        const scan = pursuit.gta?.scan;
+        if (scan) {
+          let nearestPoliceM = Infinity;
+          let minFrontClearM = PURSUIT_SCAN_RANGE_M;
+          for (let i = 0; i < scan.rays.length; i++) {
+            const ray = scan.rays[i];
+            if (ray.kind === "police" && ray.rangeM < nearestPoliceM) nearestPoliceM = ray.rangeM;
+            if (ray.kind !== "none" && (i <= 14 || i >= 58) && ray.rangeM < minFrontClearM) {
+              minFrontClearM = ray.rangeM;
+            }
+          }
+          for (const tr of scan.tracks) {
+            if (tr.kind === "police" && tr.ageS === 0) {
+              const r = Math.hypot(tr.rightM, tr.forwardM);
+              if (r < nearestPoliceM) nearestPoliceM = r;
+            }
+          }
+          if (Number.isFinite(nearestPoliceM)) {
+            if (Number.isFinite(this.prevPoliceGapM)) {
+              reward.progress += 0.035 * clamp(nearestPoliceM - this.prevPoliceGapM, -1.5, 1.5);
+            }
+            this.prevPoliceGapM = nearestPoliceM;
+          } else {
+            this.prevPoliceGapM = null;
+          }
+          if (player.speed > 2 && minFrontClearM >= 6) {
+            reward.safety += 0.025 * STEP;
+          } else if (minFrontClearM < 2.8) {
+            reward.safety -= 0.08 * STEP * (2.8 - minFrontClearM);
+          }
+        }
+        const cmdSteer = pursuit.manualAction?.steer ?? 0;
+        reward.time -= 0.04 * STEP;
+        reward.instability -= 0.03 * Math.abs(player.steer - beforeSteer) + 0.08 / PURSUIT_SCAN_TICKS * Math.abs(cmdSteer - this.prevCmdSteer) + 0.012 * STEP * Math.abs(player.gtaSlipMps ?? 0);
+        this.prevCmdSteer = cmdSteer;
+        for (const event2 of events) {
+          if (event2.type === "patrol_collision")
+            reward.safety -= 2.5 + 6 * event2.damageToPlayer / player.maxHealth;
+          else if (event2.type === "static_or_civilian_hit")
+            reward.safety -= (event2.kind === "pedestrian" ? 30 : 5.5) + 10 * event2.damageToPlayer / player.maxHealth;
+          else if (event2.type === "ambient_collision") {
+            const { first, second } = event2;
+            const pedestrian = first.type === "pedestrian" || second.type === "pedestrian";
+            const civilianVehicle = first.type === "vehicle" && !first.patrol || second.type === "vehicle" && !second.patrol;
+            if (pedestrian || civilianVehicle) reward.safety -= (pedestrian ? 28 : 4) + 8 * event2.severity;
+          } else if (event2.type === "near_miss")
+            reward.safety -= 0.2 * (1 - unit(event2.minDist, 0.82));
+          else if (event2.type === "pinned_progress")
+            reward.capture -= 0.25 * STEP * event2.ratio;
+        }
+        if (pursuit.phase === "escaped") {
+          if (pursuit.response.dispatch.escapeEligible && pursuit.metrics.collisions === 0)
+            reward.outcome += 15;
+        } else if (pursuit.phase === "busted" || pursuit.phase === "wrecked") {
+          reward.outcome -= 10;
+        }
+        return;
+      }
       const separation = Math.min(100, distance(player, pursuit.playerStart));
       if (this.rewardProfile === PRACTICE_REWARD || pursuit.response.dispatch.escapeEligible)
         reward.progress += 0.06 * Math.max(0, separation - this.furthestM);

@@ -77,6 +77,12 @@ export function mountPursuitStrobe(options = {}) {
   element.setAttribute("aria-hidden", "true");
   style.setProperty("--strobe-intensity", "0");
   style.setProperty("--strobe-blur-px", "0px");
+  let prevHidden = true;
+  let prevMode = "off";
+  let prevWanted = "";
+  let prevIntensityText = "0";
+  let prevCycleText = "";
+  let prevBlurText = "0px";
 
   function update(state = null) {
     const hasEnabled = Boolean(state && typeof state === "object" && "enabled" in state);
@@ -85,10 +91,22 @@ export function mountPursuitStrobe(options = {}) {
     const active = Boolean(state && isEnabled && isActivePhase && (state?.wantedLevel ?? 0) > 0);
 
     if (!active) {
-      element.hidden = true;
-      element.dataset.mode = "off";
-      style.setProperty("--strobe-intensity", "0");
-      style.setProperty("--strobe-blur-px", "0px");
+      if (!prevHidden) {
+        element.hidden = true;
+        prevHidden = true;
+      }
+      if (prevMode !== "off") {
+        element.dataset.mode = "off";
+        prevMode = "off";
+      }
+      if (prevIntensityText !== "0") {
+        style.setProperty("--strobe-intensity", "0");
+        prevIntensityText = "0";
+      }
+      if (prevBlurText !== "0px") {
+        style.setProperty("--strobe-blur-px", "0px");
+        prevBlurText = "0px";
+      }
       return { mode: "off", intensity: 0, cycleMs: 0, blurPx: 0 };
     }
 
@@ -123,12 +141,33 @@ export function mountPursuitStrobe(options = {}) {
 
     const blurPx = BLUR_BY_MODE[mode];
     const intensityText = rawIntensity.toFixed(3);
-    element.hidden = false;
-    element.dataset.mode = mode;
-    element.dataset.wanted = String(state.wantedLevel ?? 1);
-    style.setProperty("--strobe-intensity", intensityText);
-    style.setProperty("--strobe-cycle-ms", `${cycleMs}ms`);
-    style.setProperty("--strobe-blur-px", `${blurPx}px`);
+    const wantedText = String(state.wantedLevel ?? 1);
+    const cycleText = `${cycleMs}ms`;
+    const blurText = `${blurPx}px`;
+    if (prevHidden) {
+      element.hidden = false;
+      prevHidden = false;
+    }
+    if (prevMode !== mode) {
+      element.dataset.mode = mode;
+      prevMode = mode;
+    }
+    if (prevWanted !== wantedText) {
+      element.dataset.wanted = wantedText;
+      prevWanted = wantedText;
+    }
+    if (prevIntensityText !== intensityText) {
+      style.setProperty("--strobe-intensity", intensityText);
+      prevIntensityText = intensityText;
+    }
+    if (prevCycleText !== cycleText) {
+      style.setProperty("--strobe-cycle-ms", cycleText);
+      prevCycleText = cycleText;
+    }
+    if (prevBlurText !== blurText) {
+      style.setProperty("--strobe-blur-px", blurText);
+      prevBlurText = blurText;
+    }
 
     return { mode, intensity: Number(intensityText), cycleMs, blurPx };
   }
@@ -138,6 +177,12 @@ export function mountPursuitStrobe(options = {}) {
     element.dataset.mode = "off";
     style.setProperty("--strobe-intensity", "0");
     style.setProperty("--strobe-blur-px", "0px");
+    prevHidden = true;
+    prevMode = "off";
+    prevWanted = "";
+    prevIntensityText = "0";
+    prevCycleText = "";
+    prevBlurText = "0px";
     element.remove?.();
   }
 

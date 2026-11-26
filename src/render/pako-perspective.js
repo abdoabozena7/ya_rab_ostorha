@@ -48,13 +48,15 @@ export function createPakoPerspective() {
       meshes.push(mesh);
       ghosts.add(mesh);
     }
+    const elevAt = city.world?.terrainElevationAt;
     const selected = [];
     for (const [i, mesh] of meshes.entries()) {
       const entry = items[i];
       mesh.visible = Boolean(entry);
       if (!entry) continue;
       const [, x, z, , heading] = entry.pose;
-      mesh.position.set(x, .12 + (actorFrame?.rise ?? 0), z);
+      const elev = elevAt ? elevAt(x, z) : 0;
+      mesh.position.set(x, .12 + elev + (actorFrame?.rise ?? 0), z);
       mesh.rotation.y = heading;
       mesh.material.color.setHex(colors[entry.phase] ?? 0xd1d6da);
       mesh.material.opacity = focused ? 1 : .29;
@@ -74,7 +76,8 @@ export function createPakoPerspective() {
         line.material.dispose();
       }
       for (const entry of items) {
-        const points = entry.trajectory.map(([, x, z]) => new THREE.Vector3(x, .135, z));
+        const points = entry.trajectory.map(([, x, z]) =>
+          new THREE.Vector3(x, .135 + (elevAt ? elevAt(x, z) : 0), z));
         trace.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(points),
           new THREE.LineBasicMaterial({ color: colors[entry.phase] ?? 0xd1d6da, transparent: true, opacity: .76 })));
       }
@@ -86,7 +89,8 @@ export function createPakoPerspective() {
       const { x, z, heading } = actor;
       const person = actor.type === "pedestrian";
       const group = person ? "pedestrians" : actor.pursuitRole === "police" ? "patrols" : "traffic";
-      surroundings.put(actor, x, person ? city.metroGroundHeight(x, z) : .12 + actor.y, z, heading);
+      const vElev = !person && elevAt ? elevAt(x, z) : 0;
+      surroundings.put(actor, x, person ? city.metroGroundHeight(x, z) : .12 + vElev + (actor.y ?? 0), z, heading);
       recordedActors[group]++;
       recordedActors.examples[group] ??= { id: actor.id, x, z };
     }
@@ -115,12 +119,16 @@ export function createPakoPerspective() {
     }
     const hidden = city.scene.children.filter(root => root.visible && !city.metroPlaybackBackdrop.has(root));
     for (const root of hidden) root.visible = false;
+    const surfFx = city.streetSurfaces?.fxGroup;
+    const surfFxVis = surfFx?.visible;
+    if (surfFx) surfFx.visible = false;
     city.scene.add(ghosts);
     ghosts.updateMatrixWorld(true);
     try {
       renderer.render(city.scene, camera);
     } finally {
       city.scene.remove(ghosts);
+      if (surfFx) surfFx.visible = surfFxVis;
       for (const root of hidden) root.visible = true;
     }
     return { source: "recorded Metro playback", tick: preview.tick, count: selected.length, selected,

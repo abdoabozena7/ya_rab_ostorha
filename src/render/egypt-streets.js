@@ -5,11 +5,24 @@ const GROUND = 0.12;
 const ATLAS_SIZE = 2048;
 const TILE_SIZE = ATLAS_SIZE / 4;
 const SHOP_NAMES = ["بقالة", "صيدلية", "فرن بلدي", "ورشة", "قهوة"];
+const GRAND_SHOP_TITLES = [
+  ["سوبر ماركت البركة", "مواد غذائية وخضروات طازجة"],
+  ["صيدلية الشفاء", "دواء وعناية · خدمة ٢٤ ساعة"],
+  ["فرن وحلواني التحرير", "عيش بلدي طازة وفطائر"],
+  ["مركز صيانة وقطع غيار", "ميكانيكا وكهرباء سيارات"],
+  ["قهوة وعصير المعز", "شاي وقهوة وقصب طازج"],
+];
+const GRAND_AWNING_TINTS = [0xa39174, 0x7a392f, 0x2c4f42, 0x2c3f52, 0x8a6331];
 const FEATURES = ["masonry", "window", "balcony", "shop", "roof", "equipment", "patch", "curb"];
 const COLORS = {
   concrete: 0xb9ac94, limestone: 0xcbbda0, mortar: 0xb3a38b,
   iron: 0x4c5a51, timber: 0x738070, dark: 0x454942,
   tank: 0x535550, pipe: 0x827c6b, dish: 0xb8b8a7,
+};
+const GRAND_COLORS = {
+  concrete: 0x8f8573, limestone: 0x9e927d, mortar: 0x7d7261,
+  iron: 0x2c3330, timber: 0x566154, dark: 0x2b2f2d,
+  tank: 0x3a3d3b, pipe: 0x666053, dish: 0x919082,
 };
 
 export const usesCityV4StreetFinish = (world) =>
@@ -134,6 +147,175 @@ function makeAtlas() {
   return texture;
 }
 
+function makeGrandCairoAtlas() {
+  let canvas;
+  if (typeof document !== "undefined" && document.createElement)
+    canvas = document.createElement("canvas");
+  else if (typeof OffscreenCanvas !== "undefined")
+    canvas = new OffscreenCanvas(ATLAS_SIZE, ATLAS_SIZE);
+  const ctx = canvas?.getContext("2d");
+  if (!ctx) return null;
+  canvas.width = canvas.height = ATLAS_SIZE;
+  const rng = random(0x43414952);
+  const bases = [
+    "#9c8f7b", "#a89d8a", "#8e7d67", "#7f5642",
+    "#4a594c", "#865e49", "#968b78", "#5e635c",
+    "#aa9677", "#22423e", "#213d33", "#6b3527",
+    "#273947", "#523b2a", "#968773", "#8d8678",
+  ];
+  const weatherBand = (tx, ty) => {
+    for (let step = 0; step < 5; step++) {
+      ctx.fillStyle = "rgba(24,19,14,0.055)";
+      ctx.fillRect(tx, ty, 512, 18 + step * 16);
+      ctx.fillRect(tx, ty + 512 - (22 + step * 18), 512, 22 + step * 18);
+    }
+  };
+  for (let tile = 0; tile < 16; tile++) {
+    const x = (tile % 4) * TILE_SIZE, y = Math.floor(tile / 4) * TILE_SIZE;
+    ctx.fillStyle = bases[tile];
+    ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
+    if ([0, 1, 2, 14, 15].includes(tile)) {
+      // Muted smoky Cairo travertine / aged plaster courses + deep mortar shadow lines
+      for (let course = 32; course < 512; course += 64) {
+        ctx.fillStyle = "rgba(32,26,20,0.22)";
+        ctx.fillRect(x, y + course, 512, 4);
+        ctx.fillStyle = "rgba(218,206,184,0.08)";
+        ctx.fillRect(x, y + course + 4, 512, 2);
+      }
+      if (tile === 1 || tile === 14 || tile === 15) {
+        for (let row = 0; row < 8; row++) {
+          const offset = (row % 2) * 64;
+          ctx.fillStyle = "rgba(32,26,20,0.16)";
+          for (let jx = offset + 64; jx < 512; jx += 128)
+            ctx.fillRect(x + jx, y + row * 64, 2, 64);
+        }
+      }
+      for (let n = 0; n < 240; n++) {
+        ctx.fillStyle = n % 3 ? "rgba(32,26,20,0.065)" : "rgba(214,202,178,0.075)";
+        ctx.fillRect(x + rng() * 496, y + rng() * 496, 8 + rng() * 68, 2 + rng() * 20);
+      }
+      weatherBand(x, y);
+      ctx.fillStyle = "rgba(28,22,16,0.22)";
+      for (const drip of [48, 162, 288, 418])
+        ctx.fillRect(x + drip, y + 2, 4, 80 + rng() * 120);
+    } else if (tile === 3 || tile === 5) {
+      // Weathered Egyptian fired clay brick & dark smoky mortar courses
+      ctx.fillStyle = "#5c5245";
+      ctx.fillRect(x, y, 512, 512);
+      for (let row = 0; row < 17; row++)
+        for (let column = -1; column < 17; column++) {
+          const bx = x + column * 34 + (row % 2) * 17;
+          ctx.fillStyle = ["#7f5642", "#91634c", "#865e49", "#6c4837"][(row * 3 + column + 7) % 4];
+          const left = Math.max(x, bx + 2), right = Math.min(x + 512, bx + 32);
+          if (right > left) ctx.fillRect(left, y + row * 30 + 2, right - left, 26);
+        }
+      weatherBand(x, y);
+      ctx.fillStyle = "rgba(32,26,20,0.24)";
+      ctx.fillRect(x, y, 512, 16);
+    } else if (tile === 4) {
+      // Muted dusty-olive Egyptian wooden louvered shutters (شيش خشب)
+      ctx.fillStyle = "#344036";
+      ctx.fillRect(x, y, 512, 512);
+      ctx.fillStyle = "#4a594c";
+      ctx.fillRect(x + 26, y + 24, 460, 464);
+      for (let slat = 38; slat < 474; slat += 18) {
+        ctx.fillStyle = "#263128";
+        ctx.fillRect(x + 38, y + slat, 436, 8);
+        ctx.fillStyle = "#627362";
+        ctx.fillRect(x + 38, y + slat + 8, 436, 3);
+      }
+      ctx.fillStyle = "#344036";
+      ctx.fillRect(x + 244, y + 24, 24, 464);
+      ctx.fillRect(x + 26, y + 242, 460, 22);
+      weatherBand(x, y);
+    } else if (tile === 6) {
+      // Dark bronze/charcoal casement window with warm tungsten interior & dark unlit glass
+      ctx.fillStyle = "#202625";
+      ctx.fillRect(x + 18, y + 18, 476, 476);
+      ctx.fillStyle = "#2f3836";
+      ctx.fillRect(x + 34, y + 34, 444, 444);
+      // Left pane: warm muted tungsten interior light behind sheer Cairo curtain
+      ctx.fillStyle = "#7d6848";
+      ctx.fillRect(x + 48, y + 48, 196, 356);
+      ctx.fillStyle = "#d8aa68";
+      ctx.fillRect(x + 76, y + 92, 148, 268);
+      ctx.fillStyle = "rgba(222,204,170,0.44)";
+      ctx.fillRect(x + 52, y + 52, 92, 348);
+      ctx.fillStyle = "rgba(238,222,188,0.26)";
+      ctx.fillRect(x + 68, y + 52, 24, 348);
+      // Right pane: dark unlit apartment interior with subtle dusk reflection
+      ctx.fillStyle = "#232d2e";
+      ctx.fillRect(x + 268, y + 48, 196, 356);
+      ctx.fillStyle = "rgba(116,134,138,0.18)";
+      ctx.fillRect(x + 278, y + 60, 176, 88);
+      ctx.fillStyle = "rgba(216,170,104,0.15)";
+      ctx.fillRect(x + 268, y + 344, 196, 60);
+      // Dark metal mullions & transom
+      ctx.fillStyle = "#272e2d";
+      ctx.fillRect(x + 246, y + 34, 18, 444);
+      ctx.fillRect(x + 34, y + 404, 444, 14);
+      ctx.fillStyle = "#857a68";
+      ctx.fillRect(x + 34, y + 470, 444, 10);
+      ctx.fillStyle = "#1d2424";
+      ctx.fillRect(x + 48, y + 422, 416, 44);
+    } else if (tile === 7) {
+      // Weathered corrugated steel shop shutter & dark split-AC outdoor fan grille
+      ctx.fillStyle = "#5e635c";
+      ctx.fillRect(x, y, 512, 512);
+      for (let n = 6; n < 512; n += 16) {
+        ctx.fillStyle = "#363b38";
+        ctx.fillRect(x, y + n, 512, 6);
+        ctx.fillStyle = "#787d74";
+        ctx.fillRect(x, y + n + 6, 512, 3);
+      }
+      ctx.fillStyle = "#1e2322";
+      ctx.fillRect(x + 54, y + 96, 256, 256);
+      ctx.fillStyle = "#323937";
+      for (let r = 116; r < 336; r += 20)
+        ctx.fillRect(x + 70, y + r, 224, 8);
+      ctx.fillStyle = "#9da095";
+      ctx.fillRect(x + 350, y + 120, 108, 42);
+      weatherBand(x, y);
+    } else if (tile === 8) {
+      // Muted sun-faded striped Cairo canvas shop awning
+      for (let n = 0; n < 512; n += 64) {
+        ctx.fillStyle = "#c2b092";
+        ctx.fillRect(x + n, y, 32, 512);
+        ctx.fillStyle = "#6b3528";
+        ctx.fillRect(x + n + 32, y, 32, 512);
+      }
+      ctx.fillStyle = "rgba(26,20,14,0.28)";
+      ctx.fillRect(x, y + 464, 512, 48);
+    } else if (tile >= 9 && tile <= 13) {
+      const rect = atlasRect(tile);
+      const [title, sub] = GRAND_SHOP_TITLES[tile - 9];
+      ctx.fillStyle = "#a89472";
+      ctx.fillRect(rect.x + 4, rect.y + 4, 504, 120);
+      ctx.fillStyle = "#191f1d";
+      ctx.fillRect(rect.x + 10, rect.y + 10, 492, 108);
+      ctx.fillStyle = bases[tile];
+      ctx.fillRect(rect.x + 15, rect.y + 15, 482, 98);
+      ctx.fillStyle = "#c4a162";
+      ctx.fillRect(rect.x + 24, rect.y + 22, 464, 3);
+      ctx.fillRect(rect.x + 24, rect.y + 103, 464, 3);
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.direction = "rtl";
+      ctx.fillStyle = "#efe1c2";
+      ctx.font = "bold 54px Tahoma, sans-serif";
+      ctx.fillText(title, rect.x + 256, rect.y + 52, 452);
+      ctx.fillStyle = "#d6bc8b";
+      ctx.font = "bold 22px Tahoma, sans-serif";
+      ctx.fillText(sub, rect.x + 256, rect.y + 88, 446);
+    }
+  }
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.name = "egypt-local-plaster-brick-shops";
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.anisotropy = 8;
+  return texture;
+}
+
 const colorCache = new Map();
 function rgb(hex) {
   if (!colorCache.has(hex)) colorCache.set(hex, new THREE.Color(hex));
@@ -186,13 +368,16 @@ class Batch {
 }
 
 class Writer {
-  constructor(batch, site, index, feature = 0) {
+  constructor(batch, site, index, feature = 0, baseY = GROUND, terrainFn = null) {
     this.batch = batch; this.site = site; this.index = index; this.feature = feature;
+    this.baseY = baseY; this.terrainFn = terrainFn;
     this.cos = Math.cos(site.heading ?? 0); this.sin = Math.sin(site.heading ?? 0);
   }
   point(x, y, z) {
-    return new THREE.Vector3(this.site.x + x * this.cos + z * this.sin, y + GROUND,
-      this.site.z - x * this.sin + z * this.cos);
+    const wx = this.site.x + x * this.cos + z * this.sin;
+    const wz = this.site.z - x * this.sin + z * this.cos;
+    const wy = y + this.baseY + (this.terrainFn ? this.terrainFn(wx, wz) : 0);
+    return new THREE.Vector3(wx, wy, wz);
   }
   quad(points, tile = 0, color = 0xffffff) {
     this.batch.quad(points.map(([x, y, z]) => this.point(x, y, z)), color, tile, this.index, this.feature);
@@ -290,21 +475,22 @@ function balcony(solid, face, floorY, width, openRail) {
   }
 }
 
-function roofEquipment(solid, atlas, width, depth, roof, seed, counts) {
+function roofEquipment(solid, atlas, width, depth, roof, seed, counts, grand = false) {
+  const palette = grand ? GRAND_COLORS : COLORS;
   solid.feature = atlas.feature = 5;
   if (seed % 4 !== 0) {
     const x = -width * 0.23, z = -depth * 0.22, r = seed % 2 ? 0.48 : 0.41;
-    solid.box(x, roof + 0.09, z, 1.18, 0.18, 1.18, 0, COLORS.concrete);
-    solid.cylinder(x, roof + 0.18, z, r, 1.04, COLORS.tank);
-    solid.cylinder(x, roof + 1.22, z, r * 0.91, 0.10, COLORS.dark);
-    solid.box(x + r + 0.07, roof + 0.51, z, 0.07, 1.02, 0.07, 0, COLORS.pipe);
-    solid.box(x + r - 0.035, roof + 0.99, z, 0.27, 0.07, 0.07, 0, COLORS.pipe);
+    solid.box(x, roof + 0.09, z, 1.18, 0.18, 1.18, 0, palette.concrete);
+    solid.cylinder(x, roof + 0.18, z, r, 1.04, palette.tank);
+    solid.cylinder(x, roof + 1.22, z, r * 0.91, 0.10, palette.dark);
+    solid.box(x + r + 0.07, roof + 0.51, z, 0.07, 1.02, 0.07, 0, palette.pipe);
+    solid.box(x + r - 0.035, roof + 0.99, z, 0.27, 0.07, 0.07, 0, palette.pipe);
     counts.tanks++;
   }
   if (seed % 3 !== 0) {
     const x = width * 0.24, z = depth * 0.18;
-    solid.box(x, roof + 0.06, z, 0.58, 0.12, 0.58, 0, COLORS.concrete);
-    solid.box(x, roof + 0.42, z, 0.075, 0.68, 0.075, 0, COLORS.iron);
+    solid.box(x, roof + 0.06, z, 0.58, 0.12, 0.58, 0, palette.concrete);
+    solid.box(x, roof + 0.42, z, 0.075, 0.68, 0.075, 0, palette.iron);
     const center = [x, roof + 0.74, z];
     const rim = (angle) => [x + Math.cos(angle) * 0.45,
       roof + 0.74 + 0.12 * 0.82 + Math.sin(angle) * 0.45 * 0.57,
@@ -312,10 +498,10 @@ function roofEquipment(solid, atlas, width, depth, roof, seed, counts) {
     for (let n = 0; n < 10; n++) {
       const a = rim(n * Math.PI / 5), b = rim((n + 1) * Math.PI / 5);
       for (const points of [[center, b, a], [center, a, b]])
-        solid.batch.triangle(points.map((p) => solid.point(...p)), COLORS.dish, 0, solid.index, solid.feature,
+        solid.batch.triangle(points.map((p) => solid.point(...p)), palette.dish, 0, solid.index, solid.feature,
           [[0,0],[0,0],[0,0]]);
     }
-    solid.box(x, roof + 0.74, z + 0.26, 0.035, 0.04, 0.56, 0, COLORS.iron);
+    solid.box(x, roof + 0.74, z + 0.26, 0.035, 0.04, 0.56, 0, palette.iron);
     counts.dishes++;
   }
 }
@@ -408,10 +594,13 @@ function buildSite(site, index, atlasBatch, solidBatch, roads, counts) {
 const METRO_CELL = 56;
 const STREAM_CELL = 36;
 const GRAND_METRO_CELL = 240;
-const GRAND_STREAM_CELL = 150;
+const GRAND_STREAM_CELL = 125;
 const DETAIL_RADIUS = 42;
 const PREWARM_RADIUS = 51;
 const RELEASE_RADIUS = 59;
+const GRAND_DETAIL_RADIUS = 62;
+const GRAND_PREWARM_RADIUS = 136;
+const GRAND_RELEASE_RADIUS = 108;
 const METRO_BUDGET = { maxDrawCalls: 96, maxTriangles: 170000 };
 const METRO_V5_BUDGET = { maxDrawCalls: 75, maxTriangles: 260000 };
 const METRO_PLASTER = [
@@ -421,6 +610,14 @@ const METRO_PLASTER = [
 const METRO_STONE = [
   [1, 0xfffaec, 0xc3b69e], [15, 0xf3efe4, 0xb9afa0],
   [1, 0xe9eddf, 0xa5aaa0], [14, 0xfff5e3, 0xb9a892],
+];
+const GRAND_METRO_PLASTER = [
+  [0, 0xd4cab9, 0x8f8573], [3, 0xcfbcb0, 0x857666],
+  [1, 0xcac2b3, 0x8a8172], [2, 0xccbdab, 0x867867],
+];
+const GRAND_METRO_STONE = [
+  [1, 0xd6cebe, 0x9e927d], [15, 0xcac3b5, 0x8f8573],
+  [1, 0xc1c5ba, 0x80857c], [14, 0xd0c5b2, 0x928571],
 ];
 const METRO_CLOSE_FEATURES = ["bakery-display", "produce-crates", "repair-bay", "entry-fittings", "balcony-planter"];
 const [BAKERY, GROCER, REPAIR, ENTRY, PLANTER] = METRO_CLOSE_FEATURES.map((_, n) => FEATURES.length + n);
@@ -432,6 +629,11 @@ const MARKET_STALLS = {
   2: { feature: MARKET_FLATBREAD, canvas: 0xac5740, paint: 0x8c593e },
   4: { feature: MARKET_TEA, canvas: 0x397780, paint: 0x4a6f75 },
 };
+const GRAND_MARKET_STALLS = {
+  0: { feature: MARKET_PRODUCE, canvas: 0x2f5444, paint: 0x3b5449 },
+  2: { feature: MARKET_FLATBREAD, canvas: 0x7d3d2d, paint: 0x66402d },
+  4: { feature: MARKET_TEA, canvas: 0x2a5359, paint: 0x365054 },
+};
 const STREET_FINISH_FEATURES = ["masonry-dado", "shop-kickplate", "gutter", "drain-grate", "scored-forecourt"];
 const [DADO, KICKPLATE, GUTTER, DRAIN, FORECOURT] = STREET_FINISH_FEATURES.map((_, n) =>
   FEATURES.length + METRO_CLOSE_FEATURES.length + MARKET_FEATURES.length + n);
@@ -442,12 +644,25 @@ const GROUND_FINISHES = [
   { tile: 15, plaster: 0xe7e6db, dado: [2, 0xa2ada7], height: .59 },
   { tile: 2, plaster: 0xf3d7c0, dado: [14, 0xc3b9ab], height: .83 },
 ];
+const GRAND_GROUND_FINISHES = [
+  { tile: 1, plaster: 0xc4baaa, dado: [15, 0x6f6e64], height: .69 },
+  { tile: 14, plaster: 0xbcae96, dado: [3, 0x7a6a58], height: .76 },
+  { tile: 15, plaster: 0xb8b6ac, dado: [2, 0x68706b], height: .59 },
+  { tile: 2, plaster: 0xbfa994, dado: [14, 0x837a6d], height: .83 },
+];
 const SHOP_PLATES = [
   [15, 0x829e92], [1, 0xb6b9a2], [15, 0xb07d69], [15, 0x858f8b], [2, 0xa29076],
+];
+const GRAND_SHOP_PLATES = [
+  [15, 0x52655c], [1, 0x797c6c], [15, 0x744f42], [15, 0x555d5a], [2, 0x6b5e4d],
 ];
 const COURT_PAVING = [
   [0x808883, 0x848b87, 0x858882],
   [0x867f74, 0x8e887b, 0x85837a],
+];
+const GRAND_COURT_PAVING = [
+  [0x6e6b62, 0x65625a, 0x757167],
+  [0x65625a, 0x6e6b62, 0x757167],
 ];
 
 function metroStreetFaces(site, faces, roads, boulevard) {
@@ -495,7 +710,7 @@ function metroPanel(writer, face, l, r, b, t, d, tile, color) {
 }
 
 // Cut the openings out of the street face; the back, jambs and soffit are real separate planes.
-function metroWall(atlas, solid, face, bottom, top, tile, tint, bays, finish = null) {
+function metroWall(atlas, solid, face, bottom, top, tile, tint, bays, finish = null, grand = false) {
   const { out } = face, edge = face.width / 2;
   let start = -edge;
   const wall = (l, r, b, t) => {
@@ -507,29 +722,58 @@ function metroWall(atlas, solid, face, bottom, top, tile, tint, bays, finish = n
     atlas.feature = 0;
     metroPanel(atlas, face, l, r, b, t, out, tile, tint);
   };
+  const jambL = grand ? 0x6b6050 : 0x9a8b75;
+  const jambR = grand ? 0x5d5346 : 0x887c69;
+  const sillC = grand ? 0x8a7d69 : 0xb3a38b;
+  const soffitC = grand ? 0x473f35 : 0x726658;
   for (const { l, r, b, t, d, feature } of bays) {
     wall(start, l, bottom, top);
     wall(l, r, bottom, b);
     wall(l, r, t, top);
     start = r;
     solid.feature = feature;
-    metroQuad(solid, face, [[l,b,out],[l,b,d],[l,t,d],[l,t,out]], 0, 0x9a8b75);
-    metroQuad(solid, face, [[r,b,d],[r,b,out],[r,t,out],[r,t,d]], 0, 0x887c69);
-    metroQuad(solid, face, [[l,b,d],[l,b,out],[r,b,out],[r,b,d]], 0, 0xb3a38b);
-    metroQuad(solid, face, [[l,t,out],[l,t,d],[r,t,d],[r,t,out]], 0, 0x726658);
+    metroQuad(solid, face, [[l,b,out],[l,b,d],[l,t,d],[l,t,out]], 0, jambL);
+    metroQuad(solid, face, [[r,b,d],[r,b,out],[r,t,out],[r,t,d]], 0, jambR);
+    metroQuad(solid, face, [[l,b,d],[l,b,out],[r,b,out],[r,b,d]], 0, sillC);
+    metroQuad(solid, face, [[l,t,out],[l,t,d],[r,t,d],[r,t,out]], 0, soffitC);
   }
   atlas.feature = 0;
   wall(start, edge, bottom, top);
 }
 
-function metroGlazing(atlas, solid, face, bay, variant, shutter = false) {
+function metroGlazing(atlas, solid, face, bay, variant, shutter = false, grand = false) {
   const { l, r, b, t, d, feature } = bay;
   const w = r - l, h = t - b, m = (l + r) / 2, trim = Math.min(0.065, w * 0.11);
-  const frame = variant % 3 === 1 ? 0x4c4940 : 0x39463d;
+  const frame = grand
+    ? (variant % 3 === 1 ? 0x2b2f2c : 0x222827)
+    : (variant % 3 === 1 ? 0x4c4940 : 0x39463d);
   atlas.feature = solid.feature = feature;
   metroPanel(solid, face, l, r, b, t, d, 0, frame);
   if (shutter) {
-    metroPanel(atlas, face, l + trim, r - trim, b + trim, t - trim, d + 0.012, 7, 0xd5d4c3);
+    metroPanel(atlas, face, l + trim, r - trim, b + trim, t - trim, d + 0.012, 7, grand ? 0x918e82 : 0xd5d4c3);
+    return;
+  }
+  if (grand) {
+    if (feature === 3 && bay.shop) {
+      const warm = variant % 5 !== 0;
+      metroPanel(solid, face, l + trim, m - trim * 0.65, b + trim, t - trim, d + 0.011, 0,
+        warm ? 0xd9ad6b : 0x876a45);
+      metroPanel(solid, face, m + trim * 0.65, r - trim, b + trim, t - trim, d + 0.011, 0,
+        warm ? 0xc49555 : 0x6b5438);
+      const rail = b + h * 0.19, transom = b + h * 0.77;
+      metroPanel(solid, face, l, r, rail, rail + 0.06, d + 0.018, 0, frame);
+      metroPanel(solid, face, l, r, transom, transom + 0.048, d + 0.018, 0, frame);
+      return;
+    }
+    const lit = variant % 3 === 0;
+    metroPanel(solid, face, l + trim, m - trim / 2, b + trim, t - trim, d + 0.011, 0,
+      lit ? 0xd8aa68 : 0x232d2e);
+    metroPanel(solid, face, m + trim / 2, r - trim, b + trim, t - trim, d + 0.011, 0,
+      lit ? 0x7d6848 : 0x1d2627);
+    if (feature === 3) {
+      const rail = b + h * 0.19;
+      metroPanel(solid, face, l, r, rail, rail + 0.06, d + 0.018, 0, frame);
+    }
     return;
   }
   const light = variant % 4 === 1;
@@ -641,22 +885,23 @@ function metroEntryFittings(solid, face, bay, variant, boulevard) {
     d + .028, 0, variant % 2 ? 0xd3ba84 : 0xa9aea3);
 }
 
-function metroMarketAwning(solid, face, bay, y, color) {
+function metroMarketAwning(solid, face, bay, y, color, grand = false) {
   solid.feature = MARKET_AWNING;
   const { l, r } = bay;
   const edge = face.hull - .018, front = y - Math.min(.195, (edge - face.out) * .46);
   const lower = front - .16;
+  const stripeTint = grand ? 0xb5a282 : 0xe7d0a6;
   for (let i = 0; i < 7; i++) {
     const a = l + (r - l) * i / 7, b = l + (r - l) * (i + 1) / 7;
-    const cloth = i % 2 ? 0xe7d0a6 : color;
+    const cloth = i % 2 ? stripeTint : color;
     metroQuad(solid, face, [[a,front,edge],[b,front,edge],[b,y,face.out],[a,y,face.out]], 0, cloth);
     metroPanel(solid, face, a, b, lower, front, edge, 0, cloth);
   }
-  metroQuad(solid, face, [[l,y,face.out],[r,y,face.out],[r,front,edge],[l,front,edge]], 0, 0x8e7c62);
+  metroQuad(solid, face, [[l,y,face.out],[r,y,face.out],[r,front,edge],[l,front,edge]], 0, grand ? 0x594f40 : 0x8e7c62);
   metroPanel(solid, face, l, r, lower - .028, lower, edge, 0, color);
   for (const u of [l + .12, r - .12])
     metroQuad(solid, face, [[u-.027,y-.29,face.out],[u+.027,y-.29,face.out],
-      [u+.027,front-.025,edge],[u-.027,front-.025,edge]], 0, 0x594e40);
+      [u+.027,front-.025,edge],[u-.027,front-.025,edge]], 0, grand ? 0x332d25 : 0x594e40);
 }
 
 function metroMarketCounter(solid, face, bay, stall) {
@@ -705,22 +950,25 @@ function metroMarketCounter(solid, face, bay, stall) {
 
 function metroGround(atlas, solid, face, top, shopfront, main, boulevard, seed, counts, trim, market, finish, grand = false) {
   const bays = metroGroundBays(face, top, shopfront, main, boulevard, grand);
+  const palette = grand ? GRAND_COLORS : COLORS;
+  const stallTable = grand ? GRAND_MARKET_STALLS : MARKET_STALLS;
+  const plates = grand ? GRAND_SHOP_PLATES : SHOP_PLATES;
   metroWall(atlas, solid, face, 0.16, top, finish?.tile ?? (boulevard ? 15 : 14),
-    finish?.plaster ?? 0xf1e8d7, bays, finish);
+    finish?.plaster ?? (grand ? 0xc2b8a6 : 0xf1e8d7), bays, finish, grand);
   let marketBay = false;
   for (const [n, bay] of bays.entries()) {
     const { u, w } = bay, tenant = (seed + n * 3) % SHOP_NAMES.length;
     const recess = face.out - bay.d;
     const showcase = main && bay.shop && w >= 1.65 && bay.t - bay.b >= 1.5 && recess >= .24;
-    const stall = market && !marketBay && showcase && face.hull - face.out >= .38 && MARKET_STALLS[tenant];
+    const stall = market && !marketBay && showcase && face.hull - face.out >= .38 && stallTable[tenant];
     if (showcase && tenant === 3) metroRepairBay(atlas, solid, face, bay);
     else {
-      metroGlazing(atlas, solid, face, bay, seed + n, bay.shop && tenant === 3 && !boulevard);
+      metroGlazing(atlas, solid, face, bay, seed + n, bay.shop && tenant === 3 && !boulevard, grand);
       if (!stall && showcase && (tenant === 0 || tenant === 2)) metroMerchantDisplay(solid, face, bay, tenant);
     }
     if (!bay.shop) {
       if (!boulevard) metroPanel(atlas, face, bay.l + w * 0.12, bay.l + w * 0.48,
-        bay.b + 0.1, bay.t - 0.1, bay.d + 0.024, 4, 0xc9beab);
+        bay.b + 0.1, bay.t - 0.1, bay.d + 0.024, 4, grand ? 0x968e7c : 0xc9beab);
       if (main && recess >= .06 && bay.t - bay.b >= .5)
         metroEntryFittings(solid, face, bay, seed + n, boulevard);
       continue;
@@ -729,39 +977,52 @@ function metroGround(atlas, solid, face, top, shopfront, main, boulevard, seed, 
       atlas.feature = solid.feature = KICKPLATE;
       const shoulder = Math.min(bay.t - .6, bay.b + (tenant === 1 ? .57 : .43));
       metroPanel(atlas, face, bay.l + .07, bay.r - .07, bay.b + .055, shoulder,
-        bay.d + .021, ...SHOP_PLATES[tenant]);
+        bay.d + .021, ...plates[tenant]);
       metroPanel(solid, face, bay.l + .048, bay.r - .048, shoulder, shoulder + .057,
-        bay.d + .03, 0, tenant === 1 ? 0x9ca297 : 0x5d6457);
+        bay.d + .03, 0, grand ? (tenant === 1 ? 0x6b7068 : 0x3b4039) : (tenant === 1 ? 0x9ca297 : 0x5d6457));
     }
     solid.feature = atlas.feature = 3;
     counts.shops++;
     const signY = top * 0.80, signH = top * 0.18;
     metroPanel(solid, face, bay.l, bay.r, signY - signH / 2, signY + signH / 2,
-      face.out + 0.012, 0, 0x4b5143);
+      face.out + 0.012, 0, grand ? 0x262b27 : 0x4b5143);
     metroPanel(atlas, face, bay.l + w * 0.022, bay.r - w * 0.022, signY - signH * 0.45,
       signY + signH * 0.45, face.out + 0.026, 9 + tenant, 0xffffff);
     if (stall) {
-      metroMarketAwning(solid, face, bay, signY - signH * .53, stall.canvas);
+      metroMarketAwning(solid, face, bay, signY - signH * .53, stall.canvas, grand);
       metroMarketCounter(solid, face, bay, stall);
       marketBay = true;
       counts.marketStalls++;
       counts.awnings++;
-    } else if (boulevard) {
+    } else if (boulevard && !grand) {
       solid.faceBox(face, u, bay.t + 0.06, (face.out + face.hull) / 2,
         w, 0.12, face.hull - face.out, 0, trim);
     } else {
       const l = bay.l - w * 0.035, r = bay.r + w * 0.035;
-      const back = signY - signH * 0.52, front = back - top * 0.065, edge = face.hull - 0.012;
+      const back = signY - signH * 0.52, front = back - top * 0.072;
+      const edge = grand ? face.hull + 0.28 : face.hull - 0.012;
       const canvas = [[l,front,edge],[r,front,edge],[r,back,face.out],[l,back,face.out]];
-      metroQuad(atlas, face, canvas, 8, tenant % 2 ? 0xc9b49f : 0xe5d9bb);
-      metroQuad(solid, face, [...canvas].reverse(), 0, 0x807460);
-      metroPanel(atlas, face, l, r, front - 0.10, front, edge, 8, 0xbeb9a3);
+      const awningTint = grand ? GRAND_AWNING_TINTS[(tenant + n) % GRAND_AWNING_TINTS.length] : (tenant % 2 ? 0xc9b49f : 0xe5d9bb);
+      const awningTile = grand && (tenant + n) % 2 === 0 ? 8 : (grand ? 0 : 8);
+      metroQuad(atlas, face, canvas, awningTile, awningTint);
+      metroQuad(solid, face, [...canvas].reverse(), 0, grand ? 0x453e33 : 0x6f6452);
+      metroPanel(atlas, face, l, r, front - 0.115, front, edge, awningTile, grand ? awningTint : 0xbeb9a3);
+      if (grand) {
+        // Rolled shutter box header & iron awning struts on Grand Cairo storefronts
+        solid.faceBox(face, u, bay.t - 0.05, bay.d + 0.08, w - 0.06, 0.14, 0.16, 0, 0x3b403c);
+        for (const side of [-1, 1]) {
+          const sx = u + side * (w * 0.44);
+          metroQuad(solid, face, [[sx-0.022,bay.t-0.18,face.out],[sx+0.022,bay.t-0.18,face.out],
+            [sx+0.022,front-0.02,edge-0.04],[sx-0.022,front-0.02,edge-0.04]], 0, palette.iron);
+        }
+      }
       counts.awnings++;
     }
   }
 }
 
-function metroBalcony(solid, face, u, floor, width, open, seed, trim, counts, planter) {
+function metroBalcony(solid, face, u, floor, width, open, seed, trim, counts, planter, grand = false) {
+  const palette = grand ? GRAND_COLORS : COLORS;
   solid.feature = 2;
   const extension = face.hull - face.out, center = face.out + extension * 0.5;
   const l = u - width / 2, r = u + width / 2, rail = face.hull - 0.029;
@@ -770,48 +1031,56 @@ function metroBalcony(solid, face, u, floor, width, open, seed, trim, counts, pl
     solid.faceBox(face, u + side * (width / 2 - 0.042), floor + 0.46, center,
       0.084, 0.56, extension * 0.95, 0, trim);
   if (open) {
-    metroPanel(solid, face, l, r, floor + 0.24, floor + 0.29, rail, 0, COLORS.iron);
+    metroPanel(solid, face, l, r, floor + 0.24, floor + 0.29, rail, 0, palette.iron);
     for (let n = 1; n <= 5; n++) {
       const x = l + width * n / 6;
-      metroPanel(solid, face, x - 0.022, x + 0.022, floor + 0.26, floor + 0.99, rail, 0, COLORS.iron);
+      metroPanel(solid, face, x - 0.022, x + 0.022, floor + 0.26, floor + 0.99, rail, 0, palette.iron);
     }
-    solid.faceBox(face, u, floor + 0.97, rail, width, 0.055, 0.055, 0, COLORS.iron);
+    solid.faceBox(face, u, floor + 0.97, rail, width, 0.055, 0.055, 0, palette.iron);
   } else {
     solid.faceBox(face, u, floor + 0.47, rail, width, 0.57, 0.056, 0, trim);
-    solid.faceBox(face, u, floor + 0.78, rail - 0.015, width, 0.066, 0.075, 0, COLORS.limestone);
+    solid.faceBox(face, u, floor + 0.78, rail - 0.015, width, 0.066, 0.075, 0, palette.limestone);
   }
   if (open && seed % 3 !== 2) {
     const a = u - width * 0.32, m = a + width * 0.15, b = a + width * 0.32;
     const near = rail + 0.022, fold = near - 0.018;
+    const clothA = grand ? (seed % 3 ? 0x8f806a : 0x825142) : (seed % 3 ? 0xb8a78c : 0xad715d);
+    const clothB = grand ? (seed % 3 ? 0x9c8d75 : 0x915f4d) : (seed % 3 ? 0xc7b99b : 0xbf846b);
     metroQuad(solid, face, [[a,floor+0.52,near],[m,floor+0.50,fold],[m,floor+0.985,fold],
-      [a,floor+0.984,near]], 0, seed % 3 ? 0xb8a78c : 0xad715d);
+      [a,floor+0.984,near]], 0, clothA);
     metroQuad(solid, face, [[m,floor+0.50,fold],[b,floor+0.55,near],[b,floor+0.981,near],
-      [m,floor+0.985,fold]], 0, seed % 3 ? 0xc7b99b : 0xbf846b);
+      [m,floor+0.985,fold]], 0, clothB);
     counts.laundry++;
   }
   if (open && planter && width >= .90 && extension >= .24) {
     const x = u + width * .31, d = rail - .12;
     solid.feature = PLANTER;
-    solid.faceBox(face, x, floor + .34, d, .30, .21, .16, 0, 0xa27356);
+    solid.faceBox(face, x, floor + .34, d, .30, .21, .16, 0, grand ? 0x7d5740 : 0xa27356);
     metroQuad(solid, face, [[x-.10,floor+.44,d],[x+.08,floor+.44,d],
-      [x+.028,floor+.67,d+.02],[x-.055,floor+.62,d-.023]], 0, 0x77865f);
+      [x+.028,floor+.67,d+.02],[x-.055,floor+.62,d-.023]], 0, grand ? 0x566344 : 0x77865f);
     metroQuad(solid, face, [[x-.08,floor+.44,d+.042],[x+.052,floor+.44,d+.048],
-      [x+.124,floor+.59,d+.015],[x+.077,floor+.62,d-.013]], 0, 0x919767);
+      [x+.124,floor+.59,d+.015],[x+.077,floor+.62,d-.013]], 0, grand ? 0x6b704b : 0x919767);
   }
   counts.balconies++;
 }
 
 function metroUpperBays(face, floor, pitch, frontage, primary, boulevard, ribbon, seed, row, grand = false) {
   const bays = [];
-  const maxCols = grand && face.width > 28 ? (frontage ? (boulevard ? 7 : 6) : 3) : (frontage ? (boulevard ? 5 : 4) : 2);
+  const maxCols = grand && face.width > 28
+    ? (frontage ? (boulevard ? 6 : 5) : 4)
+    : (frontage ? (boulevard ? 5 : 4) : (grand ? 3 : 2));
   const columns = Math.max(1, Math.min(maxCols,
-    Math.round(face.width / (frontage ? 3.8 : 5.9))));
+    Math.round(face.width / (frontage ? (grand ? 4.2 : 3.8) : (grand ? 5.2 : 5.9)))));
   const step = face.width / columns;
   for (let n = 0; n < columns; n++) {
-    const balcony = !boulevard && frontage && (row + n + seed) % 3 === (primary ? 0 : 1);
+    const balcony = grand
+      ? (!ribbon && (frontage
+          ? ((row + n + seed) % 3 === (primary ? 0 : 1))
+          : (face.width >= 13 && n === Math.floor(columns / 2) && (row + seed) % 5 === 0)))
+      : (!boulevard && frontage && (row + n + seed) % 3 === (primary ? 0 : 1));
     const u = (n - (columns - 1) / 2) * step;
     const w = Math.min(step * (ribbon ? 0.80 : boulevard ? 0.65 : 0.55),
-      ribbon ? 3.2 : boulevard ? 2.42 : balcony ? 1.62 : 1.32);
+      ribbon ? 3.2 : boulevard ? (grand ? (balcony ? 2.15 : 2.38) : 2.42) : balcony ? 1.62 : 1.32);
     const b = floor + pitch * (balcony ? 0.09 : ribbon ? 0.39 : 0.32);
     const t = floor + pitch * (ribbon ? 0.80 : 0.84);
     const recess = Math.min(face.out * 0.38, boulevard ? 0.32 : 0.24);
@@ -824,20 +1093,48 @@ function metroUpperBays(face, floor, pitch, frontage, primary, boulevard, ribbon
 function metroUpper(atlas, solid, face, floor, pitch, frontage, primary, boulevard, ribbon, seed, row, finish, counts, grand = false) {
   const [tile, tint, trim] = finish;
   const { bays, step, columns } = metroUpperBays(face, floor, pitch, frontage, primary, boulevard, ribbon, seed, row, grand);
-  const wallTile = !boulevard && seed % 4 === 0 && row >= 2 ? 5 : tile;
-  const towerFlush = grand && row >= 4;
-  metroWall(atlas, solid, face, floor, floor + pitch, wallTile, tint, frontage && !towerFlush ? bays : []);
+  const wallTile = !boulevard && seed % 4 === 0 && row >= 2 ? 5 : (grand && boulevard && seed % 5 === 1 && row % 3 === 1 ? 3 : tile);
+  // Keep full recessed reveals on primary/shop frontages across all floors in Grand Cairo v5!
+  const recessedWall = grand ? (frontage && (primary || row < 8)) : frontage;
+  metroWall(atlas, solid, face, floor, floor + pitch, wallTile, tint, recessedWall ? bays : [], null, grand);
+  if (grand && row > 0 && (frontage ? row % 2 === 0 : row % 4 === 0)) {
+    // Crisp Cairo concrete floor-slab stringcourse ledge around all exposed tower faces
+    solid.feature = 0;
+    if (frontage) solid.faceBox(face, 0, floor + 0.05, face.out + 0.06, face.width + 0.08, 0.10, 0.12, 0, trim);
+    else metroPanel(solid, face, -face.width / 2, face.width / 2, floor, floor + 0.11, face.out + 0.025, 0, trim);
+  }
   for (const [n, bay] of bays.entries()) {
-    metroGlazing(atlas, solid, face, towerFlush ? { ...bay, d: face.out + 0.012 } : bay, seed + row + n);
+    const bayGeom = recessedWall ? bay : { ...bay, d: face.out + 0.014 };
+    if (grand && (frontage || (seed + row + n) % 2 === 0) && (seed + row * 3 + n) % 3 !== 0) {
+      // Detailed atlas casement window with curtains/mullions or warm evening interior glow
+      atlas.feature = bay.feature;
+      const lit = (seed + row * 5 + n * 2) % 4 === 0;
+      metroPanel(atlas, face, bayGeom.l, bayGeom.r, bayGeom.b, bayGeom.t, bayGeom.d + 0.012,
+        6, lit ? 0xe3b878 : 0xa8a296);
+    } else {
+      metroGlazing(atlas, solid, face, bayGeom, seed + row + n, false, grand);
+    }
     if (bay.balcony) {
-      metroBalcony(solid, face, bay.u, floor, Math.min(step * 0.88, 2.75),
-        (seed + row + n) % 4 !== 1, seed + row + n, trim, counts, primary && row === 0);
-    } else if (frontage && !ribbon) {
-      solid.faceBox(face, bay.u, bay.b - 0.035, face.out + 0.036, bay.w + step * 0.085,
-        0.07, 0.105, 0, trim);
-      if (!boulevard && (seed + row + n) % 4 === 1) {
-        const w = bay.w * 0.27;
-        metroPanel(atlas, face, bay.l - w, bay.l, bay.b, bay.t, face.out + 0.018, 4, 0xd8d2b7);
+      const balWidth = Math.min(step * 0.88, boulevard ? 3.15 : 2.75);
+      metroBalcony(solid, face, bay.u, floor, balWidth,
+        (seed + row + n) % (grand ? 3 : 4) !== 1, seed + row + n, trim, counts,
+        primary && (grand ? row <= 2 : row === 0), grand);
+    } else if ((frontage || grand) && !ribbon) {
+      if (frontage) {
+        solid.faceBox(face, bay.u, bay.b - 0.035, face.out + 0.036, bay.w + step * 0.085,
+          0.07, 0.105, 0, trim);
+      } else {
+        metroPanel(solid, face, bay.l - 0.06, bay.r + 0.06, bay.b - 0.07, bay.b, face.out + 0.024, 0, trim);
+      }
+      if ((grand || !boulevard) && (seed + row + n) % (grand ? (frontage ? 3 : 4) : 4) === 1) {
+        const w = bay.w * 0.26;
+        const shutterTint = grand
+          ? [0x968e78, 0x5a6b58, 0x7d674e][(seed + row + n) % 3]
+          : [0xd8d2b7, 0x8ea389, 0xb89c78][(seed + row + n) % 3];
+        metroPanel(atlas, face, bay.l - w, bay.l, bay.b, bay.t, face.out + 0.020, 4, shutterTint);
+        if (grand && frontage && step - bay.w > w * 2.2) {
+          metroPanel(atlas, face, bay.r, bay.r + w, bay.b, bay.t, face.out + 0.020, 4, shutterTint);
+        }
       }
     }
     if (boulevard && !ribbon && frontage && n < columns - 1) {
@@ -858,8 +1155,10 @@ function metroUpper(atlas, solid, face, floor, pitch, frontage, primary, bouleva
 
 function metroSitePlan(site, index, roads, grand = false) {
   const seed = hash(site.id), style = seed % 4, boulevard = site.architecture === "boulevard";
-  const ribbon = boulevard && style % 2 === 1;
-  const finish = (boulevard ? METRO_STONE : METRO_PLASTER)[style];
+  const ribbon = !grand && boulevard && style % 2 === 1;
+  const finish = (boulevard
+    ? (grand ? GRAND_METRO_STONE : METRO_STONE)
+    : (grand ? GRAND_METRO_PLASTER : METRO_PLASTER))[style];
   const inset = Math.min(boulevard ? 0.46 : 0.54, Math.min(site.width, site.length) * 0.15);
   const width = site.width - 2 * inset, length = site.length - 2 * inset;
   const faces = [0, 1, 2, 3].map((n) => {
@@ -882,26 +1181,51 @@ function metroSitePlan(site, index, roads, grand = false) {
 }
 
 function buildMetroSite(site, index, atlasBatch, solidBatch, roads, counts,
-  plan = metroSitePlan(site, index, roads), market = false) {
+  plan = metroSitePlan(site, index, roads), market = false, elevationAt = null) {
   const { seed, style, boulevard, ribbon, finish, inset, width, length, faces, streets,
     crown, roof, ground, floors, pitch, grand, info } = plan;
   const [tile, tint, trim] = finish;
-  const atlas = new Writer(atlasBatch, site, index), solid = new Writer(solidBatch, site, index);
-  const groundFinish = market ? GROUND_FINISHES[style] : null;
-  solid.box(0, 0.08, 0, site.width, 0.16, site.length, 0, trim, 0, [5]);
+  const siteElev = grand && elevationAt ? elevationAt(site.x, site.z) : 0;
+  const baseY = GROUND + siteElev;
+  const atlas = new Writer(atlasBatch, site, index, 0, baseY);
+  const solid = new Writer(solidBatch, site, index, 0, baseY);
+  const groundFinish = market ? (grand ? GRAND_GROUND_FINISHES : GROUND_FINISHES)[style] : null;
+  const palette = grand ? GRAND_COLORS : COLORS;
+  if (grand && elevationAt) {
+    // Deep foundation plinth skirt anchors buildings solidly into sloped hills/ramps
+    solid.box(0, -0.72, 0, site.width, 1.76, site.length, 0, palette.mortar, 0, [5]);
+  } else {
+    solid.box(0, 0.08, 0, site.width, 0.16, site.length, 0, grand ? palette.mortar : trim, 0, [5]);
+  }
   for (const [f, face] of faces.entries()) {
     const main = f === streets.primary, frontage = streets.shops.has(f);
     metroGround(atlas, solid, face, ground, frontage, main, boulevard, seed + f * 7, counts, trim, market, groundFinish, grand);
     for (let row = 0; row < floors; row++)
       metroUpper(atlas, solid, face, ground + row * pitch, pitch, frontage, main,
         boulevard, ribbon, seed + f * 7, row, finish, counts, grand);
-    if (main && face.width > 4 && !boulevard) {
+    if (grand && frontage && face.width > 5) {
+      // Staggered split-AC outdoor condenser boxes across residential floors (both avenue & neighborhood)
+      solid.feature = atlas.feature = 5;
+      const acStep = Math.max(2, Math.floor(floors / 3));
+      for (let acRow = 0; acRow < floors; acRow += acStep) {
+        const sideSign = ((acRow + f + seed) % 2 === 0) ? 1 : -1;
+        const u = sideSign * face.width * (0.28 + ((acRow + seed) % 3) * 0.06);
+        const y = ground + acRow * pitch + pitch * 0.24;
+        const acDepth = Math.max(0.28, inset * 0.68);
+        const out = face.out + acDepth * 0.5;
+        solid.faceBox(face, u, y, out, 0.68, 0.44, acDepth, 0, palette.limestone);
+        atlas.faceQuad(face, u, y, face.out + acDepth + 0.008, 0.60, 0.36, 7);
+        for (const br of [-1, 1])
+          solid.faceBox(face, u + br * 0.23, y - 0.25, out, 0.048, 0.08, acDepth * 0.96, 0, palette.iron);
+        counts.airConditioners++;
+      }
+    } else if (main && face.width > 4 && !boulevard) {
       const u = face.width * 0.37, y = ground + pitch * 0.21, out = face.out + inset * 0.36;
       solid.feature = atlas.feature = 5;
-      solid.faceBox(face, u, y, out, 0.62, 0.40, inset * 0.72, 0, COLORS.limestone);
+      solid.faceBox(face, u, y, out, 0.62, 0.40, inset * 0.72, 0, palette.limestone);
       atlas.faceQuad(face, u, y, face.out + inset * 0.72 + 0.006, 0.52, 0.31, 7);
       for (const side of [-1, 1])
-        solid.faceBox(face, u + side * 0.21, y - 0.24, out, 0.049, 0.09, inset * 0.75, 0, COLORS.iron);
+        solid.faceBox(face, u + side * 0.21, y - 0.24, out, 0.049, 0.09, inset * 0.75, 0, palette.iron);
       counts.airConditioners++;
     }
   }
@@ -919,40 +1243,73 @@ function buildMetroSite(site, index, atlasBatch, solidBatch, roads, counts,
   const stair = crown - (deck - roof);
   atlas.box(width * 0.19, deck + stair / 2, -length * 0.15,
     width * (boulevard ? 0.30 : 0.24), stair, length * 0.28, tile, tint, 0, [5]);
-  if (crown >= 1.43 && width > 3 && length > 3)
-    roofEquipment(solid, atlas, width, length, deck, seed, counts);
+  if ((grand || crown >= 1.43) && width > 3 && length > 3)
+    roofEquipment(solid, atlas, width, length, deck, seed, counts, grand);
   return info;
 }
 
-function buildMetroProxy(site, plan, batch) {
+function buildMetroProxy(site, plan, batch, elevationAt = null) {
   const { seed, boulevard, ribbon, finish, width, length, faces, streets,
     crown, roof, ground, floors, pitch, grand } = plan;
   const [tile, tint, trim] = finish;
-  const w = new Writer(batch, site, plan.info.index);
+  const siteElev = grand && elevationAt ? elevationAt(site.x, site.z) : 0;
+  const w = new Writer(batch, site, plan.info.index, 0, GROUND + siteElev);
   w.box(0, roof / 2, 0, width, roof, length, tile, tint, 0, [5]);
-  w.box(0, 0.08, 0, site.width, 0.16, site.length, 0, trim, 0, [5]);
-  w.box(0, ground - 0.095, 0, site.width, 0.19, site.length, 0, trim, 0, [5]);
+  if (grand && elevationAt) w.box(0, -0.72, 0, site.width, 1.76, site.length, 0, GRAND_COLORS.mortar, 0, [4, 5]);
+  else w.box(0, 0.08, 0, site.width, 0.16, site.length, 0, grand ? GRAND_COLORS.mortar : trim, 0, grand ? [4, 5] : [5]);
+  w.box(0, ground - 0.095, 0, site.width, 0.19, site.length, 0, trim, 0, grand ? [4, 5] : [5]);
   w.box(0, roof, 0, site.width, 0.20, site.length, 0, trim, 0, [5]);
   w.box(width * .19, roof + crown * .5, -length * .15,
     width * (boulevard ? .30 : .24), crown, length * .28, tile, tint, 0, [5]);
+  if (grand && seed % 3 !== 0 && width > 4 && length > 4) {
+    // Distant Cairo rooftop water tank silhouette
+    w.box(-width * .23, roof + .65, -length * .22, 1.05, 1.15, 1.05, 0, GRAND_COLORS.tank, 0, [5]);
+  }
   for (const [f, face] of faces.entries()) {
     const main = f === streets.primary, frontage = streets.shops.has(f), s = seed + f * 7;
     const parapet = boulevard && main ? crown : crown * .55;
     metroPanel(w, face, -face.width / 2, face.width / 2,
       roof, roof + parapet, face.hull - .08, tile, tint);
-    for (const [n, bay] of metroGroundBays(face, ground, frontage, main, boulevard, grand).entries()) {
-      metroPanel(w, face, bay.l, bay.r, bay.b, bay.t, face.out + .016, 0, 0x576a61);
-      if (bay.shop)
-        metroPanel(w, face, bay.l, bay.r, ground * .72, ground * .88, face.out + .018,
-          9 + (s + n * 3) % SHOP_NAMES.length, 0xffffff);
+    if (!grand || frontage) {
+      for (const [n, bay] of metroGroundBays(face, ground, frontage, main, boulevard, grand).entries()) {
+        const vitrineTint = grand
+          ? (bay.shop ? ((s + n) % 4 === 0 ? 0x876a45 : ((s + n) % 2 ? 0xd9ad6b : 0xc49555)) : 0x2a3130)
+          : 0x576a61;
+        metroPanel(w, face, bay.l, bay.r, bay.b, bay.t, face.out + .016, grand && !bay.shop ? 6 : 0, vitrineTint);
+        if (bay.shop) {
+          metroPanel(w, face, bay.l, bay.r, ground * .72, ground * .88, face.out + .018,
+            9 + (s + n * 3) % SHOP_NAMES.length, 0xffffff);
+          if (grand) {
+            const awningTint = GRAND_AWNING_TINTS[(s + n) % GRAND_AWNING_TINTS.length];
+            metroQuad(w, face, [[bay.l,ground*.63,face.out+.36],[bay.r,ground*.63,face.out+.36],
+              [bay.r,ground*.71,face.out+.02],[bay.l,ground*.71,face.out+.02]], 8, awningTint);
+          }
+        }
+      }
     }
     for (let row = 0; row < floors; row++) {
+      if (grand && !frontage) {
+        if (row % 2 === 0 && face.width > 6) {
+          metroPanel(w, face, -0.55, 0.55, ground + row * pitch + pitch * 0.30,
+            ground + row * pitch + pitch * 0.80, face.out + .019, 6, (s + row) % 4 === 0 ? 0xd8aa68 : 0x9c968a);
+        }
+        continue;
+      }
+      if (grand && main && row > 0 && row % 4 === 0) {
+        metroPanel(w, face, -face.width / 2, face.width / 2,
+          ground + row * pitch, ground + row * pitch + .10, face.out + .04, 0, trim);
+      }
       const { bays } = metroUpperBays(face, ground + row * pitch, pitch, frontage, main, boulevard, ribbon, s, row, grand);
       for (const [n, bay] of bays.entries()) {
-        metroPanel(w, face, bay.l, bay.r, bay.b, bay.t, face.out + .019, 0,
-          (s + row + n) % 4 === 1 ? 0x889087 : 0x596c66);
-        if (bay.balcony)
-          metroPanel(w, face, bay.l, bay.r, bay.b, bay.b + .52, face.hull - .075, 0, trim);
+        metroPanel(w, face, bay.l, bay.r, bay.b, bay.t, face.out + .019, grand ? 6 : 0,
+          grand ? ((s + row + n) % 4 === 0 ? 0xe0b575 : 0xa39d91) : ((s + row + n) % 4 === 1 ? 0x889087 : 0x596c66));
+        if (bay.balcony) {
+          if (grand) {
+            metroPanel(w, face, bay.l - .14, bay.r + .14, bay.b, bay.b + .56, face.hull - .04, 0, trim);
+          } else {
+            metroPanel(w, face, bay.l, bay.r, bay.b, bay.b + .52, face.hull - .075, 0, trim);
+          }
+        }
       }
     }
   }
@@ -1172,7 +1529,7 @@ function openStreetSpans(road, left, right, blockers, margin) {
   return runs;
 }
 
-function buildV4StreetSurfaces(roads, sites, repairs, edging, counts) {
+function buildV4StreetSurfaces(roads, sites, repairs, edging, counts, elevationAt = null, grand = false) {
   const hasDiag = roads.some(road => road.axis === "diag");
   const asphalt = hasDiag ? null : roads.map(road => roadRect(road));
   const footway = hasDiag ? null : roads.map(road => roadRect(road, -2.5));
@@ -1202,53 +1559,194 @@ function buildV4StreetSurfaces(roads, sites, repairs, edging, counts) {
     const spans = (left, right, cuts, margin) => hasDiag
       ? openPolyStreetSpans(roadMin, roadMax, left, right, cuts, margin)
       : openStreetSpans(road, left, right, cuts, margin);
-    const patch = new Writer(repairs, local, -1, 6), curb = new Writer(edging, local, -1, 7);
+    const patch = new Writer(repairs, local, -1, 6, GROUND, elevationAt);
+    const curb = new Writer(edging, local, -1, 7, GROUND, elevationAt);
     const rng = random(hash(road.id ?? (isDiag ? `${road.x1}:${road.z1}:${road.x2}:${road.z2}` : `${road.axis}:${road.fixed}`)));
-    const strip = (w, u0, u1, a, b, y0, y1, color) => {
-      const points = [[u0,y0,a],[u0,y0,b],[u1,y1,b],[u1,y1,a]];
+    const spanHasSlope = (uMid, a, b) => {
+      if (!elevationAt || b - a <= 7.5) return false;
+      const samples = 4;
+      let minE = Infinity, maxE = -Infinity;
+      for (let k = 0; k <= samples; k++) {
+        const sPos = a + (b - a) * (k / samples);
+        const wx = local.x + uMid * curb.cos + sPos * curb.sin;
+        const wz = local.z - uMid * curb.sin + sPos * curb.cos;
+        const e = elevationAt(wx, wz);
+        if (e < minE) minE = e;
+        if (e > maxE) maxE = e;
+      }
+      return maxE - minE > 0.015 || maxE > 0.02;
+    };
+    const emitQuad = (w, u0, u1, z0, z1, y0, y1, color) => {
+      const points = [[u0,y0,z0],[u0,y0,z1],[u1,y1,z1],[u1,y1,z0]];
       w.quad(u1 > u0 ? points : points.reverse(), 0, color);
+    };
+    const strip = (w, u0, u1, a, b, y0, y1, color, slopedStep = 7.0) => {
+      const stepLen = spanHasSlope((u0 + u1) * 0.5, a, b) ? slopedStep : Infinity;
+      for (let pos = a; pos < b - 1e-4; pos += stepLen) {
+        const next = Math.min(b, pos + stepLen);
+        emitQuad(w, u0, u1, pos, next, y0, y1, color);
+      }
     };
     const flush = (w, u0, u1, a, b, y, color) => strip(w, u0, u1, a, b, y, y, color);
     // Overlay within millimetres of the existing road, sidewalk and ground, respectively.
     const roadY = .1165 - GROUND, pathY = .0715 - GROUND, courtY = -.0485 - GROUND;
+    if (!grand) {
+      for (const side of [-1, 1]) {
+        const e = edge * side, at = (out) => e + side * out;
+        const drains = avenue ? .56 : .33;
+        for (const [a, b] of spans(at(-drains), at(.43), asphaltCuts, .18)) {
+          curb.feature = GUTTER;
+          flush(curb, at(-drains), at(-.11), a, b, roadY, avenue ? 0x414442 : 0x46443e);
+          flush(curb, at(-.11), e, a, b, roadY, 0x333735);
+          curb.feature = 7;
+          const cap = avenue ? .055 : -.040;
+          strip(curb, e, at(.105), a, b, roadY, cap, 0x817e70);
+          flush(curb, at(.105), at(.27), a, b, cap, avenue ? 0x9b9587 : 0x918777);
+          strip(curb, at(.27), at(.37), a, b, cap, pathY, 0x90897b);
+          counts.curbSegments++;
+          if (avenue && b - a > 9) {
+            // One inlet at the end of a block; a long block also has one by its start.
+            for (const d of b - a > 45 ? [a + 11.6, b - 3.65] : [b - 3.65]) {
+              patch.feature = DRAIN;
+              flush(patch, at(-.52), at(-.05), d - .40, d + .40, roadY + .0013, 0x6a6960);
+              flush(patch, at(-.46), at(-.095), d - .33, d + .33, roadY + .0021, 0x282e2e);
+              for (let slat = -2; slat <= 2; slat++)
+                flush(patch, at(-.46), at(-.095), d + slat * .112 - .016,
+                  d + slat * .112 + .016, roadY + .003, 0x6d716a);
+              counts.drains++;
+            }
+          }
+        }
+        // Separate construction phases: a narrow continuous service apron and
+        // wider scored slabs where the frontage isn't occupied by a building.
+        curb.feature = FORECOURT;
+        const courtBands = avenue ? [[2.505, 3.375, 4.15], [3.415, 5.25, 4.15]] : [[2.505, 3.60, 3.55]];
+        for (const [inner, outer, pitch] of courtBands) {
+          const palette = COURT_PAVING[Number(inner > 3.4)];
+          for (const [a, b] of spans(at(inner), at(outer), wingCuts, .02)) {
+            flush(curb, at(inner), at(outer), a, b, courtY - .0008, 0x646660);
+            const basis = roadMin + (inner > 3.4 ? .8 : 0);
+            for (let n = Math.floor((a - basis) / pitch); basis + n * pitch < b; n++) {
+              const start = Math.max(a, basis + n * pitch + .023);
+              const end = Math.min(b, basis + (n + 1) * pitch - .023);
+              if (end - start < .18) continue;
+              flush(curb, at(inner), at(outer), start, end, courtY, palette[Math.floor(rng() * palette.length)]);
+              counts.forecourtSlabs++;
+            }
+          }
+        }
+      }
+      patch.feature = 6;
+      // Narrow utility reinstatements, with a seal around the newer mix. They
+      // sit away from the paint and never run into a junction apron.
+      const side = rng() < .5 ? -1 : 1;
+      const u = edge * (avenue ? .59 : .34) * side;
+      const half = avenue ? .68 : .43;
+      for (const [a, b] of spans(u - half, u + half, asphaltCuts, 2.8)) {
+        const length = b - a;
+        if (length < 11) continue;
+        const from = a + length * (.14 + rng() * .30);
+        const to = Math.min(b - 1.2, from + (avenue ? 6.4 : 3.3) + rng() * 3.8);
+        const cut = (border, y, tint) => {
+          const l = u - half + border, r = u + half - border;
+          const lo = from + border, hi = to - border;
+          const points = [[l+.11,lo],[l,lo+.24],[l,hi-.11],[l+.10,hi],[r-.16,hi],
+            [r,hi-.26],[r,lo+.16],[r-.12,lo]];
+          for (let n = 1; n < points.length - 1; n++)
+            repairs.triangle([points[0], points[n], points[n + 1]].map(([x,z]) => patch.point(x, y, z)),
+              tint, 0, -1, 6, [[0,0],[0,0],[0,0]]);
+        };
+        cut(0, roadY, 0x303535);
+        cut(.07, roadY + .001, avenue ? 0x424749 : 0x555449);
+        counts.patches++;
+      }
+      continue;
+    }
+
+    // Grand Metro City v5: realistic dark bitumen gutters, 3D segmented Egyptian curb stones
+    // (بلدورة الرصيف المصرية), cast-iron storm-drain grates, dark tar-sealed road patches, and muted forecourts.
+    const aveDarkTop = [0x24282b, 0x2b2f33];
+    const aveDarkFace = [0x1e2225, 0x24282b];
+    const aveLightTop = [0xa59d8c, 0xc2baaa, 0x968e7d];
+    const aveLightFace = [0x8e8677, 0xa8a091, 0x827b6c];
+    const nbStoneTop = [0x7d776b, 0x34383b, 0x878073, 0x6e695e];
+    const nbStoneFace = [0x6b665b, 0x2a2e31, 0x746e62, 0x5d594f];
     for (const side of [-1, 1]) {
       const e = edge * side, at = (out) => e + side * out;
-      const drains = avenue ? .56 : .33;
+      const drains = avenue ? .58 : .35;
       for (const [a, b] of spans(at(-drains), at(.43), asphaltCuts, .18)) {
         curb.feature = GUTTER;
-        flush(curb, at(-drains), at(-.11), a, b, roadY, avenue ? 0x414442 : 0x46443e);
-        flush(curb, at(-.11), e, a, b, roadY, 0x333735);
+        flush(curb, at(-drains), at(-.12), a, b, roadY, 0x1b1e21);
+        flush(curb, at(-.12), e, a, b, roadY + .0004, 0x282a27);
+
         curb.feature = 7;
-        const cap = avenue ? .055 : -.040;
-        strip(curb, e, at(.105), a, b, roadY, cap, 0x817e70);
-        flush(curb, at(.105), at(.27), a, b, cap, avenue ? 0x9b9587 : 0x918777);
-        strip(curb, at(.27), at(.37), a, b, cap, pathY, 0x90897b);
+        const cap = avenue ? .058 : -.036;
+        // Continuous recessed dark mortar joint bed (0x1a1d1f) + rear concrete step to sidewalk
+        strip(curb, at(.003), at(.106), a, b, roadY, cap - .0045, 0x1a1d1f, 2.7);
+        strip(curb, at(.106), at(.276), a, b, cap - .0045, cap - .0045, 0x1a1d1f, 2.7);
+        strip(curb, at(.276), at(.37), a, b, cap - .001, pathY, avenue ? 0x59554c : 0x524e46, 2.7);
+
+        const blockLen = avenue ? 1.35 : 1.50;
+        const halfJoint = 0.02;
+        const salt = Math.floor(rng() * 4);
+        for (let blockIdx = 0, pos = a; pos < b - 0.08; blockIdx++, pos += blockLen) {
+          const next = Math.min(b, pos + blockLen);
+          const s0 = pos === a ? pos : pos + halfJoint;
+          const s1 = next >= b - 1e-4 ? next : next - halfJoint;
+          if (s1 - s0 < 0.06) continue;
+          let topColor, faceColor;
+          if (avenue) {
+            if ((blockIdx + salt) % 2 === 0) {
+              const k = ((blockIdx >> 1) + salt) % aveDarkTop.length;
+              topColor = aveDarkTop[k];
+              faceColor = aveDarkFace[k];
+            } else if (b - a > 6 && (pos - a < 2.7 || b - next < 2.7)) {
+              topColor = 0x967a44;
+              faceColor = 0x7d6537;
+            } else {
+              const k = ((blockIdx >> 1) + salt) % aveLightTop.length;
+              topColor = aveLightTop[k];
+              faceColor = aveLightFace[k];
+            }
+          } else {
+            const k = (blockIdx + salt) % nbStoneTop.length;
+            topColor = nbStoneTop[k];
+            faceColor = nbStoneFace[k];
+          }
+          emitQuad(curb, e, at(.105), s0, s1, roadY, cap, faceColor);
+          emitQuad(curb, at(.105), at(.276), s0, s1, cap, cap, topColor);
+          counts.curbBlocks = (counts.curbBlocks ?? 0) + 1;
+        }
         counts.curbSegments++;
-        if (avenue && b - a > 9) {
-          // One inlet at the end of a block; a long block also has one by its start.
-          for (const d of b - a > 45 ? [a + 11.6, b - 3.65] : [b - 3.65]) {
+
+        if ((avenue && b - a > 9) || (!avenue && b - a > 12)) {
+          const drainLocations = avenue
+            ? (b - a > 45 ? [a + 11.6, b - 3.65] : [b - 3.65])
+            : (b - a > 52 ? [a + 10.4, b - 3.4] : [b - 3.4]);
+          const apronOut = avenue ? -.52 : -.34, apronIn = -.045;
+          const pitOut = avenue ? -.46 : -.30, pitIn = -.085;
+          for (const d of drainLocations) {
             patch.feature = DRAIN;
-            flush(patch, at(-.52), at(-.05), d - .40, d + .40, roadY + .0013, 0x6a6960);
-            flush(patch, at(-.46), at(-.095), d - .33, d + .33, roadY + .0021, 0x282e2e);
+            flush(patch, at(apronOut), at(apronIn), d - .40, d + .40, roadY + .0013, 0x3d4042);
+            flush(patch, at(pitOut), at(pitIn), d - .33, d + .33, roadY + .0021, 0x121517);
             for (let slat = -2; slat <= 2; slat++)
-              flush(patch, at(-.46), at(-.095), d + slat * .112 - .016,
-                d + slat * .112 + .016, roadY + .003, 0x6d716a);
+              flush(patch, at(pitOut), at(pitIn), d + slat * .112 - .018,
+                d + slat * .112 + .018, roadY + .003, 0x383d40);
             counts.drains++;
           }
         }
       }
-      // Separate construction phases: a narrow continuous service apron and
-      // wider scored slabs where the frontage isn't occupied by a building.
+
       curb.feature = FORECOURT;
-      const courtBands = avenue ? [[2.505, 3.375, 4.15], [3.415, 5.25, 4.15]] : [[2.505, 3.60, 3.55]];
+      const courtBands = avenue ? [[2.505, 3.375, 5.10], [3.415, 5.25, 5.10]] : [[2.505, 3.60, 4.35]];
       for (const [inner, outer, pitch] of courtBands) {
-        const palette = COURT_PAVING[Number(inner > 3.4)];
+        const palette = GRAND_COURT_PAVING[Number(inner > 3.4)];
         for (const [a, b] of spans(at(inner), at(outer), wingCuts, .02)) {
-          flush(curb, at(inner), at(outer), a, b, courtY - .0008, 0x646660);
+          flush(curb, at(inner), at(outer), a, b, courtY - .0008, 0x383a37);
           const basis = roadMin + (inner > 3.4 ? .8 : 0);
           for (let n = Math.floor((a - basis) / pitch); basis + n * pitch < b; n++) {
-            const start = Math.max(a, basis + n * pitch + .023);
-            const end = Math.min(b, basis + (n + 1) * pitch - .023);
+            const start = Math.max(a, basis + n * pitch + .026);
+            const end = Math.min(b, basis + (n + 1) * pitch - .026);
             if (end - start < .18) continue;
             flush(curb, at(inner), at(outer), start, end, courtY, palette[Math.floor(rng() * palette.length)]);
             counts.forecourtSlabs++;
@@ -1256,9 +1754,8 @@ function buildV4StreetSurfaces(roads, sites, repairs, edging, counts) {
         }
       }
     }
+
     patch.feature = 6;
-    // Narrow utility reinstatements, with a seal around the newer mix. They
-    // sit away from the paint and never run into a junction apron.
     const side = rng() < .5 ? -1 : 1;
     const u = edge * (avenue ? .59 : .34) * side;
     const half = avenue ? .68 : .43;
@@ -1276,8 +1773,27 @@ function buildV4StreetSurfaces(roads, sites, repairs, edging, counts) {
           repairs.triangle([points[0], points[n], points[n + 1]].map(([x,z]) => patch.point(x, y, z)),
             tint, 0, -1, 6, [[0,0],[0,0],[0,0]]);
       };
-      cut(0, roadY, 0x303535);
-      cut(.07, roadY + .001, avenue ? 0x424749 : 0x555449);
+      cut(0, roadY + .0006, 0x16191c);
+      cut(.075, roadY + .0014, avenue ? 0x23272b : 0x272a2c);
+
+      // Extra narrow diagonal hot-poured tar-crack seal strip per repaired block
+      const sealStart = to + 3.6 < b ? to + 1.0 : (from - 3.6 > a ? a + 1.0 : null);
+      if (sealStart !== null) {
+        const sealMid = sealStart + 1.15 + rng() * 0.55;
+        const sealEnd = Math.min(b - 1.0, sealMid + 1.15 + rng() * 0.65);
+        const u0 = -u * (0.32 + rng() * 0.28);
+        const u1 = u0 + side * (avenue ? 0.55 : 0.34);
+        const u2 = u1 - side * (avenue ? 0.22 : 0.14);
+        const hw = 0.036;
+        for (const [za, zb, ua, ub] of [[sealStart, sealMid, u0, u1], [sealMid, sealEnd, u1, u2]]) {
+          patch.quad([
+            [ua - hw, roadY + .0012, za],
+            [ub - hw, roadY + .0012, zb],
+            [ub + hw, roadY + .0012, zb],
+            [ua + hw, roadY + .0012, za],
+          ], 0, 0x16191c);
+        }
+      }
       counts.patches++;
     }
   }
@@ -1298,9 +1814,12 @@ function cellDistance2(cell, point) {
   return x * x + z * z;
 }
 
-function streamMetroSites(sites, roads, mapped, flat, diagnostics, attach, detach, market, grand = false) {
+function streamMetroSites(sites, roads, mapped, flat, diagnostics, attach, detach, market, grand = false, elevationAt = null) {
   const cells = new Map(), residents = new Set();
   const cellSpan = grand ? GRAND_STREAM_CELL : STREAM_CELL;
+  const detailRadius = grand ? GRAND_DETAIL_RADIUS : DETAIL_RADIUS;
+  const prewarmRadius = grand ? GRAND_PREWARM_RADIUS : PREWARM_RADIUS;
+  const releaseRadius = grand ? GRAND_RELEASE_RADIUS : RELEASE_RADIUS;
   for (const [index, site] of sites.entries()) {
     const key = `${Math.floor(site.x / cellSpan)}:${Math.floor(site.z / cellSpan)}`;
     let cell = cells.get(key);
@@ -1309,25 +1828,52 @@ function streamMetroSites(sites, roads, mapped, flat, diagnostics, attach, detac
       cells.set(key, cell);
     }
     const plan = metroSitePlan(site, index, roads, grand);
+    if (grand && elevationAt) {
+      plan.info.roofY = plan.roof + GROUND + elevationAt(site.x, site.z);
+    }
     cell.sites.push({ site, index, plan });
     diagnostics.sites.push(plan.info);
     includeFootprint(cell, site);
   }
   for (const cell of cells.values()) {
     const batch = new Batch(`egypt-${cell.key}-skyline`, mapped);
-    for (const { site, plan } of cell.sites) buildMetroProxy(site, plan, batch);
+    for (const { site, plan } of cell.sites) buildMetroProxy(site, plan, batch, elevationAt);
     cell.proxy = attach(batch.mesh());
   }
   diagnostics.totalCells = cells.size;
   const featureKeys = Object.keys(diagnostics.counts).filter(key =>
-    !["patches", "curbSegments", "forecourtSlabs", "drains"].includes(key));
+    !["patches", "curbSegments", "curbBlocks", "forecourtSlabs", "drains"].includes(key));
+  function ensurePrewarmJob(cell) {
+    if (!cell.prewarmJob) {
+      cell.prewarmJob = {
+        atlas: new Batch(`egypt-${cell.key}-facades`, mapped),
+        solid: new Batch(`egypt-${cell.key}-structure`, flat, true),
+        counts: Object.fromEntries(featureKeys.map(key => [key, 0])),
+        nextIdx: 0,
+        builtMeshes: null,
+      };
+    }
+    return cell.prewarmJob;
+  }
+  function advancePrewarmJob(cell, maxSites) {
+    const job = ensurePrewarmJob(cell);
+    if (job.builtMeshes) return true;
+    if (job.nextIdx < cell.sites.length) {
+      const stopIdx = Math.min(cell.sites.length, job.nextIdx + maxSites);
+      while (job.nextIdx < stopIdx) {
+        const { site, index, plan } = cell.sites[job.nextIdx++];
+        buildMetroSite(site, index, job.atlas, job.solid, roads, job.counts, plan, market, elevationAt);
+      }
+      if (maxSites < Infinity) return false;
+    }
+    job.builtMeshes = [job.atlas.mesh(), job.solid.mesh()].filter(Boolean);
+    return true;
+  }
   function enter(cell) {
-    const atlas = new Batch(`egypt-${cell.key}-facades`, mapped);
-    const solid = new Batch(`egypt-${cell.key}-structure`, flat, true);
-    const counts = Object.fromEntries(featureKeys.map(key => [key, 0]));
-    for (const { site, index, plan } of cell.sites)
-      buildMetroSite(site, index, atlas, solid, roads, counts, plan, market);
-    cell.details = [atlas.mesh(), solid.mesh()].filter(Boolean).map(attach);
+    advancePrewarmJob(cell, Infinity);
+    const { builtMeshes, counts } = cell.prewarmJob;
+    cell.prewarmJob = null;
+    cell.details = builtMeshes.map(attach);
     cell.counts = counts;
     for (const key of featureKeys) diagnostics.counts[key] += counts[key];
     cell.proxy.removeFromParent();
@@ -1340,6 +1886,7 @@ function streamMetroSites(sites, roads, mapped, flat, diagnostics, attach, detac
   }
   function leave(cell) {
     // Keep the low-cost coverage buffer so returning doesn't rebuild or re-upload it.
+    cell.prewarmJob = null;
     cell.parent.add(cell.proxy);
     diagnostics.drawCalls++;
     diagnostics.triangles += cell.proxy.geometry.attributes.position.count / 3;
@@ -1357,22 +1904,40 @@ function streamMetroSites(sites, roads, mapped, flat, diagnostics, attach, detac
   return {
     update(anchors, lead) {
       if (diagnostics.disposed) return;
-      let next = null, nextDistance = PREWARM_RADIUS ** 2;
+      let nextEnter = null, nextEnterDist = prewarmRadius ** 2;
+      let nextPrebuild = null, nextPrebuildDist = prewarmRadius ** 2;
+      let enteredSync = false;
       for (const cell of cells.values()) {
         let distance = Infinity;
         for (const point of anchors) distance = Math.min(distance, cellDistance2(cell, point));
         const ahead = lead ? Math.min(distance, cellDistance2(cell, lead)) : distance;
         if (cell.details) {
-          if (ahead > RELEASE_RADIUS ** 2) leave(cell);
-        } else if (distance <= DETAIL_RADIUS ** 2) {
+          if (ahead > releaseRadius ** 2) leave(cell);
+        } else if (distance <= detailRadius ** 2) {
           enter(cell);
-        } else if (ahead < nextDistance) {
-          next = cell;
-          nextDistance = ahead;
+          enteredSync = true;
+        } else {
+          if (ahead < nextEnterDist) {
+            nextEnter = cell;
+            nextEnterDist = ahead;
+          }
+          if (!cell.prewarmJob?.builtMeshes && ahead < nextPrebuildDist) {
+            nextPrebuild = cell;
+            nextPrebuildDist = ahead;
+          }
         }
       }
-      // Real camera coverage is synchronous; speculative work is at most one cell per frame.
-      if (next) enter(next);
+      // Always slice CPU geometry pre-building in the outer 68..136 m ring (zero scene triangles/drawCalls!)
+      // so cells crossing detailRadius are already 100% built and swap in O(1) without synchronous hitches.
+      const withinSpeculativeBudget = !grand || (diagnostics.drawCalls < diagnostics.budget.maxDrawCalls
+        && diagnostics.triangles < diagnostics.budget.maxTriangles * 0.84);
+      if (!enteredSync) {
+        if (nextEnter && withinSpeculativeBudget) {
+          if (!grand || advancePrewarmJob(nextEnter, 3)) enter(nextEnter);
+        } else if (grand && nextPrebuild) {
+          advancePrewarmJob(nextPrebuild, 3);
+        }
+      }
       diagnostics.residentCells = residents.size;
       diagnostics.budget.withinBudget = diagnostics.drawCalls <= diagnostics.budget.maxDrawCalls
         && diagnostics.triangles <= diagnostics.budget.maxTriangles;
@@ -1442,9 +2007,11 @@ export function createEgyptStreetLayer(world, { streamDetails } = {}) {
   if (market) {
     diagnostics.featureNames.push(...MARKET_FEATURES, ...STREET_FINISH_FEATURES);
     Object.assign(diagnostics.counts, { marketStalls: 0, forecourtSlabs: 0, drains: 0 });
+    if (grandCity) diagnostics.counts.curbBlocks = 0;
   }
   if (!sites.length && !roads.length) return { root, diagnostics, dispose };
-  const texture = sites.length ? makeAtlas() : null;
+  const elevationAt = grandCity && typeof world.terrainElevationAt === "function" ? world.terrainElevationAt : null;
+  const texture = sites.length ? (grandCity ? makeGrandCairoAtlas() : makeAtlas()) : null;
   if (texture) textures.add(texture);
   diagnostics.textAtlasAvailable = !!texture;
   const flat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.96, metalness: 0 });
@@ -1473,7 +2040,7 @@ export function createEgyptStreetLayer(world, { streamDetails } = {}) {
   const batches = [];
   const districts = new Map();
   const metroCell = grandCity ? GRAND_METRO_CELL : METRO_CELL;
-  if (streaming) residency = streamMetroSites(sites, roads, mapped, flat, diagnostics, attach, detach, market, grandCity);
+  if (streaming) residency = streamMetroSites(sites, roads, mapped, flat, diagnostics, attach, detach, market, grandCity, elevationAt);
   else sites.forEach((site, index) => {
     const key = metro ? `${Math.floor(site.x / metroCell)}:${Math.floor(site.z / metroCell)}`
       : `${site.x < 0 ? "west" : "east"}-${site.z < 0 ? "south" : "north"}`;
@@ -1482,9 +2049,13 @@ export function createEgyptStreetLayer(world, { streamDetails } = {}) {
       const pair = [new Batch(`egypt-${key}-facades`, mapped), new Batch(`egypt-${key}-structure`, flat, metro)];
       districts.set(key, pair); batches.push(...pair);
     }
+    const plan = metro ? metroSitePlan(site, index, roads, grandCity) : null;
+    if (plan && grandCity && elevationAt) {
+      plan.info.roofY = plan.roof + GROUND + elevationAt(site.x, site.z);
+    }
     diagnostics.sites.push(metro
       ? buildMetroSite(site, index, ...districts.get(key), roads, diagnostics.counts,
-          metroSitePlan(site, index, roads, grandCity), market)
+          plan, market, elevationAt)
       : buildSite(site, index, ...districts.get(key), roads, diagnostics.counts));
   });
   if (metro && !streaming) {
@@ -1499,7 +2070,7 @@ export function createEgyptStreetLayer(world, { streamDetails } = {}) {
     paint.name = "egypt-flat-road-repairs-and-curb-paint";
     materials.add(paint);
     const patches = new Batch("egypt-asphalt-repairs", paint, true), curbs = new Batch("egypt-painted-curb", paint, true);
-    if (market) buildV4StreetSurfaces(roads, sites, patches, curbs, diagnostics.counts);
+    if (market) buildV4StreetSurfaces(roads, sites, patches, curbs, diagnostics.counts, elevationAt, grandCity);
     else buildStreetSurfaces(roads, patches, curbs, diagnostics.counts, metro);
     batches.push(patches, curbs);
   }

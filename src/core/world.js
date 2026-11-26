@@ -1,4 +1,4 @@
-import { nextWalk, pedestrianMotion } from "./pedestrian.js";
+import { isCrowdAheadPedestrian, nextWalk, pedestrianMotion } from "./pedestrian.js";
 import { createPedestrianBody, setPedestrianMotionMode } from "./pedestrian-body.js";
 import { safeSpeed } from "./traffic-control.js";
 import {
@@ -30,7 +30,7 @@ import {
   junctionPressure,
   LANE_OFFSET,
 } from "./navigation.js";
-import { integrateVehicle, followPath, resolveVehicleContact, copyVehicleMotion } from "./vehicle.js";
+import { integrateVehicle, followPath, resolveVehicleContact, copyVehicleMotion, clearVehicleMotion } from "./vehicle.js";
 import { createVehicleState, advanceVehicleState } from "./vehicle-state.js";
 import { PLAYER_VEHICLE } from "./vehicle-spec.js";
 import { roadLayout } from "./roads.js";
@@ -61,10 +61,34 @@ import {
 } from "./district-behavior.js";
 import { createDistrictCase, advanceDistrictCase } from "./district-scenarios.js";
 import { createPursuitState, populatePursuit, stepPursuit, pursuitSnapshot,
-  beginStreetPursuit, endStreetPursuit, startPackDrill, stepPackReview } from "./pursuit-world.js";
+  beginStreetPursuit, endStreetPursuit, startPackDrill, stepPackReview,
+  recordActorVisualCrash, spawnCrowdAhead, getCrowdAheadCount, syncPursuitStatus } from "./pursuit-world.js";
+import {
+  METRO_CITY_CURBS,
+  acceptCurbPose,
+  surveyMetroCurb,
+  sweepSafeWithCurbs,
+} from "./pako-curb.js";
+import {
+  WHEEL_SCRUB_MODE,
+  computeCurbWheelScrub,
+  consumeActorPendingLongDv,
+  getActorImpactReaction,
+  recordActorImpactReaction,
+  stepActorImpactReaction,
+} from "./wheel-interaction-physics.js";
+import { createCityTerrain, sampleCitySurface, terrainElevationAt } from "./city-surfaces.js";
 import { canEndSurvival, isCityHunt, isSurvival, survivalGhostPair } from "./pursuit-survival.js";
 import { createPackLearner, starterPackPolicy, validatePackPolicy } from "./pack-driving.js";
-import { PURSUIT_STOP, validatePursuitAction } from "./pursuit-controls.js";
+import {
+  NITRO_SPEC,
+  PURSUIT_STOP,
+  buildNitroBoostPose,
+  isNitroEngaged,
+  pursuitCommand,
+  stepNitroTank,
+  validatePursuitAction,
+} from "./pursuit-controls.js";
 import {
   observePursuit, selectPursuitRoute, selectStreetPursuitRoute,
   createArcadeLearner, decidePursuit, validatePursuitPolicy, PURSUIT_DECISION_TICKS,
@@ -122,6 +146,9 @@ const pose = (road, along, side = 1, offset = LANE_OFFSET) =>
 const copyPose = (a) => ({
   id: a.id,
   type: a.type,
+  kind: a.kind,
+  vehicleKind: a.vehicleKind,
+  spec: a.spec,
   x: a.x,
   z: a.z,
   heading: a.heading,
@@ -135,6 +162,108 @@ function freezePath(path) {
     path.forEach(Object.freeze);
     Object.freeze(path);
   }
+}
+
+const manualControlMap = new WeakMap();
+const driveNitroMap = new WeakMap();
+const distantStaticClearCache = new WeakMap();
+const distantWorldVehicleCmdCache = new WeakMap();
+const vehicleSingleRoadCache = new WeakMap();
+const worldRoadGridCache = new WeakMap();
+
+function localVehicleRoads(roads, body) {
+  if (!Array.isArray(roads) || roads.length <= 16) return roads;
+  let grid = worldRoadGridCache.get(roads);
+  const CELL = 48;
+  if (!grid || grid.len !== roads.length) {
+    const map = new Map();
+    for (let i = 0; i < roads.length; i++) {
+      const r = roads[i];
+      if (!r) continue;
+      let minX, maxX, minZ, maxZ;
+      const pad = (r.width ?? 14) * 0.5 + 10;
+      if (r.axis === "z") {
+        minX = r.fixed - pad;
+        maxX = r.fixed + pad;
+        minZ = r.min - pad;
+        maxZ = r.max + pad;
+      } else if (r.axis === "x") {
+        minX = r.min - pad;
+        maxX = r.max + pad;
+        minZ = r.fixed - pad;
+        maxZ = r.fixed + pad;
+      } else if (r.axis === "diag") {
+        const rx2 = r.x2 ?? r.x1 + r.ux * r.length;
+        const rz2 = r.z2 ?? r.z1 + r.uz * r.length;
+        minX = Math.min(r.x1, rx2) - pad;
+        maxX = Math.max(r.x1, rx2) + pad;
+        minZ = Math.min(r.z1, rz2) - pad;
+        maxZ = Math.max(r.z1, rz2) + pad;
+      } else {
+        continue;
+      }
+      const x0 = Math.floor(minX / CELL);
+      const x1 = Math.floor(maxX / CELL);
+      const z0 = Math.floor(minZ / CELL);
+      const z1 = Math.floor(maxZ / CELL);
+      for (let cx = x0; cx <= x1; cx++) {
+        for (let cz = z0; cz <= z1; cz++) {
+          const key = (cx << 16) ^ (cz & 0xffff);
+          let bucket = map.get(key);
+          if (!bucket) {
+            bucket = [];
+            map.set(key, bucket);
+          }
+          bucket.push(r);
+        }
+      }
+    }
+    grid = { len: roads.length, map };
+    worldRoadGridCache.set(roads, grid);
+  }
+  const cx = Math.floor(body.x / CELL);
+  const cz = Math.floor(body.z / CELL);
+  return grid.map.get((cx << 16) ^ (cz & 0xffff)) ?? roads;
+}
+
+function bodyInsideSingleRoadFast(body, road) {
+  if (!road) return false;
+  const h = (road.width ?? 0) * 0.5;
+  if (h <= 0) return false;
+  const heading = body.heading ?? 0;
+  const s = Math.sin(heading);
+  const c = Math.cos(heading);
+  const hw = (body.width ?? VEHICLE.width) * 0.5;
+  const hl = (body.length ?? VEHICLE.length) * 0.5;
+  const cw = Math.abs(c) * hw + Math.abs(s) * hl;
+  const sw = Math.abs(s) * hw + Math.abs(c) * hl;
+  if (road.axis === "z") {
+    return (
+      body.x - cw >= road.fixed - h &&
+      body.x + cw <= road.fixed + h &&
+      body.z - sw >= road.min - h &&
+      body.z + sw <= road.max + h
+    );
+  }
+  if (road.axis === "x") {
+    return (
+      body.x - cw >= road.min - h &&
+      body.x + cw <= road.max + h &&
+      body.z - sw >= road.fixed - h &&
+      body.z + sw <= road.fixed + h
+    );
+  }
+  if (road.axis === "diag") {
+    const ux = road.ux;
+    const uz = road.uz;
+    const dx = body.x - road.x1;
+    const dz = body.z - road.z1;
+    const along = dx * ux + dz * uz;
+    const lat = Math.abs(-dx * uz + dz * ux);
+    const r = Math.hypot(hw, hl);
+    return along - r >= -h && along + r <= road.length + h && lat + r <= h;
+  }
+  return false;
 }
 
 /** Authoritative, DOM-free simulation. Only step() commits movement. */
@@ -159,8 +288,20 @@ export class World {
       if (options.vehicleDynamics !== undefined &&
           !["legacy", "city-realism-v1"].includes(options.vehicleDynamics))
         throw new Error("Unsupported City vehicle dynamics profile");
+      if (options.terrainProfile !== undefined &&
+          !["flat", "cairo-surfaces-v1"].includes(options.terrainProfile))
+        throw new Error("Unsupported City terrain profile");
+      if (options.interactionProfile !== undefined &&
+          !["none", WHEEL_SCRUB_MODE].includes(options.interactionProfile))
+        throw new Error("Unsupported City interaction profile");
       if (options.vehicleDynamics !== "legacy")
         this.config.vehicleDynamics = "city-realism-v1";
+      if (this.config.vehicleDynamics === "city-realism-v1" && options.terrainProfile !== "flat")
+        this.config.terrainProfile = "cairo-surfaces-v1";
+      if (this.config.vehicleDynamics === "city-realism-v1" &&
+          this.config.terrainProfile === "cairo-surfaces-v1" &&
+          options.interactionProfile !== "none")
+        this.config.interactionProfile = WHEEL_SCRUB_MODE;
     }
     this.environment = environment;
     this.pursuit = environment === "pursuit" ? createPursuitState(options) : null;
@@ -246,6 +387,17 @@ export class World {
           ? [{ ...VEHICLE_TEST_BARRIER }]
           : []);
     this.staticIndex = new SpatialIndex(this.statics);
+    this.terrain = grand && this.config.terrainProfile === "cairo-surfaces-v1"
+      ? createCityTerrain(this.roads, { seed: this.config.seed })
+      : null;
+    this.terrainElevationAt = this.terrain
+      ? (x, z) => terrainElevationAt(this.terrain, x, z)
+      : null;
+    this.curbs = grand && this.config.interactionProfile === WHEEL_SCRUB_MODE
+      ? surveyMetroCurb(this, METRO_CITY_CURBS)
+      : null;
+    this._activeJoltActors = new Set();
+    this._surfaceScratch = {};
     this.metrics = {
       distance: 0,
       interventions: 0,
@@ -335,6 +487,9 @@ export class World {
               ...(this.config.vehicleDynamics === "city-realism-v1" ? {
                 realisticDynamics: true, tireGripMps2: 8,
                 contactResponse: "inelastic-slide-v1", massKg: PLAYER_VEHICLE.massKg,
+                ...(this.config.interactionProfile === WHEEL_SCRUB_MODE
+                  ? { wheelInteractionPhysics: WHEEL_SCRUB_MODE }
+                  : {}),
               } : {}),
             }
           : tuk ? { wheelbase: 1.9 } : null,
@@ -347,11 +502,43 @@ export class World {
       phase: rng.next(),
       reckless: id !== "player" && rng.next() < this.config.chaos,
       ...(id === "player"
-        ? { height: PLAYER_VEHICLE.heightM, vehicle: createVehicleState(),
+        ? {
+            height: PLAYER_VEHICLE.heightM,
+            vehicle: createVehicleState(),
+            nitroCharge: 1,
+            nitroActive: false,
+            nitroIntensity: 0,
+            nitroSuppressedByPedestrian: false,
             ...(this.config.vehicleDynamics === "city-realism-v1"
-              ? { chaseSlipRad: 0 } : {}) }
+              ? { chaseSlipRad: 0 } : {}),
+          }
         : {}),
     };
+  }
+  get crowdAheadCount() {
+    return getCrowdAheadCount(this);
+  }
+  setManualControl(control = {}) {
+    if (this.vehicleTest?.phase === "running") return false;
+    const rawThrottle = Number(control?.throttle) || 0;
+    const gear = control?.gear === -1 || (control?.gear === undefined && rawThrottle < 0) ? -1 : 1;
+    const throttle = clamp(Math.abs(rawThrottle), 0, 1);
+    const brake = clamp(Number(control?.brake) || 0, 0, 1);
+    const steer = clamp(Number(control?.steer) || 0, -1, 1);
+    const nitro = clamp(Number(control?.nitro) || 0, 0, 1);
+    const normalized = { steer, throttle, brake, gear, nitro };
+    this.mode = "manual";
+    driveNitroMap.delete(this);
+    manualControlMap.set(this, normalized);
+    const preview = pursuitCommand(this.player, normalized, STEP);
+    this.input = {
+      targetSpeed: preview.targetSpeed,
+      steer: preview.steer,
+    };
+    if (this.pursuit?.phase === "running") {
+      this.pursuit.manualAction = { ...normalized };
+    }
+    return true;
   }
   updateSensors(filter = true) {
     const geometry = measureVehicleSensors(this, this.player);
@@ -694,8 +881,58 @@ export class World {
       return true;
     }
     if (command.type === "vehicle-test") {
+      if (this.environment !== "vehicle") return false;
+      if (command.operation === "reset") {
+        if (record)
+          this.events.push({ tick: this.tick, command: structuredClone(command) });
+        this.mode = "manual";
+        this.input = { targetSpeed: 0, steer: 0 };
+        Object.assign(this.player, {
+          x: vehicleStart.x,
+          z: vehicleStart.z,
+          y: 0,
+          heading: vehicleStart.heading,
+          speed: 0,
+          steer: 0,
+          path: [],
+          parking: null,
+          cursor: 0,
+          maxSpeed: this.config.speedLimit / 3.6,
+          spec: {
+            wheelbase: PLAYER_VEHICLE.wheelbaseM,
+            maxSteer: PLAYER_VEHICLE.maxSteerRad,
+            ...(this.config.vehicleDynamics === "city-realism-v1" ? {
+              realisticDynamics: true, tireGripMps2: 8,
+              contactResponse: "inelastic-slide-v1", massKg: PLAYER_VEHICLE.massKg,
+              ...(this.config.interactionProfile === WHEEL_SCRUB_MODE
+                ? { wheelInteractionPhysics: WHEEL_SCRUB_MODE }
+                : {}),
+            } : {}),
+          },
+          vehicle: createVehicleState(),
+          nitroCharge: 1,
+          nitroActive: false,
+          nitroIntensity: 0,
+          nitroSuppressedByPedestrian: false,
+        });
+        manualControlMap.delete(this);
+        driveNitroMap.delete(this);
+        delete this.player.previous;
+        clearVehicleMotion(this.player);
+        this.destination = null;
+        this.routeRevision++;
+        Object.assign(this.vehicleTest, {
+          phase: "ready",
+          maxSpeedMps: 5,
+          startedTick: null,
+          contactTick: null,
+          impact: null,
+          error: null,
+        });
+        this.updateSensors();
+        return true;
+      }
       if (
-        this.environment !== "vehicle" ||
         command.operation !== "run" ||
         this.vehicleTest.phase !== "ready"
       )
@@ -712,6 +949,8 @@ export class World {
         this.vehicleTest.error = "Stop and reset the car at the marked start before running";
         return false;
       }
+      const heavy = command.heavy === true;
+      if (command.heavy !== undefined && typeof command.heavy !== "boolean") return false;
       this.mode = "manual";
       this.input = { targetSpeed: 0, steer: 0 };
       this.player.path = [];
@@ -719,11 +958,37 @@ export class World {
       this.player.cursor = 0;
       this.destination = null;
       this.routeRevision++;
+      if (heavy) {
+        this.player.maxSpeed = Math.max(this.player.maxSpeed, 15.5);
+        this.player.spec = { ...this.player.spec, acceleration: 10.4 };
+      }
       Object.assign(this.vehicleTest, {
         phase: "running",
+        maxSpeedMps: heavy ? 15 : 5,
         startedTick: this.tick,
         error: null,
       });
+      return true;
+    }
+    if (command.type === "spawn-crowd-ahead") {
+      if (["vision", "vehicle"].includes(this.environment)) return false;
+      const count = clamp(
+        Math.round(Number.isFinite(Number(command.count)) ? Number(command.count) : 20),
+        1,
+        40,
+      );
+      spawnCrowdAhead(this, count);
+      if (record) {
+        this.events.push({ tick: this.tick, command: { type: "spawn-crowd-ahead", count } });
+      }
+      return true;
+    }
+    if (command.type === "manual") {
+      if (this.vehicleTest?.phase === "running") return false;
+      this.setManualControl(command);
+      if (record) {
+        this.events.push({ tick: this.tick, command: structuredClone(command) });
+      }
       return true;
     }
     if (
@@ -738,21 +1003,43 @@ export class World {
       validatePolicy(command.weights);
     if (record)
       this.events.push({ tick: this.tick, command: structuredClone(command) });
-    if (command.type === "drive")
+    if (command.type === "drive") {
+      manualControlMap.delete(this);
+      const rawTargetSpeed = Number(command.targetSpeed) || 0;
+      const clampedSteer = clamp(
+        Number(command.steer) || 0,
+        -VEHICLE.maxSteer,
+        VEHICLE.maxSteer,
+      );
+      if (command.nitro !== undefined) {
+        const nitro = clamp(Number(command.nitro) || 0, 0, 1);
+        const maxSteer = this.player.spec?.maxSteer ?? VEHICLE.maxSteer;
+        driveNitroMap.set(this, {
+          steer: clamp(clampedSteer / maxSteer, -1, 1),
+          throttle: rawTargetSpeed > 0 ? 1 : 0,
+          brake: 0,
+          gear: rawTargetSpeed < 0 ? -1 : 1,
+          nitro,
+        });
+      } else {
+        driveNitroMap.delete(this);
+      }
       this.input = {
         targetSpeed: clamp(
-          Number(command.targetSpeed) || 0,
+          rawTargetSpeed,
           -2.5,
           this.player.maxSpeed,
         ),
-        steer: clamp(
-          Number(command.steer) || 0,
-          -VEHICLE.maxSteer,
-          VEHICLE.maxSteer,
-        ),
+        steer: clampedSteer,
       };
-    if (command.type === "mode")
+    }
+    if (command.type === "mode") {
       this.mode = command.mode === "auto" ? "auto" : "manual";
+      if (this.mode === "auto") {
+        manualControlMap.delete(this);
+        driveNitroMap.delete(this);
+      }
+    }
     if (command.type === "policy") {
       this.policy = command.weights ? validatePolicy(command.weights) : null;
       return true;
@@ -767,7 +1054,10 @@ export class World {
         if (this.player.speed === 0) this.visionLab.phase = "complete";
       }
       this.mode = "manual";
+      manualControlMap.delete(this);
+      driveNitroMap.delete(this);
       this.input = { targetSpeed: 0, steer: 0 };
+      if (Math.abs(this.player.speed) < 1e-8) clearVehicleMotion(this.player);
       this.player.path = [];
       this.player.parking = null;
       this.player.cursor = 0;
@@ -899,6 +1189,9 @@ export class World {
         }
         pursuit.decision = decidePursuit(observed, pursuit.route, learner?.weights ?? pursuit.policy,
           learner?.choose ?? pursuit.trainingChoice);
+        if (typeof pursuit.decision?.nitroSuppressedByPedestrian === "boolean") {
+          this.player.nitroSuppressedByPedestrian = pursuit.decision.nitroSuppressedByPedestrian;
+        }
         if (isCityHunt(pursuit.variant)) pursuit.recovery = pursuit.decision.recovery ?? null;
         learner?.record(pursuit.decision, pursuit.metrics);
         pursuit.nextDecisionTick = this.tick + PURSUIT_DECISION_TICKS;
@@ -917,14 +1210,53 @@ export class World {
       return;
     }
     if (!usesRushPace(pursuit.variant)) this.actorIndex = new SpatialIndex(this.actors);
+    const metroV5PursuitLod = (this.config.cityVersion ?? 0) >= 5 && this.environment === "metro";
     updateDistrictTraffic(this);
     let query;
     // Build after any Dispatch squad changes, on the first target query of this tick.
     const targetBlocker = pursuit.response?.dispatch
       ? target => (query ??= createWalkTargetQuery(this.actors))(target)
       : undefined;
+    const pxPursuit = this.player?.x ?? 0;
+    const pzPursuit = this.player?.z ?? 0;
     stepPursuit(this, action, {
-      pedestrianMotion: actor => stepDistrictPedestrian(this, actor, targetBlocker),
+      pedestrianMotion: actor => {
+        if (isCrowdAheadPedestrian(actor)) return pedestrianMotion(this, actor, true);
+        if (metroV5PursuitLod) {
+          const distSq = (actor.x - pxPursuit) ** 2 + (actor.z - pzPursuit) ** 2;
+          if (distSq > 65 * 65 && actor.motionMode !== "stop") {
+            const idStr = actor.id ?? "";
+            const mask = distSq > 120 * 120 ? 7 : 3;
+            if (((this.tick + (idStr.charCodeAt(idStr.length - 1) || 0)) & mask) !== 0) {
+              if (actor.speed === 0) {
+                return {
+                  ...actor,
+                  pause: (actor.pause ?? 0) > 0 ? Math.max(0, actor.pause - STEP) : 0,
+                  accelerationMps2: 0,
+                  turnRateRadS: 0,
+                };
+              }
+              const walkRef = actor.walkRoute?.[0] ?? actor.target;
+              if (walkRef && (actor.pause ?? 0) === 0 && actor.reason !== "blocked" &&
+                  (walkRef.x - actor.x) ** 2 + (walkRef.z - actor.z) ** 2 > 0.64) {
+                const desiredH = Math.atan2(walkRef.x - actor.x, walkRef.z - actor.z);
+                const maxTurn = (actor.body?.maxTurnRateRadS ?? 4.2) * STEP;
+                const nextH = actor.heading + clamp(angleDelta(desiredH, actor.heading), -maxTurn, maxTurn);
+                const stepM = actor.speed * STEP;
+                return {
+                  ...actor,
+                  x: actor.x + Math.sin(nextH) * stepM,
+                  z: actor.z + Math.cos(nextH) * stepM,
+                  heading: nextH,
+                  accelerationMps2: 0,
+                  turnRateRadS: angleDelta(nextH, actor.heading) / STEP,
+                };
+              }
+            }
+          }
+        }
+        return stepDistrictPedestrian(this, actor, targetBlocker);
+      },
       vehicleCommand: (actor, requested) => pursuit.gta &&
           (pursuit.patrols.has(actor) || (actor === this.player && (this.mode === "manual" || pursuit.frozenDriver?.status === "active")))
         ? requested : actor.pursuitRole === "police"
@@ -950,23 +1282,131 @@ export class World {
     };
     this.visualState = this.visualPredictor.snapshot(nowS, ownMotion);
     this.visualDecision = this.visualState.decision;
+    if (this._activeJoltActors?.size) {
+      let parkedDisplaced = false;
+      const scrubEnabled = this.config?.interactionProfile === WHEEL_SCRUB_MODE;
+      for (const jolted of this._activeJoltActors) {
+        const res = stepActorImpactReaction(jolted, STEP);
+        if (
+          scrubEnabled &&
+          jolted.kind === "parked-vehicle" &&
+          res.stictionBroken &&
+          (Math.abs(res.lateralPushMps) > 0.04 ||
+            Math.abs(res.longitudinalPushMps) > 0.04 ||
+            Math.abs(res.yawPushRadS) > 0.03)
+        ) {
+          // Above static breakaway (closing >= 1.35 m/s), parked vehicles skid & skew under Coulomb tire-ground friction!
+          const nextH = (jolted.heading ?? 0) + res.yawPushRadS * STEP;
+          const sH = Math.sin(nextH);
+          const cH = Math.cos(nextH);
+          const cand = {
+            ...jolted,
+            x: jolted.x + (cH * res.lateralPushMps + sH * res.longitudinalPushMps) * STEP,
+            z: jolted.z + (-sH * res.lateralPushMps + cH * res.longitudinalPushMps) * STEP,
+            heading: nextH,
+          };
+          const movesAwayOrClear =
+            !overlaps(cand, this.player, 0.13) ||
+            (distance(cand, this.player) >= distance(jolted, this.player) && !overlaps(cand, this.player, 0.01));
+          const nearStatics = this.staticIndex.near(cand, 11);
+          const clearStatics = !nearStatics.some((s) => s !== jolted && overlaps(cand, s));
+          const clearActors = !this.actors.some((a) =>
+            a !== this.player && overlaps(cand, a, a.type === "pedestrian" ? 0.35 : 0),
+          );
+          if (movesAwayOrClear && clearStatics && clearActors) {
+            jolted.x = cand.x;
+            jolted.z = cand.z;
+            jolted.heading = cand.heading;
+            parkedDisplaced = true;
+          }
+        }
+        if (!res.active) this._activeJoltActors.delete(jolted);
+      }
+      if (parkedDisplaced) {
+        this.staticIndex = new SpatialIndex(this.statics);
+      }
+    }
     if (this.cityEncounters) advanceCityEncounters(this);
     if (this.pursuit?.phase === "running") {
       this.stepPursuitMode(ownMotion, nowS);
       return;
     }
-    if (this.district) updateDistrictTraffic(this);
+    const metroV5 = this.environment === "metro" && (this.config?.cityVersion ?? 0) >= 5;
+    const ambientMetroV5 = metroV5 && !(this.districtCase && this.districtCase.id !== "ambient");
+    if (this.district && (!ambientMetroV5 || (this.tick & 3) === 0)) updateDistrictTraffic(this);
     if (this.environment !== "vehicle") updateScenarios(this);
     this.actorIndex = new SpatialIndex(this.actors);
-    this.updateJunctions();
+    if (this.junctionGroups.length > 0) this.updateJunctions();
+    const playerStartX = this.player.x;
+    const playerStartZ = this.player.z;
+    let walkQuery = null;
+    const targetBlocker = ambientMetroV5
+      ? (target) => (walkQuery ??= createWalkTargetQuery(this.actors))(target)
+      : undefined;
     // Old poses are reserved until the tick ends. An accepted move can never
     // tunnel through the position another actor occupied at the start of a tick.
-    const reserved = new SpatialIndex(this.actors.map(copyPose));
-    for (const actor of this.actors) {
-      actor.previous = copyPose(actor);
+    let reservedInput;
+    if (metroV5) {
+      const pool = (this._reservedPosePool ??= []);
+      const n = this.actors.length;
+      while (pool.length < n) {
+        pool.push({
+          id: "",
+          type: "",
+          kind: undefined,
+          vehicleKind: undefined,
+          spec: null,
+          x: 0,
+          z: 0,
+          heading: 0,
+          speed: 0,
+          length: undefined,
+          width: undefined,
+          radius: undefined,
+        });
+      }
+      if (pool.length > n) pool.length = n;
+      for (let i = 0; i < n; i++) {
+        const src = this.actors[i];
+        const dst = pool[i];
+        dst.id = src.id;
+        dst.type = src.type;
+        dst.kind = src.kind;
+        dst.vehicleKind = src.vehicleKind;
+        dst.spec = src.spec;
+        dst.x = src.x;
+        dst.z = src.z;
+        dst.heading = src.heading;
+        dst.speed = src.speed;
+        dst.length = src.length;
+        dst.width = src.width;
+        dst.radius = src.radius;
+      }
+      reservedInput = pool;
+    } else {
+      reservedInput = this.actors.map(copyPose);
+    }
+    const reserved = new SpatialIndex(reservedInput);
+    for (let actorIdx = 0; actorIdx < this.actors.length; actorIdx++) {
+      const actor = this.actors[actorIdx];
+      if (metroV5 && actor !== this.player && actor.previous) {
+        actor.previous.x = actor.x;
+        actor.previous.z = actor.z;
+        actor.previous.heading = actor.heading;
+        actor.previous.speed = actor.speed;
+      } else {
+        actor.previous = copyPose(actor);
+      }
       let next;
       let appliedCommand;
+      let manualActionForNitro = null;
+      let pedSuppressedNitro = false;
       let contact = null;
+      const actorDistSq = ambientMetroV5 && actor !== this.player
+        ? (actor.x - playerStartX) ** 2 + (actor.z - playerStartZ) ** 2
+        : 0;
+      const strideMask = actorDistSq > 135 * 135 ? 15 : actorDistSq > 80 * 80 ? 7 : 3;
+      const nonStrideTick = ambientMetroV5 && ((this.tick + actorIdx) & strideMask) !== 0;
       let controlledTest =
         actor === this.player && this.vehicleTest?.phase === "running";
       if (
@@ -982,17 +1422,150 @@ export class World {
         actor === this.player &&
         this.environment === "vehicle" &&
         (controlledTest || this.vehicleTest.phase === "contact");
-      if (actor.type === "pedestrian") next = this.district
-        ? this.districtCase && this.districtCase.id !== "ambient"
-          ? advanceDistrictCase(this, actor) : stepDistrictPedestrian(this, actor)
-        : this.visionLab
-        ? advanceVisionActor(actor, STEP, {
-            timeS: (this.tick - this.visionLab.startedTick) * STEP,
-            tick: this.tick,
-          })
-        : this.pedestrianMotion(actor);
-      else {
+      if (actor.type === "pedestrian") {
+        const farPedFast =
+          nonStrideTick &&
+          actorDistSq > 80 * 80 &&
+          !isCrowdAheadPedestrian(actor) &&
+          actor.motionMode !== "stop";
+        if (farPedFast && actor.speed === 0) {
+          if ((actor.pause ?? 0) > 0) {
+            actor.pause = Math.max(0, actor.pause - STEP);
+          }
+          actor.accelerationMps2 = 0;
+          actor.turnRateRadS = 0;
+          actor.motionTimeS = (this.tick + 1) * STEP;
+          actor.wait += STEP;
+          continue;
+        } else if (
+          farPedFast &&
+          actor.speed > 0 &&
+          (actor.pause ?? 0) === 0 &&
+          actor.target &&
+          actor.reason !== "blocked"
+        ) {
+          const walkRef = actor.walkRoute?.[0] ?? actor.target;
+          if ((walkRef.x - actor.x) ** 2 + (walkRef.z - actor.z) ** 2 > 0.64) {
+            const desiredH = Math.atan2(walkRef.x - actor.x, walkRef.z - actor.z);
+            const maxTurn = (actor.body?.maxTurnRateRadS ?? 4.2) * STEP;
+            const nextH = actor.heading + clamp(angleDelta(desiredH, actor.heading), -maxTurn, maxTurn);
+            const stepM = actor.speed * STEP;
+            const candX = actor.x + Math.sin(nextH) * stepM;
+            const candZ = actor.z + Math.cos(nextH) * stepM;
+            const cacheKey = actor.body ?? actor;
+            let stCache = distantStaticClearCache.get(cacheKey);
+            if (
+              !stCache ||
+              stCache.staticIndex !== this.staticIndex ||
+              (actor.x - stCache.x) ** 2 + (actor.z - stCache.z) ** 2 > 1.44
+            ) {
+              const probe = {
+                type: "pedestrian",
+                x: actor.x,
+                z: actor.z,
+                radius: (actor.radius ?? 0.38) + 1.38,
+              };
+              const candStatics = this.staticIndex.near(actor, 11);
+              const closeStatics = [];
+              for (let sIdx = 0; sIdx < candStatics.length; sIdx++) {
+                if (overlaps(probe, candStatics[sIdx], 0.12)) {
+                  closeStatics.push(candStatics[sIdx]);
+                }
+              }
+              stCache = { staticIndex: this.staticIndex, x: actor.x, z: actor.z, statics: closeStatics };
+              distantStaticClearCache.set(cacheKey, stCache);
+            }
+            const nearRes = reserved.near(actor, 4);
+            const rSelf = actor.radius ?? 0.38;
+            let hasCloseBody = stCache.statics.length > 0;
+            if (!hasCloseBody) {
+              for (let rIdx = 0; rIdx < nearRes.length; rIdx++) {
+                const other = nearRes[rIdx];
+                if (other.id === actor.id) continue;
+                const dx = other.x - candX;
+                const dz = other.z - candZ;
+                if (other.type === "pedestrian") {
+                  const lim = rSelf + (other.radius ?? 0.38) + 0.13;
+                  if (Math.abs(dx) <= lim && Math.abs(dz) <= lim && dx * dx + dz * dz <= lim * lim) {
+                    hasCloseBody = true;
+                    break;
+                  }
+                } else if (Math.abs(dx) <= 3.65 && Math.abs(dz) <= 3.65) {
+                  hasCloseBody = true;
+                  break;
+                }
+              }
+            }
+            if (!hasCloseBody) {
+              actor.turnRateRadS = angleDelta(nextH, actor.heading) / STEP;
+              actor.heading = nextH;
+              actor.x = candX;
+              actor.z = candZ;
+              actor.accelerationMps2 = 0;
+              actor.motionTimeS = (this.tick + 1) * STEP;
+              actor.distance += stepM;
+              actor.wait = 0;
+              reserved.add({
+                id: actor.id,
+                type: actor.type,
+                x: candX,
+                z: candZ,
+                heading: nextH,
+                radius: actor.radius,
+              });
+              continue;
+            }
+            next = {
+              ...actor,
+              x: candX,
+              z: candZ,
+              heading: nextH,
+              accelerationMps2: 0,
+              turnRateRadS: angleDelta(nextH, actor.heading) / STEP,
+            };
+          } else {
+            next = stepDistrictPedestrian(this, actor, targetBlocker);
+          }
+        } else {
+          next = isCrowdAheadPedestrian(actor)
+            ? this.pedestrianMotion(actor)
+            : this.district
+              ? this.districtCase && this.districtCase.id !== "ambient"
+                ? advanceDistrictCase(this, actor) : stepDistrictPedestrian(this, actor, targetBlocker)
+              : this.visionLab
+              ? advanceVisionActor(actor, STEP, {
+                  timeS: (this.tick - this.visionLab.startedTick) * STEP,
+                  tick: this.tick,
+                })
+              : this.pedestrianMotion(actor);
+        }
+      } else {
+        const cachedCarEntry =
+          nonStrideTick && actor !== this.player && actorDistSq > 95 * 95
+            ? distantWorldVehicleCmdCache.get(actor)
+            : null;
+        if (
+          cachedCarEntry &&
+          this.tick - cachedCarEntry.tick <= strideMask &&
+          actor.reason !== "road-boundary" &&
+          actor.districtSources?.appliedSource !== "physical-guard" &&
+          actor.path.length > 2
+        ) {
+          appliedCommand = cachedCarEntry.cmd;
+          if (actor.speed === 0 && appliedCommand.targetSpeed === 0) {
+            actor.reason = appliedCommand.reason;
+            actor.blockedBy = appliedCommand.blockedBy;
+            actor.wait += STEP;
+            continue;
+          }
+          next = integrateVehicle(actor, appliedCommand, STEP);
+          next.reason = appliedCommand.reason;
+          next.blockedBy = appliedCommand.blockedBy;
+        } else {
         let command;
+        const remCap = metroV5 && actor !== this.player
+          ? ((actor.maxSpeed ?? 15) ** 2) / 4 + 6
+          : Infinity;
         if (controlledTest)
           command = {
             targetSpeed: this.vehicleTest.maxSpeedMps,
@@ -1000,9 +1573,32 @@ export class World {
             reason: "vehicle-test",
             blockedBy: null,
           };
-        else if (actor === this.player && this.mode === "manual")
-          command = { ...this.input };
-        else {
+        else if (actor === this.player && this.mode === "manual") {
+          const explicitManual = manualControlMap.get(this);
+          const driveNitro = driveNitroMap.get(this);
+          if (explicitManual) {
+            manualActionForNitro = explicitManual;
+            command = pursuitCommand(actor, explicitManual, STEP);
+          } else if (driveNitro) {
+            manualActionForNitro = driveNitro;
+            if ((driveNitro.nitro ?? 0) >= 0.5 && isNitroEngaged(actor, driveNitro) && this.input.targetSpeed > 0) {
+              const boostedMaxSpeed = Math.min(
+                NITRO_SPEC.maxBoostSpeedMps,
+                actor.maxSpeed * NITRO_SPEC.speedMultiplier,
+              );
+              command = {
+                targetSpeed: boostedMaxSpeed,
+                steer: this.input.steer,
+                maxSpeed: boostedMaxSpeed,
+                accelMultiplier: NITRO_SPEC.accelMultiplier,
+              };
+            } else {
+              command = { ...this.input };
+            }
+          } else {
+            command = { ...this.input };
+          }
+        } else {
           if (
             !actor.path.length &&
             actor !== this.player &&
@@ -1011,7 +1607,7 @@ export class World {
           )
             this.assignTrafficRoute(actor);
           if (this.district) freezePath(actor.path);
-          command = followPath(actor, actor.path, actor.cursor);
+          command = followPath(actor, actor.path, actor.cursor, false, remCap);
           actor.cursor = command.cursor;
           if (actor.parking && (!this.district || (distance(actor, actor.parking) < 14
               && Math.abs(angleDelta(actor.heading, actor.parking.heading)) < 0.35))) {
@@ -1046,11 +1642,15 @@ export class World {
                 command.targetSpeed = 0;
               } else {
                 this.assignTrafficRoute(actor);
-                command = followPath(actor, actor.path, 0);
+                if (this.district) freezePath(actor.path);
+                command = followPath(actor, actor.path, 0, false, remCap);
               }
             }
           }
         }
+        const preTargetSpeed = actor === this.player ? command.targetSpeed : undefined;
+        const preMaxSpeed = actor === this.player ? command.maxSpeed : undefined;
+        const preAccelMult = actor === this.player ? command.accelMultiplier : undefined;
         if (
           actor === this.player &&
           this.mode === "auto" &&
@@ -1078,8 +1678,52 @@ export class World {
         if (appliedVisualBrake && this.visionLab?.firstVisualBrakeS === null)
           this.visionLab.firstVisualBrakeS = nowS;
         }
+        if (actor === this.player && preAccelMult > 1) {
+          const blockedPed = command.blockedBy && this.actors.some(
+            (b) => b.id === command.blockedBy && b.type === "pedestrian",
+          );
+          if (blockedPed) {
+            pedSuppressedNitro = true;
+            if (command.maxSpeed !== undefined || command.accelMultiplier !== undefined) {
+              const { maxSpeed: _m, accelMultiplier: _a, ...rest } = command;
+              command = rest;
+            }
+          } else if (command.targetSpeed > 0) {
+            const appliedSrc = command.districtSources?.appliedSource;
+            const safetyBraked = Boolean(
+              appliedSrc === "reactive-safety" ||
+              appliedSrc === "camera-pixels" ||
+              appliedSrc === "both" ||
+              command.reason === "visual-prediction" ||
+              (command.blockedBy && (
+                this.actors.some((b) => b.id === command.blockedBy) ||
+                this.statics.some((s) => s.id === command.blockedBy)
+              )),
+            );
+            command = {
+              ...command,
+              targetSpeed: safetyBraked ? command.targetSpeed : preTargetSpeed,
+              maxSpeed: preMaxSpeed,
+              accelMultiplier: preAccelMult,
+            };
+          }
+        }
+        if (this.terrain && actor === this.player) {
+          const surface = sampleCitySurface(this.terrain, actor.x, actor.z, actor.heading, this._surfaceScratch);
+          command = { ...command, surface };
+        }
         appliedCommand = command;
-        next = integrateVehicle(actor, command, STEP);
+        if (ambientMetroV5 && actor !== this.player) {
+          distantWorldVehicleCmdCache.set(actor, { tick: this.tick, cmd: command });
+        }
+        const nitroPose = actor === this.player && !pedSuppressedNitro
+          ? buildNitroBoostPose(actor, command, copyVehicleMotion)
+          : null;
+        next = integrateVehicle(nitroPose ?? actor, command, STEP);
+        if (nitroPose) {
+          next.maxSpeed = actor.maxSpeed;
+          next.spec = actor.spec;
+        }
         next.reason =
           actor === this.player &&
           !actor.path.length &&
@@ -1088,6 +1732,7 @@ export class World {
             ? "arrived"
             : command.reason;
         next.blockedBy = command.blockedBy;
+        }
       }
       if (physicalBarrier) {
         const barrier = this.statics.find(
@@ -1098,15 +1743,109 @@ export class World {
           if (contact) next = contact.body;
         }
       }
-      const nearby = reserved
-        .near(actor, 8)
-        .filter((a) => a.id !== actor.id)
-        .concat(this.staticIndex.near(actor, 11))
-        .filter(
-          (a) => !physicalBarrier || a.id !== this.vehicleTest.barrierId,
-        );
+      let nearby;
+      if (metroV5 && actor.type === "pedestrian") {
+        const cacheKey = actor.body ?? actor;
+        let stCache = distantStaticClearCache.get(cacheKey);
+        if (
+          !stCache ||
+          stCache.staticIndex !== this.staticIndex ||
+          (actor.x - stCache.x) ** 2 + (actor.z - stCache.z) ** 2 > 1.44
+        ) {
+          const probe = {
+            type: "pedestrian",
+            x: actor.x,
+            z: actor.z,
+            radius: (actor.radius ?? 0.38) + 1.38,
+          };
+          const candStatics = this.staticIndex.near(actor, 11);
+          const closeStatics = [];
+          for (let sIdx = 0; sIdx < candStatics.length; sIdx++) {
+            if (overlaps(probe, candStatics[sIdx], 0.12)) {
+              closeStatics.push(candStatics[sIdx]);
+            }
+          }
+          stCache = {
+            staticIndex: this.staticIndex,
+            x: actor.x,
+            z: actor.z,
+            statics: closeStatics,
+          };
+          distantStaticClearCache.set(cacheKey, stCache);
+        }
+        const nearRes = reserved.near(actor, 4);
+        const rSelf = actor.radius ?? 0.38;
+        nearby = [];
+        for (let rIdx = 0; rIdx < nearRes.length; rIdx++) {
+          const other = nearRes[rIdx];
+          if (other.id === actor.id) continue;
+          const dx = other.x - next.x;
+          const dz = other.z - next.z;
+          if (other.type === "pedestrian") {
+            const lim = rSelf + (other.radius ?? 0.38) + 0.16;
+            if (Math.abs(dx) <= lim && Math.abs(dz) <= lim && dx * dx + dz * dz <= lim * lim) {
+              nearby.push(other);
+            }
+          } else if (Math.abs(dx) <= 3.65 && Math.abs(dz) <= 3.65) {
+            nearby.push(other);
+          }
+        }
+        for (let sIdx = 0; sIdx < stCache.statics.length; sIdx++) {
+          nearby.push(stCache.statics[sIdx]);
+        }
+      } else if (metroV5 && actor !== this.player && actor.type === "vehicle") {
+        let stCache = distantStaticClearCache.get(actor);
+        const selfHalfDiag = Math.hypot(actor.width ?? 1.9, actor.length ?? 4.5) * 0.5;
+        if (
+          !stCache ||
+          stCache.staticIndex !== this.staticIndex ||
+          (actor.x - stCache.x) ** 2 + (actor.z - stCache.z) ** 2 > 1.44
+        ) {
+          const probe = {
+            type: "pedestrian",
+            x: actor.x,
+            z: actor.z,
+            radius: selfHalfDiag + 1.45,
+          };
+          const candStatics = this.staticIndex.near(actor, 11);
+          const closeStatics = [];
+          for (let sIdx = 0; sIdx < candStatics.length; sIdx++) {
+            if (overlaps(probe, candStatics[sIdx], 0.14)) {
+              closeStatics.push(candStatics[sIdx]);
+            }
+          }
+          stCache = { staticIndex: this.staticIndex, x: actor.x, z: actor.z, statics: closeStatics };
+          distantStaticClearCache.set(actor, stCache);
+        }
+        const nearRes = reserved.near(actor, 6);
+        nearby = [];
+        for (let rIdx = 0; rIdx < nearRes.length; rIdx++) {
+          const other = nearRes[rIdx];
+          if (other.id === actor.id) continue;
+          const dx = other.x - next.x;
+          const dz = other.z - next.z;
+          const lim = other.type === "pedestrian"
+            ? selfHalfDiag + (other.radius ?? 0.38) + 0.35
+            : selfHalfDiag + 3.25;
+          if (Math.abs(dx) <= lim && Math.abs(dz) <= lim && dx * dx + dz * dz <= lim * lim) {
+            nearby.push(other);
+          }
+        }
+        for (let sIdx = 0; sIdx < stCache.statics.length; sIdx++) {
+          nearby.push(stCache.statics[sIdx]);
+        }
+      } else {
+        nearby = reserved
+          .near(actor, 8)
+          .filter((a) => a.id !== actor.id)
+          .concat(this.staticIndex.near(actor, 11))
+          .filter(
+            (a) => !physicalBarrier || a.id !== this.vehicleTest.barrierId,
+          );
+      }
       if (actor === this.player && actor.spec?.contactResponse === "inelastic-slide-v1") {
         let firstFraction = Infinity;
+        let hitObstacle = null;
         for (const obstacle of nearby) {
           if (obstacle.type === "pedestrian") continue;
           const candidate = resolveVehicleContact(actor, next, obstacle, STEP);
@@ -1114,27 +1853,125 @@ export class World {
             if (candidate.contactFraction < firstFraction) {
               firstFraction = candidate.contactFraction;
               contact = candidate;
+              hitObstacle = obstacle;
             }
           }
         }
-        if (contact) next = contact.body;
+        if (contact) {
+          next = contact.body;
+          const liveObstacle =
+            hitObstacle && hitObstacle.type !== "static"
+              ? this.actors.find((a) => a.id === hitObstacle.id) ?? hitObstacle
+              : hitObstacle;
+          if (
+            liveObstacle &&
+            (liveObstacle.type === "vehicle" || liveObstacle.kind === "parked-vehicle")
+          ) {
+            // contact.normal points from player toward liveObstacle (direction of push ON liveObstacle)
+            const tSlipSign = Math.sign(contact.scraping?.tangentialSlipSignedMps ?? 1) || 1;
+            const tx = contact.normal.z * tSlipSign;
+            const tz = -contact.normal.x * tSlipSign;
+            recordActorImpactReaction(liveObstacle, {
+              normalX: contact.normal.x,
+              normalZ: contact.normal.z,
+              closingSpeedMps: contact.closingSpeedMps,
+              tangentialSpeedMps: contact.scraping?.tangentialSpeedMps ?? 0,
+              tangentialDirX: tx,
+              tangentialDirZ: tz,
+              sharedImpulse: contact.sharedImpulse ?? null,
+              contactX: contact.scraping?.worldX ?? next.x,
+              contactZ: contact.scraping?.worldZ ?? next.z,
+              egoMassKg: PLAYER_VEHICLE.massKg,
+              tick: this.tick,
+            });
+            this._activeJoltActors?.add(liveObstacle);
+          }
+          if (
+            liveObstacle &&
+            (liveObstacle.type === "vehicle" || liveObstacle.kind === "parked-vehicle") &&
+            (contact.closingSpeedMps >= 1.2 || (contact.scraping?.tangentialSpeedMps ?? 0) >= 3.2) &&
+            actor.vehicle?.contact?.hitId !== contact.hitId
+          ) {
+            recordActorVisualCrash(
+              liveObstacle,
+              hitObstacle,
+              next,
+              Math.max(contact.closingSpeedMps, (contact.scraping?.tangentialSpeedMps ?? 0) * 0.35),
+            );
+          }
+        }
       }
-      const guard = sweepSafe(
-        actor,
-        next,
-        nearby.filter(a => {
-          if (a.id === contact?.hitId) return false;
-          if (actor.spec?.contactResponse === "inelastic-slide-v1" && a.type !== "pedestrian" &&
-              overlaps(actor, a, .12) && distance(next, a) > distance(actor, a) + 1e-10 &&
-              !overlaps(next, a)) return false;
-          const latched = actor.spec?.contactResponse === "inelastic-slide-v1"
-            ? actor.vehicle?.contact : null;
-          return !(a.id === latched?.hitId && latched.normal &&
-            (next.x - actor.x) * latched.normal.x + (next.z - actor.z) * latched.normal.z <= 1e-10 &&
-            !overlaps(next, a));
-        }),
-        actor.type === "vehicle" ? this.roads : null,
-      );
+      const filteredNearby = (actor.type === "pedestrian" || (metroV5 && actor !== this.player && !actor.spec?.contactResponse)) && contact === null
+        ? nearby
+        : nearby.filter(a => {
+        if (a.id === contact?.hitId) return false;
+        if (actor.spec?.contactResponse === "inelastic-slide-v1" && a.type !== "pedestrian" &&
+            overlaps(actor, a, .12) && distance(next, a) > distance(actor, a) + 1e-10 &&
+            !overlaps(next, a)) return false;
+        if (
+          actor.spec?.contactResponse === "inelastic-slide-v1" &&
+          actor.spec?.wheelInteractionPhysics === WHEEL_SCRUB_MODE &&
+          a.type !== "pedestrian" &&
+          (overlaps(actor, a, 0.12) || (this.mode === "manual" && overlaps(next, a, 0.12))) &&
+          !overlaps(actor, a) &&
+          !overlaps(next, a) &&
+          resolveVehicleContact(actor, next, a, STEP) === null
+        ) {
+          return false;
+        }
+        const latched = actor.spec?.contactResponse === "inelastic-slide-v1"
+          ? actor.vehicle?.contact : null;
+        return !(a.id === latched?.hitId && latched.normal &&
+          (next.x - actor.x) * latched.normal.x + (next.z - actor.z) * latched.normal.z <= 1e-10 &&
+          !overlaps(next, a));
+      });
+      const allowCityCurb = Boolean(actor === this.player && this.curbs && this.mode === "manual" && !physicalBarrier);
+      let guardRoads = actor.type === "vehicle" ? this.roads : null;
+      const stationaryAmbientVehicle =
+        metroV5 &&
+        actor !== this.player &&
+        actor.type === "vehicle" &&
+        actor.x === next.x &&
+        actor.z === next.z &&
+        actor.heading === next.heading;
+      if (metroV5 && !stationaryAmbientVehicle && actor !== this.player && actor.type === "vehicle") {
+        let entry = vehicleSingleRoadCache.get(actor);
+        if (entry?.road && bodyInsideSingleRoadFast(actor, entry.road) && bodyInsideSingleRoadFast(next, entry.road)) {
+          guardRoads = entry.arr;
+        } else if (!entry || this.tick >= entry.retryTick) {
+          let matched = null;
+          for (let rIdx = 0; rIdx < this.drivingRoads.length; rIdx++) {
+            const r = this.drivingRoads[rIdx];
+            if (bodyInsideSingleRoadFast(actor, r) && bodyInsideSingleRoadFast(next, r)) {
+              matched = { road: r, arr: [r], retryTick: 0 };
+              break;
+            }
+          }
+          if (matched) {
+            vehicleSingleRoadCache.set(actor, matched);
+            guardRoads = matched.arr;
+          } else {
+            const localRoads = localVehicleRoads(this.roads, actor);
+            vehicleSingleRoadCache.set(actor, { road: null, arr: localRoads, retryTick: this.tick + 4 });
+            guardRoads = localRoads;
+          }
+        } else if (entry?.arr) {
+          guardRoads = localVehicleRoads(this.roads, actor);
+        }
+      }
+      const guard =
+        stationaryAmbientVehicle ||
+        (metroV5 && actor.type === "pedestrian" && filteredNearby.length === 0) ||
+        (metroV5 && actor !== this.player && actor.type === "vehicle" && guardRoads?.length === 1 && filteredNearby.length === 0)
+          ? { safe: true }
+          : allowCityCurb
+            ? sweepSafeWithCurbs(actor, next, filteredNearby, this.roads, this.curbs)
+            : sweepSafe(
+                actor,
+                next,
+                filteredNearby,
+                guardRoads,
+              );
       if (!guard.safe) {
         contact = null;
         // Stopping is the sole fallback. No positional correction or in-place yaw.
@@ -1151,7 +1988,69 @@ export class World {
         if (this.district && actor.districtSources)
           next.districtSources = { ...actor.districtSources, finalMps: 0, appliedSource: "physical-guard" };
       }
+      if (
+        actor !== this.player &&
+        actor.type === "vehicle" &&
+        this.config?.interactionProfile === WHEEL_SCRUB_MODE &&
+        (!metroV5 || this._activeJoltActors?.has(actor))
+      ) {
+        const rx = getActorImpactReaction(actor);
+        const instantDv = consumeActorPendingLongDv(actor);
+        if (
+          rx.active &&
+          (Math.abs(instantDv) > 1e-5 ||
+            Math.abs(rx.lateralPushMps) > 1e-4 ||
+            Math.abs(rx.longitudinalPushMps) > 1e-4 ||
+            Math.abs(rx.yawPushRadS) > 1e-4)
+        ) {
+          const basePose = guard.safe ? next : actor;
+          const shovedHeading = basePose.heading + rx.yawPushRadS * STEP;
+          const shS = Math.sin(shovedHeading);
+          const shC = Math.cos(shovedHeading);
+          const nextSpeedVal = clamp(
+            (instantDv !== 0 ? (actor.speed ?? basePose.speed) + instantDv : basePose.speed),
+            -Math.max(4, (actor.maxSpeed ?? 16) * 0.35),
+            Math.max(actor.maxSpeed ?? 16, Math.abs(actor.speed ?? 0)) * 1.25,
+          );
+          const shovedCandidate = {
+            ...basePose,
+            x: basePose.x + shC * rx.lateralPushMps * STEP + shS * rx.longitudinalPushMps * STEP,
+            z: basePose.z - shS * rx.lateralPushMps * STEP + shC * rx.longitudinalPushMps * STEP,
+            heading: shovedHeading,
+            speed: nextSpeedVal,
+          };
+          const nonTouchingNearby = filteredNearby.filter((a) => !overlaps(actor, a, 0.12));
+          const zeroGapClear = !filteredNearby.some((a) =>
+            overlaps(shovedCandidate, a, a.type === "pedestrian" ? 0.35 : 0),
+          ) && !overlaps(shovedCandidate, this.player);
+          if (
+            zeroGapClear &&
+            (!this.roads?.length || bodyOnRoad(shovedCandidate, this.roads)) &&
+            sweepSafe(actor, shovedCandidate, nonTouchingNearby, this.roads).safe
+          ) {
+            next = shovedCandidate;
+          }
+        }
+      }
       if (actor === this.player) {
+        let terrainOffsets = null;
+        let curbScrub = null;
+        if (allowCityCurb && guard.safe) {
+          terrainOffsets = acceptCurbPose(this.curbs, this.roads, next);
+          curbScrub = computeCurbWheelScrub(actor, next, this.curbs, this.roads, STEP, {
+            applyDeflection: !contact,
+          });
+          if (curbScrub.active && curbScrub.adjustedPose !== next) {
+            const scrubGuard = sweepSafeWithCurbs(actor, curbScrub.adjustedPose, filteredNearby, this.roads, this.curbs);
+            if (scrubGuard.safe) {
+              next = curbScrub.adjustedPose;
+              terrainOffsets = acceptCurbPose(this.curbs, this.roads, next);
+            }
+          }
+        } else if (actor.curbSupportId && !this.pursuit) {
+          next.y = next.supportHeightM = 0;
+          next.curbSupportId = null;
+        }
         const latchedId = actor.vehicle?.contact?.hitId;
         const latchedObstacle = latchedId ? nearby.find(a => a.id === latchedId) : null;
         // Keep numerical zero-gap scraping in one episode; leaving the actual
@@ -1159,11 +2058,50 @@ export class World {
         const contactSeparated = actor.spec?.contactResponse === "inelastic-slide-v1" &&
           latchedId != null && contact?.hitId !== latchedId &&
           (!latchedObstacle || !overlaps(next, latchedObstacle, .002));
+        const playerSurface = this.terrain
+          ? sampleCitySurface(this.terrain, next.x, next.z, next.heading, this._surfaceScratch)
+          : null;
+        const needNitroStep = Boolean(
+          manualActionForNitro ||
+          actor.nitroCharge < 1 ||
+          actor.nitroActive ||
+          actor.nitroIntensity > 0,
+        );
+        if (needNitroStep && !controlledTest) {
+          const baseSuppressed = Boolean(actor.nitroSuppressedByPedestrian);
+          const stepSuppressed = Boolean(baseSuppressed || pedSuppressedNitro);
+          next.nitroCharge = Number.isFinite(actor.nitroCharge) ? actor.nitroCharge : 1;
+          next.nitroActive = Boolean(actor.nitroActive);
+          next.nitroIntensity = Number.isFinite(actor.nitroIntensity) ? actor.nitroIntensity : 0;
+          next.nitroSuppressedByPedestrian = stepSuppressed;
+          const actionToStep = !guard.safe || contact
+            ? { ...(manualActionForNitro ?? PURSUIT_STOP), throttle: 0, brake: 1 }
+            : (manualActionForNitro ?? PURSUIT_STOP);
+          stepNitroTank(next, actionToStep, STEP);
+          next.nitroSuppressedByPedestrian = stepSuppressed;
+        } else {
+          next.nitroCharge = Number.isFinite(actor.nitroCharge) ? actor.nitroCharge : 1;
+          next.nitroActive = false;
+          next.nitroIntensity = Number.isFinite(actor.nitroIntensity) ? actor.nitroIntensity : 0;
+          next.nitroSuppressedByPedestrian = Boolean(actor.nitroSuppressedByPedestrian);
+        }
         next.vehicle = advanceVehicleState(actor, next, appliedCommand, STEP, {
           tick: this.tick,
           contact,
           contactSeparated,
+          surface: playerSurface,
+          curbScrub,
+          scraping: contact?.scraping ?? null,
+          driverCommand: this.mode === "manual" && !controlledTest ? this.input : null,
         });
+        if (terrainOffsets) {
+          const suspension = next.vehicle.suspension;
+          const { wheelOffsetsM } = suspension;
+          suspension.terrainOffsetsM = terrainOffsets;
+          const limit = PLAYER_VEHICLE.suspensionTravelM;
+          for (const wheel of Object.keys(terrainOffsets))
+            wheelOffsetsM[wheel] = clamp(wheelOffsetsM[wheel] + terrainOffsets[wheel], -limit, limit);
+        }
         if (contact && physicalBarrier) {
           this.vehicleTest.phase = "contact";
           this.vehicleTest.contactTick = this.tick;
@@ -1180,13 +2118,30 @@ export class World {
         next.motionTimeS = (this.tick + 1) * STEP;
       }
       const oldPrevious = actor.previous;
-      copyVehicleMotion(next, actor);
+      if (actor.type !== "pedestrian") copyVehicleMotion(next, actor);
       Object.assign(actor, next, {
         previous: oldPrevious,
         distance: actor.distance + moved,
         wait: moved < 0.001 ? actor.wait + STEP : 0,
       });
-      reserved.add(copyPose(actor));
+      if (moved > 0) reserved.add(
+        metroV5
+          ? {
+              id: actor.id,
+              type: actor.type,
+              kind: actor.kind,
+              vehicleKind: actor.vehicleKind,
+              spec: actor.spec,
+              x: actor.x,
+              z: actor.z,
+              heading: actor.heading,
+              speed: actor.speed,
+              length: actor.length,
+              width: actor.width,
+              radius: actor.radius,
+            }
+          : copyPose(actor),
+      );
       if (actor === this.player) {
         this.metrics.distance += moved;
         if (moved < 0.001 && this.mode === "auto" && actor.path.length)
@@ -1194,11 +2149,20 @@ export class World {
       }
     }
     this.updateSensors(this.tick % 6 === 0);
+    const hasSignals = this.junctionGroups.length > 0;
+    let queueActors = this.actors;
+    if (metroV5) {
+      if (this._queueActorsSourceLen !== this.actors.length) {
+        this._queueVehicleActors = this.actors.filter((a) => a.type === "vehicle");
+        this._queueActorsSourceLen = this.actors.length;
+      }
+      queueActors = this._queueVehicleActors;
+    }
     Object.assign(
       this.metrics,
       trafficQueueStats(
-        this.actors,
-        (actor) => signalSpeedLimit(this, actor) === Infinity,
+        queueActors,
+        hasSignals ? (actor) => signalSpeedLimit(this, actor) === Infinity : () => true,
       ),
     );
     this.metrics.peakTrafficWait = Math.max(
@@ -1206,6 +2170,7 @@ export class World {
       this.metrics.longestCurrentTrafficWait,
     );
     this.tick++;
+    if (this.pursuit) syncPursuitStatus(this);
     if (this.districtCase && this.districtCase.id !== "ambient") {
       const state = this.districtCase;
       const elapsedS = (this.tick - state.startedTick) * STEP;
@@ -1264,6 +2229,39 @@ export class World {
           errors.push(`overlap:${actor.id}:${other.id}`);
     }
     return errors;
+  }
+  state() {
+    const crowdAheadCount = getCrowdAheadCount(this);
+    if (this.pursuit) syncPursuitStatus(this);
+    return {
+      tick: this.tick,
+      mode: this.mode,
+      environment: this.environment,
+      crowdAheadCount,
+      lastCrowdSpawn: this.lastCrowdSpawn ?? null,
+      player: {
+        id: this.player.id,
+        type: this.player.type,
+        x: this.player.x,
+        z: this.player.z,
+        y: this.player.y ?? 0,
+        heading: this.player.heading,
+        speed: this.player.speed,
+        steer: this.player.steer ?? 0,
+        maxSpeed: this.player.maxSpeed,
+        nitroCharge: this.player.nitroCharge,
+        nitroActive: this.player.nitroActive,
+        nitroIntensity: this.player.nitroIntensity,
+        nitroSuppressedByPedestrian: this.player.nitroSuppressedByPedestrian,
+        vehicle: this.player.vehicle ? structuredClone(this.player.vehicle) : null,
+      },
+      pursuit: this.pursuit
+        ? {
+            ...pursuitSnapshot(this),
+            status: { ...this.pursuit.status },
+          }
+        : null,
+    };
   }
   snapshot() {
     return {
@@ -1363,16 +2361,25 @@ export class World {
           "pursuit-policy",
           "street-pursuit-start",
           "street-pursuit-stop",
+          "spawn-crowd-ahead",
+          "manual",
         ].includes(event.command?.type) ||
         (event.command.type === "vehicle-test" &&
-          (data.environment !== "vehicle" || event.command.operation !== "run"))
+          (data.environment !== "vehicle" ||
+            !["run", "reset"].includes(event.command.operation) ||
+            (event.command.heavy !== undefined && typeof event.command.heavy !== "boolean")))
       )
         throw new Error("Invalid replay event");
       lastTick = event.tick;
     }
-    const options = data.environment === "metro" && data.config?.cityVersion === 5 &&
-        data.config.vehicleDynamics === undefined
-      ? { ...data.config, vehicleDynamics: "legacy" } : data.config;
+    const options = data.environment === "metro" && data.config?.cityVersion === 5
+      ? {
+          ...data.config,
+          ...(data.config.vehicleDynamics === undefined ? { vehicleDynamics: "legacy" } : {}),
+          ...(data.config.terrainProfile === undefined ? { terrainProfile: "flat" } : {}),
+          ...(data.config.interactionProfile === undefined ? { interactionProfile: "none" } : {}),
+        }
+      : data.config;
     const world = new World(options, data.environment);
     let index = 0;
     while (world.tick < data.totalTicks) {

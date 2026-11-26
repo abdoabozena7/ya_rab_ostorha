@@ -28,8 +28,8 @@ export const METRO_POPULATION_LIMITS = Object.freeze({ traffic: 96, pedestrians:
 export const RUSH_CITY_POPULATION_LIMITS = Object.freeze({ traffic: 96, pedestrians: 144 });
 // Higher ambient car counts can gridlock the narrow neighborhood connector.
 export const RUSH_CITY_POPULATION_DEFAULTS = Object.freeze({ traffic: 36, pedestrians: 80 });
-export const GRAND_CITY_POPULATION_LIMITS = Object.freeze({ traffic: 140, pedestrians: 220 });
-export const GRAND_CITY_POPULATION_DEFAULTS = Object.freeze({ traffic: 68, pedestrians: 135 });
+export const GRAND_CITY_POPULATION_LIMITS = Object.freeze({ traffic: 140, pedestrians: 280 });
+export const GRAND_CITY_POPULATION_DEFAULTS = Object.freeze({ traffic: 68, pedestrians: 190 });
 
 const avenue = (id, axis, fixed, min, max, width, laneOffsetM, speedLimitMps) => ({
   id, axis, fixed, min, max, width, laneOffsetM, speedLimitMps, flow: 0,
@@ -1013,14 +1013,15 @@ function populateGrandWalkers(city, originalSpawns, addedWalkways, crosswalks, t
     }
   }
 
-  // 2. Dense hotspot sidewalk candidates vs general citywide sidewalk candidates.
+  // 2. Dense hotspot sidewalk candidates vs general citywide sidewalk candidates (>= 320 valid spawns across avenues, markets, diagonals & side streets).
   const hotspotWalkCandidates = [];
   const cityWalkCandidates = [];
-  for (let round = 0; round < 28; round++) {
-    for (const [i, line] of addedWalkways.entries()) {
+  const allCandidateLines = city.walkways.filter((line) => !line.crosswalk);
+  for (let round = 0; round < 52; round++) {
+    for (const [i, line] of allCandidateLines.entries()) {
       const span = line.max - line.min;
       if (span < 6) continue;
-      const fraction = (((round * 11 + i * 7 + 3) % 29) + 0.5) / 29;
+      const fraction = (((round * 17 + i * 11 + 5) % 53) + 0.5) / 53;
       const along = line.min + 1.2 + fraction * (span - 2.4);
       const pt = walkwayPointAt(line, along);
       const pose = {
@@ -1031,10 +1032,10 @@ function populateGrandWalkers(city, originalSpawns, addedWalkways, crosswalks, t
         roadId: line.roadId,
         heading: pt.heading,
         walkwayId: line.id,
-        roadPreference: line.roadPreference,
+        roadPreference: line.roadPreference ?? "market",
       };
       if (inCrowdHotspot(pose)) hotspotWalkCandidates.push(pose);
-      else cityWalkCandidates.push(pose);
+      else if (addedWalkways.includes(line)) cityWalkCandidates.push(pose);
     }
   }
 
@@ -1085,11 +1086,12 @@ function populateGrandWalkers(city, originalSpawns, addedWalkways, crosswalks, t
     return true;
   };
 
-  // Maintain ~47% hotspot share across every prefix (both default 135 and max 220).
+  // Generate >= 320 validated diverse pedestrian spawns while maintaining ~47% hotspot share across every prefix (including 190 default and 280 max).
+  const poolTarget = Math.max(target, 320);
   let hCursor = 0;
   let cCursor = 0;
   let hotspotCount = 0;
-  while (pedestrians.length < target && (hCursor < hotspotPool.length || cCursor < nonHotspotPool.length)) {
+  while (pedestrians.length < poolTarget && (hCursor < hotspotPool.length || cCursor < nonHotspotPool.length)) {
     const wantHotspot =
       hCursor < hotspotPool.length &&
       (cCursor >= nonHotspotPool.length || hotspotCount / Math.max(1, pedestrians.length + 1) < 0.475);
@@ -1115,7 +1117,21 @@ function populateGrandWalkers(city, originalSpawns, addedWalkways, crosswalks, t
       }
     }
   }
-  return pedestrians;
+  if (pedestrians.length < 300) {
+    throw new Error(`Grand Metro v5 pedestrian spawn pool (${pedestrians.length}) must be >= 300`);
+  }
+  const activeSpawns = pedestrians.slice(0, target);
+  Object.defineProperty(activeSpawns, "poolSize", {
+    value: pedestrians.length,
+    enumerable: false,
+    configurable: true,
+  });
+  Object.defineProperty(city, "pedestrianSpawnPool", {
+    value: pedestrians,
+    enumerable: false,
+    configurable: true,
+  });
+  return activeSpawns;
 }
 
 const grandTemplateCache = new Map();
@@ -1134,7 +1150,10 @@ function cloneCityTemplate(template, cacheKey) {
     ...template,
     drivingRoads: tagTemplateArray(template.drivingRoads.slice(), `${cacheKey}:drivingRoads`),
     roads: tagTemplateArray(template.roads.slice(), `${cacheKey}:roads`),
-    statics: tagTemplateArray(template.statics.slice(), `${cacheKey}:statics`),
+    statics: tagTemplateArray(
+      template.statics.map((s) => (s.kind === "parked-vehicle" ? { ...s } : s)),
+      `${cacheKey}:statics`,
+    ),
     places: template.places.slice(),
     playerStart: { ...template.playerStart },
     walkways: template.walkways.slice(),
@@ -1155,6 +1174,18 @@ function cloneCityTemplate(template, cacheKey) {
     trafficSpawns: template.trafficSpawns.slice(),
     pedestrianSpawns: template.pedestrianSpawns.slice(),
   };
+  if (template.pedestrianSpawnPool) {
+    Object.defineProperty(copy.pedestrianSpawns, "poolSize", {
+      value: template.pedestrianSpawnPool.length,
+      enumerable: false,
+      configurable: true,
+    });
+    Object.defineProperty(copy, "pedestrianSpawnPool", {
+      value: template.pedestrianSpawnPool.slice(),
+      enumerable: false,
+      configurable: true,
+    });
+  }
   if (template.cautionZones) copy.cautionZones = template.cautionZones.slice();
   if (template.caseAnchors) copy.caseAnchors = template.caseAnchors.slice();
   return copy;

@@ -35,6 +35,33 @@
         </details>
       </nav>
     </header>
+    <section id="chaseBar" class="chase-bar" role="region" aria-label="Active chase HUD" hidden>
+      <span id="chaseStars" class="chase-bar__stars" role="img" aria-label="Wanted level 0 of 5">☆☆☆☆☆</span>
+      <span id="chaseStatusText" class="chase-bar__status" role="status">In pursuit</span>
+      <div id="chaseNitroMeter" class="chase-nitro" data-nitro-state="ready">
+        <span id="chaseNitroLabel" class="chase-nitro__label">NITRO</span>
+        <div class="chase-nitro__track">
+          <div
+            id="chaseNitroFill"
+            class="chase-nitro__fill"
+            role="progressbar"
+            aria-label="Nitro boost charge"
+            aria-valuemin="0"
+            aria-valuemax="100"
+            aria-valuenow="100"
+            style="width: 100%"
+          ></div>
+        </div>
+      </div>
+      <button
+        id="spawnCrowdAheadBtn"
+        class="chase-bar__crowd-btn"
+        type="button"
+        title="Spawn 20 random walking pedestrians ahead of the car (G)"
+        aria-label="Spawn 20 walking pedestrians ahead"
+      >+20 Pedestrians Ahead</button>
+      <button id="stopChaseBtn" class="chase-bar__stop-btn" type="button" aria-label="End chase">End chase</button>
+    </section>
     <div id="loadingStatus" role="status">Loading scene…</div>
     <aside id="pursuitPanelHost" hidden></aside>
     <aside id="driveSense" aria-labelledby="driveSenseTitle" hidden>
@@ -373,12 +400,15 @@
       ><button id="cameraBtn">Hide camera</button
       ><button id="pauseBtn">Pause</button>
     </footer>
-    <div id="pursuitTouch" aria-label="Arcade steering" hidden>
-      <button id="pursuitTouchLeft" type="button" aria-label="Steer left">Left</button>
-      <button id="pursuitTouchReverse" type="button" aria-label="Hold to reverse" hidden>Reverse</button>
-      <button id="pursuitTouchBrake" type="button" aria-label="Hold brake">Brake</button>
-      <button id="pursuitTouchThrottle" type="button" aria-label="Hold to accelerate" hidden>Drive</button>
-      <button id="pursuitTouchRight" type="button" aria-label="Steer right">Right</button>
+    <div id="touchControls" class="touch-controls-host">
+      <div id="pursuitTouch" aria-label="Arcade steering" hidden>
+        <button id="pursuitTouchLeft" type="button" aria-label="Steer left">Left</button>
+        <button id="pursuitTouchReverse" type="button" aria-label="Hold to reverse" hidden>Reverse</button>
+        <button id="pursuitTouchBrake" type="button" aria-label="Hold brake">Brake</button>
+        <button id="pursuitTouchThrottle" type="button" aria-label="Hold to accelerate" hidden>Drive</button>
+        <button id="touchNitro" type="button" aria-label="Nitro Boost">NITRO</button>
+        <button id="pursuitTouchRight" type="button" aria-label="Steer right">Right</button>
+      </div>
     </div>
     <script defer src="/public/threejs/game.bundle.js"></script>
   </body>

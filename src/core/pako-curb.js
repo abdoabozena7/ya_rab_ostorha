@@ -646,11 +646,14 @@ function cornerSupported(px, pz, roads, grid) {
 }
 
 export function isPoseSupportedWithCurbs(curb, roads, pose) {
+  let grid = null;
+  if (curb?.sites) {
+    grid = getCurbGrid(curb);
+    if (poseInSingleCourtyardGrid(pose, grid)) return true;
+  }
   if (poseOnRoadFast(pose, roads)) return true;
   if (!curb) return false;
   if (!curb.sites) return inRibbon(curb, pose);
-  const grid = getCurbGrid(curb);
-  if (poseInSingleCourtyardGrid(pose, grid)) return true;
   const h0 = pose.heading ?? 0;
   const s = Math.sin(h0), c = Math.cos(h0);
   const hw = (pose.width ?? 0) / 2, hl = (pose.length ?? 0) / 2;
@@ -664,20 +667,50 @@ export function isPoseSupportedWithCurbs(curb, roads, pose) {
   );
 }
 
+const _curbSweepStaticBuf = [];
+
 export function sweepSafeWithCurbs(before, after, statics, roads, curb) {
   const heading = before.heading ?? 0;
   const turn = angleDelta(after.heading ?? 0, heading);
   const dx = after.x - before.x, dz = after.z - before.z;
+  const bodyLen = after.length ?? before.length ?? 0;
+  const bodyWid = after.width ?? before.width ?? 0;
   const travel = distance(before, after) +
-    (Math.abs(turn) * Math.hypot(before.length ?? 1, before.width ?? 1)) / 2;
+    (Math.abs(turn) * Math.hypot(bodyLen || 1, bodyWid || 1)) / 2;
   const steps = Math.max(1, Math.ceil(travel / .12));
   const pose = {
     x: 0, z: 0, heading: 0,
     type: after.type ?? before.type,
     radius: after.radius ?? before.radius,
-    length: after.length ?? before.length,
-    width: after.width ?? before.width,
+    length: bodyLen,
+    width: bodyWid,
   };
+  let nearStatics = statics;
+  if (Array.isArray(statics) && statics.length > 2) {
+    const poseHalf = pose.type === "pedestrian"
+      ? Math.abs(pose.radius ?? 0) + 0.25
+      : (Math.abs(bodyLen) + Math.abs(bodyWid)) * 0.5 + 0.25;
+    const minSX = Math.min(before.x, after.x) - poseHalf;
+    const maxSX = Math.max(before.x, after.x) + poseHalf;
+    const minSZ = Math.min(before.z, after.z) - poseHalf;
+    const maxSZ = Math.max(before.z, after.z) + poseHalf;
+    _curbSweepStaticBuf.length = 0;
+    for (let sIdx = 0; sIdx < statics.length; sIdx++) {
+      const other = statics[sIdx];
+      const oHalf = other.type === "pedestrian"
+        ? Math.abs(other.radius ?? 0)
+        : (Math.abs(other.length ?? 0) + Math.abs(other.width ?? 0)) * 0.5;
+      if (
+        other.x + oHalf >= minSX &&
+        other.x - oHalf <= maxSX &&
+        other.z + oHalf >= minSZ &&
+        other.z - oHalf <= maxSZ
+      ) {
+        _curbSweepStaticBuf.push(other);
+      }
+    }
+    nearStatics = _curbSweepStaticBuf;
+  }
   for (let i = 1; i <= steps; i++) {
     const t = i / steps;
     pose.x = before.x + dx * t;
@@ -685,10 +718,12 @@ export function sweepSafeWithCurbs(before, after, statics, roads, curb) {
     pose.heading = heading + turn * t;
     if (!isPoseSupportedWithCurbs(curb, roads, pose))
       return { safe: false, reason: "road-boundary" };
-    if (statics) {
-      for (const other of statics)
+    if (nearStatics && nearStatics.length > 0) {
+      for (let sIdx = 0; sIdx < nearStatics.length; sIdx++) {
+        const other = nearStatics[sIdx];
         if (overlaps(pose, other, .12))
           return { safe: false, reason: "occupied", actor: other.id };
+      }
     }
   }
   return { safe: true, reason: "clear" };
@@ -1106,13 +1141,29 @@ export function curbClearance(world, curb, ego, plans, project) {
     return { reason: "curb-speed" };
   }
 
-  const pedestrians = (plans ?? []).filter(p =>
-    p.a !== actor && p.a?.type === "pedestrian" &&
-    distance(actor, p.a) <= egoRadius + (p.radius ?? p.a.radius ?? .5) + 1 +
-      brakeWindow * (maxPace + (p.travel ?? distance(p.a, p.next)) / STEP));
+  const pedestrians = [];
+  if (plans) {
+    for (let i = 0; i < plans.length; i++) {
+      const p = plans[i];
+      if (p.a === actor || p.a?.type !== "pedestrian") continue;
+      const maxPedDist = egoRadius + (p.radius ?? p.a.radius ?? .5) + 1 +
+        brakeWindow * (maxPace + (p.travel ?? distance(p.a, p.next)) / STEP);
+      if (Math.abs(actor.x - p.a.x) > maxPedDist || Math.abs(actor.z - p.a.z) > maxPedDist) continue;
+      if (distance(actor, p.a) <= maxPedDist) pedestrians.push(p);
+    }
+  }
   const solidReach = egoRadius + 1 + brakeWindow * maxPace;
-  const solids = (world.statics ?? []).filter(body =>
-    distance(actor, body) <= solidReach + Math.hypot(body.width ?? 0, body.length ?? 0) / 2);
+  const rawStatics = world.statics ?? [];
+  const solids = [];
+  for (let i = 0; i < rawStatics.length; i++) {
+    const body = rawStatics[i];
+    const halfSum = ((body.width ?? 0) + (body.length ?? 0)) * 0.5;
+    if (Math.abs(actor.x - body.x) > solidReach + halfSum ||
+        Math.abs(actor.z - body.z) > solidReach + halfSum) continue;
+    if (distance(actor, body) <= solidReach + Math.hypot(body.width ?? 0, body.length ?? 0) / 2) {
+      solids.push(body);
+    }
+  }
   const closeSolids = new Map();
   for (const body of solids) {
     if (overlaps(actor, body, .15)) closeSolids.set(body, solidGap(actor, body));
@@ -1123,9 +1174,13 @@ export function curbClearance(world, curb, ego, plans, project) {
       closePedestrians.set(body, { dist: distance(actor, body), gap: pedestrianGap(actor, body) });
   }
 
+  const pedSampleProbe = { type: "pedestrian", radius: 0.3, x: 0, z: 0 };
   const checkPoseObstacles = (pose, step, t) => {
     if (!supported(pose)) return { reason: "road-boundary" };
-    for (const body of solids) {
+    for (let sIdx = 0; sIdx < solids.length; sIdx++) {
+      const body = solids[sIdx];
+      const maxSpan = egoRadius + ((body.width ?? 0) + (body.length ?? 0)) * 0.5 + 0.25;
+      if (Math.abs(pose.x - body.x) > maxSpan || Math.abs(pose.z - body.z) > maxSpan) continue;
       const startGap = closeSolids.get(body);
       const blocked = startGap !== undefined
         ? overlaps(pose, body, .01) || solidGap(pose, body) < startGap - .003
@@ -1134,18 +1189,26 @@ export function curbClearance(world, curb, ego, plans, project) {
     }
     const seconds = (step + t) * STEP;
     const margin = .48 + seconds * .65;
-    for (const { a: body, next: planned } of pedestrians) {
-      const sample = step ? {
-        ...planned,
-        x: planned.x + (planned.x - body.x) * (step + t - 1),
-        z: planned.z + (planned.z - body.z) * (step + t - 1),
-      } : interpolate(body, planned, t);
+    for (let pIdx = 0; pIdx < pedestrians.length; pIdx++) {
+      const { a: body, next: planned } = pedestrians[pIdx];
+      const sx = step
+        ? planned.x + (planned.x - body.x) * (step + t - 1)
+        : body.x + (planned.x - body.x) * t;
+      const sz = step
+        ? planned.z + (planned.z - body.z) * (step + t - 1)
+        : body.z + (planned.z - body.z) * t;
+      const pr = planned.radius ?? body.radius ?? 0.3;
+      const pedSpan = egoRadius + pr + margin + 0.1;
+      if (Math.abs(pose.x - sx) > pedSpan || Math.abs(pose.z - sz) > pedSpan) continue;
+      pedSampleProbe.radius = pr;
+      pedSampleProbe.x = sx;
+      pedSampleProbe.z = sz;
       const startPed = closePedestrians.get(body);
       const blocked = startPed !== undefined
-        ? overlaps(pose, sample, .05) ||
-          distance(pose, sample) <= startPed.dist ||
-          pedestrianGap(pose, sample) <= startPed.gap
-        : overlaps(pose, sample, margin);
+        ? overlaps(pose, pedSampleProbe, .05) ||
+          distance(pose, pedSampleProbe) <= startPed.dist ||
+          pedestrianGap(pose, pedSampleProbe) <= startPed.gap
+        : overlaps(pose, pedSampleProbe, margin);
       if (blocked) return { reason: "curb-pedestrian", blockedBy: body.id };
     }
     return null;

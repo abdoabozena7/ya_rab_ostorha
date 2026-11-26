@@ -4,8 +4,492 @@ const VIEWS = [
   ["inspection", "Inspect"],
   ["running-gear", "Running gear"],
 ];
+const PRISTINE_PARTS_TEXT = "All panels, lamps & mounts intact";
+const DEFAULT_SURFACE_TEXT = "Surface: Asphalt · Grip 100% · Level grade";
+const SURFACE_SPECS = Object.freeze({
+  asphalt: { label: "Asphalt", defaultGripPct: 100, flatNote: "Level grade" },
+  sand: { label: "Sandy street", defaultGripPct: 62, flatNote: "Sand drag" },
+  water: { label: "Standing water", defaultGripPct: 52, flatNote: "Wet traction" },
+  cobble: { label: "Cobblestone", defaultGripPct: 87, flatNote: "Stone rumble" },
+});
+const DAMAGE_SIDES = ["front", "rear", "left", "right"];
+const INTACT_STATES = new Set([
+  "intact",
+  "ok",
+  "pristine",
+  "none",
+  "healthy",
+  "normal",
+  "ready",
+  "clean",
+]);
+const GENERIC_STATES = new Set(["damaged", "broken", "hit", "worn"]);
+const FLAG_SEVERITY = [
+  ["detached", "detached", 1.0],
+  ["shattered", "shattered", 0.92],
+  ["leaking", "leaking", 0.86],
+  ["crushed", "crushed", 0.8],
+  ["crumpled", "crumpled", 0.78],
+  ["unclipped", "unclipped", 0.74],
+  ["unclippedLeft", "unclipped", 0.74],
+  ["unclippedRight", "unclipped", 0.74],
+  ["dangling", "dangling", 0.72],
+  ["ajar", "ajar", 0.68],
+  ["unlatched", "unlatched", 0.65],
+  ["cracked", "cracked", 0.6],
+  ["glassCracked", "cracked", 0.6],
+  ["sagging", "sagging", 0.55],
+  ["claddingLoose", "loose", 0.52],
+  ["tilted", "tilted", 0.5],
+  ["bent", "bent", 0.46],
+  ["buckled", "buckled", 0.45],
+  ["dented", "dented", 0.35],
+  ["scuffed", "scuffed", 0.2],
+];
+const CONDITION_WEIGHTS = new Map(
+  FLAG_SEVERITY.map(([, label, weight]) => [label, weight]),
+);
+const PART_LABELS = {
+  hood: "Hood",
+  bonnet: "Hood",
+  bumper: "Bumper",
+  "front bumper": "Front bumper",
+  "bumper front": "Front bumper",
+  "rear bumper": "Rear bumper",
+  "bumper rear": "Rear bumper",
+  "front fascia": "Front fascia",
+  fascia: "Front fascia",
+  grille: "Grille",
+  "grille lattice": "Grille",
+  "front grille": "Grille",
+  radiator: "Radiator",
+  cooling: "Radiator",
+  coolant: "Radiator",
+  windshield: "Windshield",
+  windscreen: "Windshield",
+  "front glass": "Windshield",
+  "rear window": "Rear window",
+  "rear glass": "Rear window",
+  "windshield wipers": "Wipers",
+  wipers: "Wipers",
+  "left headlamp": "L headlamp",
+  "headlamp left": "L headlamp",
+  "front left headlamp": "L headlamp",
+  "left headlight": "L headlamp",
+  "headlight left": "L headlamp",
+  "headlamp well left": "L headlamp",
+  "headlamp l": "L headlamp",
+  "l headlamp": "L headlamp",
+  "right headlamp": "R headlamp",
+  "headlamp right": "R headlamp",
+  "front right headlamp": "R headlamp",
+  "right headlight": "R headlamp",
+  "headlight right": "R headlamp",
+  "headlamp well right": "R headlamp",
+  "headlamp 1": "R headlamp",
+  "headlamp r": "R headlamp",
+  "r headlamp": "R headlamp",
+  headlamp: "Headlamp",
+  "left tail lamp": "L tail lamp",
+  "tail lamp left": "L tail lamp",
+  "left rear lamp": "L tail lamp",
+  "rear lamp left": "L tail lamp",
+  "left taillight": "L tail lamp",
+  "taillight left": "L tail lamp",
+  "rear lamp well left": "L tail lamp",
+  "l tail lamp": "L tail lamp",
+  "right tail lamp": "R tail lamp",
+  "tail lamp right": "R tail lamp",
+  "right rear lamp": "R tail lamp",
+  "rear lamp right": "R tail lamp",
+  "right taillight": "R tail lamp",
+  "taillight right": "R tail lamp",
+  "rear lamp 1": "R tail lamp",
+  "rear lamp well right": "R tail lamp",
+  "r tail lamp": "R tail lamp",
+  "left mirror": "L mirror",
+  "mirror left": "L mirror",
+  "l mirror": "L mirror",
+  "right mirror": "R mirror",
+  "mirror right": "R mirror",
+  "r mirror": "R mirror",
+  "left fender": "L fender",
+  "fender left": "L fender",
+  "left front fender": "L fender",
+  "front left fender": "L fender",
+  "right fender": "R fender",
+  "fender right": "R fender",
+  "right front fender": "R fender",
+  "front right fender": "R fender",
+  "left quarter": "L quarter",
+  "quarter left": "L quarter",
+  "left rear quarter": "L quarter",
+  "rear left quarter": "L quarter",
+  "right quarter": "R quarter",
+  "quarter right": "R quarter",
+  "right rear quarter": "R quarter",
+  "rear right quarter": "R quarter",
+  "left door": "L door",
+  "left doors": "L door",
+  "door left": "L door",
+  "doors left": "L door",
+  "right door": "R door",
+  "right doors": "R door",
+  "door right": "R door",
+  "doors right": "R door",
+  "left front door": "L front door",
+  "front left door": "L front door",
+  "right front door": "R front door",
+  "front right door": "R front door",
+  "left rear door": "L rear door",
+  "rear left door": "L rear door",
+  "right rear door": "R rear door",
+  "rear right door": "R rear door",
+  "left window": "L window",
+  "left front window": "L window",
+  "front left window": "L window",
+  "right window": "R window",
+  "right front window": "R window",
+  "front right window": "R window",
+  "left rear window": "L rear window",
+  "rear left window": "L rear window",
+  "right rear window": "R rear window",
+  "rear right window": "R rear window",
+  "rear hatch": "Rear hatch",
+  tailgate: "Rear hatch",
+  trunk: "Rear hatch",
+  hatch: "Rear hatch",
+  spare: "Spare carrier",
+  "rear spare": "Spare carrier",
+  "spare carrier": "Spare carrier",
+  "spare cover": "Spare carrier",
+  "spare tire": "Spare carrier",
+  "spare wheel": "Spare carrier",
+  "front skid": "Skid plate",
+  "skid plate": "Skid plate",
+  "front plate": "Front plate",
+  "license plate": "Front plate",
+  roof: "Roof",
+  "faceted roof": "Roof",
+  "roof rail": "Roof rail",
+  "roof rack": "Roof rack",
+  exhaust: "Exhaust",
+  engine: "Engine bay",
+  "transverse powerunit": "Engine bay",
+  powerunit: "Engine bay",
+};
+const BROKEN_SUFFIX_RE =
+  /^(.+?)\s+(detached|shattered|leaking|crushed|crumpled|unclipped|dangling|ajar|unlatched|cracked|sagging|tilted|bent|buckled|dented|scuffed|broken|damaged)$/i;
+
 const finite = (value, fallback = 0) =>
   Number.isFinite(value) ? value : fallback;
+const clamp01 = (value) => Math.max(0, Math.min(1, finite(value)));
+
+function normalizePartKey(raw) {
+  return String(raw ?? "")
+    .trim()
+    .replace(/^suv[-_\s]+/i, "")
+    .replace(/--1\b/g, " left")
+    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+    .replace(/[-_]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toLowerCase();
+}
+
+function formatPartName(rawKey, explicitLabel) {
+  if (typeof explicitLabel === "string" && explicitLabel.trim()) {
+    const mapped = PART_LABELS[normalizePartKey(explicitLabel)];
+    return mapped || explicitLabel.trim();
+  }
+  const key = normalizePartKey(rawKey);
+  if (!key) return "Body panel";
+  if (PART_LABELS[key]) return PART_LABELS[key];
+  if (key.startsWith("front left ")) return `FL ${key.slice(11)}`;
+  if (key.startsWith("front right ")) return `FR ${key.slice(12)}`;
+  if (key.startsWith("rear left ")) return `RL ${key.slice(10)}`;
+  if (key.startsWith("rear right ")) return `RR ${key.slice(11)}`;
+  if (key.startsWith("left ")) return `L ${key.slice(5)}`;
+  if (key.startsWith("right ")) return `R ${key.slice(6)}`;
+  return `${key[0].toUpperCase()}${key.slice(1)}`;
+}
+
+function describePartEntry(rawKey, entry) {
+  if (entry == null || entry === false) return null;
+  if (typeof entry === "number") {
+    if (!Number.isFinite(entry) || entry < 0.05) return null;
+    const amount = clamp01(entry);
+    const condition =
+      amount >= 0.75 ? "crushed" : amount >= 0.25 ? "dented" : "scuffed";
+    return {
+      label: formatPartName(rawKey),
+      condition,
+      severity: (CONDITION_WEIGHTS.get(condition) ?? 0.35) * 1.5 + amount,
+    };
+  }
+  if (typeof entry === "string") {
+    const rawState = entry.trim().toLowerCase();
+    if (!rawState || INTACT_STATES.has(rawState)) return null;
+    return {
+      label: formatPartName(rawKey),
+      condition: rawState,
+      severity: (CONDITION_WEIGHTS.get(rawState) ?? 0.5) * 1.5 + 0.5,
+    };
+  }
+  if (typeof entry !== "object") return null;
+  const key = entry.id ?? entry.part ?? entry.key ?? entry.name ?? rawKey;
+  const label = formatPartName(key, entry.label);
+  const amount = clamp01(entry.damage ?? entry.amount ?? entry.severity);
+  const rawState =
+    typeof entry.state === "string"
+      ? entry.state.trim().toLowerCase()
+      : typeof entry.status === "string"
+        ? entry.status.trim().toLowerCase()
+        : "";
+  const topFlag = FLAG_SEVERITY.find(([flag]) => entry[flag] === true);
+  const hasState = Boolean(rawState && !INTACT_STATES.has(rawState));
+  if (!topFlag && !hasState && amount < 0.05) return null;
+  let condition;
+  if (topFlag && topFlag[2] >= 0.85) {
+    condition = topFlag[1];
+  } else if (hasState && !GENERIC_STATES.has(rawState)) {
+    const knownWeight = CONDITION_WEIGHTS.get(rawState);
+    condition =
+      knownWeight !== undefined && topFlag && topFlag[2] > knownWeight
+        ? topFlag[1]
+        : rawState;
+  } else if (topFlag) {
+    condition = topFlag[1];
+  } else if (hasState) {
+    condition = rawState;
+  } else {
+    condition =
+      amount >= 0.75 ? "crushed" : amount >= 0.25 ? "dented" : "scuffed";
+  }
+  const weight = CONDITION_WEIGHTS.get(condition) ?? (hasState ? 0.52 : 0.3);
+  return { label, condition, severity: weight * 1.5 + amount };
+}
+
+function addDamageItems(target, source) {
+  if (!source || typeof source !== "object") return;
+  const entries =
+    source instanceof Map
+      ? [...source.entries()]
+      : Array.isArray(source)
+        ? source.map((item, idx) => [idx, item])
+        : Object.entries(source);
+  for (const [key, value] of entries) {
+    let described = null;
+    if (Array.isArray(source) && typeof value === "string") {
+      const trimmed = value.trim();
+      if (!trimmed || INTACT_STATES.has(trimmed.toLowerCase())) continue;
+      const match = BROKEN_SUFFIX_RE.exec(trimmed);
+      if (match) {
+        const condition = match[2].toLowerCase();
+        described = {
+          label: formatPartName(match[1]),
+          condition,
+          severity: (CONDITION_WEIGHTS.get(condition) ?? 0.5) * 1.5 + 0.5,
+        };
+      } else {
+        described = {
+          label: formatPartName(trimmed),
+          condition: "damaged",
+          severity: 0.75,
+        };
+      }
+    } else {
+      described = describePartEntry(key, value);
+    }
+    if (!described) continue;
+    const id = described.label.toLowerCase();
+    const existing = target.get(id);
+    if (!existing || described.severity > existing.severity) {
+      target.set(id, described);
+    }
+  }
+}
+
+function summarizePartDamage(vehicle, rig) {
+  const damage = vehicle?.damage;
+  const rigDamage = rig?.diagnostics?.damage;
+  const collected = new Map();
+  addDamageItems(collected, damage?.parts);
+  if (collected.size === 0) {
+    addDamageItems(collected, rigDamage?.parts);
+    addDamageItems(collected, rigDamage?.brokenParts);
+  }
+  const items = [...collected.values()].sort((a, b) => b.severity - a.severity);
+  const brokenCount = Math.max(
+    0,
+    Math.round(finite(damage?.brokenCount ?? rigDamage?.brokenCount)),
+  );
+  const detachedCount = Math.max(
+    0,
+    Math.round(finite(damage?.detachedCount ?? rigDamage?.detachedCount)),
+  );
+  if (items.length > 0) {
+    const totalCount = Math.max(items.length, brokenCount);
+    const shown = items
+      .slice(0, 4)
+      .map((item) => `${item.label} ${item.condition}`);
+    const extra = totalCount - shown.length;
+    const summary =
+      totalCount >= 4
+        ? `${totalCount} parts damaged · ${shown.join(" · ")}${extra > 0 ? ` · +${extra} more` : ""}`
+        : shown.join(" · ");
+    return { damaged: true, text: summary };
+  }
+  if (brokenCount > 0 || detachedCount > 0) {
+    const totalCount = Math.max(brokenCount, detachedCount);
+    const noun = totalCount === 1 ? "part" : "parts";
+    return {
+      damaged: true,
+      text:
+        detachedCount > 0
+          ? `${totalCount} ${noun} damaged · ${detachedCount} detached`
+          : `${totalCount} ${noun} damaged`,
+    };
+  }
+  const dentedSides = DAMAGE_SIDES.map((side) => [
+    side,
+    Math.round(clamp01(damage?.[side]) * 100),
+  ])
+    .filter(([, pct]) => pct >= 1)
+    .sort((a, b) => b[1] - a[1]);
+  if (dentedSides.length > 0) {
+    return {
+      damaged: true,
+      text: dentedSides
+        .map(
+          ([side, pct]) =>
+            `${side[0].toUpperCase()}${side.slice(1)} body dented (${pct}%)`,
+        )
+        .join(" · "),
+    };
+  }
+  const totalPct = Math.round(clamp01(damage?.total) * 100);
+  if (totalPct >= 1) {
+    return { damaged: true, text: `Body dented (${totalPct}%)` };
+  }
+  return { damaged: false, text: PRISTINE_PARTS_TEXT };
+}
+
+function normalizeSurfaceKind(raw) {
+  const token = String(raw ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/[\s_]+/g, "-");
+  if (!token) return "asphalt";
+  if (token.includes("sand") || token.includes("dust")) return "sand";
+  if (
+    token.includes("water") ||
+    token.includes("puddle") ||
+    token.includes("wet") ||
+    token.includes("flood")
+  ) {
+    return "water";
+  }
+  if (
+    token.includes("cobble") ||
+    token.includes("stone") ||
+    token.includes("paver") ||
+    token.includes("brick")
+  ) {
+    return "cobble";
+  }
+  return "asphalt";
+}
+
+export function describeRoadSurface(rawSurface, actor = null) {
+  const src =
+    rawSurface !== undefined
+      ? rawSurface
+      : actor?.vehicle?.surface ?? actor?.surface ?? null;
+  const rawKind =
+    typeof src === "string"
+      ? src
+      : src?.kind ??
+        src?.surfaceKind ??
+        src?.type ??
+        src?.surface ??
+        src?.id ??
+        src?.name ??
+        "asphalt";
+  const surface = normalizeSurfaceKind(rawKind);
+  const spec = SURFACE_SPECS[surface] ?? SURFACE_SPECS.asphalt;
+
+  let gripPct = spec.defaultGripPct;
+  if (src && typeof src === "object") {
+    if (Number.isFinite(src.gripPct)) {
+      gripPct = Math.round(Math.max(0, Math.min(150, src.gripPct)));
+    } else {
+      const rawGrip =
+        src.grip ??
+        src.gripMultiplier ??
+        src.gripFactor ??
+        src.traction ??
+        src.friction ??
+        src.mu;
+      if (Number.isFinite(rawGrip)) {
+        gripPct = Math.round(
+          Math.max(0, rawGrip > 1.5 ? rawGrip : rawGrip * 100),
+        );
+      }
+    }
+  }
+
+  let gradePct = 0;
+  if (src && typeof src === "object") {
+    if (Number.isFinite(src.gradePct)) {
+      gradePct = src.gradePct;
+    } else if (Number.isFinite(src.slopePct)) {
+      gradePct = src.slopePct;
+    } else if (Number.isFinite(src.gradeSin)) {
+      gradePct = src.gradeSin * 100;
+    } else if (Number.isFinite(src.pitchRad)) {
+      gradePct = Math.tan(src.pitchRad) * 100;
+    } else if (Number.isFinite(src.slopeRad)) {
+      gradePct = Math.tan(src.slopeRad) * 100;
+    } else if (Number.isFinite(src.grade)) {
+      gradePct =
+        Math.abs(src.grade) > 0 && Math.abs(src.grade) <= 0.65
+          ? src.grade * 100
+          : src.grade;
+    } else if (Number.isFinite(src.slope)) {
+      gradePct =
+        Math.abs(src.slope) > 0 && Math.abs(src.slope) <= 0.65
+          ? src.slope * 100
+          : src.slope;
+    } else if (Number.isFinite(actor?.gradePct)) {
+      gradePct = actor.gradePct;
+    }
+  } else if (Number.isFinite(actor?.gradePct)) {
+    gradePct = actor.gradePct;
+  }
+
+  const sloped = Math.abs(gradePct) >= 1.0;
+  const gradeNote = sloped
+    ? gradePct > 0
+      ? `Uphill +${gradePct.toFixed(1)}%`
+      : `Downhill -${Math.abs(gradePct).toFixed(1)}%`
+    : spec.flatNote;
+  const fullText = `Surface: ${spec.label} · Grip ${gripPct}% · ${gradeNote}`;
+  const compactText = sloped
+    ? `${spec.label} · Grip ${gripPct}% · ${gradeNote}`
+    : `${spec.label} · Grip ${gripPct}%`;
+
+  return {
+    surface,
+    label: spec.label,
+    gripPct,
+    gradePct,
+    gradeNote,
+    text: fullText,
+    compactText,
+    isNotable: surface !== "asphalt" || gripPct <= 95 || sloped,
+  };
+}
 
 function node(tag, className, text) {
   const element = document.createElement(tag);
@@ -138,7 +622,18 @@ export function mountVehiclePanel({ toolbar, onAction }) {
   telemetry.id = "carTelemetry";
   const telemetryReading = node("p", "", "Virtual IMU / GNSS unavailable");
   const telemetryPosition = node("p");
-  telemetry.append(telemetryReading, telemetryPosition);
+  const surfaceStatus = node("p", "car-surface-status", DEFAULT_SURFACE_TEXT);
+  surfaceStatus.id = "carSurfaceStatus";
+  surfaceStatus.dataset.surface = "asphalt";
+  surfaceStatus.setAttribute("data-surface", "asphalt");
+  telemetry.append(telemetryReading, telemetryPosition, surfaceStatus);
+  const damageSection = node("section", "car-damage-status");
+  const damageHeading = node("h3", "", "Body & parts");
+  const partDamage = node("p", "car-part-damage", PRISTINE_PARTS_TEXT);
+  partDamage.id = "carPartDamage";
+  partDamage.dataset.damaged = "false";
+  partDamage.setAttribute("data-damaged", "false");
+  damageSection.append(damageHeading, partDamage);
   const impactSection = node("section", "car-impact");
   const impactHeading = node("h3", "", "Controlled impact bay");
   const impactStatus = node("p", "car-panel-note");
@@ -151,15 +646,21 @@ export function mountVehiclePanel({ toolbar, onAction }) {
   );
   const impactActions = node("div", "car-impact-actions");
   const runButton = button("carImpactRunBtn", "Run impact", "impact-run");
+  const heavyRunButton = button(
+    "carHeavyImpactBtn",
+    "Heavy crash (50 km/h)",
+    "heavy-impact-run",
+  );
   const resetButton = button("carResetBtn", "Repair / reset", "reset-car");
   runButton.setAttribute("aria-describedby", "carTestStatus");
+  heavyRunButton.setAttribute("aria-describedby", "carTestStatus");
   resetButton.setAttribute("aria-describedby", "carTestStatus");
   const returnButton = button(
     "carReturnBtn",
     "Return to city",
     "return-city",
   );
-  impactActions.append(runButton, resetButton);
+  impactActions.append(runButton, heavyRunButton, resetButton);
   impactSection.append(
     impactHeading,
     impactStatus,
@@ -189,6 +690,7 @@ export function mountVehiclePanel({ toolbar, onAction }) {
     auxTitle,
     auxiliary,
     telemetry,
+    damageSection,
     impactSection,
     error,
     help,
@@ -321,6 +823,13 @@ export function mountVehiclePanel({ toolbar, onAction }) {
       text(telemetryPosition,
         `X ${finite(p.x).toFixed(1)} · Y ${finite(p.y).toFixed(1)} · Z ${finite(p.z).toFixed(1)} m`);
     }
+    const surfaceReport = describeRoadSurface(
+      state.surface ?? vehicle?.surface ?? actor?.surface ?? world?.surface,
+      actor,
+    );
+    surfaceStatus.dataset.surface = surfaceReport.surface;
+    surfaceStatus.setAttribute("data-surface", surfaceReport.surface);
+    text(surfaceStatus, surfaceReport.text);
     bayButton.hidden = inBay;
     returnButton.hidden = !inBay;
     disabled(bayButton, !loaded, loadingReason);
@@ -340,6 +849,11 @@ export function mountVehiclePanel({ toolbar, onAction }) {
       !loaded || !inBay || phase !== "ready",
       runReason,
     );
+    disabled(
+      heavyRunButton,
+      !loaded || !inBay || phase !== "ready",
+      runReason,
+    );
     const resetReason = !inBay
       ? "Repair is only available in the separate impact bay."
       : !knownPhase
@@ -355,6 +869,7 @@ export function mountVehiclePanel({ toolbar, onAction }) {
       resetReason,
     );
     disabled(returnButton, false, "");
+    const heavyRun = running && finite(world?.vehicleTest?.maxSpeedMps) > 8;
     text(
       impactStatus,
       !inBay
@@ -362,11 +877,18 @@ export function mountVehiclePanel({ toolbar, onAction }) {
         : !knownPhase
           ? "Impact fixture unavailable. Return to city and reopen the bay."
         : running
-          ? "Driving to the fixed barrier · maximum 6 m/s."
+          ? heavyRun
+            ? "Driving to the fixed barrier · heavy crash 50 km/h."
+            : "Driving to the fixed barrier · maximum 6 m/s."
           : phase === "contact"
             ? "Contact recorded. The stopped car is ready to inspect or repair."
             : "Ready · one real low-speed contact, no traffic or pedestrians.",
     );
+    const partReport = summarizePartDamage(vehicle, rig);
+    const damagedFlag = String(partReport.damaged);
+    partDamage.dataset.damaged = damagedFlag;
+    partDamage.setAttribute("data-damaged", damagedFlag);
+    text(partDamage, partReport.text);
     const damage = vehicle?.damage;
     const impact = damage?.lastImpact;
     impactDetails.hidden = !inBay || !impact;

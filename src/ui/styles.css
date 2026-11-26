@@ -834,22 +834,20 @@ body[data-city-sense] :is(#minimap, .map-label, #cameraBtn) { visibility: hidden
 }
 .pursuit-strobe__red {
   background:
-    radial-gradient(ellipse 14% 34% at 3% 18%, rgba(255, 112, 96, 0.94) 0%, #ff1e3a 32%, rgba(216, 14, 48, 0.30) 64%, transparent 100%),
-    radial-gradient(ellipse 13% 30% at 2% 80%, rgba(255, 92, 88, 0.80) 0%, rgba(255, 30, 58, 0.66) 36%, rgba(188, 10, 42, 0.20) 68%, transparent 100%),
-    radial-gradient(ellipse 18% 11% at 9% 3%, rgba(255, 84, 92, 0.62) 0%, rgba(255, 30, 58, 0.24) 56%, transparent 100%);
+    radial-gradient(ellipse 5.5% 18% at 0.8% 24%, rgba(255, 112, 96, 0.44) 0%, rgba(255, 30, 58, 0.20) 30%, transparent 52%),
+    radial-gradient(ellipse 5.0% 16% at 0.8% 76%, rgba(255, 92, 88, 0.36) 0%, rgba(216, 14, 48, 0.15) 32%, transparent 52%);
   animation: pursuitStrobeRed var(--strobe-cycle-ms, 420ms) cubic-bezier(0.22, 0.61, 0.36, 1) infinite;
 }
 .pursuit-strobe__blue {
   background:
-    radial-gradient(ellipse 14% 34% at 97% 18%, rgba(124, 232, 255, 0.94) 0%, #1a75ff 32%, rgba(16, 76, 224, 0.30) 64%, transparent 100%),
-    radial-gradient(ellipse 13% 30% at 98% 80%, rgba(92, 210, 255, 0.80) 0%, rgba(26, 117, 255, 0.66) 36%, rgba(12, 62, 198, 0.20) 68%, transparent 100%),
-    radial-gradient(ellipse 18% 11% at 91% 3%, rgba(96, 196, 255, 0.62) 0%, rgba(26, 117, 255, 0.24) 56%, transparent 100%);
+    radial-gradient(ellipse 5.5% 18% at 99.2% 24%, rgba(124, 232, 255, 0.44) 0%, rgba(26, 117, 255, 0.20) 30%, transparent 52%),
+    radial-gradient(ellipse 5.0% 16% at 99.2% 76%, rgba(92, 210, 255, 0.36) 0%, rgba(16, 76, 224, 0.15) 32%, transparent 52%);
   animation: pursuitStrobeBlue var(--strobe-cycle-ms, 420ms) cubic-bezier(0.22, 0.61, 0.36, 1) infinite;
 }
 .pursuit-strobe__ambient {
   background:
-    radial-gradient(ellipse 30% 10% at 15% 2.5%, rgba(255, 30, 58, 0.56) 0%, rgba(255, 78, 96, 0.20) 52%, transparent 100%),
-    radial-gradient(ellipse 30% 10% at 85% 2.5%, rgba(26, 117, 255, 0.56) 0%, rgba(92, 212, 255, 0.20) 52%, transparent 100%);
+    radial-gradient(ellipse 6.5% 14% at 1.2% 50%, rgba(255, 30, 58, 0.28) 0%, rgba(255, 78, 96, 0.10) 30%, transparent 50%),
+    radial-gradient(ellipse 6.5% 14% at 98.8% 50%, rgba(26, 117, 255, 0.28) 0%, rgba(92, 212, 255, 0.10) 30%, transparent 50%);
   animation: pursuitStrobeAmbient var(--strobe-cycle-ms, 420ms) ease-in-out infinite;
 }
 .pursuit-strobe[data-mode="searching"] :is(.pursuit-strobe__red, .pursuit-strobe__blue, .pursuit-strobe__ambient) {
@@ -861,79 +859,79 @@ body[data-city-sense] :is(#minimap, .map-label, #cameraBtn) { visibility: hidden
 }
 @keyframes pursuitStrobeRed {
   0% {
-    opacity: calc(var(--strobe-intensity, 0) * 0.10);
+    opacity: calc(var(--strobe-intensity, 0) * 0.03);
     transform: translate3d(0, 0, 0) scale3d(0.99, 0.99, 1);
   }
   14% {
-    opacity: var(--strobe-intensity, 0);
+    opacity: calc(var(--strobe-intensity, 0) * 0.24);
     transform: translate3d(0, 0, 0) scale3d(1.04, 1.02, 1);
   }
   21% {
-    opacity: calc(var(--strobe-intensity, 0) * 0.30);
+    opacity: calc(var(--strobe-intensity, 0) * 0.08);
     transform: translate3d(0, 0, 0) scale3d(1.01, 1.005, 1);
   }
   32% {
-    opacity: calc(var(--strobe-intensity, 0) * 0.96);
+    opacity: calc(var(--strobe-intensity, 0) * 0.17);
     transform: translate3d(0, 0, 0) scale3d(1.04, 1.02, 1);
   }
   52% {
-    opacity: calc(var(--strobe-intensity, 0) * 0.16);
+    opacity: calc(var(--strobe-intensity, 0) * 0.04);
     transform: translate3d(0, 0, 0) scale3d(1, 0.995, 1);
   }
   78% {
-    opacity: calc(var(--strobe-intensity, 0) * 0.05);
+    opacity: calc(var(--strobe-intensity, 0) * 0.015);
     transform: translate3d(0, 0, 0) scale3d(0.985, 0.99, 1);
   }
   100% {
-    opacity: calc(var(--strobe-intensity, 0) * 0.10);
+    opacity: calc(var(--strobe-intensity, 0) * 0.03);
     transform: translate3d(0, 0, 0) scale3d(0.99, 0.99, 1);
   }
 }
 @keyframes pursuitStrobeBlue {
   0% {
-    opacity: calc(var(--strobe-intensity, 0) * 0.16);
+    opacity: calc(var(--strobe-intensity, 0) * 0.04);
     transform: translate3d(0, 0, 0) scale3d(1, 0.995, 1);
   }
   28% {
-    opacity: calc(var(--strobe-intensity, 0) * 0.05);
+    opacity: calc(var(--strobe-intensity, 0) * 0.015);
     transform: translate3d(0, 0, 0) scale3d(0.985, 0.99, 1);
   }
   50% {
-    opacity: calc(var(--strobe-intensity, 0) * 0.10);
+    opacity: calc(var(--strobe-intensity, 0) * 0.03);
     transform: translate3d(0, 0, 0) scale3d(0.99, 0.99, 1);
   }
   64% {
-    opacity: var(--strobe-intensity, 0);
+    opacity: calc(var(--strobe-intensity, 0) * 0.24);
     transform: translate3d(0, 0, 0) scale3d(1.04, 1.02, 1);
   }
   71% {
-    opacity: calc(var(--strobe-intensity, 0) * 0.30);
+    opacity: calc(var(--strobe-intensity, 0) * 0.08);
     transform: translate3d(0, 0, 0) scale3d(1.01, 1.005, 1);
   }
   82% {
-    opacity: calc(var(--strobe-intensity, 0) * 0.96);
+    opacity: calc(var(--strobe-intensity, 0) * 0.17);
     transform: translate3d(0, 0, 0) scale3d(1.04, 1.02, 1);
   }
   100% {
-    opacity: calc(var(--strobe-intensity, 0) * 0.16);
+    opacity: calc(var(--strobe-intensity, 0) * 0.04);
     transform: translate3d(0, 0, 0) scale3d(1, 0.995, 1);
   }
 }
 @keyframes pursuitStrobeAmbient {
   0%, 100% {
-    opacity: calc(var(--strobe-intensity, 0) * 0.30);
+    opacity: calc(var(--strobe-intensity, 0) * 0.07);
     transform: translate3d(0, 0, 0) scale3d(1, 1, 1);
   }
   22% {
-    opacity: calc(var(--strobe-intensity, 0) * 0.54);
+    opacity: calc(var(--strobe-intensity, 0) * 0.14);
     transform: translate3d(-1.2%, 0, 0) scale3d(1.03, 1.015, 1);
   }
   50% {
-    opacity: calc(var(--strobe-intensity, 0) * 0.28);
+    opacity: calc(var(--strobe-intensity, 0) * 0.06);
     transform: translate3d(0, 0, 0) scale3d(0.995, 1, 1);
   }
   72% {
-    opacity: calc(var(--strobe-intensity, 0) * 0.54);
+    opacity: calc(var(--strobe-intensity, 0) * 0.14);
     transform: translate3d(1.2%, 0, 0) scale3d(1.03, 1.015, 1);
   }
 }
@@ -991,10 +989,10 @@ body[data-city-sense] :is(#minimap, .map-label, #cameraBtn) { visibility: hidden
     animation: none !important;
     transform: none !important;
     will-change: auto;
-    opacity: calc(var(--strobe-intensity, 0) * 0.38);
+    opacity: calc(var(--strobe-intensity, 0) * 0.12);
   }
   .pursuit-strobe__ambient {
-    opacity: calc(var(--strobe-intensity, 0) * 0.24);
+    opacity: calc(var(--strobe-intensity, 0) * 0.07);
   }
   .pursuit-star,
   .pursuit-star--cooling,

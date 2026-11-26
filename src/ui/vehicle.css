@@ -202,8 +202,34 @@
   font-size: 12px;
   font-weight: 500;
 }
+.car-damage-status {
+  margin-top: 14px;
+  padding-top: 11px;
+  border-top: 1px solid var(--car-line);
+}
+.car-damage-status h3 {
+  margin: 0 0 5px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.car-part-damage {
+  margin: 0;
+  padding: 6px 8px;
+  color: var(--car-ink);
+  background: #212d27;
+  border: 1px solid #8ca39240;
+  border-radius: 5px;
+  font-size: 11px;
+  line-height: 1.45;
+  font-variant-numeric: tabular-nums;
+}
+.car-part-damage[data-damaged="true"] {
+  color: #f3c396;
+  background: #2b211d;
+  border-color: #d69c6a66;
+}
 .car-impact {
-  margin-top: 16px;
+  margin-top: 14px;
   padding-top: 12px;
   border-top: 1px solid var(--car-line);
 }
@@ -230,8 +256,19 @@
 }
 .car-impact-actions {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(112px, 1fr));
   gap: 6px;
+}
+#carHeavyImpactBtn:not(:disabled) {
+  color: #f3c396;
+  background: #362821;
+  border-color: #cf966873;
+}
+#carHeavyImpactBtn:not(:disabled):hover {
+  background: #463329;
+}
+#carResetBtn {
+  grid-column: 1 / -1;
 }
 #carReturnBtn {
   margin-top: 7px;

@@ -23,9 +23,26 @@ export function createBridge({ renderer, readState }) {
       if (!response.ok) enabled = false;
     } catch { enabled = false; }
   }
-  function sendFrame(viewport) {
+  function sendFrame(viewport, preEncodedJpegBase64 = null) {
     if (!enabled || framePending) return;
     framePending = true;
+    if (typeof preEncodedJpegBase64 === "string" && preEncodedJpegBase64.length > 0 && preEncodedJpegBase64.length < 520000) {
+      Promise.resolve().then(async () => {
+        try {
+          const bin = atob(preEncodedJpegBase64);
+          const bytes = new Uint8Array(bin.length);
+          for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+          const response = await fetch("/api/frame", {
+            method: "POST", headers: { "Content-Type": "image/jpeg" }, body: bytes,
+          });
+          if (response.ok) lastFrameId = (await response.json()).frameId;
+          else enabled = false;
+        } catch {
+          enabled = false;
+        } finally { framePending = false; }
+      });
+      return;
+    }
     const bounds = renderer.domElement.getBoundingClientRect();
     const ratio = renderer.domElement.width / bounds.width;
     const sourceTop = bounds.height - viewport.y - viewport.height;
@@ -270,7 +287,7 @@ export function createVisualClient({ renderer, onResult, onStatus, onFrame }) {
   }
 
   function capture(scene, camera, ego, simulationTimeS) {
-    if ((!enabled && !previewEnabled) || disposed || pending || simulationTimeS - lastSampleS < 0.1) return;
+    if ((!enabled && !previewEnabled) || disposed || pending || simulationTimeS - lastSampleS < 0.1 - 1e-9) return;
     lastSampleS = simulationTimeS;
     const currentFrame = ++frameId;
     const timing = { streamId, frameId: currentFrame, simulationTimeS,
@@ -336,6 +353,7 @@ export function createVisualClient({ renderer, onResult, onStatus, onFrame }) {
       return resultStream === streamId ? results.get(resultFrame) ?? null : null;
     },
     get latestFrame() { return latestFrame; },
+    get previewTexture() { return target.texture; },
     get streamId() { return streamId; },
     get status() { return status; },
     get enabled() { return enabled; },

@@ -1,17 +1,21 @@
 import { STEP } from "./config.js";
 export class FixedClock {
-  constructor() {
+  constructor({ maxBacklogSeconds = Infinity } = {}) {
     this.accumulator = 0;
     this.discardedSeconds = 0;
+    this.maxBacklogSeconds = maxBacklogSeconds;
   }
   advance(seconds, step, maxSteps = Infinity) {
     if (!Number.isFinite(seconds) || seconds < 0) return 0;
-    const supplied = Math.min(seconds, 0.25);
+    const cap = Number.isFinite(this.maxBacklogSeconds) && this.maxBacklogSeconds > 0
+      ? this.maxBacklogSeconds
+      : Infinity;
+    const supplied = Math.min(seconds, cap);
     this.discardedSeconds += seconds - supplied;
     this.accumulator += supplied;
-    if (Number.isFinite(maxSteps) && this.accumulator > .25) {
-      this.discardedSeconds += this.accumulator - .25;
-      this.accumulator = .25;
+    if (Number.isFinite(cap) && this.accumulator > cap) {
+      this.discardedSeconds += this.accumulator - cap;
+      this.accumulator = cap;
     }
     let count = 0;
     while (count < maxSteps && this.accumulator + 1e-10 >= STEP) {

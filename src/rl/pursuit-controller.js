@@ -1,9 +1,32 @@
-import { PURSUIT_STOP } from "../core/pursuit-controls.js";
+import { PURSUIT_STOP, validatePursuitAction } from "../core/pursuit-controls.js";
 import { PURSUIT_SCAN_TICKS } from "../signal_processing/pursuit-scanner.js";
 import { getDispatchObservation } from "./gta-pursuit-env.js";
 import { selectDispatchMovement, requireDispatchScan } from "./pursuit-shield.js";
 import { planDispatchEvasion } from "./pursuit-evasion.js";
 import { PAKO_EVASIVE_CONTROL, planPakoEvasiveAction } from "./pako-evasive-control.js";
+
+function stripNitro(action) {
+  if (!action || !Object.prototype.hasOwnProperty.call(action, "nitro")) return action;
+  const { steer, throttle, brake, gear } = action;
+  return { steer, throttle, brake, gear };
+}
+
+function dispatchCommandAction(action) {
+  if (!action?.nitro) return action;
+  try {
+    return validatePursuitAction(action);
+  } catch {
+    return stripNitro(action);
+  }
+}
+
+function setPedestrianNitroHold(player, suppressed) {
+  if (!player || typeof player !== "object") return;
+  const desc = Object.getOwnPropertyDescriptor(player, "nitroSuppressedByPedestrian");
+  if ((desc && desc.writable) || (!desc && Object.isExtensible(player))) {
+    player.nitroSuppressedByPedestrian = Boolean(suppressed);
+  }
+}
 
 function visualCrossingBrake(visual, cameraStream, guarded) {
   if (!cameraStream || guarded.reason || guarded.action.gear !== 1 || !guarded.action.throttle ||
@@ -33,15 +56,39 @@ export function applyFrozenDispatchAction(world, driver, cameraStream = null) {
   const start = performance.now();
   try {
     const scan = requireDispatchScan(world);
-    if (driver.lastTick === scan.tick) return false;
-    action = driver.policy.action(getDispatchObservation(world, driver.policy.observation));
+    if (driver.lastTick === scan.tick && driver.lastScan === scan) return false;
+    const ignorePedCol = Boolean(driver._faultIgnorePedestrianCollisionOnly);
+    const obsWorld = ignorePedCol
+      ? {
+          ...world,
+          pursuit: {
+            ...world.pursuit,
+            gta: {
+              ...world.pursuit.gta,
+              scan: Object.freeze({
+                ...scan,
+                rays: Object.freeze(
+                  scan.rays.map((r) =>
+                    r.kind === "pedestrian" ? Object.freeze({ kind: "none", rangeM: 48 }) : r,
+                  ),
+                ),
+                tracks: Object.freeze(scan.tracks.filter((t) => t.kind !== "pedestrian")),
+              }),
+            },
+          },
+        }
+      : world;
+    action = driver.policy.action(getDispatchObservation(obsWorld, driver.policy.observation));
     const alternate = driver.evasiveControl === PAKO_EVASIVE_CONTROL ? planPakoEvasiveAction
       : driver.evasion ? planDispatchEvasion : null;
     const guarded = selectDispatchMovement(world, action, alternate);
-    const cameraBrake = visualCrossingBrake(world.visualState, cameraStream, guarded);
-    const submitted = cameraBrake ? { ...guarded.action, throttle: 0, brake: 1 } : guarded.action;
+    const cameraBrake = ignorePedCol ? null : visualCrossingBrake(world.visualState, cameraStream, guarded);
+    const submitted = cameraBrake
+      ? { ...stripNitro(guarded.action), throttle: 0, brake: 1 }
+      : guarded.action;
+    setPedestrianNitroHold(world.player, Boolean(cameraBrake || guarded.planner?.nitroSuppressedByPedestrian));
     driver.inferenceMs = performance.now() - start;
-    world.command({ type: "pursuit-drive", action: submitted });
+    world.command({ type: "pursuit-drive", action: dispatchCommandAction(submitted) });
     const resumed = driver.status === "waiting-for-scan";
     driver.status = "active";
     driver.scanDeadline = null;
@@ -52,6 +99,7 @@ export function applyFrozenDispatchAction(world, driver, cameraStream = null) {
       requested: action, submitted, shieldReason: guarded.reason, cameraBrake,
       planner: guarded.planner ?? null, inferenceMs: driver.inferenceMs };
     driver.lastTick = scan.tick;
+    driver.lastScan = scan;
     driver.decisions++;
     return resumed;
   } catch (error) {

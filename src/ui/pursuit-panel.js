@@ -1,3 +1,5 @@
+import { describeRoadSurface } from "./vehicle-panel.js";
+
 const PHASES = {
   ready: "Ready",
   running: "In pursuit",
@@ -38,6 +40,10 @@ const GUARD_STATES = {
 
 const finite = Number.isFinite;
 const NO_CASES = Object.freeze([]);
+const DEFAULT_CROWD_SPAWN_COUNT = 20;
+const DEFAULT_CROWD_FEEDBACK_MS = 1800;
+const DEFAULT_NITRO_MIN_READY_CHARGE = 0.25;
+const DEFAULT_CROWD_BTN_LABEL = "+20 Pedestrians Ahead";
 const score = new Intl.NumberFormat("en", { maximumFractionDigits: 1, signDisplay: "exceptZero" });
 const words = (value) => typeof value === "string" && value.trim()
   ? value.trim().replaceAll("-", " ").slice(0, 80) : "";
@@ -48,6 +54,64 @@ const sentence = (value) => {
 const count = (value) => Number.isInteger(value) && value >= 0 ? String(value) : "—";
 const pct = (value) => Math.round(value * 100);
 const boundedPercent = (value) => pct(Math.max(0, Math.min(1, value)));
+
+function setDataAttr(element, camelKey, attrName, value) {
+  if (!element) return;
+  const str = String(value);
+  if (element.dataset) element.dataset[camelKey] = str;
+  element.setAttribute?.(attrName, str);
+}
+
+function clearDataAttr(element, camelKey, attrName) {
+  if (!element) return;
+  if (element.dataset) delete element.dataset[camelKey];
+  element.removeAttribute?.(attrName);
+}
+
+function extractHudSources(first = null, second = null) {
+  const firstObj = first && typeof first === "object" ? first : null;
+  const secondObj = second && typeof second === "object" ? second : null;
+  const nestedPursuit = firstObj?.pursuitStatus ?? firstObj?.pursuit ?? secondObj?.pursuitStatus ?? secondObj?.pursuit ?? null;
+  const firstHasPhase = Boolean(firstObj && (Object.hasOwn(PHASES, firstObj.phase) || firstObj.phase === "active"));
+  const status = firstHasPhase || !nestedPursuit ? firstObj : nestedPursuit;
+  const player = firstObj?.player ?? secondObj?.player ?? status?.player ?? null;
+  return { status, player, rawPrimary: firstObj, rawSecondary: secondObj };
+}
+
+export function resolveNitroHudState(first = null, second = null) {
+  const { status, player, rawPrimary, rawSecondary } = extractHudSources(first, second);
+  const sources = [status, player, rawPrimary, rawSecondary];
+  const rawCharge = sources.map((src) => src?.nitroCharge).find(finite);
+  const nitroCharge = Math.max(0, Math.min(1, rawCharge ?? 1));
+  const chargePercent = Math.round(nitroCharge * 100);
+  const nitroSuppressedByPedestrian = sources.some((src) => src?.nitroSuppressedByPedestrian === true);
+  const nitroActive = sources.some((src) => src?.nitroActive === true);
+  const minReadyCharge = sources.map((src) => src?.nitroMinCharge).find(finite) ?? DEFAULT_NITRO_MIN_READY_CHARGE;
+  const rechargingFlag = sources.some((src) => src?.nitroRecharging === true || src?.nitroReady === false);
+  const nitroState = nitroSuppressedByPedestrian
+    ? "ped-hold"
+    : nitroActive
+      ? "boosting"
+      : rechargingFlag || nitroCharge < minReadyCharge
+        ? "recharging"
+        : "ready";
+  const label = nitroSuppressedByPedestrian
+    ? "PED SAFE"
+    : nitroActive
+      ? "BOOST"
+      : "NITRO";
+  const rawCrowd = sources.map((src) => src?.crowdAheadCount).find(finite);
+  const crowdAheadCount = rawCrowd !== undefined && rawCrowd > 0 ? Math.max(0, Math.round(rawCrowd)) : 0;
+  return {
+    nitroCharge,
+    chargePercent,
+    nitroActive,
+    nitroSuppressedByPedestrian,
+    nitroState,
+    label,
+    crowdAheadCount,
+  };
+}
 
 function formatStarDropS(value) {
   if (!finite(value)) return "";
@@ -195,8 +259,381 @@ function pakoActiveLearningText(state, driver, terrain, escapeGuidance = "") {
   return `${prefix} · ${detail}`;
 }
 
+function buildChaseBarStatusText(status) {
+  if (!status || typeof status !== "object") return "In pursuit";
+  if (typeof status.statusText === "string" && status.statusText.trim()) {
+    return status.statusText.trim();
+  }
+  const running = status.phase === "running" || status.phase === "active";
+  const cooling = isCoolingDownState(running, status.response);
+  const guidance = running ? dispatchEscapeGuidance(status.response, cooling) : "";
+  if (guidance) return guidance;
+  const dispatchState = status.response?.dispatch?.state;
+  const stageLabel = cooling
+    ? status.response?.dispatch?.hiddenInCover === true
+      ? "Hidden · Losing stars"
+      : DISPATCH_STAGES.COOLING_DOWN
+    : DISPATCH_STAGES[dispatchState] ||
+      (Object.hasOwn(RESPONSE_STAGES, status.response?.stage) ? RESPONSE_STAGES[status.response.stage] : "") ||
+      (Object.hasOwn(PHASES, status.phase) ? PHASES[status.phase] : "In pursuit");
+  const patrol = status.patrolStatus;
+  const patrolPart = finite(patrol?.active) && patrol.active > 0
+    ? `${patrol.active} ${patrol.active === 1 ? "patrol" : "patrols"}${
+        finite(patrol.nearestM) && patrol.nearestM >= 0 ? ` · ${Math.round(patrol.nearestM)} m` : ""
+      }`
+    : "";
+  return [stageLabel, patrolPart].filter(Boolean).join(" · ") || "In pursuit";
+}
+
+function findElementById(id, doc, ...roots) {
+  if (!id) return null;
+  const fromDoc = doc?.getElementById?.(id);
+  if (fromDoc) return fromDoc;
+  for (const root of roots) {
+    if (!root) continue;
+    if (root.id === id) return root;
+    const byHelper = root.findById?.(id);
+    if (byHelper) return byHelper;
+    const byQuery = root.querySelector?.(`#${id}`);
+    if (byQuery) return byQuery;
+  }
+  return doc?.querySelector?.(`#${id}`) ?? null;
+}
+
+function createChaseBarDom(doc) {
+  const mk = (tag, id, label) => {
+    const el = doc.createElement(tag);
+    if (id) el.id = id;
+    if (label !== undefined) el.textContent = label;
+    return el;
+  };
+  const bar = mk("section", "chaseBar");
+  bar.className = "chase-bar";
+  bar.hidden = true;
+  bar.setAttribute("role", "region");
+  bar.setAttribute("aria-label", "Active chase HUD");
+
+  const stars = mk("span", "chaseStars", "☆☆☆☆☆");
+  stars.className = "chase-bar__stars";
+  stars.setAttribute("role", "img");
+  stars.setAttribute("aria-label", "Wanted level 0 of 5");
+
+  const statusText = mk("span", "chaseStatusText", "In pursuit");
+  statusText.className = "chase-bar__status";
+  statusText.setAttribute("role", "status");
+
+  const nitroMeter = mk("div", "chaseNitroMeter");
+  nitroMeter.className = "chase-nitro";
+  setDataAttr(nitroMeter, "nitroState", "data-nitro-state", "ready");
+  const nitroLabel = mk("span", "chaseNitroLabel", "NITRO");
+  nitroLabel.className = "chase-nitro__label";
+  const nitroTrack = mk("div");
+  nitroTrack.className = "chase-nitro__track";
+  const nitroFill = mk("div", "chaseNitroFill");
+  nitroFill.className = "chase-nitro__fill";
+  nitroFill.setAttribute("role", "progressbar");
+  nitroFill.setAttribute("aria-label", "Nitro boost charge");
+  nitroFill.setAttribute("aria-valuemin", "0");
+  nitroFill.setAttribute("aria-valuemax", "100");
+  nitroFill.setAttribute("aria-valuenow", "100");
+  if (nitroFill.style) {
+    nitroFill.style.width = "100%";
+    nitroFill.style.setProperty?.("width", "100%");
+  }
+  nitroTrack.append(nitroFill);
+  nitroMeter.append(nitroLabel, nitroTrack);
+
+  const crowdBtn = mk("button", "spawnCrowdAheadBtn", DEFAULT_CROWD_BTN_LABEL);
+  crowdBtn.className = "chase-bar__crowd-btn";
+  crowdBtn.type = "button";
+  crowdBtn.setAttribute("title", "Spawn 20 random walking pedestrians ahead of the car (G)");
+  crowdBtn.setAttribute("aria-label", "Spawn 20 walking pedestrians ahead");
+
+  const stopBtn = mk("button", "stopChaseBtn", "End chase");
+  stopBtn.className = "chase-bar__stop-btn";
+  stopBtn.type = "button";
+  stopBtn.setAttribute("aria-label", "End chase");
+
+  bar.append(stars, statusText, nitroMeter, crowdBtn, stopBtn);
+  return bar;
+}
+
+function bindChaseBarController({
+  doc,
+  root,
+  chaseBarHost,
+  ensureChaseBar = false,
+  onSpawnCrowdAhead,
+  onStopChase,
+  onNitro,
+  crowdSpawnFeedbackMs = DEFAULT_CROWD_FEEDBACK_MS,
+  now = Date.now,
+}) {
+  const setText = (element, value) => {
+    if (element && element.textContent !== value) element.textContent = value;
+  };
+  let chaseBar = findElementById("chaseBar", doc, chaseBarHost, root, doc?.body);
+  let createdBar = false;
+  if (!chaseBar && ensureChaseBar && typeof doc?.createElement === "function") {
+    const targetHost = chaseBarHost ?? doc?.body ?? root;
+    if (targetHost?.append) {
+      chaseBar = createChaseBarDom(doc);
+      targetHost.append(chaseBar);
+      createdBar = true;
+    }
+  }
+  const lookupRoots = [chaseBar, chaseBarHost, root, doc?.body];
+  const chaseStars = findElementById("chaseStars", doc, ...lookupRoots);
+  const chaseStatusText = findElementById("chaseStatusText", doc, ...lookupRoots);
+  const chaseNitroMeter = findElementById("chaseNitroMeter", doc, ...lookupRoots);
+  const chaseNitroLabel = findElementById("chaseNitroLabel", doc, ...lookupRoots);
+  const chaseNitroFill = findElementById("chaseNitroFill", doc, ...lookupRoots);
+  const spawnCrowdAheadBtn = findElementById("spawnCrowdAheadBtn", doc, ...lookupRoots);
+  const stopChaseBtn = findElementById("stopChaseBtn", doc, ...lookupRoots);
+  const touchNitro = findElementById("touchNitro", doc, ...lookupRoots);
+
+  let closed = false;
+  let feedbackTimer = null;
+  let justSpawnedUntilMs = 0;
+  let justBlockedUntilMs = 0;
+  let justSpawnedCount = DEFAULT_CROWD_SPAWN_COUNT;
+  let latestCrowdAheadCount = 0;
+
+  function applyCrowdButtonState() {
+    if (!spawnCrowdAheadBtn) return;
+    if (justBlockedUntilMs > now()) {
+      clearDataAttr(spawnCrowdAheadBtn, "justSpawned", "data-just-spawned");
+      setDataAttr(spawnCrowdAheadBtn, "spawnBlocked", "data-spawn-blocked", "true");
+      setText(spawnCrowdAheadBtn, "No Open Road Ahead");
+      return;
+    }
+    clearDataAttr(spawnCrowdAheadBtn, "spawnBlocked", "data-spawn-blocked");
+    if (justSpawnedUntilMs > now()) {
+      setDataAttr(spawnCrowdAheadBtn, "justSpawned", "data-just-spawned", "true");
+      setText(spawnCrowdAheadBtn, `${justSpawnedCount} Walking Ahead!`);
+      return;
+    }
+    clearDataAttr(spawnCrowdAheadBtn, "justSpawned", "data-just-spawned");
+    if (latestCrowdAheadCount > 0) {
+      setDataAttr(spawnCrowdAheadBtn, "crowdCount", "data-crowd-count", String(latestCrowdAheadCount));
+      setText(spawnCrowdAheadBtn, `${DEFAULT_CROWD_BTN_LABEL} (${latestCrowdAheadCount})`);
+    } else {
+      clearDataAttr(spawnCrowdAheadBtn, "crowdCount", "data-crowd-count");
+      setText(spawnCrowdAheadBtn, DEFAULT_CROWD_BTN_LABEL);
+    }
+  }
+
+  function flashCrowdBlocked() {
+    if (closed) return;
+    justSpawnedUntilMs = 0;
+    justBlockedUntilMs = now() + Math.max(0, crowdSpawnFeedbackMs);
+    if (feedbackTimer) {
+      clearTimeout(feedbackTimer);
+      feedbackTimer = null;
+    }
+    applyCrowdButtonState();
+    if (crowdSpawnFeedbackMs > 0) {
+      feedbackTimer = setTimeout(() => {
+        feedbackTimer = null;
+        justBlockedUntilMs = 0;
+        if (!closed) applyCrowdButtonState();
+      }, crowdSpawnFeedbackMs);
+      feedbackTimer?.unref?.();
+    }
+  }
+
+  function flashCrowdSpawned(spawnedCount = DEFAULT_CROWD_SPAWN_COUNT) {
+    if (closed) return;
+    justBlockedUntilMs = 0;
+    justSpawnedCount = Number.isInteger(spawnedCount) && spawnedCount > 0
+      ? spawnedCount
+      : DEFAULT_CROWD_SPAWN_COUNT;
+    justSpawnedUntilMs = now() + Math.max(0, crowdSpawnFeedbackMs);
+    if (feedbackTimer) {
+      clearTimeout(feedbackTimer);
+      feedbackTimer = null;
+    }
+    applyCrowdButtonState();
+    if (crowdSpawnFeedbackMs > 0) {
+      feedbackTimer = setTimeout(() => {
+        feedbackTimer = null;
+        justSpawnedUntilMs = 0;
+        if (!closed) applyCrowdButtonState();
+      }, crowdSpawnFeedbackMs);
+      feedbackTimer?.unref?.();
+    }
+  }
+
+  function triggerSpawnCrowdAhead(payload) {
+    if (closed || spawnCrowdAheadBtn?.disabled) return undefined;
+    const requested = Number.isInteger(payload?.count) && payload.count > 0
+      ? payload.count
+      : Number.isInteger(payload) && payload > 0
+        ? payload
+        : DEFAULT_CROWD_SPAWN_COUNT;
+    const result = onSpawnCrowdAhead?.({ count: requested });
+    if (
+      result === false ||
+      result === null ||
+      result === 0 ||
+      result?.ok === false ||
+      (Number.isInteger(result?.spawned) && result.spawned <= 0)
+    ) {
+      flashCrowdBlocked();
+      return result;
+    }
+    const spawned = Number.isInteger(result?.spawned) && result.spawned > 0
+      ? result.spawned
+      : Number.isInteger(result) && result > 0
+        ? result
+        : requested;
+    flashCrowdSpawned(spawned);
+    return result;
+  }
+
+  const onCrowdClick = () => {
+    triggerSpawnCrowdAhead({ count: DEFAULT_CROWD_SPAWN_COUNT });
+  };
+  const onStopClick = () => {
+    if (!closed && !stopChaseBtn?.disabled) onStopChase?.();
+  };
+  const onTouchNitroDown = () => {
+    if (!closed && !touchNitro?.disabled) onNitro?.(true);
+  };
+  const onTouchNitroUp = () => {
+    if (!closed) onNitro?.(false);
+  };
+
+  if (spawnCrowdAheadBtn) {
+    spawnCrowdAheadBtn.addEventListener?.("click", onCrowdClick);
+    if (typeof spawnCrowdAheadBtn.click !== "function") {
+      spawnCrowdAheadBtn.click = onCrowdClick;
+    }
+  }
+  if (stopChaseBtn) {
+    stopChaseBtn.addEventListener?.("click", onStopClick);
+    if (typeof stopChaseBtn.click !== "function") {
+      stopChaseBtn.click = onStopClick;
+    }
+  }
+  if (touchNitro && typeof onNitro === "function") {
+    touchNitro.addEventListener?.("pointerdown", onTouchNitroDown);
+    touchNitro.addEventListener?.("pointerup", onTouchNitroUp);
+    touchNitro.addEventListener?.("pointercancel", onTouchNitroUp);
+  }
+
+  function applyNitroAndCrowd(first = null, second = null) {
+    const hud = resolveNitroHudState(first, second);
+    latestCrowdAheadCount = hud.crowdAheadCount;
+    if (chaseNitroMeter) {
+      setDataAttr(chaseNitroMeter, "nitroState", "data-nitro-state", hud.nitroState);
+    }
+    if (chaseNitroLabel) {
+      setText(chaseNitroLabel, hud.label);
+    }
+    if (chaseNitroFill) {
+      const widthCss = `${hud.chargePercent}%`;
+      if (chaseNitroFill.style) {
+        chaseNitroFill.style.width = widthCss;
+        chaseNitroFill.style.setProperty?.("width", widthCss);
+      }
+      chaseNitroFill.setAttribute?.("aria-valuemin", "0");
+      chaseNitroFill.setAttribute?.("aria-valuemax", "100");
+      chaseNitroFill.setAttribute?.("aria-valuenow", String(hud.chargePercent));
+    }
+    if (touchNitro) {
+      setDataAttr(touchNitro, "nitroState", "data-nitro-state", hud.nitroState);
+      touchNitro.setAttribute?.("aria-pressed", String(hud.nitroState === "boosting"));
+    }
+    applyCrowdButtonState();
+    return hud;
+  }
+
+  function sync(first = null, second = null) {
+    if (closed) return null;
+    if (first === null && second === null) {
+      reset();
+      return null;
+    }
+    const { status } = extractHudSources(first, second);
+    const hud = applyNitroAndCrowd(first, second);
+    if (status && typeof status === "object") {
+      const hasPhase = typeof status.phase === "string" && status.phase.length > 0;
+      const isActiveChase = status.phase === "running" ||
+        status.phase === "active" ||
+        status.phase === "paused" ||
+        (status.enabled === true && !["ready", "stopped", "idle", "escaped"].includes(status.phase));
+      if (chaseBar && hasPhase) {
+        chaseBar.hidden = !isActiveChase;
+        setDataAttr(chaseBar, "phase", "data-phase", status.paused ? "paused" : status.phase);
+      }
+      if (typeof status.wantedLevel === "number" || hasPhase) {
+        const wanted = Math.max(0, Math.min(5, Math.floor(status.wantedLevel || 0)));
+        const cooling = isCoolingDownState(isActiveChase, status.response);
+        const starsString = "\u2605".repeat(wanted) + "\u2606".repeat(5 - wanted);
+        if (chaseBar) {
+          setDataAttr(chaseBar, "level", "data-level", String(wanted));
+          setDataAttr(chaseBar, "cooling", "data-cooling", cooling ? "true" : "false");
+        }
+        if (chaseStars) {
+          setText(chaseStars, starsString);
+          setDataAttr(chaseStars, "level", "data-level", String(wanted));
+          setDataAttr(chaseStars, "cooling", "data-cooling", cooling ? "true" : "false");
+          chaseStars.setAttribute?.("aria-label", `Wanted level ${wanted} of 5`);
+        }
+      }
+      if (chaseStatusText && (hasPhase || typeof status.statusText === "string")) {
+        setText(chaseStatusText, buildChaseBarStatusText(status));
+      }
+    }
+    return hud;
+  }
+
+  function reset() {
+    if (closed) return;
+    latestCrowdAheadCount = 0;
+    if (chaseBar) {
+      chaseBar.hidden = true;
+      setDataAttr(chaseBar, "cooling", "data-cooling", "false");
+      setDataAttr(chaseBar, "level", "data-level", "0");
+    }
+    if (chaseStars) {
+      setText(chaseStars, "☆☆☆☆☆");
+      setDataAttr(chaseStars, "cooling", "data-cooling", "false");
+      setDataAttr(chaseStars, "level", "data-level", "0");
+      chaseStars.setAttribute?.("aria-label", "Wanted level 0 of 5");
+    }
+    applyNitroAndCrowd(null, null);
+  }
+
+  function destroy() {
+    if (closed) return;
+    closed = true;
+    if (feedbackTimer) {
+      clearTimeout(feedbackTimer);
+      feedbackTimer = null;
+    }
+    spawnCrowdAheadBtn?.removeEventListener?.("click", onCrowdClick);
+    stopChaseBtn?.removeEventListener?.("click", onStopClick);
+    touchNitro?.removeEventListener?.("pointerdown", onTouchNitroDown);
+    touchNitro?.removeEventListener?.("pointerup", onTouchNitroUp);
+    touchNitro?.removeEventListener?.("pointercancel", onTouchNitroUp);
+    if (createdBar) chaseBar?.remove?.();
+  }
+
+  return {
+    sync,
+    reset,
+    destroy,
+    flashCrowdSpawned,
+    triggerSpawnCrowdAhead,
+  };
+}
+
 export function mountPursuitPanel({ container, onRun, onRestart, onLevel, onCase, onStyle, onCheckpoint, onUse, onSound,
-  onExportTrace, onOpenLab, onEvasion, onCurbSupport, onDriverMode, onCameraStyle }) {
+  onExportTrace, onOpenLab, onEvasion, onCurbSupport, onDriverMode, onCameraStyle,
+  onSpawnCrowdAhead, onStopChase, onNitro, chaseBarHost, ensureChaseBar = false,
+  crowdSpawnFeedbackMs = DEFAULT_CROWD_FEEDBACK_MS, now = Date.now }) {
   if (!container?.ownerDocument || ![onRun, onRestart, onLevel].every((fn) => typeof fn === "function"))
     throw new TypeError("Pursuit controls need a container and action callbacks.");
   const doc = container.ownerDocument;
@@ -271,10 +708,13 @@ export function mountPursuitPanel({ container, onRun, onRestart, onLevel, onCase
   const currentReadings = node("dl");
   const proximityLabel = node("dt", "", "Nearest patrol");
   const proximity = node("dd", "pursuitProximity");
+  const speedLabel = node("dt", "", "Speed");
   const speed = node("dd", "pursuitActualSpeed");
   const healthLabel = node("dt", "", "Vehicle health"), health = node("dd", "pursuitHealth");
   healthLabel.hidden = health.hidden = true;
-  currentReadings.append(proximityLabel, proximity, node("dt", "", "Speed"), speed, healthLabel, health);
+  const surfaceLabel = node("dt", "", "Surface"), surfaceValue = node("dd", "pursuitSurfaceStatus");
+  surfaceLabel.hidden = surfaceValue.hidden = true;
+  currentReadings.append(proximityLabel, proximity, speedLabel, speed, healthLabel, health, surfaceLabel, surfaceValue);
   situation.append(currentReadings);
 
   const controls = node("div");
@@ -425,6 +865,7 @@ export function mountPursuitPanel({ container, onRun, onRestart, onLevel, onCase
   const showRoute = reading("Route", "Route");
   const showGuard = reading("Guard", "Guard");
   const showSupport = reading("Support", "Curb");
+  const showSurface = reading("Surface", "Surface");
   const showEvent = reading("Event", "Last event");
   const showImpact = reading("Impact", "Impact");
   const showPressure = reading("Pressure", "Pressure");
@@ -470,6 +911,17 @@ export function mountPursuitPanel({ container, onRun, onRestart, onLevel, onCase
   let compact = false;
   let shownCases = NO_CASES;
   let choiceScope = "";
+  const chaseBarHud = bindChaseBarController({
+    doc,
+    root: container,
+    chaseBarHost,
+    ensureChaseBar,
+    onSpawnCrowdAhead,
+    onStopChase: onStopChase ?? onRestart,
+    onNitro,
+    crowdSpawnFeedbackMs,
+    now,
+  });
 
   function disabled() {
     const street = latest?.street === true || latest?.pako === true;
@@ -551,6 +1003,8 @@ export function mountPursuitPanel({ container, onRun, onRestart, onLevel, onCase
     showGuard(applied ? (Object.hasOwn(GUARD_STATES, guard) ? GUARD_STATES[guard] : sentence(guard)) : "");
     showSupport(active && finite(metrics?.supportHeightM) && metrics.supportHeightM > 0
       ? `${metrics.supportHeightM.toFixed(2)} m above road` : "");
+    const rawDiagSurface = state.surface ?? metrics?.surface;
+    showSurface(active && rawDiagSurface ? describeRoadSurface(rawDiagSurface).compactText : "");
     showEvent(describeEvent(events?.at(-1)));
     showImpact(describeImpact(metrics?.impact));
     showPressure(compact && finite(response?.pressure) ? `${boundedPercent(response.pressure)}%` : "");
@@ -564,7 +1018,7 @@ export function mountPursuitPanel({ container, onRun, onRestart, onLevel, onCase
     progress.hidden = !progress.textContent;
   }
 
-  function update(state = null) {
+  function update(state = null, worldState = null) {
     if (closed) return;
     if (!state || !Object.hasOwn(PHASES, state.phase)) {
       latest = null;
@@ -575,6 +1029,8 @@ export function mountPursuitPanel({ container, onRun, onRestart, onLevel, onCase
       diagnostics.open = false;
       error.hidden = true;
       disabled();
+      if (!state && !worldState) chaseBarHud.reset();
+      else chaseBarHud.sync(state, worldState);
       return;
     }
     if (latest && state.level !== latest.level) error.hidden = true;
@@ -752,10 +1208,19 @@ export function mountPursuitPanel({ container, onRun, onRestart, onLevel, onCase
       camStyleBtn.setAttribute("aria-pressed", String(isChasingCam));
       text(soundNote, state.soundError ?? "");
     }
-    situation.hidden = !liveSummary || pako;
-    proximityLabel.hidden = proximity.hidden = noPatrolDrill;
-    healthLabel.hidden = health.hidden = !showGta || !state.gta;
+    const rawLiveSurface = state.surface ?? state.metrics?.surface ?? null;
+    const liveSurfaceInfo = rawLiveSurface ? describeRoadSurface(rawLiveSurface) : null;
+    const showLiveSurface = Boolean(liveSummary && liveSurfaceInfo?.isNotable);
+    situation.hidden = pako ? !showLiveSurface : !liveSummary;
+    proximityLabel.hidden = proximity.hidden = pako || noPatrolDrill;
+    speedLabel.hidden = speed.hidden = pako;
+    healthLabel.hidden = health.hidden = pako || !showGta || !state.gta;
     if (!health.hidden) text(health, `${Math.ceil(state.gta.playerHealth)} / ${state.gta.playerMaxHealth}`);
+    surfaceLabel.hidden = surfaceValue.hidden = !showLiveSurface;
+    const nextSurfaceKey = liveSurfaceInfo?.surface ?? "asphalt";
+    surfaceValue.dataset.surface = nextSurfaceKey;
+    surfaceValue.setAttribute("data-surface", nextSurfaceKey);
+    if (showLiveSurface) text(surfaceValue, liveSurfaceInfo.compactText);
     if (liveSummary) {
       const nearest = patrol?.nearestM;
       text(proximity, finite(nearest) && nearest >= 0 ? `${Math.round(nearest)} m` : showArcade ? "None" : "Not available");
@@ -793,6 +1258,31 @@ export function mountPursuitPanel({ container, onRun, onRestart, onLevel, onCase
     }
     if (!collapsed || (!diagnostics.hidden && diagnostics.open)) renderDiagnostics(state);
     disabled();
+    chaseBarHud.sync(state, worldState);
+  }
+
+  function render(worldState = null, pursuitOverride = null) {
+    if (closed) return;
+    const { status } = extractHudSources(pursuitOverride ?? worldState, worldState);
+    if (status && Object.hasOwn(PHASES, status.phase)) {
+      update(status, worldState);
+      return;
+    }
+    chaseBarHud.sync(pursuitOverride ?? worldState, worldState);
+  }
+
+  function sync(stateOrWorld = null, worldState = null) {
+    if (closed) return;
+    const { status } = extractHudSources(stateOrWorld, worldState);
+    if (status && Object.hasOwn(PHASES, status.phase)) {
+      update(status, worldState ?? stateOrWorld);
+      return;
+    }
+    if (stateOrWorld === null && worldState === null) {
+      update(null);
+      return;
+    }
+    chaseBarHud.sync(stateOrWorld, worldState);
   }
 
   async function perform(control, callback, ...args) {
@@ -861,6 +1351,7 @@ export function mountPursuitPanel({ container, onRun, onRestart, onLevel, onCase
   function close() {
     if (closed) return;
     closed = true;
+    chaseBarHud.destroy();
     run.removeEventListener("click", runClick);
     restart.removeEventListener("click", restartClick);
     level.removeEventListener("change", levelChange);
@@ -874,5 +1365,59 @@ export function mountPursuitPanel({ container, onRun, onRestart, onLevel, onCase
     latest = pending = null;
   }
 
-  return { update, close };
+  return {
+    update,
+    render,
+    sync,
+    close,
+    destroy: close,
+    flashCrowdSpawned: chaseBarHud.flashCrowdSpawned,
+    triggerSpawnCrowdAhead: chaseBarHud.triggerSpawnCrowdAhead,
+  };
+}
+
+export function createPursuitPanel(options = {}) {
+  const doc = options.doc ??
+    options.document ??
+    options.container?.ownerDocument ??
+    options.root?.ownerDocument ??
+    options.chaseBarHost?.ownerDocument ??
+    globalThis.document ??
+    null;
+  const container = options.container ?? doc?.getElementById?.("pursuitPanelHost") ?? null;
+  const ensureChaseBar = options.ensureChaseBar ?? true;
+
+  if (container?.ownerDocument) {
+    return mountPursuitPanel({
+      ...options,
+      container,
+      ensureChaseBar,
+      onRun: typeof options.onRun === "function" ? options.onRun : () => true,
+      onRestart: typeof options.onRestart === "function" ? options.onRestart : () => true,
+      onLevel: typeof options.onLevel === "function" ? options.onLevel : () => true,
+    });
+  }
+
+  const chaseBarHud = bindChaseBarController({
+    doc,
+    root: options.root ?? doc?.body ?? null,
+    chaseBarHost: options.chaseBarHost ?? options.root ?? doc?.body ?? null,
+    ensureChaseBar,
+    onSpawnCrowdAhead: options.onSpawnCrowdAhead,
+    onStopChase: options.onStopChase ?? options.onRestart,
+    onNitro: options.onNitro,
+    crowdSpawnFeedbackMs: options.crowdSpawnFeedbackMs ?? DEFAULT_CROWD_FEEDBACK_MS,
+    now: options.now ?? Date.now,
+  });
+
+  return {
+    update: (state = null, worldState = null) => chaseBarHud.sync(state, worldState),
+    render: (worldState = null, pursuitOverride = null) =>
+      chaseBarHud.sync(pursuitOverride ?? worldState, worldState),
+    sync: (stateOrWorld = null, worldState = null) => chaseBarHud.sync(stateOrWorld, worldState),
+    close: () => chaseBarHud.destroy(),
+    destroy: () => chaseBarHud.destroy(),
+    flashCrowdSpawned: chaseBarHud.flashCrowdSpawned,
+    triggerSpawnCrowdAhead: chaseBarHud.triggerSpawnCrowdAhead,
+  };
 }

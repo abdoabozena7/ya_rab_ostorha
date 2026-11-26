@@ -14,13 +14,22 @@ import { guardDispatchAction, requireDispatchScan } from "./pursuit-shield.js";
 
 export const PAKO_EVASIVE_CONTROL = "pako-evasive-v2";
 
+export const LOCAL_NITRO_SPEC = Object.freeze({
+  durationS: 4.6,
+  rechargePerS: 0.16,
+  minEngageCharge: 0.18,
+  speedMultiplier: 1.34,
+  accelMultiplier: 1.72,
+  maxBoostSpeedMps: 38.5,
+});
+
 const ANGLE_STEP = (2 * Math.PI) / PURSUIT_SCAN_RAYS;
 const CONE_RAD = (18 * Math.PI) / 180;
 const CENTER_CONE_RAD = (6.5 * Math.PI) / 180;
 const ACTION_TICKS_FORWARD = 12;
 const ACTION_TICKS_REVERSE = 10;
 const ACTION_TICKS_REVERSE_SHORT = 6;
-const MAX_STOP_TICKS = 110;
+const MAX_STOP_TICKS = 120;
 const RAY_MARGIN_M = 0.12;
 const PED_RAY_RANGE_M = 18;
 const PED_RAY_CORNER_MARGIN_M = 0.95;
@@ -32,10 +41,21 @@ const VISUAL_PERSON_MARGIN_M = 1.10;
 const STATIC_ASPHALT_GAP_M = 0.14;
 const STATIC_CURB_GAP_M = 0.16;
 
-const FORWARD_STEERS = Object.freeze([-1.0, -0.95, -0.72, -0.48, -0.25, 0, 0.25, 0.48, 0.72, 0.95, 1.0]);
-const CONTROLLED_FAST_STEERS = Object.freeze([-1.0, -0.72, -0.25, 0, 0.25, 0.72, 1.0]);
-const AUX_STEERS = Object.freeze([-1.0, -0.62, -0.22, 0, 0.22, 0.62, 1.0]);
-const REVERSE_STEERS = Object.freeze([-1.0, -0.75, -0.4, 0, 0.4, 0.75, 1.0]);
+const FORWARD_STEERS = Object.freeze([
+  -1.0, -0.92, -0.72, -0.52, -0.36, -0.25, 0, 0.25, 0.36, 0.52, 0.72, 0.92, 1.0,
+]);
+const CURB_FAST_STEERS = Object.freeze([
+  -1.0, -0.72, -0.52, -0.36, -0.25, 0, 0.25, 0.36, 0.52, 0.72, 1.0,
+]);
+const HIGH_SPEED_ROAD_STEERS = Object.freeze([
+  -1.0, -0.72, -0.50, -0.28, 0, 0.28, 0.50, 0.72, 1.0,
+]);
+const SMOOTH_CRUISE_STEERS = Object.freeze([
+  -1.0, -0.72, -0.52, -0.36, -0.22, -0.14, -0.06, 0, 0.06, 0.14, 0.22, 0.36, 0.52, 0.72, 1.0,
+]);
+const CONTROLLED_FAST_STEERS = Object.freeze([-1.0, -0.72, -0.45, -0.25, 0, 0.25, 0.45, 0.72, 1.0]);
+const AUX_STEERS = Object.freeze([-1.0, -0.68, -0.38, -0.22, 0, 0.22, 0.38, 0.68, 1.0]);
+const REVERSE_STEERS = Object.freeze([-1.0, -0.78, -0.52, -0.26, 0, 0.26, 0.52, 0.78, 1.0]);
 
 const SUPPORT_ROAD = Object.freeze({ supported: true, usesCurb: false });
 const SUPPORT_CURB = Object.freeze({ supported: true, usesCurb: true });
@@ -123,16 +143,44 @@ const BEAMS = Object.freeze(
     Object.freeze([Math.sin(i * ANGLE_STEP), Math.cos(i * ANGLE_STEP)]),
   ),
 );
+const BEAM_X = new Float64Array(PURSUIT_SCAN_RAYS);
+const BEAM_Z = new Float64Array(PURSUIT_SCAN_RAYS);
+for (let i = 0; i < PURSUIT_SCAN_RAYS; i++) {
+  BEAM_X[i] = BEAMS[i][0];
+  BEAM_Z[i] = BEAMS[i][1];
+}
 
 const escapeStates = new WeakMap();
 
-function makeAction(steer, throttle, brake, gear) {
-  return validatePursuitAction({
+function validateRequestedPursuitAction(action) {
+  if (
+    action &&
+    Object.getPrototypeOf(action) === Object.prototype &&
+    Object.keys(action).length === 5 &&
+    Object.prototype.hasOwnProperty.call(action, "nitro")
+  ) {
+    if (!Number.isFinite(action.nitro) || action.nitro < 0 || action.nitro > 1) {
+      throw new RangeError("Pursuit action nitro must be a finite number in [0, 1]");
+    }
+    validatePursuitAction({
+      steer: action.steer,
+      throttle: action.throttle,
+      brake: action.brake,
+      gear: action.gear,
+    });
+    return action;
+  }
+  return validatePursuitAction(action);
+}
+
+function makeAction(steer, throttle, brake, gear, nitro = 0) {
+  const base = validatePursuitAction({
     steer: steer === 0 ? 0 : clamp(steer, -1, 1),
     throttle: throttle === 0 ? 0 : clamp(throttle, 0, 1),
     brake: brake === 0 ? 0 : clamp(brake, 0, 1),
     gear: gear < 0 ? -1 : 1,
   });
+  return nitro >= 0.5 ? { ...base, nitro: 1 } : base;
 }
 
 function pointOnCurbSiteXY(px, pz, s) {
@@ -170,10 +218,23 @@ function pointOnCurb(p, curb) {
   return pointOnCurbXY(p.x, p.z, curb);
 }
 
+let _lastPointRect = null;
+let _lastPointRectOwner = null;
+
 function pointInRects(px, pz, rects, pad = 0) {
+  if (_lastPointRectOwner === rects && _lastPointRect !== null) {
+    const lr = _lastPointRect;
+    if (px >= lr.minX - pad && px <= lr.maxX + pad && pz >= lr.minZ - pad && pz <= lr.maxZ + pad) {
+      return true;
+    }
+  }
   for (let i = 0; i < rects.length; i++) {
     const r = rects[i];
-    if (px >= r.minX - pad && px <= r.maxX + pad && pz >= r.minZ - pad && pz <= r.maxZ + pad) return true;
+    if (px >= r.minX - pad && px <= r.maxX + pad && pz >= r.minZ - pad && pz <= r.maxZ + pad) {
+      _lastPointRect = r;
+      _lastPointRectOwner = rects;
+      return true;
+    }
   }
   return false;
 }
@@ -204,16 +265,35 @@ function pointOnRoadRects(px, pz, rects, diagRoads = rects?.diagRoads, useMargin
   return pointOnDiagRoads(px, pz, diagRoads, useMargin, pad);
 }
 
+let _lastSingleRoadRect = null;
+let _lastSingleRoadOwner = null;
+
 function poseInSingleRoadRectCoords(x0, z0, x1, z1, x2, z2, x3, z3, roadRects) {
+  if (_lastSingleRoadOwner === roadRects && _lastSingleRoadRect !== null) {
+    const lr = _lastSingleRoadRect;
+    if (
+      x0 >= lr.minX && x0 <= lr.maxX && z0 >= lr.minZ && z0 <= lr.maxZ &&
+      x1 >= lr.minX && x1 <= lr.maxX && z1 >= lr.minZ && z1 <= lr.maxZ &&
+      x2 >= lr.minX && x2 <= lr.maxX && z2 >= lr.minZ && z2 <= lr.maxZ &&
+      x3 >= lr.minX && x3 <= lr.maxX && z3 >= lr.minZ && z3 <= lr.maxZ
+    ) {
+      return true;
+    }
+  }
+  const mx = (x0 + x2) * 0.5;
+  const mz = (z0 + z2) * 0.5;
   for (let i = 0; i < roadRects.length; i++) {
     const r = roadRects[i];
     if (r.axis === "diag") continue;
+    if (mx < r.minX || mx > r.maxX || mz < r.minZ || mz > r.maxZ) continue;
     if (
       x0 >= r.minX && x0 <= r.maxX && z0 >= r.minZ && z0 <= r.maxZ &&
       x1 >= r.minX && x1 <= r.maxX && z1 >= r.minZ && z1 <= r.maxZ &&
       x2 >= r.minX && x2 <= r.maxX && z2 >= r.minZ && z2 <= r.maxZ &&
       x3 >= r.minX && x3 <= r.maxX && z3 >= r.minZ && z3 <= r.maxZ
     ) {
+      _lastSingleRoadRect = r;
+      _lastSingleRoadOwner = roadRects;
       return true;
     }
   }
@@ -456,9 +536,26 @@ function filterLocalGeometry(world, player) {
   pointRoadRects.diagRoads = diagRoads;
 
   const statics = [];
-  const rawStatics = world.statics ?? [];
+  const closures = world.pursuit?.closures;
+  const roadblockBarrier = world.pursuit?.gta?.roadblock?.barrier;
+  const rawStatics =
+    world.pursuit?.staticOverlay?.permanent ??
+    world.district?.statics ??
+    world.statics ??
+    [];
   for (let i = 0; i < rawStatics.length; i++) {
     const body = rawStatics[i];
+    if (
+      !body ||
+      (closures && closures.has(body)) ||
+      body === roadblockBarrier ||
+      body.gtaRoadblock ||
+      body.kind === "roadblock" ||
+      (typeof body.id === "string" &&
+        (body.id.startsWith("street-pursuit-") || body.id.includes("roadblock")))
+    ) {
+      continue;
+    }
     const isPed = body.type === "pedestrian";
     const half = isPed
       ? (body.radius ?? 0.4)
@@ -579,7 +676,7 @@ function hasCameraCrossingConflict(visualState) {
   return false;
 }
 
-function buildScanModel(scan, start) {
+function buildScanModel(scan, start, ignorePedCollision = false) {
   const startBox = { x: 0, z: 0, heading: 0, width: start.width, length: start.length };
   const w0 = start.width / 2;
   const l0 = start.length / 2;
@@ -592,7 +689,11 @@ function buildScanModel(scan, start) {
   const sectorConnected = new Uint8Array(PURSUIT_SCAN_RAYS);
 
   for (let i = 0; i < PURSUIT_SCAN_RAYS; i++) {
-    const ray = scan.rays[i];
+    const rawRay = scan.rays[i];
+    const ray =
+      ignorePedCollision && rawRay.kind === "pedestrian"
+        ? { kind: "none", rangeM: PURSUIT_SCAN_RANGE_M }
+        : rawRay;
     const [bx, bz] = BEAMS[i];
     const farX = Math.abs(bx) < 1e-9 ? Infinity : w0 / Math.abs(bx);
     const farZ = Math.abs(bz) < 1e-9 ? Infinity : l0 / Math.abs(bz);
@@ -614,7 +715,9 @@ function buildScanModel(scan, start) {
       pedRays.push({ x: rx, z: rz, rangeM: ray.rangeM });
     }
 
-    if (ray.kind !== "pedestrian" && ray.rangeM - sFar < RAY_MARGIN_M) {
+    if (ray.kind === "none") {
+      effectiveBeamLimit[i] = Infinity;
+    } else if (ray.kind !== "pedestrian" && ray.rangeM - sFar < RAY_MARGIN_M) {
       effectiveBeamLimit[i] = Math.max(0, ray.rangeM - 0.004);
     } else {
       effectiveBeamLimit[i] = ray.rangeM - RAY_MARGIN_M;
@@ -687,7 +790,7 @@ function buildScanModel(scan, start) {
   const elapsedS = PURSUIT_SCAN_TICKS * STEP;
   const freshTracks = [];
   for (const track of scan.tracks) {
-    if (track.ageS !== 0 || track.kind === "static") continue;
+    if (track.ageS !== 0 || track.kind === "static" || (ignorePedCollision && track.kind === "pedestrian")) continue;
     const rangeM = Math.hypot(track.rightM, track.forwardM);
     let vx = 0;
     let vz = 0;
@@ -746,6 +849,9 @@ function buildScanModel(scan, start) {
       forwardM: track.forwardM,
       vx,
       vz,
+      relVx: Number.isFinite(track.rightMps) ? track.rightMps : 0,
+      relVz: Number.isFinite(track.forwardMps) ? track.forwardMps : 0,
+      ttcS: Number.isFinite(track.ttcS) ? track.ttcS : null,
       closingMps,
       forecastConfirmed,
       motionKnown: track.motionKnown,
@@ -771,6 +877,13 @@ function buildScanModel(scan, start) {
     }
   }
 
+  const activeRayIndices = [];
+  for (let i = 0; i < PURSUIT_SCAN_RAYS; i++) {
+    if (!closeNonPedBeam[i] && Number.isFinite(effectiveBeamLimit[i])) {
+      activeRayIndices.push(i);
+    }
+  }
+
   return {
     egoHeading: start.heading ?? 0,
     rays: scan.rays,
@@ -780,6 +893,7 @@ function buildScanModel(scan, start) {
     pedRays,
     effectiveBeamLimit,
     closeNonPedBeam,
+    activeRayIndices,
     sectorConnected,
     minConnectedBeamLimit,
     freshTracks,
@@ -1603,8 +1717,9 @@ function checkRayClearance(
   sheddingOppositeSpeed = false,
   checkDrivenBumper = false,
   gear = 1,
+  minClearanceCap = 3.05,
 ) {
-  let minClearance = 3.05;
+  let minClearance = minClearanceCap < 3.05 ? minClearanceCap : 3.05;
   const c = Math.cos(local.heading);
   const s = Math.sin(local.heading);
   const w = local.width * 0.5;
@@ -1662,38 +1777,79 @@ function checkRayClearance(
   const r0 = -lx * c + lz * s;
   const f0 = -lx * s - lz * c;
 
-  for (let i = 0; i < PURSUIT_SCAN_RAYS; i++) {
-    if (scanModel.closeNonPedBeam[i]) continue;
-    const limitI = scanModel.effectiveBeamLimit[i];
-    if (limitI - maxFarPossible >= minClearance) continue;
-    const [bx, bz] = BEAMS[i];
-    if (Math.abs(lx * bz - lz * bx) > bodyDiagHalf || lx * bx + lz * bz < -bodyDiagHalf) continue;
-    const dr = bx * c - bz * s;
-    const df = bx * s + bz * c;
-    if (!((Math.abs(dr) < 1e-9 && Math.abs(r0) > w) || (Math.abs(df) < 1e-9 && Math.abs(f0) > l))) {
-      let near = 0;
-      let far = Infinity;
-      if (Math.abs(dr) >= 1e-9) {
-        const a = (-w - r0) / dr;
-        const b = (w - r0) / dr;
-        near = Math.max(near, a < b ? a : b);
-        far = Math.min(far, a > b ? a : b);
-      }
-      if (Math.abs(df) >= 1e-9) {
-        const a = (-l - f0) / df;
-        const b = (l - f0) / df;
-        near = Math.max(near, a < b ? a : b);
-        far = Math.min(far, a > b ? a : b);
-      }
-      if (far >= near) {
-        const gap = limitI - far;
-        if (gap <= 0) {
-          _rayResult.ok = false;
-          _rayResult.reason = "scan-clearance";
-          _rayResult.clearance = gap;
-          return _rayResult;
+  const activeRayIdx = scanModel.activeRayIndices;
+  if (activeRayIdx) {
+    for (let k = 0; k < activeRayIdx.length; k++) {
+      const i = activeRayIdx[k];
+      const limitI = scanModel.effectiveBeamLimit[i];
+      if (limitI - maxFarPossible >= minClearance) continue;
+      const bx = BEAM_X[i];
+      const bz = BEAM_Z[i];
+      if (Math.abs(lx * bz - lz * bx) > bodyDiagHalf || lx * bx + lz * bz < -bodyDiagHalf) continue;
+      const dr = bx * c - bz * s;
+      const df = bx * s + bz * c;
+      if (!((Math.abs(dr) < 1e-9 && Math.abs(r0) > w) || (Math.abs(df) < 1e-9 && Math.abs(f0) > l))) {
+        let near = 0;
+        let far = Infinity;
+        if (Math.abs(dr) >= 1e-9) {
+          const a = (-w - r0) / dr;
+          const b = (w - r0) / dr;
+          near = Math.max(near, a < b ? a : b);
+          far = Math.min(far, a > b ? a : b);
         }
-        if (gap < minClearance) minClearance = gap;
+        if (Math.abs(df) >= 1e-9) {
+          const a = (-l - f0) / df;
+          const b = (l - f0) / df;
+          near = Math.max(near, a < b ? a : b);
+          far = Math.min(far, a > b ? a : b);
+        }
+        if (far >= near) {
+          const gap = limitI - far;
+          if (gap <= 0) {
+            _rayResult.ok = false;
+            _rayResult.reason = "scan-clearance";
+            _rayResult.clearance = gap;
+            return _rayResult;
+          }
+          if (gap < minClearance) minClearance = gap;
+        }
+      }
+    }
+  } else {
+    for (let i = 0; i < PURSUIT_SCAN_RAYS; i++) {
+      if (scanModel.closeNonPedBeam[i]) continue;
+      const limitI = scanModel.effectiveBeamLimit[i];
+      if (limitI - maxFarPossible >= minClearance) continue;
+      const bx = BEAM_X[i];
+      const bz = BEAM_Z[i];
+      if (Math.abs(lx * bz - lz * bx) > bodyDiagHalf || lx * bx + lz * bz < -bodyDiagHalf) continue;
+      const dr = bx * c - bz * s;
+      const df = bx * s + bz * c;
+      if (!((Math.abs(dr) < 1e-9 && Math.abs(r0) > w) || (Math.abs(df) < 1e-9 && Math.abs(f0) > l))) {
+        let near = 0;
+        let far = Infinity;
+        if (Math.abs(dr) >= 1e-9) {
+          const a = (-w - r0) / dr;
+          const b = (w - r0) / dr;
+          near = Math.max(near, a < b ? a : b);
+          far = Math.min(far, a > b ? a : b);
+        }
+        if (Math.abs(df) >= 1e-9) {
+          const a = (-l - f0) / df;
+          const b = (l - f0) / df;
+          near = Math.max(near, a < b ? a : b);
+          far = Math.min(far, a > b ? a : b);
+        }
+        if (far >= near) {
+          const gap = limitI - far;
+          if (gap <= 0) {
+            _rayResult.ok = false;
+            _rayResult.reason = "scan-clearance";
+            _rayResult.clearance = gap;
+            return _rayResult;
+          }
+          if (gap < minClearance) minClearance = gap;
+        }
       }
     }
   }
@@ -1736,6 +1892,8 @@ function checkRayClearance(
       const clampedClear = boxDist > 0.01 ? boxDist : 0.01;
       if (clampedClear < minClearance) minClearance = clampedClear;
     } else {
+      const surfReach = bodyDiagHalf + RAY_MARGIN_M + minClearance;
+      if (Math.abs(pt.x - lx) >= surfReach || Math.abs(pt.z - lz) >= surfReach) continue;
       const lowerGap = pt.rangeM - pruneRange;
       if (lowerGap > 0 && lowerGap >= minClearance) continue;
       const boxDist = pointToBoxDistPrecomputed(pt.x, pt.z, lx, lz, c, s, w, l);
@@ -1750,8 +1908,12 @@ function checkRayClearance(
     }
   }
 
+  const bodyMargin = inActionWindow ? PED_RAY_CORNER_MARGIN_M : PED_TRACK_STOP_MARGIN_M;
+  const maxPedMargin = bodyMargin > PED_RAY_CORNER_MARGIN_M ? bodyMargin : PED_RAY_CORNER_MARGIN_M;
   for (let i = 0; i < scanModel.pedRays.length; i++) {
     const ped = scanModel.pedRays[i];
+    const pedReach = bodyDiagHalf + maxPedMargin + minClearance;
+    if (Math.abs(ped.x - lx) >= pedReach || Math.abs(ped.z - lz) >= pedReach) continue;
     for (let cIdx = 0; cIdx < 4; cIdx++) {
       const cornerGap = Math.hypot(_localCornerX[cIdx] - ped.x, _localCornerZ[cIdx] - ped.z) - PED_RAY_CORNER_MARGIN_M;
       if (cornerGap < 0) {
@@ -1762,7 +1924,6 @@ function checkRayClearance(
       }
       if (cornerGap < minClearance) minClearance = cornerGap;
     }
-    const bodyMargin = inActionWindow ? PED_RAY_CORNER_MARGIN_M : PED_TRACK_STOP_MARGIN_M;
     const bodyGap = pointToBoxDistPrecomputed(ped.x, ped.z, lx, lz, c, s, w, l) - bodyMargin;
     if (bodyGap < 0) {
       _rayResult.ok = false;
@@ -1778,6 +1939,8 @@ function checkRayClearance(
   _rayResult.clearance = minClearance;
   return _rayResult;
 }
+
+const _segStaticBuf = [];
 
 function sweepSegmentSupportAndStatics(
   from,
@@ -1801,6 +1964,65 @@ function sweepSegmentSupportAndStatics(
   probe.width = to.width;
   const pw = to.type === "pedestrian" ? Math.abs(to.radius ?? 0) : Math.abs(to.width ?? 0) * 0.5;
   const pl = to.type === "pedestrian" ? Math.abs(to.radius ?? 0) : Math.abs(to.length ?? 0) * 0.5;
+
+  let segStatics = statics;
+  if (statics.length > 0 && statics[0]?.aabbMinX !== undefined) {
+    const halfDiag = Math.hypot(pw, pl) + STATIC_CURB_GAP_M + 0.02;
+    const sMinX = Math.min(from.x, to.x) - halfDiag;
+    const sMaxX = Math.max(from.x, to.x) + halfDiag;
+    const sMinZ = Math.min(from.z, to.z) - halfDiag;
+    const sMaxZ = Math.max(from.z, to.z) + halfDiag;
+    _segStaticBuf.length = 0;
+    for (let j = 0; j < statics.length; j++) {
+      const entry = statics[j];
+      if (
+        entry.aabbMaxX >= sMinX &&
+        entry.aabbMinX <= sMaxX &&
+        entry.aabbMaxZ >= sMinZ &&
+        entry.aabbMinZ <= sMaxZ
+      ) {
+        _segStaticBuf.push(entry);
+      }
+    }
+    segStatics = _segStaticBuf;
+  }
+
+  if (segStatics.length === 0 && roadRects?.length > 0 && Math.abs(turn) <= 0.14) {
+    const sf = Math.sin(from.heading), cf = Math.cos(from.heading);
+    const st = Math.sin(to.heading), ct = Math.cos(to.heading);
+    const cwf = cf * pw, swf = sf * pw, slf = sf * pl, clf = cf * pl;
+    const cwt = ct * pw, swt = st * pw, slt = st * pl, clt = ct * pl;
+    const fx = from.x, fz = from.z, tx = to.x, tz = to.z;
+    const sagPad = 0.005;
+    const minAllX = Math.min(fx - cwf - slf, fx + cwf - slf, fx + cwf + slf, fx - cwf + slf, tx - cwt - slt, tx + cwt - slt, tx + cwt + slt, tx - cwt + slt) - sagPad;
+    const maxAllX = Math.max(fx - cwf - slf, fx + cwf - slf, fx + cwf + slf, fx - cwf + slf, tx - cwt - slt, tx + cwt - slt, tx + cwt + slt, tx - cwt + slt) + sagPad;
+    const minAllZ = Math.min(fz + swf - clf, fz - swf - clf, fz - swf + clf, fz + swf + clf, tz + swt - clt, tz - swt - clt, tz - swt + clt, tz + swt + clt) - sagPad;
+    const maxAllZ = Math.max(fz + swf - clf, fz - swf - clf, fz - swf + clf, fz + swf + clf, tz + swt - clt, tz - swt - clt, tz - swt + clt, tz + swt + clt) + sagPad;
+    for (let rIdx = 0; rIdx < roadRects.length; rIdx++) {
+      const r = roadRects[rIdx];
+      if (r.axis === "diag") continue;
+      if (minAllX >= r.minX && maxAllX <= r.maxX && minAllZ >= r.minZ && maxAllZ <= r.maxZ) {
+        _sweepResult.ok = true;
+        _sweepResult.reason = null;
+        _sweepResult.usesCurb = false;
+        _sweepResult.endUsesCurb = false;
+        return _sweepResult;
+      }
+    }
+    if (curb && Array.isArray(curb.courtyards) && !pointOnRoadRects(fx, fz, pointRoadRects ?? roadRects, roadRects.diagRoads, false, Math.hypot(pw, pl) + 0.1) && !pointOnRoadRects(tx, tz, pointRoadRects ?? roadRects, roadRects.diagRoads, false, Math.hypot(pw, pl) + 0.1)) {
+      for (let cIdx = 0; cIdx < curb.courtyards.length; cIdx++) {
+        const cRect = curb.courtyards[cIdx];
+        if (minAllX >= cRect.minX && maxAllX <= cRect.maxX && minAllZ >= cRect.minZ && maxAllZ <= cRect.maxZ) {
+          _sweepResult.ok = true;
+          _sweepResult.reason = null;
+          _sweepResult.usesCurb = true;
+          _sweepResult.endUsesCurb = true;
+          return _sweepResult;
+        }
+      }
+    }
+  }
+
   let usesCurb = false;
   let endUsesCurb = false;
   for (let i = 1; i <= steps; i++) {
@@ -1818,14 +2040,14 @@ function sweepSegmentSupportAndStatics(
     }
     usesCurb ||= support.usesCurb;
     endUsesCurb = support.usesCurb;
-    if (!statics.length) continue;
+    if (!segStatics.length) continue;
     const staticGap = support.usesCurb ? STATIC_CURB_GAP_M : STATIC_ASPHALT_GAP_M;
     const pc = Math.abs(Math.cos(probe.heading));
     const ps = Math.abs(Math.sin(probe.heading));
     const pExtX = pw * pc + pl * ps + staticGap + 1e-5;
     const pExtZ = pw * ps + pl * pc + staticGap + 1e-5;
-    for (let j = 0; j < statics.length; j++) {
-      const entry = statics[j];
+    for (let j = 0; j < segStatics.length; j++) {
+      const entry = segStatics[j];
       if (
         entry.aabbMinX !== undefined &&
         (probe.x + pExtX < entry.aabbMinX ||
@@ -2347,6 +2569,547 @@ function computeMinForwardObstacleTtc(start, scanModel) {
   return minTtc;
 }
 
+const PROACTIVE_TRACK_HORIZONS_S = Object.freeze([0.3, 0.7, 1.15]);
+const NITRO_PED_HORIZONS_S = Object.freeze([0.4, 0.9, 1.4]);
+
+function collectPedestrianSensorLocalPoints(start, scanModel, visualPoints, visualState, rawScan = null) {
+  const out = [];
+  const pushPt = (rx, fz) => {
+    if (Number.isFinite(rx) && Number.isFinite(fz)) {
+      out.push({ right: rx, forward: fz });
+    }
+  };
+
+  if (scanModel?.pedRays) {
+    for (let i = 0; i < scanModel.pedRays.length; i++) {
+      pushPt(scanModel.pedRays[i].x, scanModel.pedRays[i].z);
+    }
+  }
+  if (scanModel?.hitPoints) {
+    for (let i = 0; i < scanModel.hitPoints.length; i++) {
+      const pt = scanModel.hitPoints[i];
+      if (pt && pt.kind === "pedestrian") pushPt(pt.x, pt.z);
+    }
+  }
+  if (scanModel?.rays && scanModel.rays.length === PURSUIT_SCAN_RAYS) {
+    for (let i = 0; i < PURSUIT_SCAN_RAYS; i++) {
+      const ray = scanModel.rays[i];
+      if (ray && ray.kind === "pedestrian" && Number.isFinite(ray.rangeM)) {
+        pushPt(BEAMS[i][0] * ray.rangeM, BEAMS[i][1] * ray.rangeM);
+      }
+    }
+  }
+  if (scanModel?.freshTracks) {
+    for (let i = 0; i < scanModel.freshTracks.length; i++) {
+      const tr = scanModel.freshTracks[i];
+      if (!tr || tr.kind !== "pedestrian") continue;
+      pushPt(tr.rightM, tr.forwardM);
+      for (let hIdx = 0; hIdx < NITRO_PED_HORIZONS_S.length; hIdx++) {
+        const t = NITRO_PED_HORIZONS_S[hIdx];
+        pushPt(tr.rightM + (tr.vx ?? 0) * t, tr.forwardM + (tr.vz ?? 0) * t);
+      }
+    }
+  }
+  if (Array.isArray(rawScan?.tracks)) {
+    for (let i = 0; i < rawScan.tracks.length; i++) {
+      const tr = rawScan.tracks[i];
+      if (!tr || tr.kind !== "pedestrian" || (tr.ageS ?? 0) > 0.35) continue;
+      pushPt(tr.rightM, tr.forwardM);
+      if (tr.motionKnown) {
+        const vx = (tr.rightMps ?? 0) + (start.gtaSlipMps ?? 0);
+        const vz = (tr.forwardMps ?? 0) + (start.speed ?? 0);
+        if (Math.hypot(vx, vz) <= 5.5) {
+          for (let hIdx = 0; hIdx < NITRO_PED_HORIZONS_S.length; hIdx++) {
+            const t = NITRO_PED_HORIZONS_S[hIdx];
+            pushPt(tr.rightM + vx * t, tr.forwardM + vz * t);
+          }
+        }
+      }
+    }
+  }
+
+  const c0 = Math.cos(start.heading ?? 0);
+  const s0 = Math.sin(start.heading ?? 0);
+  if (Array.isArray(visualPoints)) {
+    for (let i = 0; i < visualPoints.length; i++) {
+      const vp = visualPoints[i];
+      if (!vp || !Number.isFinite(vp.x) || !Number.isFinite(vp.z)) continue;
+      const dx = vp.x - start.x;
+      const dz = vp.z - start.z;
+      pushPt(dx * c0 - dz * s0, dx * s0 + dz * c0);
+    }
+  }
+
+  if (visualState && visualState.available !== false) {
+    if (Array.isArray(visualState.forecasts)) {
+      for (let i = 0; i < visualState.forecasts.length; i++) {
+        const item = visualState.forecasts[i];
+        if (!item || (item.label && item.label !== "person") || item.qualified === false) continue;
+        if (Array.isArray(item.points)) {
+          for (let j = 0; j < item.points.length; j++) {
+            const pt = item.points[j];
+            const ahead = pt?.secondsAhead ?? 0;
+            if (ahead > 1.6 + 1e-6) continue;
+            const wx = pt?.x ?? pt?.xM;
+            const wz = pt?.z ?? pt?.zM;
+            if (Number.isFinite(wx) && Number.isFinite(wz)) {
+              const dx = wx - start.x;
+              const dz = wz - start.z;
+              pushPt(dx * c0 - dz * s0, dx * s0 + dz * c0);
+            } else if (Number.isFinite(pt?.rightM) && Number.isFinite(pt?.forwardM)) {
+              pushPt(pt.rightM, pt.forwardM);
+            }
+          }
+        }
+        const wx = item.x ?? item.xM;
+        const wz = item.z ?? item.zM;
+        if (Number.isFinite(wx) && Number.isFinite(wz)) {
+          const dx = wx - start.x;
+          const dz = wz - start.z;
+          pushPt(dx * c0 - dz * s0, dx * s0 + dz * c0);
+        } else if (Number.isFinite(item.lateralM) && Number.isFinite(item.longitudinalM)) {
+          const vLat = Number.isFinite(item.lateralSpeedMps) ? item.lateralSpeedMps : 0;
+          const vLon = Number.isFinite(item.forwardSpeedMps) ? item.forwardSpeedMps : 0;
+          pushPt(item.lateralM, item.longitudinalM);
+          for (let hIdx = 0; hIdx < NITRO_PED_HORIZONS_S.length; hIdx++) {
+            const t = NITRO_PED_HORIZONS_S[hIdx];
+            pushPt(item.lateralM + vLat * t, item.longitudinalM + vLon * t);
+          }
+        } else if (Number.isFinite(item.rightM) && Number.isFinite(item.forwardM)) {
+          pushPt(item.rightM, item.forwardM);
+        }
+      }
+    }
+    if (Array.isArray(visualState.tracks)) {
+      for (let i = 0; i < visualState.tracks.length; i++) {
+        const tr = visualState.tracks[i];
+        if (!tr || (tr.label && tr.label !== "person")) continue;
+        const px = tr.position?.x ?? tr.x ?? tr.xM;
+        const pz = tr.position?.z ?? tr.z ?? tr.zM;
+        if (Number.isFinite(px) && Number.isFinite(pz)) {
+          const dx = px - start.x;
+          const dz = pz - start.z;
+          const rx = dx * c0 - dz * s0;
+          const fz = dx * s0 + dz * c0;
+          pushPt(rx, fz);
+          const vwx = tr.velocity?.x ?? 0;
+          const vwz = tr.velocity?.z ?? 0;
+          if (Number.isFinite(vwx) && Number.isFinite(vwz) && Math.hypot(vwx, vwz) <= 5.5) {
+            const vrx = vwx * c0 - vwz * s0;
+            const vfz = vwx * s0 + vwz * c0;
+            for (let hIdx = 0; hIdx < NITRO_PED_HORIZONS_S.length; hIdx++) {
+              const t = NITRO_PED_HORIZONS_S[hIdx];
+              pushPt(rx + vrx * t, fz + vfz * t);
+            }
+          }
+        } else if (Number.isFinite(tr.lateralM) && Number.isFinite(tr.longitudinalM)) {
+          pushPt(tr.lateralM, tr.longitudinalM);
+        } else if (Number.isFinite(tr.rightM) && Number.isFinite(tr.forwardM)) {
+          pushPt(tr.rightM, tr.forwardM);
+        }
+      }
+    }
+  }
+
+  return out;
+}
+
+export function evaluateNitroSafetyAndOpportunity(
+  start,
+  action,
+  scanModel,
+  visualPoints,
+  localGeometry,
+  pursuerPressure,
+  world,
+  extra = null,
+) {
+  const halfW = (start?.width ?? PLAYER_VEHICLE.widthM) * 0.5;
+  const pedPoints = collectPedestrianSensorLocalPoints(
+    start,
+    scanModel,
+    visualPoints,
+    world?.visualState,
+    world?.pursuit?.gta?.scan,
+  );
+
+  let pedestrianAheadHazard = hasCameraCrossingConflict(world?.visualState);
+  let nearestPedForwardM = Infinity;
+  let nearestPedEuclideanM = Infinity;
+  let leftCorridorWeight = 0;
+  let rightCorridorWeight = 0;
+
+  for (let i = 0; i < pedPoints.length; i++) {
+    const { right, forward } = pedPoints[i];
+    const euclid = Math.hypot(right, forward);
+    if (euclid < nearestPedEuclideanM) nearestPedEuclideanM = euclid;
+    const corridorHalfW = halfW + 2.8 + Math.max(0, forward) * 0.06;
+    const inWideForwardCorridor =
+      forward >= -1.0 && forward <= 42.0 && Math.abs(right) <= corridorHalfW;
+    if (inWideForwardCorridor || euclid <= 8.5) {
+      pedestrianAheadHazard = true;
+    }
+    if (forward >= -0.5 && forward <= 42.0 && Math.abs(right) <= corridorHalfW) {
+      if (forward < nearestPedForwardM) nearestPedForwardM = Math.max(0, forward);
+      const w = 1 / Math.max(3.5, Math.hypot(right, Math.max(0, forward) * 0.65));
+      if (right <= 0.35) leftCorridorWeight += w;
+      if (right >= -0.35) rightCorridorWeight += w;
+    }
+  }
+
+  if (pedestrianAheadHazard && !world?.pursuit?.frozenDriver?._faultIgnorePedestrianNitroOnly) {
+    const preferredWeaveSign =
+      Math.abs(leftCorridorWeight - rightCorridorWeight) > 0.02
+        ? leftCorridorWeight < rightCorridorWeight
+          ? -1
+          : 1
+        : 0;
+    return {
+      engageNitro: false,
+      pedestrianAheadHazard: true,
+      nitroSuppressedByPedestrian: true,
+      nearestPedForwardM,
+      nearestPedEuclideanM,
+      preferredWeaveSign,
+      clearForwardM: 0,
+    };
+  }
+
+  const charge = start?.nitroCharge ?? 1;
+  const minCharge = start?.nitroActive ? 0.03 : LOCAL_NITRO_SPEC.minEngageCharge;
+  const startOnRoad =
+    extra?.startOnRoad !== undefined
+      ? Boolean(extra.startOnRoad)
+      : Boolean(
+          localGeometry?.roads?.length > 0 &&
+            poseOnRoadFast(start, localGeometry.roads, localGeometry.roadRects),
+        );
+  const onCurbOrAlley =
+    Boolean(extra?.usesCurbBypass) || Boolean(start?.curbSupportId) || !startOnRoad;
+  const inSharpTacticalHook =
+    (extra?.tacticalTag === "los-break" || Boolean(extra?.inLosBreakCommit)) &&
+    Math.abs(action?.steer ?? 0) > 0.32;
+
+  if (
+    !action ||
+    charge < minCharge ||
+    action.gear !== 1 ||
+    action.brake !== 0 ||
+    action.throttle < 0.45 ||
+    Math.abs(action.steer) > 0.32 ||
+    onCurbOrAlley ||
+    inSharpTacticalHook
+  ) {
+    return {
+      engageNitro: false,
+      pedestrianAheadHazard: false,
+      nitroSuppressedByPedestrian: false,
+      nearestPedForwardM,
+      nearestPedEuclideanM,
+      preferredWeaveSign: 0,
+      clearForwardM: 0,
+    };
+  }
+
+  const maxSteer = start?.spec?.maxSteer ?? VEHICLE.maxSteer;
+  const aimOffset = action.steer * maxSteer * 0.5;
+  const aimHeading = (start?.heading ?? 0) + aimOffset;
+  const c = Math.cos(aimOffset);
+  const s = Math.sin(aimOffset);
+  const corridorHalf = halfW + 0.62;
+  const ignorePedNitro = Boolean(world?.pursuit?.frozenDriver?._faultIgnorePedestrianNitroOnly);
+  let detectedObstacleForwardM = Infinity;
+
+  if (scanModel?.rays && scanModel.rays.length === PURSUIT_SCAN_RAYS) {
+    for (let i = 0; i < PURSUIT_SCAN_RAYS; i++) {
+      const ray = scanModel.rays[i];
+      if (!ray || ray.kind === "none" || (ignorePedNitro && ray.kind === "pedestrian")) continue;
+      const rx = BEAMS[i][0] * ray.rangeM;
+      const rz = BEAMS[i][1] * ray.rangeM;
+      const right = rx * c - rz * s;
+      const forward = rx * s + rz * c;
+      if (forward > 0 && Math.abs(right) <= corridorHalf && forward < detectedObstacleForwardM) {
+        detectedObstacleForwardM = forward;
+      }
+    }
+  }
+
+  if (scanModel?.freshTracks) {
+    for (let i = 0; i < scanModel.freshTracks.length; i++) {
+      const tr = scanModel.freshTracks[i];
+      if (!tr || (ignorePedNitro && tr.kind === "pedestrian")) continue;
+      const right0 = tr.rightM * c - tr.forwardM * s;
+      const forward0 = tr.rightM * s + tr.forwardM * c;
+      if (forward0 > 0 && Math.abs(right0) <= corridorHalf && forward0 < detectedObstacleForwardM) {
+        detectedObstacleForwardM = forward0;
+      }
+      if (tr.motionKnown) {
+        const rx1 = tr.rightM + (tr.vx ?? 0) * 0.5;
+        const fz1 = tr.forwardM + (tr.vz ?? 0) * 0.5;
+        const right1 = rx1 * c - fz1 * s;
+        const forward1 = rx1 * s + fz1 * c;
+        if (forward1 > 0 && Math.abs(right1) <= corridorHalf && forward1 < detectedObstacleForwardM) {
+          detectedObstacleForwardM = forward1;
+        }
+      }
+    }
+  }
+
+  if (localGeometry?.roads?.length > 0 || localGeometry?.statics?.length > 0) {
+    const sinA = Math.sin(aimHeading);
+    const cosA = Math.cos(aimHeading);
+    const statics = localGeometry.statics ?? [];
+    const roads = localGeometry.roads ?? [];
+    const roadRects = localGeometry.roadRects ?? null;
+    for (const d of [8, 16, 24, 34, 46]) {
+      const probe = {
+        x: start.x + sinA * d,
+        z: start.z + cosA * d,
+        heading: aimHeading,
+        width: start.width ?? PLAYER_VEHICLE.widthM,
+        length: start.length ?? PLAYER_VEHICLE.lengthM,
+        type: start.type ?? "vehicle",
+      };
+      if (roads.length > 0 && !poseOnRoadFast(probe, roads, roadRects)) {
+        detectedObstacleForwardM = Math.min(detectedObstacleForwardM, d - 2);
+        break;
+      }
+      if (statics.length > 0 && poseHitsStaticsFast(probe, statics, 0.85)) {
+        detectedObstacleForwardM = Math.min(detectedObstacleForwardM, d - 2);
+        break;
+      }
+    }
+  }
+  const clearForwardM = Math.min(detectedObstacleForwardM, PURSUIT_SCAN_RANGE_M);
+
+  const rawScan = world?.pursuit?.gta?.scan ?? null;
+  const longRangeRadar = rawScan?.longRangeForward ?? null;
+  const anyPursuerInScan =
+    Boolean(pursuerPressure?.anyPursuer || pursuerPressure?.active) ||
+    Boolean(scanModel?.rays?.some((r) => r && r.kind === "police")) ||
+    Boolean(scanModel?.freshTracks?.some((t) => t && t.kind === "police")) ||
+    Boolean(rawScan?.tracks?.some((t) => t && t.kind === "police")) ||
+    Boolean(longRangeRadar?.beams?.some((b) => b && b.kind === "police"));
+  const pursuitOpportunity = anyPursuerInScan;
+
+  const braking = Math.max(4.5, start?.spec?.braking ?? VEHICLE.braking);
+  const baseAccel = start?.spec?.acceleration ?? VEHICLE.acceleration;
+  const boostAccel = baseAccel * LOCAL_NITRO_SPEC.accelMultiplier * action.throttle;
+  const curSpeed = Math.max(0, start?.speed ?? 0);
+  const postStepBoostSpeed = Math.min(
+    LOCAL_NITRO_SPEC.maxBoostSpeedMps,
+    curSpeed + boostAccel * (PURSUIT_SCAN_TICKS * STEP),
+  );
+  const boostStopDistM =
+    (start?.length ?? PLAYER_VEHICLE.lengthM) * 0.5 +
+    0.65 +
+    postStepBoostSpeed * 0.20 +
+    (postStepBoostSpeed * postStepBoostSpeed) / (2 * braking);
+  const longRangeClearM =
+    longRangeRadar &&
+    (longRangeRadar.pedestrianAheadM === null || ignorePedNitro) &&
+    Math.abs(action?.steer ?? 0) <= 0.14
+      ? longRangeRadar.minCorridorM
+      : PURSUIT_SCAN_RANGE_M - 1.5;
+  const observedSafeHorizonM = Math.min(detectedObstacleForwardM, longRangeClearM);
+  const withinSensorStoppingHorizon = boostStopDistM <= observedSafeHorizonM - 1.5;
+
+  const engageNitro = clearForwardM >= 25.0 && withinSensorStoppingHorizon && pursuitOpportunity;
+  return {
+    engageNitro,
+    pedestrianAheadHazard: false,
+    nitroSuppressedByPedestrian: false,
+    nearestPedForwardM,
+    nearestPedEuclideanM,
+    preferredWeaveSign: 0,
+    clearForwardM,
+  };
+}
+
+function analyzeProactiveEvasionThreats(start, localGeometry, scanModel, localRoadHeading) {
+  const halfW = (start.width ?? PLAYER_VEHICLE.widthM) * 0.5;
+  const halfL = (start.length ?? PLAYER_VEHICLE.lengthM) * 0.5;
+  const laneCorridorHalfW = halfW + 0.78;
+  let forwardObstacleM = Infinity;
+  let forwardObstacleLatM = 0;
+  let sideRamThreat = false;
+  let sideRamRightSign = 0;
+  let minPoliceTtc = Infinity;
+  let minPolicePredGapM = Infinity;
+
+  for (let i = 0; i < PURSUIT_SCAN_RAYS; i++) {
+    const pt = scanModel.rayPoints[i];
+    if (!pt || pt.kind === "pedestrian") continue;
+    if (pt.z >= 2.0 && pt.z <= 38.0 && Math.abs(pt.x) <= laneCorridorHalfW) {
+      if (pt.z < forwardObstacleM) {
+        forwardObstacleM = pt.z;
+        forwardObstacleLatM = pt.x;
+      }
+    }
+  }
+
+  const egoSlip = start.gtaSlipMps ?? 0;
+  const egoFwd = start.speed ?? 0;
+  for (let i = 0; i < scanModel.freshTracks.length; i++) {
+    const tr = scanModel.freshTracks[i];
+    if (!tr || (tr.kind !== "civilian" && tr.kind !== "police")) continue;
+
+    const relClose = egoFwd - (tr.motionKnown ? tr.vz : 0);
+    if (
+      tr.forwardM >= 1.8 &&
+      tr.forwardM <= 38.5 &&
+      (relClose > 0.65 || !tr.motionKnown || tr.forwardM <= 29.0)
+    ) {
+      let entersOwnLane = Math.abs(tr.rightM) <= laneCorridorHalfW + 0.18;
+      let projLat = tr.rightM;
+      if (!entersOwnLane && tr.motionKnown) {
+        for (let hIdx = 0; hIdx < PROACTIVE_TRACK_HORIZONS_S.length; hIdx++) {
+          const t = PROACTIVE_TRACK_HORIZONS_S[hIdx];
+          const px = tr.rightM + tr.vx * t - egoSlip * t;
+          const pz = tr.forwardM + tr.vz * t - egoFwd * t;
+          if (pz >= 0.5 && pz <= 36.0 && Math.abs(px) <= laneCorridorHalfW + 0.15) {
+            entersOwnLane = true;
+            projLat = px;
+            break;
+          }
+        }
+      }
+      if (entersOwnLane && tr.forwardM < forwardObstacleM) {
+        forwardObstacleM = tr.forwardM;
+        forwardObstacleLatM = projLat;
+      }
+    }
+
+    if (tr.kind === "police" && tr.rangeM <= 34.0) {
+      const isPureRearNonClosing = tr.forwardM < -halfL - 0.8 && (!tr.motionKnown || tr.closingMps <= 1.2);
+      if (!isPureRearNonClosing) {
+        const ttc =
+          tr.ttcS !== null && tr.ttcS !== undefined
+            ? tr.ttcS
+            : tr.closingMps > 0.35
+              ? Math.max(0, tr.initialGap) / tr.closingMps
+              : Infinity;
+        if (ttc < minPoliceTtc) minPoliceTtc = ttc;
+        let minGap = tr.initialGap;
+        for (let hIdx = 0; hIdx < PROACTIVE_TRACK_HORIZONS_S.length; hIdx++) {
+          const t = PROACTIVE_TRACK_HORIZONS_S[hIdx];
+          const relX = tr.rightM + tr.vx * t - egoSlip * t;
+          const relZ = tr.forwardM + tr.vz * t - egoFwd * t;
+          const g = pointToBoxDistPrecomputed(relX, relZ, 0, 0, 1, 0, halfW, halfL);
+          if (g < minGap) minGap = g;
+        }
+        if (minGap < minPolicePredGapM) minPolicePredGapM = minGap;
+        if ((ttc <= 1.45 || minGap < 1.35) && Math.abs(tr.rightM) >= 0.35 && tr.forwardM >= -halfL - 1.2) {
+          sideRamThreat = true;
+          sideRamRightSign = tr.rightM >= 0 ? 1 : -1;
+        }
+      }
+    }
+  }
+
+  let leftOpenM = 0;
+  let rightOpenM = 0;
+  const { roads, roadRects, statics } = localGeometry;
+  if (roads.length > 0 && (forwardObstacleM <= 38.5 || sideRamThreat)) {
+    const sinR = Math.sin(localRoadHeading);
+    const cosR = Math.cos(localRoadHeading);
+    const cos0 = Math.cos(start.heading);
+    const sin0 = Math.sin(start.heading);
+    const relH = angleDelta(localRoadHeading, start.heading);
+    const lpc = Math.cos(relH);
+    const lps = Math.sin(relH);
+
+    const measureLaneOffsetReach = (lat) => {
+      let reachM = 0;
+      for (let d = 5.0; d <= 35.0; d += 3.0) {
+        const px = start.x + sinR * d + cosR * lat;
+        const pz = start.z + cosR * d - sinR * lat;
+        const probe = {
+          x: px,
+          z: pz,
+          heading: localRoadHeading,
+          width: start.width,
+          length: start.length,
+          type: start.type,
+        };
+        if (!poseOnRoadFast(probe, roads, roadRects) || poseHitsStaticsFast(probe, statics, STATIC_ASPHALT_GAP_M)) {
+          break;
+        }
+        const dx = px - start.x;
+        const dz = pz - start.z;
+        const lbx = dx * cos0 - dz * sin0;
+        const lbz = dx * sin0 + dz * cos0;
+        let blocked = false;
+        for (let i = 0; i < scanModel.hitPoints.length; i++) {
+          const pt = scanModel.hitPoints[i];
+          if (Math.abs(pt.z - lbz) > 4.0 || Math.abs(pt.x - lbx) > 3.5) continue;
+          const margin = pt.kind === "pedestrian" ? 1.45 : 0.32;
+          if (pointToBoxDistPrecomputed(pt.x, pt.z, lbx, lbz, lpc, lps, halfW, halfL) < margin) {
+            blocked = true;
+            break;
+          }
+        }
+        if (blocked) break;
+        const estT = clamp(d / Math.max(5.5, Math.abs(start.speed)), 0.3, 1.15);
+        for (let i = 0; i < scanModel.freshTracks.length; i++) {
+          const tr = scanModel.freshTracks[i];
+          const tx = tr.rightM + (tr.motionKnown ? tr.vx * estT : 0);
+          const tz = tr.forwardM + (tr.motionKnown ? tr.vz * estT : 0);
+          const margin = tr.kind === "pedestrian" ? 1.55 : 0.55;
+          if (pointToBoxDistPrecomputed(tx, tz, lbx, lbz, lpc, lps, halfW, halfL) < margin) {
+            blocked = true;
+            break;
+          }
+        }
+        if (blocked) break;
+        reachM = d;
+      }
+      return reachM;
+    };
+
+    const leftInnerM = measureLaneOffsetReach(-2.6);
+    const leftOuterM = measureLaneOffsetReach(-4.2);
+    const rightInnerM = measureLaneOffsetReach(2.6);
+    const rightOuterM = measureLaneOffsetReach(4.2);
+    leftOpenM = Math.max(leftInnerM, leftOuterM);
+    rightOpenM = Math.max(rightInnerM, rightOuterM);
+    var leftLaneCapacity = leftInnerM + 1.15 * leftOuterM;
+    var rightLaneCapacity = rightInnerM + 1.15 * rightOuterM;
+  }
+
+  const forwardLaneNeedsEarlyShift =
+    forwardObstacleM >= 18.0 &&
+    forwardObstacleM <= 38.0 &&
+    (leftOpenM >= Math.min(30.0, forwardObstacleM + 5.0) ||
+      rightOpenM >= Math.min(30.0, forwardObstacleM + 5.0));
+
+  let preferredShiftSign = 0;
+  if (sideRamThreat) {
+    preferredShiftSign = -sideRamRightSign;
+  } else if (forwardLaneNeedsEarlyShift) {
+    const lCap = leftLaneCapacity ?? leftOpenM;
+    const rCap = rightLaneCapacity ?? rightOpenM;
+    if (lCap > rCap + 4.0) preferredShiftSign = -1;
+    else if (rCap > lCap + 4.0) preferredShiftSign = 1;
+    else if (Math.max(leftOpenM, rightOpenM) >= 14.0) {
+      preferredShiftSign = forwardObstacleLatM > 0.15 ? -1 : 1;
+    }
+  }
+
+  return {
+    active: forwardLaneNeedsEarlyShift || sideRamThreat,
+    forwardLaneNeedsEarlyShift,
+    forwardObstacleM,
+    sideRamThreat,
+    sideRamRightSign,
+    minPoliceTtc,
+    minPolicePredGapM,
+    leftOpenM,
+    rightOpenM,
+    preferredShiftSign,
+  };
+}
+
 function findActiveCurbSite(pose, curb) {
   if (!curb) return null;
   if (!Array.isArray(curb.sites)) return Array.isArray(curb.courtyards) ? null : curb;
@@ -2803,9 +3566,9 @@ function findAlleyShortcutGuide(
   const pursuerZ = losAlleyOnly ? start.z + Math.cos(pursuerPressure.dominantWorldBearing) * pursuerDist : 0;
 
   const maxScanRad = (115 * Math.PI) / 180;
-  const stepRad = (10 * Math.PI) / 180;
+  const stepRad = (16 * Math.PI) / 180;
   const candidates = [];
-  for (let deg = -115; deg <= 115; deg += 10) {
+  for (let deg = -112; deg <= 112; deg += 16) {
     candidates.push(start.heading + (deg * Math.PI) / 180);
   }
   for (const cardinal of [0, Math.PI * 0.5, -Math.PI * 0.5, Math.PI]) {
@@ -3407,15 +4170,37 @@ function assessTrajectory(ctx, action, allowCurb, options = null) {
   const brakeAction = { steer: action.steer, throttle: 0, brake: 1, gear: action.gear };
 
   const spec = ctx.spec;
-  const maxSpeedCmd = start.maxSpeed ?? 9.72;
-  const maxSpeedPlant = start.maxSpeed ?? 13.89;
+  const actionBoosted =
+    action.gear === 1 &&
+    action.brake === 0 &&
+    action.throttle > 0 &&
+    ((action.nitro ?? 0) >= 0.5 || (Boolean(start.nitroActive) && (start.nitroCharge ?? 1) >= 0.03));
+  const effectiveSpec =
+    actionBoosted && (action.nitro ?? 0) >= 0.5
+      ? { ...spec, acceleration: spec.acceleration * LOCAL_NITRO_SPEC.accelMultiplier }
+      : spec;
+  const baseMaxCmd = start.maxSpeed ?? 9.72;
+  const baseMaxPlant = Math.max(start.maxSpeed ?? 13.89, Math.abs(start.speed));
+  const maxSpeedCmd = actionBoosted
+    ? Math.min(LOCAL_NITRO_SPEC.maxBoostSpeedMps, baseMaxCmd * LOCAL_NITRO_SPEC.speedMultiplier)
+    : baseMaxCmd;
+  const maxSpeedPlant = actionBoosted
+    ? Math.max(
+        baseMaxPlant,
+        Math.min(LOCAL_NITRO_SPEC.maxBoostSpeedMps, baseMaxPlant * LOCAL_NITRO_SPEC.speedMultiplier),
+      )
+    : baseMaxPlant;
+  const maxStopTicks = Math.max(
+    MAX_STOP_TICKS,
+    Math.ceil((Math.max(Math.abs(start.speed), maxSpeedCmd) + 6) / (Math.max(4, spec.braking) * STEP)) + 16,
+  );
   let pose = {
     x: start.x,
     z: start.z,
     heading: start.heading,
     steer: start.steer,
     speed: start.speed,
-    spec,
+    spec: effectiveSpec,
     gtaSlipMps: start.gtaSlipMps ?? 0,
     gtaYawRate: start.gtaYawRate ?? 0,
     type: start.type,
@@ -3429,8 +4214,10 @@ function assessTrajectory(ctx, action, allowCurb, options = null) {
   let midActionPose = pose;
   let actionLocalX = 0;
   let actionLocalZ = 0;
+  let midLocalX = 0;
+  let midLocalZ = 0;
   let usesCurb = false;
-  let minClearanceM = Infinity;
+  let minClearanceM = 3.05;
   let minPedGapM = ctx.pedProximity?.nearestM ?? Infinity;
   let travelM = 0;
   let stopped = false;
@@ -3451,7 +4238,7 @@ function assessTrajectory(ctx, action, allowCurb, options = null) {
     prevTrackDists[i] = scanModel.freshTracks[i].initialGap;
   }
 
-  for (let tick = 1; tick <= actionTicks + MAX_STOP_TICKS; tick++) {
+  for (let tick = 1; tick <= actionTicks + maxStopTicks; tick++) {
     const inActionWindow = tick <= actionTicks;
     const stepAction = inActionWindow ? action : brakeAction;
     let curbCap = 0;
@@ -3468,17 +4255,23 @@ function assessTrajectory(ctx, action, allowCurb, options = null) {
           : curbMaxPace;
     }
 
-    const next = stepPursuitPoseInto(pose, nextBuf, stepAction, STEP, spec, maxSpeedCmd, maxSpeedPlant, curbCap);
+    const next = stepPursuitPoseInto(pose, nextBuf, stepAction, STEP, effectiveSpec, maxSpeedCmd, maxSpeedPlant, curbCap);
 
     if (inActionWindow) travelM += Math.hypot(next.x - pose.x, next.z - pose.z);
-    if (tick === midActionTick) midActionPose = { ...next };
+    if (tick === midActionTick) {
+      midActionPose = { ...next };
+      const mdx = next.x - start.x;
+      const mdz = next.z - start.z;
+      midLocalX = mdx * cos0 - mdz * sin0;
+      midLocalZ = mdx * sin0 + mdz * cos0;
+    }
     if (tick === actionTicks) actionPose = { ...next };
 
     const settled =
       !inActionWindow &&
       Math.abs(next.speed) < 0.03 &&
       Math.abs(next.gtaSlipMps) < 0.03;
-    const shouldCheck = inActionWindow || settled || (tick - actionTicks) % 3 === 0 || tick === actionTicks + MAX_STOP_TICKS;
+    const shouldCheck = inActionWindow || settled || (tick - actionTicks) % 4 === 0 || tick === actionTicks + maxStopTicks;
 
     if (shouldCheck) {
       const swept = sweepSegmentSupportAndStatics(
@@ -3487,7 +4280,7 @@ function assessTrajectory(ctx, action, allowCurb, options = null) {
         localGeometry.roads,
         curb,
         localGeometry.statics,
-        inActionWindow ? 0.12 : 0.22,
+        inActionWindow ? 0.14 : 0.32,
         localGeometry.roadRects,
         localGeometry.pointRoadRects,
       );
@@ -3522,6 +4315,7 @@ function assessTrajectory(ctx, action, allowCurb, options = null) {
         sheddingOppositeSpeed,
         tick === actionTicks,
         action.gear,
+        minClearanceM,
       );
       if (!rayCheck.ok) return { feasible: false, rejectReason: rayCheck.reason, usesCurb };
       if (rayCheck.clearance < minClearanceM) minClearanceM = rayCheck.clearance;
@@ -3535,9 +4329,12 @@ function assessTrajectory(ctx, action, allowCurb, options = null) {
       const hw = _localBox.width * 0.5;
       const hl = _localBox.length * 0.5;
 
+      const boxHalfDiag = Math.hypot(hw, hl);
       if (inActionWindow) {
+        const pedSpan = boxHalfDiag + (minPedGapM < 6.55 ? minPedGapM : 6.55);
         for (let i = 0; i < scanModel.pedRays.length; i++) {
           const pr = scanModel.pedRays[i];
+          if (Math.abs(pr.x - _localBox.x) >= pedSpan || Math.abs(pr.z - _localBox.z) >= pedSpan) continue;
           const pDist = pointToBoxDistPrecomputed(pr.x, pr.z, _localBox.x, _localBox.z, lc, ls, hw, hl);
           if (pDist < minPedGapM) minPedGapM = pDist;
         }
@@ -3545,6 +4342,8 @@ function assessTrajectory(ctx, action, allowCurb, options = null) {
 
       for (let i = 0; i < nTrk; i++) {
         const tr = scanModel.freshTracks[i];
+        const reqMargin = tr.kind === "pedestrian" ? pedMargin : vehMargin;
+        const closeTrackedNonPed = tr.kind !== "pedestrian" && tr.initialGap < reqMargin;
         const alreadyCloseNonPed = tr.kind !== "pedestrian" && tr.initialGap < VEH_TRACK_ACTION_MARGIN_M;
         const isRearFollower = tr.kind !== "pedestrian" && direction * tr.forwardM < 0 && direction * tr.vz > 0;
         const suppressMotion = isRearFollower || alreadyCloseNonPed;
@@ -3553,13 +4352,21 @@ function assessTrajectory(ctx, action, allowCurb, options = null) {
         const tProj = tr.kind === "pedestrian" ? t : Math.min(t, tr.forecastConfirmed ? 1.2 : 0.45);
         const tx = tr.rightM + vxRel * tProj;
         const tz = tr.forwardM + vzRel * tProj;
+        if (!closeTrackedNonPed) {
+          const pedCap = minPedGapM < 6.55 ? minPedGapM : 6.55;
+          const trkReach =
+            boxHalfDiag +
+            (inActionWindow && tr.kind === "pedestrian"
+              ? Math.max(pedCap, reqMargin + minClearanceM)
+              : reqMargin + minClearanceM);
+          if (Math.abs(tx - _localBox.x) >= trkReach || Math.abs(tz - _localBox.z) >= trkReach) continue;
+        }
         const boxDist = pointToBoxDistPrecomputed(tx, tz, _localBox.x, _localBox.z, lc, ls, hw, hl);
         if (inActionWindow && tr.kind === "pedestrian" && boxDist < minPedGapM) {
           minPedGapM = boxDist;
         }
 
-        const reqMargin = tr.kind === "pedestrian" ? pedMargin : vehMargin;
-        if (tr.kind !== "pedestrian" && tr.initialGap < reqMargin) {
+        if (closeTrackedNonPed) {
           const startGap = tr.initialGap;
           const prevDist = prevTrackDists[i];
           let stepOk;
@@ -3902,25 +4709,145 @@ function assessTrajectory(ctx, action, allowCurb, options = null) {
       : 0;
 
   let smoothSteerBonus = 0;
+  const immediateEmergency =
+    (ctx.frontBumperRangeM ?? Infinity) < 7.5 ||
+    (ctx.minObstacleTtc ?? Infinity) < 0.75 ||
+    (ctx.pedProximity?.nearestForwardCorridorM ?? Infinity) < 7.5 ||
+    minClearanceM < 0.65 ||
+    Math.abs(start.speed) < 2.8;
   if (
     action.gear === 1 &&
-    action.brake < 0.65 &&
-    startOnRoad &&
+    !immediateEmergency &&
+    ctx.hasPrevSteer &&
     !usesCurb &&
     !curbGuide &&
     !alleyGuide &&
-    !ctx.activeEscape &&
-    !ctx.asphaltAhead?.ownCorridorBlocked &&
-    !ctx.roadAheadBlocked &&
-    (ctx.minObstacleTtc ?? Infinity) > 2.2 &&
-    minPedGapM > 4.5 &&
-    (ctx.pedProximity?.nearestM ?? Infinity) > 4.5
+    !ctx.activeEscape
   ) {
+    const prevSteer = ctx.prevSteer ?? ctx.prevSteerCmd ?? 0;
+    const dSteer = Math.abs(action.steer - prevSteer);
+    const openCruising =
+      action.brake < 0.65 &&
+      startOnRoad &&
+      !ctx.asphaltAhead?.ownCorridorBlocked &&
+      !ctx.roadAheadBlocked &&
+      (ctx.minObstacleTtc ?? Infinity) > 2.0 &&
+      minPedGapM > 4.5 &&
+      (ctx.pedProximity?.nearestM ?? Infinity) > 4.5;
     if (losBreakBonus < 8) {
-      const continuityWeight = ctx.farRouteCtx?.turnAhead ? 0.75 : 2.4;
-      smoothSteerBonus = -continuityWeight * Math.abs(action.steer - (ctx.prevSteerCmd ?? 0));
+      const jerkWeight = openCruising
+        ? ctx.farRouteCtx?.turnAhead
+          ? 0.95
+          : 2.65
+        : (ctx.frontBumperRangeM ?? 0) >= 14.0
+          ? 0.75
+          : 0;
+      const signFlipExtra =
+        jerkWeight > 0 && action.steer * prevSteer < -0.08 ? (openCruising ? 1.65 : 0.55) : 0;
+      const headingFlipExtra =
+        openCruising && Number.isFinite(ctx.prevTargetHeading)
+          ? 0.35 * Math.abs(angleDelta(lookaheadHeading, ctx.prevTargetHeading))
+          : 0;
+      smoothSteerBonus = -jerkWeight * dSteer - signFlipExtra - headingFlipExtra;
     } else if (ctx.inLosBreakCommit && ctx.lastLosBreakSign !== 0 && action.steer * ctx.lastLosBreakSign < 0) {
-      smoothSteerBonus = -2.4 * Math.abs(action.steer - (ctx.prevSteerCmd ?? 0));
+      smoothSteerBonus = -2.4 * dSteer;
+    }
+  }
+
+  // Penalize lateral slip and excessive high-speed centrifugal demand so corners remain composed.
+  const endSlipMag = Math.abs(pose.gtaSlipMps ?? 0);
+  const actionSlipMag = Math.abs(actionPose.gtaSlipMps ?? 0);
+  const latDemandMps2 =
+    (actionPose.speed * actionPose.speed * Math.abs(Math.tan(actionPose.steer))) /
+    Math.max(2.2, spec.wheelbase ?? VEHICLE.wheelbase);
+  const excessLatDemand = Math.max(0, latDemandMps2 - 7.2);
+  const slipPenalty = -0.65 * endSlipMag - 0.35 * actionSlipMag - 0.18 * excessLatDemand;
+
+  // Proactive 24..40 m vehicle/wall lane-shift & police side-ram dodge scoring over 0.3, 0.7, 1.15 s.
+  let proactiveEvadeBonus = 0;
+  if (action.gear === 1 && !ctx.activeEscape) {
+    const pro = ctx.proactiveThreat;
+    const relLook = angleDelta(lookaheadHeading, start.heading);
+    const lookSin = Math.sin(relLook);
+    const lookCos = Math.cos(relLook);
+    const contSpeed = Math.max(2.0, actionPose.speed);
+    const cand03X = midLocalX + lookSin * contSpeed * Math.max(0, 0.3 - 0.5 * actionTime);
+    const cand03Z = midLocalZ + lookCos * contSpeed * Math.max(0, 0.3 - 0.5 * actionTime);
+    const cand07X = actionLocalX + lookSin * contSpeed * Math.max(0, 0.7 - actionTime);
+    const cand07Z = actionLocalZ + lookCos * contSpeed * Math.max(0, 0.7 - actionTime);
+    const cand115X = actionLocalX + lookSin * contSpeed * Math.max(0, 1.15 - actionTime);
+    const cand115Z = actionLocalZ + lookCos * contSpeed * Math.max(0, 1.15 - actionTime);
+    const hw = start.width * 0.5;
+    const hl = start.length * 0.5;
+    const cLook = Math.cos(relLook);
+    const sLook = Math.sin(relLook);
+
+    for (let i = 0; i < scanModel.freshTracks.length; i++) {
+      const tr = scanModel.freshTracks[i];
+      if (tr.kind !== "civilian" && tr.kind !== "police") continue;
+      if (tr.rangeM > 40.0) continue;
+      const isRearNonClosing = tr.forwardM < -hl - 0.6 && (!tr.motionKnown || tr.closingMps <= 1.0);
+      if (isRearNonClosing) continue;
+      const vx = tr.motionKnown ? tr.vx : 0;
+      const vz = tr.motionKnown ? tr.vz : 0;
+      const g03 = pointToBoxDistPrecomputed(tr.rightM + vx * 0.3, tr.forwardM + vz * 0.3, cand03X, cand03Z, cLook, sLook, hw, hl);
+      const g07 = pointToBoxDistPrecomputed(tr.rightM + vx * 0.7, tr.forwardM + vz * 0.7, cand07X, cand07Z, cLook, sLook, hw, hl);
+      const g115 = pointToBoxDistPrecomputed(tr.rightM + vx * 1.15, tr.forwardM + vz * 1.15, cand115X, cand115Z, cLook, sLook, hw, hl);
+      const minPredGap = Math.min(g03, g07, g115);
+      if (minPredGap < 1.35) {
+        const severity = tr.kind === "police" ? 3.2 : 2.5;
+        proactiveEvadeBonus -= severity * (1.35 - minPredGap);
+      } else if (tr.kind === "police" && (tr.closingMps > 0.8 || (tr.ttcS !== null && tr.ttcS <= 1.45))) {
+        proactiveEvadeBonus += 0.9 * Math.min(2.2, minPredGap - 1.35);
+      }
+    }
+
+    if (pro?.active && !alleyGuide && !curbGuide) {
+      const roadRelAngle = angleDelta(lookaheadHeading, ctx.localRoadHeading ?? start.heading);
+      if (pro.sideRamThreat && pro.preferredShiftSign !== 0) {
+        if (action.steer * pro.preferredShiftSign > 0.06) {
+          proactiveEvadeBonus += 3.8 * Math.min(1, Math.abs(action.steer) / 0.45);
+        } else if (action.steer * pro.preferredShiftSign < -0.05) {
+          proactiveEvadeBonus -= 3.2;
+        }
+      } else if (pro.forwardLaneNeedsEarlyShift) {
+        const distAhead = pro.forwardObstacleM;
+        const gentleTargetMag = distAhead >= 26.0 ? 0.22 : distAhead >= 18.0 ? 0.36 : 0.52;
+        if (pro.preferredShiftSign !== 0) {
+          const signedSteer = action.steer * pro.preferredShiftSign;
+          const signedAngle = roadRelAngle * pro.preferredShiftSign;
+          if (signedSteer > 0.05 || signedAngle > 0.06) {
+            const shapeMatch = 1 - Math.min(1, Math.abs(Math.abs(action.steer) - gentleTargetMag) / 0.65);
+            proactiveEvadeBonus += (distAhead >= 24.0 ? 4.8 : 3.4) * (0.45 + 0.55 * shapeMatch);
+          } else if (Math.abs(action.steer) < 0.05 && Math.abs(roadRelAngle) < 0.05) {
+            proactiveEvadeBonus -= distAhead <= 34.0 ? 3.2 : 1.8;
+          }
+        }
+      }
+    }
+    proactiveEvadeBonus = clamp(proactiveEvadeBonus, -7.5, 7.5);
+  }
+
+  // Proactive pedestrian corridor weave & high-speed cruise moderation when pedestrians are detected ahead.
+  let pedestrianWeaveBonus = 0;
+  if (action.gear === 1 && ctx.pedSafetyCtx?.pedestrianAheadHazard && !usesCurb && !curbGuide && !alleyGuide) {
+    const nearPedFwdM = ctx.pedSafetyCtx.nearestPedForwardM;
+    const weaveSign = ctx.pedSafetyCtx.preferredWeaveSign ?? 0;
+    if (nearPedFwdM >= 8.0 && Math.abs(start.speed) >= 3.5) {
+      pedestrianWeaveBonus += 0.55 * Math.min(4.2, minPedGapM);
+      if (weaveSign !== 0 && minPedGapM >= 1.8) {
+        if (action.steer * weaveSign > 0.05) {
+          pedestrianWeaveBonus += 1.8 * Math.min(1, Math.abs(action.steer) / 0.32);
+        } else if (action.steer * weaveSign < -0.08) {
+          pedestrianWeaveBonus -= 1.4;
+        }
+      }
+    }
+    if (nearPedFwdM < 26.0 && action.brake === 0 && start.speed > 6.5) {
+      const safePedCruiseMps = clamp(5.2 + 0.32 * nearPedFwdM, 6.2, 12.8);
+      if (actionPose.speed > safePedCruiseMps) {
+        pedestrianWeaveBonus -= (actionPose.speed - safePedCruiseMps) * 1.5;
+      }
     }
   }
 
@@ -3937,6 +4864,9 @@ function assessTrajectory(ctx, action, allowCurb, options = null) {
     farEscapeBonus +
     revisitPenalty +
     smoothSteerBonus +
+    slipPenalty +
+    proactiveEvadeBonus +
+    pedestrianWeaveBonus +
     threatBonus +
     fidelityBonus +
     curbOffset +
@@ -3963,6 +4893,7 @@ function assessTrajectory(ctx, action, allowCurb, options = null) {
     directConeM,
     endPose: pose,
     endHeading: pose.heading,
+    lookaheadHeading,
     actionHeading: actionPose.heading,
     actionSpeed: actionPose.speed,
     score,
@@ -4199,8 +5130,9 @@ function detectCrowdContext(
       crowdBlockingCorridor &&
       (pedClusters.length >= 2 || (pedClusters.length >= 1 && tick <= (escapeState.crowdWaveUntilTick ?? -1))),
   );
-  const crowdYieldActive = crowdAhead && !policeClosingClose && nearestPoliceM > 9.5;
-  const crowdDivertUrgent = crowdAhead && (policeClosingClose || nearestPoliceM <= 9.5);
+  const policePressingCrowd = policeClosingClose || nearestPoliceM <= 47.5;
+  const crowdYieldActive = crowdAhead && !policePressingCrowd;
+  const crowdDivertUrgent = crowdAhead && policePressingCrowd;
 
   return {
     crowdAhead,
@@ -4299,12 +5231,13 @@ function bestCrowdWaitSteer(scanModel, visualPoints, start, localRoadHeading, lo
 }
 
 export function planPakoEvasiveAction(world, requestedAction) {
-  validatePursuitAction(requestedAction);
+  validateRequestedPursuitAction(requestedAction);
   if (world.pursuit?.phase && world.pursuit.phase !== "running") {
     return {
       action: makeAction(requestedAction.steer, requestedAction.throttle, requestedAction.brake, requestedAction.gear),
       reason: null,
       maneuver: "policy-direct",
+      nitroSuppressedByPedestrian: false,
       candidates: [],
     };
   }
@@ -4318,6 +5251,9 @@ export function planPakoEvasiveAction(world, requestedAction) {
     steer: player.steer ?? 0,
     gtaSlipMps: player.gtaSlipMps ?? 0,
     gtaYawRate: player.gtaYawRate ?? 0,
+    nitroCharge: Number.isFinite(player.nitroCharge) ? player.nitroCharge : 1,
+    nitroActive: Boolean(player.nitroActive),
+    curbSupportId: player.curbSupportId ?? null,
   };
 
   if (
@@ -4337,20 +5273,22 @@ export function planPakoEvasiveAction(world, requestedAction) {
       action: { ...PURSUIT_STOP },
       reason: "SAFETY_INTERVENTION",
       maneuver: "invalid-odometry",
+      nitroSuppressedByPedestrian: false,
       candidates: [],
     };
   }
 
+  const ignorePedCollision = Boolean(world?.pursuit?.frozenDriver?._faultIgnorePedestrianCollisionOnly);
   const localGeometry = filterLocalGeometry(world, start);
-  const scanModel = buildScanModel(scan, start);
-  const visualPoints = extractVisualForecastPoints(world.visualState, start);
-  const cameraConflict = hasCameraCrossingConflict(world.visualState);
+  const scanModel = buildScanModel(scan, start, ignorePedCollision);
+  const visualPoints = ignorePedCollision ? [] : extractVisualForecastPoints(world.visualState, start);
+  const cameraConflict = ignorePedCollision ? false : hasCameraCrossingConflict(world.visualState);
   const farRouteCtx = buildFarEscapeRouteContext(world, start);
   const routeHeading = farRouteCtx?.nearHeading ?? null;
   const startOnRoad =
     localGeometry.roads.length > 0 && poseOnRoadFast(start, localGeometry.roads, localGeometry.roadRects);
 
-  const stateKey = world.pursuit;
+  const stateKey = world.pursuit ?? player;
   let escapeState = stateKey ? escapeStates.get(stateKey) : null;
   if (!escapeState) {
     const existingMem = world.pursuit?.gta?._evasiveMemory;
@@ -4358,7 +5296,9 @@ export function planPakoEvasiveAction(world, requestedAction) {
       history: [],
       blockedZones: [],
       visitedCells: Array.isArray(existingMem?.visitedCells) ? existingMem.visitedCells : [],
+      prevSteer: null,
       prevSteerCmd: null,
+      prevTargetHeading: null,
       active: null,
       noForwardStreak: 0,
       lastStreakTick: -1,
@@ -4395,7 +5335,9 @@ export function planPakoEvasiveAction(world, requestedAction) {
     escapeState.history.length = 0;
     escapeState.blockedZones.length = 0;
     escapeState.visitedCells.length = 0;
+    escapeState.prevSteer = null;
     escapeState.prevSteerCmd = null;
+    escapeState.prevTargetHeading = null;
     escapeState.active = null;
     escapeState.noForwardStreak = 0;
     escapeState.lastStreakTick = -1;
@@ -4434,6 +5376,17 @@ export function planPakoEvasiveAction(world, requestedAction) {
     escapeState.noForwardStreak = 0;
   };
 
+  const setPlayerPedHoldFlag = (suppressed) => {
+    if (!player || typeof player !== "object") return;
+    const desc = Object.getOwnPropertyDescriptor(player, "nitroSuppressedByPedestrian");
+    if ((desc && desc.writable) || (!desc && Object.isExtensible(player))) {
+      player.nitroSuppressedByPedestrian = Boolean(suppressed);
+    }
+  };
+
+  let resolvedPursuerPressure = null;
+  let resolvedInLosBreakCommit = false;
+
   const recordDecisionAndReturn = (result) => {
     const isCrowdHold = result.maneuver === "crowd-wait" || result.maneuver === "crowd-creep";
     if (isCrowdHold) escapeState.lastCrowdYieldTick = world.tick;
@@ -4444,7 +5397,62 @@ export function planPakoEvasiveAction(world, requestedAction) {
         escapeState.lastLosBreakSign = Math.sign(result.action.steer);
       }
     }
+
+    const base4 = makeAction(
+      result.action.steer,
+      result.action.throttle,
+      result.action.brake,
+      result.action.gear,
+      0,
+    );
+    const nitroVerdict = evaluateNitroSafetyAndOpportunity(
+      start,
+      base4,
+      scanModel,
+      visualPoints,
+      localGeometry,
+      resolvedPursuerPressure,
+      world,
+      {
+        startOnRoad,
+        tacticalTag: result.tacticalTag ?? null,
+        inLosBreakCommit: resolvedInLosBreakCommit,
+        usesCurbBypass: result.reason === "PREDICTIVE_CURB_BYPASS",
+      },
+    );
+
+    if (nitroVerdict.pedestrianAheadHazard) {
+      result.action = base4;
+      result.nitroSuppressedByPedestrian = true;
+      setPlayerPedHoldFlag(true);
+    } else {
+      result.nitroSuppressedByPedestrian = false;
+      setPlayerPedHoldFlag(false);
+      if (nitroVerdict.engageNitro) {
+        const boosted = makeAction(
+          base4.steer,
+          Math.max(base4.throttle, 0.92),
+          base4.brake,
+          base4.gear,
+          1,
+        );
+        const checkedBoost = guardDispatchAction(world, boosted);
+        if (checkedBoost.reason === null && (checkedBoost.action?.nitro ?? 0) >= 0.5) {
+          result.action = checkedBoost.action;
+          result.nitroEngaged = true;
+        } else {
+          result.action = base4;
+        }
+      } else {
+        result.action = base4;
+      }
+    }
+
+    const maxSteerRef = start.spec?.maxSteer ?? VEHICLE.maxSteer;
+    escapeState.prevSteer = result.action.steer;
     escapeState.prevSteerCmd = result.action.steer;
+    escapeState.prevTargetHeading =
+      result.targetHeading ?? start.heading + result.action.steer * maxSteerRef * 0.65;
     const hist = escapeState.history;
     const prev = hist.length > 0 ? hist[hist.length - 1] : null;
     if (!prev || world.tick - prev.tick >= PURSUIT_SCAN_TICKS) {
@@ -4582,7 +5590,7 @@ export function planPakoEvasiveAction(world, requestedAction) {
   );
   const crowdYieldActive = crowdCtx.crowdYieldActive;
   const recentlyCrowdYielded =
-    crowdCtx.nearestPoliceM > 9.5 &&
+    crowdCtx.nearestPoliceM > 34.0 &&
     (crowdYieldActive ||
       world.tick - (escapeState.lastCrowdYieldTick ?? -9999) <= 48 ||
       crowdHoldCount15 >= 4);
@@ -4651,9 +5659,28 @@ export function planPakoEvasiveAction(world, requestedAction) {
   );
 
   const minObstacleTtc = computeMinForwardObstacleTtc(start, scanModel);
-  const prevSteerCmd =
+  const hasPrevSteer = escapeState.prevSteer !== null;
+  const prevSteer =
+    escapeState.prevSteer ??
     escapeState.prevSteerCmd ??
     clamp((start.steer ?? 0) / Math.max(0.1, resolvedSpec.maxSteer), -1, 1);
+  const prevSteerCmd = prevSteer;
+  const proactiveThreat = analyzeProactiveEvasionThreats(
+    start,
+    localGeometry,
+    scanModel,
+    localRoadHeading,
+  );
+  const pedSafetyCtx = evaluateNitroSafetyAndOpportunity(
+    start,
+    null,
+    scanModel,
+    visualPoints,
+    localGeometry,
+    pursuerPressure,
+    world,
+    { startOnRoad },
+  );
 
   const smoothDeadbandAction = (act) => {
     if (
@@ -4667,6 +5694,7 @@ export function planPakoEvasiveAction(world, requestedAction) {
       !alleyShortcutGuide &&
       !asphaltAhead.ownCorridorBlocked &&
       !roadAheadBlocked &&
+      !proactiveThreat.active &&
       minObstacleTtc > 2.2 &&
       pedProximity.nearestM > 4.5 &&
       !pursuerPressure.active &&
@@ -4680,6 +5708,8 @@ export function planPakoEvasiveAction(world, requestedAction) {
   };
 
   const inLosBreakCommit = world.tick - (escapeState.lastLosBreakTick ?? -9999) <= 90;
+  resolvedPursuerPressure = pursuerPressure;
+  resolvedInLosBreakCommit = inLosBreakCommit;
 
   const ctx = {
     start,
@@ -4696,7 +5726,13 @@ export function planPakoEvasiveAction(world, requestedAction) {
     lastLosBreakSign: escapeState.lastLosBreakSign ?? 0,
     visitedCells: escapeState.visitedCells,
     minObstacleTtc,
+    frontBumperRangeM,
+    hasPrevSteer,
+    prevSteer,
     prevSteerCmd,
+    prevTargetHeading: escapeState.prevTargetHeading,
+    proactiveThreat,
+    pedSafetyCtx,
     asphaltAhead,
     crowdYieldActive,
     startOnRoad,
@@ -4717,7 +5753,8 @@ export function planPakoEvasiveAction(world, requestedAction) {
 
   const checkLosBreakOpportunity =
     pursuerPressure.active &&
-    (hasCrossRoadAhead || Boolean(alleyShortcutGuide) || Boolean(localGeometry.curb?.courtyards?.length));
+    !onCurbNow &&
+    (hasCrossRoadAhead || Boolean(alleyShortcutGuide?.losShielded));
   const farRouteTurnUrgent = Boolean(
     farRouteCtx?.hasExplicitEscapeGoal &&
       ((farRouteCtx.turnImminent &&
@@ -4729,15 +5766,77 @@ export function planPakoEvasiveAction(world, requestedAction) {
         ) >= 0.18) ||
         (farRouteCtx.turnPreparing && Math.abs(start.speed) > 12.8)),
   );
+  let forwardLaneClearM = PURSUIT_SCAN_RANGE_M;
+  const laneHalfCheck = start.width * 0.5 + 0.65;
+  for (let rIdx = 0; rIdx < PURSUIT_SCAN_RAYS; rIdx++) {
+    const r = scanModel.rays[rIdx];
+    if (!r || r.kind === "none") continue;
+    const rx = BEAMS[rIdx][0] * r.rangeM;
+    const rz = BEAMS[rIdx][1] * r.rangeM;
+    if (rz > 0 && Math.abs(rx) <= laneHalfCheck && rz < forwardLaneClearM) {
+      forwardLaneClearM = rz;
+    }
+  }
+  const horizonBraking = Math.max(4.5, resolvedSpec.braking ?? VEHICLE.braking);
+  const ignorePedNitro = Boolean(world?.pursuit?.frozenDriver?._faultIgnorePedestrianNitroOnly);
+  const longRangeRadar = scan?.longRangeForward ?? null;
+  const longRangeClearM =
+    longRangeRadar && (longRangeRadar.pedestrianAheadM === null || ignorePedNitro)
+      ? longRangeRadar.minCorridorM
+      : PURSUIT_SCAN_RANGE_M - 4.5;
+  let openStraightRoadClear =
+    forwardLaneClearM >= PURSUIT_SCAN_RANGE_M - 0.5 &&
+    longRangeClearM >= 60.0 &&
+    startOnRoad &&
+    !pedSafetyCtx.pedestrianAheadHazard &&
+    !farRouteCtx?.turnImminent &&
+    (start.nitroCharge ?? 0) >= (start.nitroActive ? 0.03 : LOCAL_NITRO_SPEC.minEngageCharge);
+  if (openStraightRoadClear && localGeometry.roads?.length > 0) {
+    const sinH = Math.sin(start.heading);
+    const cosH = Math.cos(start.heading);
+    for (const d of [16, 32, 46]) {
+      const pProbe = {
+        x: start.x + sinH * d,
+        z: start.z + cosH * d,
+        heading: start.heading,
+        width: start.width,
+        length: start.length,
+        type: start.type,
+      };
+      if (
+        !poseOnRoadFast(pProbe, localGeometry.roads, localGeometry.roadRects) ||
+        (localGeometry.statics?.length > 0 && poseHitsStaticsFast(pProbe, localGeometry.statics, 0.85))
+      ) {
+        openStraightRoadClear = false;
+        break;
+      }
+    }
+  }
+  const usableHorizonM = openStraightRoadClear
+    ? Math.min(92.0, Math.max(8.0, longRangeClearM - 10.0))
+    : Math.max(8.0, Math.min(frontConeMinM, PURSUIT_SCAN_RANGE_M - 4.5) - 5.2);
+  const maxHorizonSafeSpeedMps = Math.sqrt(2 * horizonBraking * usableHorizonM);
+  const overHorizonSpeed = start.speed > maxHorizonSafeSpeedMps + 0.4;
+  const pedAheadNeedsWeaveOrModeration =
+    !ignorePedCollision &&
+    pedSafetyCtx.pedestrianAheadHazard &&
+    start.speed > 6.5 &&
+    pedSafetyCtx.nearestPedForwardM < 26.0;
   let directPassThroughAction = null;
 
+  const rawCurbEarly = localGeometry.rawCurb;
+  const cityCurbsModeEarly = rawCurbEarly?.mode === "metro-city-curbs-v2";
   if (
+    !(pursuerPressure.active && cityCurbsModeEarly) &&
     !activeEscape &&
     !rawPingPongOscillation &&
     !requestedBlockedByMemory &&
     !curbBypassGuide &&
     !alleyShortcutGuide &&
     !farRouteTurnUrgent &&
+    !proactiveThreat.active &&
+    !pedAheadNeedsWeaveOrModeration &&
+    !overHorizonSpeed &&
     requestedAction.gear === 1 &&
     requestedAction.brake === 0 &&
     requestedAction.throttle >= 0.35 &&
@@ -4745,12 +5844,18 @@ export function planPakoEvasiveAction(world, requestedAction) {
     startOnRoad &&
     !cameraConflict &&
     (player.wait ?? 0) < 0.35 &&
-    guardDispatchAction(world, requestedAction).reason === null
+    guardDispatchAction(world, makeAction(requestedAction.steer, requestedAction.throttle, requestedAction.brake, requestedAction.gear)).reason === null
   ) {
-    const direct = assessTrajectory(ctx, requestedAction, false, { computeDirectCone: true });
+    const cleanReq4 = makeAction(
+      requestedAction.steer,
+      requestedAction.throttle,
+      requestedAction.brake,
+      requestedAction.gear,
+    );
+    const direct = assessTrajectory(ctx, cleanReq4, false, { computeDirectCone: true });
     const corridorM = forwardCorridorClearance(
       start,
-      requestedAction,
+      cleanReq4,
       scanModel,
       localGeometry.roads,
       localGeometry.roadRects,
@@ -4759,19 +5864,16 @@ export function planPakoEvasiveAction(world, requestedAction) {
     const requiredCorridorM = Math.max(12, Math.abs(start.speed) * 2.5 + start.length / 2);
     const requiredRoadM = Math.min(18, Math.max(11, Math.abs(start.speed) * 1.9));
     const roadClearEnough = corridorM >= Math.min(requiredCorridorM, requiredRoadM) &&
-      (corridorM >= requiredCorridorM || forwardCorridorClearance(start, requestedAction, scanModel, null, null, localGeometry.statics) >= requiredCorridorM && corridorM >= requiredRoadM);
+      (corridorM >= requiredCorridorM || forwardCorridorClearance(start, cleanReq4, scanModel, null, null, localGeometry.statics) >= requiredCorridorM && corridorM >= requiredRoadM);
     const stalled = direct.feasible && (direct.actionSpeed < 0.12 && Math.abs(start.speed) < 0.12 || direct.travelM < 0.02);
     const directRevisitsLoop = Boolean(direct.feasible && (direct.revisitPenalty ?? 0) < 0);
     if (direct.feasible && direct.directConeM >= 12 && roadClearEnough && !stalled && !directRevisitsLoop) {
-      const cleanDirect = smoothDeadbandAction(
-        makeAction(
-          requestedAction.steer,
-          requestedAction.throttle,
-          requestedAction.brake,
-          requestedAction.gear,
-        ),
-      );
-      if (!checkLosBreakOpportunity) {
+      const boostedReq4 =
+        openStraightRoadClear && Math.abs(start.speed) >= 34.5 && Math.abs(cleanReq4.steer) <= 0.14
+          ? makeAction(cleanReq4.steer, 1.0, 0, 1)
+          : cleanReq4;
+      const cleanDirect = smoothDeadbandAction(boostedReq4);
+      if (!(pursuerPressure.active && cityCurbsModeEarly) && !checkLosBreakOpportunity) {
         return recordDecisionAndReturn({
           action: cleanDirect,
           reason: null,
@@ -4792,10 +5894,32 @@ export function planPakoEvasiveAction(world, requestedAction) {
   const hasCityCurb = Array.isArray(rawCurb?.sites) || Array.isArray(rawCurb?.courtyards);
   const curbMaxPace = rawCurb ? (rawCurb.maxPace ?? (hasCityCurb ? 14.0 : 2.8)) : 14.0;
   const commitAimErr = activeEscape ? Math.abs(angleDelta(activeEscape.targetHeading, start.heading)) : 0;
-  const fastThrottle =
-    activeEscape?.phase === "forward-commit" && commitAimErr <= 0.95
+  let fastThrottle =
+    (activeEscape?.phase === "forward-commit" && commitAimErr <= 0.95) || openStraightRoadClear
       ? 1.0
       : clamp(Math.max(0.78, requestedAction.throttle), 0, 1);
+  if (!activeEscape && overHorizonSpeed) {
+    fastThrottle = Math.min(fastThrottle, start.speed > maxHorizonSafeSpeedMps + 2.0 ? 0.0 : 0.25);
+  }
+  const startPaceNow = Math.hypot(start.speed, start.gtaSlipMps);
+  if (!activeEscape && onCurbNow && rawCurb && startPaceNow >= curbMaxPace - 1.6) {
+    fastThrottle = Math.min(fastThrottle, startPaceNow >= curbMaxPace - 0.35 ? 0.0 : 0.22);
+  }
+  if (
+    !activeEscape &&
+    pedSafetyCtx.pedestrianAheadHazard &&
+    pedSafetyCtx.nearestPedForwardM < 26.0 &&
+    start.speed > 6.5
+  ) {
+    const targetPedCruiseMps = clamp(5.2 + 0.32 * pedSafetyCtx.nearestPedForwardM, 6.2, 12.8);
+    if (start.speed > targetPedCruiseMps) {
+      const pedModThrottle =
+        start.speed > targetPedCruiseMps + 1.5
+          ? 0.28
+          : clamp(0.42 + 0.018 * pedSafetyCtx.nearestPedForwardM, 0.42, 0.85);
+      fastThrottle = Math.min(fastThrottle, pedModThrottle);
+    }
+  }
 
   let bestForward = null;
   const forwardFeasible = [];
@@ -4825,14 +5949,26 @@ export function planPakoEvasiveAction(world, requestedAction) {
     }
   };
 
+  const fullShieldRequired = cityCurbsMode || crowdYieldActive;
+  const pedShieldOnly =
+    !fullShieldRequired &&
+    !ignorePedCollision &&
+    (pedSafetyCtx.pedestrianAheadHazard || crowdCtx.crowdAhead);
+  const shieldPedVetoForward =
+    (fullShieldRequired || pedShieldOnly) &&
+    !ignorePedCollision &&
+    guardDispatchAction(world, makeAction(0, 0, 0, 1)).reason === "pedestrian";
+
   const resolveShieldSafeForward = () => {
     if (!forwardFeasible.length) return null;
+    if (shieldPedVetoForward) return null;
     forwardFeasible.sort((a, b) => b.score - a.score);
-    if (!cityCurbsMode && !crowdYieldActive) return forwardFeasible[0];
+    if (!fullShieldRequired && !pedShieldOnly) return forwardFeasible[0];
     for (let i = 0; i < forwardFeasible.length; i++) {
       const cand = forwardFeasible[i];
       if (cand._shieldChecked === undefined) {
-        cand._shieldChecked = guardDispatchAction(world, cand.action).reason === null;
+        const shieldReason = guardDispatchAction(world, cand.action).reason;
+        cand._shieldChecked = fullShieldRequired ? shieldReason === null : shieldReason !== "pedestrian";
         if (!cand._shieldChecked) {
           cand.feasible = false;
           cand.rejectReason = "shield-veto";
@@ -4843,88 +5979,138 @@ export function planPakoEvasiveAction(world, requestedAction) {
     return null;
   };
 
-  let fastSteers = FORWARD_STEERS;
-  if (
-    startOnRoad &&
-    !asphaltAhead.ownCorridorBlocked &&
-    !curbBypassGuide &&
-    !alleyShortcutGuide &&
-    !farRouteCtx?.turnAhead &&
-    minObstacleTtc > 2.2
-  ) {
-    const straightRef =
-      routeHeading !== null && Math.abs(angleDelta(routeHeading, localRoadHeading)) <= 0.18
-        ? routeHeading
-        : localRoadHeading;
-    const hErr = angleDelta(straightRef, start.heading);
-    if (Math.abs(hErr) > STRAIGHT_ALIGN_RAD && Math.abs(hErr) <= 0.32) {
-      const trimSteer = Number(clamp(hErr * 1.35, -0.14, 0.14).toFixed(3));
-      if (Math.abs(trimSteer * resolvedSpec.maxSteer) >= STRAIGHT_DEADBAND_STEER_RAD) {
-        fastSteers = [...FORWARD_STEERS, trimSteer];
+  if (!shieldPedVetoForward) {
+    let fastSteers =
+      !onCurbNow &&
+      !curbBypassGuide &&
+      !pursuerPressure.active &&
+      !asphaltAhead.ownCorridorBlocked &&
+      !pedSafetyCtx.pedestrianAheadHazard &&
+      frontConeMinM >= 19.5 &&
+      !alleyShortcutGuide
+        ? SMOOTH_CRUISE_STEERS
+        : Math.abs(start.speed) >= 4.0
+          ? CURB_FAST_STEERS
+          : FORWARD_STEERS;
+    if (
+      startOnRoad &&
+      !asphaltAhead.ownCorridorBlocked &&
+      !curbBypassGuide &&
+      !alleyShortcutGuide &&
+      !farRouteCtx?.turnAhead &&
+      minObstacleTtc > 2.2
+    ) {
+      const straightRef =
+        routeHeading !== null && Math.abs(angleDelta(routeHeading, localRoadHeading)) <= 0.18
+          ? routeHeading
+          : localRoadHeading;
+      const hErr = angleDelta(straightRef, start.heading);
+      if (Math.abs(hErr) > STRAIGHT_ALIGN_RAD && Math.abs(hErr) <= 0.32) {
+        const trimSteer = Number(clamp(hErr * 1.35, -0.14, 0.14).toFixed(3));
+        if (Math.abs(trimSteer * resolvedSpec.maxSteer) >= STRAIGHT_DEADBAND_STEER_RAD) {
+          fastSteers = [...fastSteers, trimSteer];
+        }
       }
     }
-  }
-  evaluateForwardProfile("fast", fastThrottle, 0, fastSteers);
-  bestForward = resolveShieldSafeForward();
-  const controlledSteers =
-    !checkLosBreakOpportunity && !farRouteTurnUrgent && bestForward && bestForward.corridorMinM >= 6.5
-      ? CONTROLLED_FAST_STEERS
-      : FORWARD_STEERS;
-  evaluateForwardProfile("controlled", 0.48, 0, controlledSteers);
-  bestForward = resolveShieldSafeForward();
-
-  const needRouteCornerBrake =
-    Boolean(
-      farRouteCtx?.hasExplicitEscapeGoal &&
-        (farRouteCtx.turnImminent || farRouteCtx.turnPreparing),
-    ) && Math.abs(start.speed) > 11.2;
-  if (
-    (checkLosBreakOpportunity &&
-      Math.abs(start.speed) > 13.5 &&
-      (!bestForward || (bestForward.losBreakBonus ?? 0) < 8)) ||
-    needRouteCornerBrake
-  ) {
-    evaluateForwardProfile("corner-brake", 0, 0.45, FORWARD_STEERS);
+    evaluateForwardProfile("fast", fastThrottle, 0, fastSteers);
     bestForward = resolveShieldSafeForward();
-  }
-
-  if (
-    crowdYieldActive &&
-    !bestForward &&
-    !cameraConflict &&
-    Math.abs(start.speed) <= 2.4 &&
-    crowdCtx.nearestPedForwardM >= 4.0
-  ) {
-    evaluateForwardProfile("crowd-creep", 0.20, 0, FORWARD_STEERS, { minRolloutSpeed: 0.85 });
-    bestForward = resolveShieldSafeForward();
-  }
-
-  const startPace = Math.hypot(start.speed, start.gtaSlipMps);
-  const pedNearCurb = pedProximity.nearestM <= 6.5;
-  const briskAlleyCruise =
-    (Boolean(alleyShortcutGuide) || pursuerPressure.active) &&
-    !pedNearCurb &&
-    minBoxGapToStatics(start, localGeometry.statics, 2.0) >= 1.1;
-  if (
-    rawCurb &&
-    (onCurbNow || Boolean(curbBypassGuide) || Boolean(alleyShortcutGuide) || !bestForward) &&
-    (startPace > curbMaxPace - 2.2 ||
-      (pedNearCurb && (onCurbNow || Boolean(alleyShortcutGuide)) && Math.abs(start.speed) > 3.6) ||
-      (!briskAlleyCruise && onCurbNow && Math.abs(start.speed) > 6.4) ||
-      (curbBypassGuide?.mandatoryRejoin && Math.abs(start.speed) > 3.8))
-  ) {
-    const trimSteers = alleyShortcutGuide ? FORWARD_STEERS : AUX_STEERS;
-    evaluateForwardProfile("curb-trim", 0, 0.15, trimSteers);
-    bestForward = resolveShieldSafeForward();
-    if (!bestForward || startPace > curbMaxPace - 0.5 || (pedNearCurb && Math.abs(start.speed) > 5.8)) {
-      evaluateForwardProfile("curb-pace", 0, 0.45, trimSteers);
+    const alreadyAtCurbSpeedCap = onCurbNow && rawCurb && startPaceNow >= curbMaxPace - 0.15;
+    const skipControlled =
+      alreadyAtCurbSpeedCap ||
+      ((!checkLosBreakOpportunity || (bestForward?.losBreakBonus ?? 0) >= 8) &&
+        !farRouteTurnUrgent &&
+        !pedSafetyCtx.pedestrianAheadHazard &&
+        bestForward &&
+        bestForward.corridorMinM >= 9.0 &&
+        (bestForward.minClearanceM ?? 0) >= 0.85);
+    if (!skipControlled) {
+      const controlledSteers =
+        bestForward != null || onCurbNow || Boolean(curbBypassGuide)
+          ? CONTROLLED_FAST_STEERS
+          : FORWARD_STEERS;
+      evaluateForwardProfile("controlled", 0.48, 0, controlledSteers);
       bestForward = resolveShieldSafeForward();
+    }
+
+    const needRouteCornerBrake =
+      Boolean(
+        farRouteCtx?.hasExplicitEscapeGoal &&
+          (farRouteCtx.turnImminent || farRouteCtx.turnPreparing),
+      ) && Math.abs(start.speed) > 11.2;
+    const trimWeaveSteers = [-1, -0.78, -0.56, -0.36, -0.18, 0, 0.18, 0.36, 0.56, 0.78, 1];
+    let evaluatedBrake045 = false;
+    if (
+      (checkLosBreakOpportunity &&
+        !pedSafetyCtx.pedestrianAheadHazard &&
+        Math.abs(start.speed) > 13.5 &&
+        (!bestForward || (bestForward.losBreakBonus ?? 0) < 8)) ||
+      needRouteCornerBrake
+    ) {
+      evaluatedBrake045 = true;
+      evaluateForwardProfile("corner-brake", 0, 0.45, AUX_STEERS);
+      bestForward = resolveShieldSafeForward();
+    }
+
+    if (
+      !bestForward &&
+      !ignorePedCollision &&
+      (pedSafetyCtx.pedestrianAheadHazard || crowdCtx.crowdAhead) &&
+      !cameraConflict
+    ) {
+      if (Math.abs(start.speed) > 3.2) {
+        evaluateForwardProfile("ped-weave-trim", 0, 0.34, trimWeaveSteers, { minRolloutSpeed: 0.85 });
+        bestForward = resolveShieldSafeForward();
+      }
+      if (!bestForward && Math.abs(start.speed) <= 5.5) {
+        evaluateForwardProfile("ped-weave-creep", 0.24, 0, trimWeaveSteers, { minRolloutSpeed: 0.85 });
+        bestForward = resolveShieldSafeForward();
+      }
+    }
+
+    if (
+      crowdYieldActive &&
+      !bestForward &&
+      !cameraConflict &&
+      Math.abs(start.speed) <= 2.4 &&
+      crowdCtx.nearestPedForwardM >= 4.0
+    ) {
+      evaluateForwardProfile("crowd-creep", 0.20, 0, AUX_STEERS, { minRolloutSpeed: 0.85 });
+      bestForward = resolveShieldSafeForward();
+    }
+
+    const startPace = Math.hypot(start.speed, start.gtaSlipMps);
+    const pedNearCurb = pedProximity.nearestM <= 6.5;
+    const briskAlleyCruise =
+      (Boolean(alleyShortcutGuide) || pursuerPressure.active) &&
+      !pedNearCurb &&
+      minBoxGapToStatics(start, localGeometry.statics, 2.0) >= 1.1;
+    const needCurbPaceTrim =
+      onCurbNow ||
+      !bestForward ||
+      Boolean(alleyShortcutGuide) ||
+      Boolean(curbBypassGuide?.mandatoryRejoin && Math.abs(start.speed) > 3.8);
+    if (
+      rawCurb &&
+      needCurbPaceTrim &&
+      (!bestForward ||
+        (!briskAlleyCruise && startPace > curbMaxPace - 0.45) ||
+        (pedNearCurb && (onCurbNow || Boolean(alleyShortcutGuide)) && Math.abs(start.speed) > 3.6) ||
+        (!briskAlleyCruise && onCurbNow && Math.abs(start.speed) > 6.4) ||
+        (curbBypassGuide?.mandatoryRejoin && Math.abs(start.speed) > 3.8))
+    ) {
+      const trimSteers = AUX_STEERS;
+      evaluateForwardProfile("curb-trim", 0, 0.15, trimSteers);
+      bestForward = resolveShieldSafeForward();
+      if (!evaluatedBrake045 && (!bestForward || (pedNearCurb && Math.abs(start.speed) > 5.8))) {
+        evaluateForwardProfile("curb-pace", 0, 0.45, trimSteers);
+        bestForward = resolveShieldSafeForward();
+      }
     }
   }
 
   let unstickEvaluated = false;
   const evaluateUnstickPivot = () => {
-    if (!crowdYieldActive && !unstickEvaluated && !bestForward && Math.abs(start.speed) <= 2.2) {
+    if (!shieldPedVetoForward && !crowdYieldActive && !unstickEvaluated && !bestForward && Math.abs(start.speed) <= 2.2) {
       unstickEvaluated = true;
       evaluateForwardProfile("unstick-pivot", 0.26, 0, FORWARD_STEERS, { minRolloutSpeed: 1.35 });
       bestForward = resolveShieldSafeForward();
@@ -4945,11 +6131,23 @@ export function planPakoEvasiveAction(world, requestedAction) {
       const nextAimErr = Math.abs(angleDelta(targetHeading, verdict.endHeading));
       const aimProgress = prevAimErr - nextAimErr;
       const steerTurnAlign = -steer * preferredTurnSign;
+      const rearArcCone = coneStats(
+        scanModel,
+        start.heading,
+        verdict.endHeading + Math.PI,
+        start.width * 0.5 + 0.25,
+      );
+      const revSteerContinuity =
+        hasPrevSteer && activeEscape?.phase === "reverse"
+          ? -0.85 * Math.abs(steer - prevSteer)
+          : 0;
       return (
         steerGain * steerTurnAlign +
         22.0 * aimProgress +
         0.35 * verdict.travelM +
-        0.22 * rearCenterClearM +
+        0.16 * rearCenterClearM +
+        0.24 * Math.min(20, rearArcCone.blendedM) +
+        revSteerContinuity +
         (verdict.usesCurb ? -1.4 : 0) +
         0.5 * Math.min(3, verdict.minClearanceM)
       );
@@ -5093,19 +6291,19 @@ export function planPakoEvasiveAction(world, requestedAction) {
     const readyEarly =
       Boolean(bestForward) &&
       activeEscape.reverseMovingStartTick !== null &&
-      elapsedRev >= 22 &&
+      elapsedRev >= 20 &&
       hasTurnClearance &&
-      (backedDistM >= 1.8 || rotatedRad >= 0.35 || (backedDistM >= 1.4 && aimErrorRad <= 0.55)) &&
-      bestForward.corridorMinM >= 8.5;
-    const readyMax = Boolean(bestForward) && (elapsedRev >= 72 || totalRevTicks >= 78);
+      (backedDistM >= 1.75 || rotatedRad >= 0.34 || (backedDistM >= 1.35 && aimErrorRad <= 0.55)) &&
+      bestForward.corridorMinM >= 8.2;
+    const readyMax = Boolean(bestForward) && (elapsedRev >= 68 || totalRevTicks >= 76);
 
     let readyViaReverseStop = false;
     if (
       !readyEarly &&
       !readyMax &&
       activeEscape.reverseMovingStartTick !== null &&
-      elapsedRev >= 22 &&
-      start.speed <= -1.8
+      elapsedRev >= 20 &&
+      start.speed <= -1.75
     ) {
       const stopPose = predictReverseStopPose(activeEscape.turnSign);
       if (stopPose) {
@@ -5312,7 +6510,7 @@ export function planPakoEvasiveAction(world, requestedAction) {
         (!bestForward && Math.abs(start.speed) <= 1.35);
     }
 
-    if (crowdYieldActive && crowdCtx.nearestPoliceM > 9.5) {
+    if (crowdYieldActive && crowdCtx.nearestPoliceM > 47.5) {
       shouldStartReverse = false;
     }
 
@@ -5449,19 +6647,53 @@ export function planPakoEvasiveAction(world, requestedAction) {
     const isLosBreak = (bestForward.losBreakBonus ?? 0) >= 8;
     const tacticalTag = isLosBreak ? "los-break" : null;
     const mode = isLosBreak ? "los-break" : maneuver;
-    const outAction = isLosBreak || usesCurbBypass ? bestForward.action : smoothDeadbandAction(bestForward.action);
+    let outAction = isLosBreak || usesCurbBypass ? bestForward.action : smoothDeadbandAction(bestForward.action);
+    if (
+      hasPrevSteer &&
+      !isLosBreak &&
+      !usesCurbBypass &&
+      !curbBypassGuide &&
+      !alleyShortcutGuide &&
+      !activeEscape &&
+      !asphaltAhead.ownCorridorBlocked &&
+      !roadAheadBlocked &&
+      !proactiveThreat.sideRamThreat &&
+      outAction.gear === 1 &&
+      outAction.brake === 0 &&
+      frontBumperRangeM >= 22.0 &&
+      minObstacleTtc >= 1.8 &&
+      (pedProximity.nearestForwardCorridorM ?? Infinity) >= 12.0
+    ) {
+      const maxSlewStep = frontBumperRangeM >= 30.0 && !proactiveThreat.active ? 0.22 : 0.34;
+      const rawDelta = outAction.steer - prevSteer;
+      if (Math.abs(rawDelta) > maxSlewStep) {
+        const slewedSteer = Number(clamp(prevSteer + Math.sign(rawDelta) * maxSlewStep, -1, 1).toFixed(3));
+        const slewedCandidate = smoothDeadbandAction(
+          makeAction(slewedSteer, outAction.throttle, outAction.brake, outAction.gear),
+        );
+        const slewedVerdict = assessTrajectory(ctx, slewedCandidate, false);
+        if (
+          slewedVerdict.feasible &&
+          slewedVerdict.corridorMinM >= Math.min(12.0, bestForward.corridorMinM - 1.5) &&
+          guardDispatchAction(world, slewedCandidate).reason === null
+        ) {
+          outAction = slewedCandidate;
+        }
+      }
+    }
     return recordDecisionAndReturn({
       action: outAction,
       reason,
       maneuver,
       mode,
       tacticalTag,
+      targetHeading: bestForward.actionHeading ?? start.heading,
       losBreakBonus: bestForward.losBreakBonus ?? 0,
       candidates,
     });
   }
 
-  if (crowdYieldActive && crowdCtx.nearestPoliceM > 9.5) {
+  if (crowdYieldActive && crowdCtx.nearestPoliceM > 47.5) {
     const gapSteer = bestCrowdWaitSteer(
       scanModel,
       visualPoints,

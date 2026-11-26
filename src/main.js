@@ -8,6 +8,7 @@ import {
 import { FixedClock } from "./core/clock.js";
 import { WorldView } from "./render/world-view.js";
 import { createPursuitCamera } from "./render/pursuit-camera.js";
+import { CITY_CLEAR_CINEMATIC_GRADE, createCinematicPost } from "./render/cinematic-post.js";
 import { createPakoPerspective } from "./render/pako-perspective.js";
 import { createPedestrianForecastView } from "./render/pedestrian-forecast-view.js";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
@@ -21,7 +22,7 @@ import { mountVehiclePanel } from "./ui/vehicle-panel.js";
 import { mountVisionPanel } from "./ui/vision-panel.js";
 import { mountCameraScreen } from "./ui/camera-screen.js";
 import { mountPeoplePanel } from "./ui/people-panel.js";
-import { mountCityPerception } from "./ui/city-perception.js";
+import { mountCityPerception, pedestrianForecasts } from "./ui/city-perception.js";
 import { createReplayBlob, readReplayFile } from "./ui/replay-file.js";
 import { DISTRICT_CASES } from "./core/district-scenarios.js";
 import { pursuitSnapshot } from "./core/pursuit-world.js";
@@ -60,14 +61,19 @@ const renderer = new THREE.WebGLRenderer({
 const gl = renderer.getContext();
 const hardwareInfo = gl.getExtension("WEBGL_debug_renderer_info");
 const graphicsAdapter = hardwareInfo ? gl.getParameter(hardwareInfo.UNMASKED_RENDERER_WEBGL) : null;
+const isIntegratedApu = /Radeon\(TM\) Graphics|Intel|UHD|Iris|SwiftShader|Basic Render/i.test(
+  graphicsAdapter ?? "",
+);
 renderer.domElement.className = "scene";
 document.body.prepend(renderer.domElement);
 renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.shadowMap.type = isIntegratedApu ? THREE.BasicShadowMap : THREE.PCFSoftShadowMap;
 renderer.shadowMap.autoUpdate = false;
+renderer.info.autoReset = false;
+renderer.debug.checkShaderErrors = false;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.04;
+renderer.toneMappingExposure = 1.14;
 let viewportWidth = document.documentElement.clientWidth;
 let viewportHeight = innerHeight;
 const drivingHud = document.querySelector(".driving-hud");
@@ -78,9 +84,33 @@ const camera = new THREE.PerspectiveCamera(
   0.1,
   950,
 );
-const frontCamera = new THREE.PerspectiveCamera(76, 16 / 9, 0.1, 250);
+const frontCamera = new THREE.PerspectiveCamera(76, 16 / 9, 0.1, 52);
 const visionCamera = new THREE.PerspectiveCamera(76, 16 / 9, 0.1, 250);
+const frontPreviewTarget = new THREE.WebGLRenderTarget(240, 135, {
+  samples: 0,
+  depthBuffer: true,
+  stencilBuffer: false,
+  colorSpace: THREE.SRGBColorSpace,
+  minFilter: THREE.LinearFilter,
+  magFilter: THREE.LinearFilter,
+  generateMipmaps: false,
+});
+const previewBlitScene = new THREE.Scene();
+const previewBlitCam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+const previewBlitMat = new THREE.MeshBasicMaterial({
+  depthTest: false,
+  depthWrite: false,
+  toneMapped: false,
+});
+const previewBlitQuad = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), previewBlitMat);
+previewBlitQuad.frustumCulled = false;
+previewBlitScene.add(previewBlitQuad);
 const pursuitCamera = createPursuitCamera();
+const cinematicPost = createCinematicPost(renderer, {
+  samples: isIntegratedApu ? 0 : 4,
+  grade: CITY_CLEAR_CINEMATIC_GRADE,
+});
+let lastImpactWorld = null, lastImpactCount = 0, cameraImpactPulse = 0;
 const worlds = { metro: new World({ cityVersion: 5 }, "metro") };
 const views = new Map();
 const scenePauses = new WeakMap();
@@ -159,8 +189,9 @@ const activeCinematic = () => world.pursuit?.response &&
   (world.pursuit.phase === "running" || (isPackPursuit(world.pursuit.variant) &&
     (world.pursuit.packLab || world.pursuit.reviewUntilTick))) ? world.pursuit : null;
 function previewVisible(pursuit = activeCinematic()) {
+  if (pursuit) return pursuitPreview?.run === pursuit && pursuitPreview.show;
   if (cityPerception?.open) return false;
-  return pursuit ? pursuitPreview?.run === pursuit && pursuitPreview.show : showCamera;
+  return showCamera;
 }
 function updatePreview() {
   const visible = previewVisible();
@@ -175,9 +206,11 @@ function updatePreview() {
   }
 }
 let renderedFrames = 0;
-let mainCalls = 0, mainTriangles = 0;
-let lastShadowWorld = null, lastShadowTick = -1;
+let mainCalls = 0, mainTriangles = 0, totalFrameCalls = 0, totalFrameTriangles = 0;
+let shadowPassFrames = 0, visionCaptureFrames = 0, frontPreviewFrames = 0;
+let lastShadowWorld = null, lastShadowFrame = -99, lastPerceptionTime = -999, lastVisionCaptureTick = -999;
 let inspectionRig = null, appliedCutaway = null, appliedSensors = null;
+let freeCameraShotOverride = null;
 const isInspection = () => cameraMode === "inspection" || cameraMode === "running-gear";
 function setChaseCameraStyle(style) {
   if (!["follow", "chasing"].includes(style)) throw new Error("Unknown chase camera style");
@@ -236,13 +269,23 @@ function carAction(action, value) {
     cutaway = false;
     if (!world.command({ type: "vehicle-test", operation: "run" }))
       return { ok: false, error: "The controlled contact run could not start. Reset the vehicle test bay." };
+  } else if (action === "heavy-impact-run") {
+    if (environment !== "vehicle" || world.vehicleTest?.phase !== "ready")
+      return { ok: false, error: "Enter the vehicle test bay and reset it before starting a heavy crash run." };
+    setCarView("chase");
+    paused = false;
+    cutaway = false;
+    if (!world.command({ type: "vehicle-test", operation: "run", heavy: true }))
+      return { ok: false, error: "The heavy crash run could not start. Reset the vehicle test bay." };
   } else if (action === "reset-car") {
     if (environment !== "vehicle")
       return { ok: false, error: "Car repair/reset is available in the isolated vehicle test bay." };
     setCarView("chase");
-    reset(world.config);
+    world.command({ type: "vehicle-test", operation: "reset" });
+    view.sync(1);
     paused = false;
     cutaway = false;
+    updateUI();
   } else if (action === "return-city") {
     setCarView("chase");
     activate(cityResumeEnvironment);
@@ -388,6 +431,7 @@ function activate(next) {
   if (isCity(next)) cityResumeEnvironment = next;
   if (sceneTransition) paused = scenePauses.get(nextWorld) ?? false;
   if (visualClient) {
+    lastVisionCaptureTick = -999;
     world.command({ type: "visual-reset", streamId: visualClient.reset() });
     if (visualClient.enabled) perceptionOverlay.setExternal(null);
   }
@@ -396,9 +440,21 @@ function activate(next) {
       type: "policy",
       weights: useLearnedPolicy ? learnedPolicy : null,
     });
-  if (!views.has(world)) views.set(world, new WorldView(world));
+  if (!views.has(world)) {
+    const createdView = new WorldView(world);
+    views.set(world, createdView);
+    prewarmSceneShaders(createdView.scene, createdView);
+  }
   view = views.get(world);
+  if (isIntegratedApu && view.sun?.shadow) {
+    view.sun.shadow.mapSize.set(512, 512);
+  }
   view.scene.matrixWorldAutoUpdate = false;
+  if (isIntegratedApu && next === "metro" && view.sun?.shadow?.mapSize?.x > 1024) {
+    view.sun.shadow.map?.dispose?.();
+    view.sun.shadow.map = null;
+    view.sun.shadow.mapSize.set(1024, 1024);
+  }
   clock = new FixedClock();
   cameraSnap = true;
   keys.clear();
@@ -473,7 +529,7 @@ function activate(next) {
     $("districtMode").value = world.visualMode;
   }
   updateUI();
-  lastTime = performance.now();
+  lastTime = null;
 }
 function reset(options) {
   rememberPackPractice(world);
@@ -485,12 +541,209 @@ function reset(options) {
   worlds[environment] = replacement;
   activate(environment);
 }
+const compiledSkinnedUrls = new Set();
+
+function prewarmPrototypesOnly(scene, activeView) {
+  if (!scene || !activeView?.metroSkinnedPrototypes?.size) return;
+  const tempPooled = [];
+  const tempGroup = new THREE.Group();
+  activeView.metroSkinnedCompiled ??= new Set();
+  for (const [url, sample] of activeView.metroSkinnedPrototypes.entries()) {
+    if (activeView.metroSkinnedCompiled.has(url)) continue;
+    if (sample && !sample.parent) {
+      tempGroup.add(sample);
+      tempPooled.push(sample);
+      activeView.metroSkinnedCompiled.add(url);
+    }
+  }
+  if (!tempPooled.length) return;
+  const savedChildren = [];
+  for (const ch of scene.children) {
+    if (!ch.isLight && ch.name !== "pursuit-layer" && ch.visible) {
+      savedChildren.push(ch);
+      ch.visible = false;
+    }
+  }
+  const apuHidden = [];
+  if (isIntegratedApu) {
+    for (const nm of [
+      "pursuit-bounce-red",
+      "pursuit-bounce-blue",
+      "player-street-key-light",
+      "player-sculpt-fill-light",
+    ]) {
+      const l = scene.getObjectByName(nm);
+      if (l) {
+        apuHidden.push([l, l.visible]);
+        l.visible = false;
+      }
+    }
+  }
+  scene.add(tempGroup);
+  const prevTarget = renderer.getRenderTarget?.() ?? null;
+  try {
+    tempGroup.updateMatrixWorld(true);
+    if (cinematicPost?.target) renderer.setRenderTarget(cinematicPost.target);
+    renderer.compile(scene, camera);
+  } catch {
+    // ignore headless/mock renderer fallback
+  } finally {
+    renderer.setRenderTarget?.(prevTarget);
+    for (let i = tempPooled.length - 1; i >= 0; i--) {
+      tempPooled[i].removeFromParent();
+    }
+    tempGroup.removeFromParent();
+    for (let i = apuHidden.length - 1; i >= 0; i--) {
+      apuHidden[i][0].visible = apuHidden[i][1];
+    }
+    for (let i = 0; i < savedChildren.length; i++) {
+      savedChildren[i].visible = true;
+    }
+  }
+}
+function prewarmSceneShaders(scene, activeView) {
+  if (!scene || !activeView) return;
+  const saved = [];
+  const tempAdded = [];
+  const tempPooled = [];
+  let cleanupPursuitPrewarm = null;
+  let tempTrafficSample = null;
+  const forceVisible = (obj) => {
+    if (!obj) return;
+    let cur = obj;
+    while (cur && cur !== scene) {
+      saved.push([cur, cur.visible, cur.count]);
+      cur.visible = true;
+      cur = cur.parent;
+    }
+    if (obj.isInstancedMesh && obj.count === 0) {
+      obj.count = 1;
+    }
+  };
+  const crashLayer = activeView.crashEffects?.layer;
+  if (crashLayer) {
+    crashLayer.traverse((child) => {
+      if (child.isMesh || child.isLine) forceVisible(child);
+    });
+  }
+  const surfFx = activeView.streetSurfaces?.fxGroup;
+  if (surfFx) {
+    surfFx.traverse((child) => {
+      if (child.isMesh || child.isLine) forceVisible(child);
+    });
+  }
+  let forecastGroup = scene.getObjectByName("pedestrian-forecast");
+  if (!forecastGroup && typeof pedestrianForecastView === "object" && pedestrianForecastView?.group) {
+    forecastGroup = pedestrianForecastView.group;
+    if (!forecastGroup.parent) {
+      scene.add(forecastGroup);
+      tempAdded.push(forecastGroup);
+    }
+  }
+  if (forecastGroup) {
+    forecastGroup.traverse((child) => {
+      if (child.isMesh || child.isInstancedMesh) forceVisible(child);
+    });
+  }
+  const rigRoot = activeView.playerRig?.root;
+  if (rigRoot) {
+    forceVisible(rigRoot.getObjectByName("suv-windshield-cracks"));
+    forceVisible(rigRoot.getObjectByName("suv-rear-window-cracks"));
+    forceVisible(rigRoot.nitroFlames ?? rigRoot.getObjectByName("player-nitro-flames"));
+    const sensorRays = rigRoot.getObjectByName("vehicle-sensor-rays");
+    if (sensorRays) {
+      sensorRays.traverse((child) => {
+        if (child.isMesh || child.isLine) forceVisible(child);
+      });
+    }
+  }
+  forceVisible(scene.getObjectByName("pursuit-lightbar-halos"));
+  const tempGroup = new THREE.Group();
+  scene.add(tempGroup);
+  tempAdded.push(tempGroup);
+  if (activeView.pursuitView?.prewarmMaterials) {
+    cleanupPursuitPrewarm = activeView.pursuitView.prewarmMaterials(tempGroup, activeView.metroModels);
+  }
+  if (activeView.metroModels?.acquire) {
+    try {
+      tempTrafficSample = activeView.metroModels.acquire({
+        kind: "sedan",
+        phase: 0,
+        width: 1.9,
+        length: 4.5,
+        height: 1.47,
+      });
+      if (tempTrafficSample?.visual) tempGroup.add(tempTrafficSample.visual);
+    } catch {
+      tempTrafficSample = null;
+    }
+  }
+  if (activeView.metroSkinnedPrototypes) {
+    activeView.metroSkinnedCompiled ??= new Set();
+    for (const [url, sample] of activeView.metroSkinnedPrototypes.entries()) {
+      if (sample && !sample.parent) {
+        tempGroup.add(sample);
+        tempPooled.push(sample);
+        activeView.metroSkinnedCompiled.add(url);
+      }
+    }
+  }
+  const apuHidden = [];
+  if (isIntegratedApu) {
+    for (const nm of [
+      "pursuit-bounce-red",
+      "pursuit-bounce-blue",
+      "player-street-key-light",
+      "player-sculpt-fill-light",
+    ]) {
+      const l = scene.getObjectByName(nm);
+      if (l) {
+        apuHidden.push([l, l.visible]);
+        l.visible = false;
+      }
+    }
+  }
+  const prevTarget = renderer.getRenderTarget?.() ?? null;
+  try {
+    tempGroup.updateMatrixWorld(true);
+    if (cinematicPost?.target) renderer.setRenderTarget(cinematicPost.target);
+    renderer.compile(scene, camera);
+  } catch {
+    // ignore headless/mock renderer fallback
+  } finally {
+    renderer.setRenderTarget?.(prevTarget);
+    for (let i = tempPooled.length - 1; i >= 0; i--) {
+      tempPooled[i].removeFromParent();
+    }
+    if (tempTrafficSample?.visual) {
+      tempTrafficSample.visual.removeFromParent();
+      activeView.metroModels?.release?.(tempTrafficSample.entry);
+    }
+    cleanupPursuitPrewarm?.();
+    for (let i = tempAdded.length - 1; i >= 0; i--) {
+      tempAdded[i].removeFromParent();
+    }
+    for (let i = apuHidden.length - 1; i >= 0; i--) {
+      apuHidden[i][0].visible = apuHidden[i][1];
+    }
+    for (let i = saved.length - 1; i >= 0; i--) {
+      const [node, vis, cnt] = saved[i];
+      node.visible = vis;
+      if (cnt !== undefined) node.count = cnt;
+    }
+  }
+}
 function resize() {
   const bounds = renderer.domElement.getBoundingClientRect();
   viewportWidth = Math.round(bounds.width);
   viewportHeight = Math.round(bounds.height);
-  renderer.setPixelRatio(Math.min(Math.round(devicePixelRatio * 1000) / 1000, 1.5));
+  const pixelRatio = Math.min(
+    Math.round(devicePixelRatio * 1000) / 1000,
+    isIntegratedApu ? 1.0 : 1.5,
+  );
+  renderer.setPixelRatio(pixelRatio);
   renderer.setSize(viewportWidth, viewportHeight, false);
+  cinematicPost.setSize(viewportWidth, viewportHeight, pixelRatio);
   camera.aspect = viewportWidth / viewportHeight;
   camera.updateProjectionMatrix();
   positionCameraPreview();
@@ -578,6 +831,13 @@ cityPerception = mountCityPerception($, {
   },
   onDetector: () => cameraAction(visualClient.enabled ? "stop" : "start"),
 });
+let touchNitroActive = false;
+function spawnChaseCrowdAhead(count = 20) {
+  if (environment !== "metro") return null;
+  world.command({ type: "spawn-crowd-ahead", count });
+  updateUI();
+  return world.lastCrowdSpawn ?? null;
+}
 for (const [id, control] of [["pursuitTouchLeft", "ArrowLeft"], ["pursuitTouchRight", "ArrowRight"],
   ["pursuitTouchBrake", "Space"], ["pursuitTouchThrottle", "KeyW"], ["pursuitTouchReverse", "KeyS"]]) {
   const button = $(id);
@@ -628,6 +888,10 @@ addEventListener("keydown", (event) => {
   }
   if (event.code === "KeyI") autoToggle();
   if (event.code === "KeyE") usePursuitPower();
+  if (event.code === "KeyG" && environment === "metro") {
+    spawnChaseCrowdAhead(20);
+    pursuitPanel.flashCrowdSpawned?.(20);
+  }
   if (event.code === "KeyR" && world.pursuit?.survival && !isPursuing() && streetPursuitOpen &&
       streetPursuitStyle === "survival") $("pursuitRunBtn").click();
 });
@@ -635,11 +899,13 @@ addEventListener("keyup", (event) => keys.delete(event.code));
 addEventListener("blur", () => {
   keys.clear();
   touchPursuit.clear();
+  touchNitroActive = false;
 });
 document.addEventListener("visibilitychange", () => {
   keys.clear();
   touchPursuit.clear();
-  lastTime = performance.now();
+  touchNitroActive = false;
+  lastTime = null;
   clock = new FixedClock();
 });
 $("aiToggleBtn").onclick = autoToggle;
@@ -654,6 +920,7 @@ $("pakoBtn").onclick = () => {
   pakoPanelOpen = true;
   updatePursuitNavigation();
   settingsOpen(false);
+  if (streetPursuitOpen) vehiclePanel?.close();
   updateUI();
   if (streetPursuitOpen) $("pursuitLevel").focus();
 };
@@ -1200,6 +1467,16 @@ const pursuitPanel = mountPursuitPanel({
     setChaseCameraStyle(style);
     updateUI();
   },
+  onSpawnCrowdAhead: ({ count = 20 } = {}) => spawnChaseCrowdAhead(count),
+  onStopChase: () => {
+    if (environment === "metro") {
+      endCityPursuit();
+      updateUI();
+    } else if (world.pursuit) reset(world.config);
+  },
+  onNitro: active => {
+    touchNitroActive = Boolean(active);
+  },
   onEvasion: enabled => { useEvasionPreview = enabled; },
   onCurbSupport: enabled => { useSurveyedCurb = enabled; },
   onRun: async (learn, useLabPolicy) => {
@@ -1250,6 +1527,8 @@ const pursuitPanel = mountPursuitPanel({
       cityPracticeRun = active.pursuit.driver === "training" ? active.pursuit : null;
       paused = false;
       lastInput = "";
+      clock = new FixedClock();
+      lastTime = null;
       if (simple) cityPerception.show(true);
       updateUI();
       return true;
@@ -1577,6 +1856,7 @@ function input() {
   // Keep the plant and recorded actions unchanged; map keys at the boundary.
   const cameraSteer = Number(pressed("KeyA") || pressed("ArrowLeft")) -
     Number(pressed("KeyD") || pressed("ArrowRight"));
+  const nitroHeld = touchNitroActive || pressed("ShiftLeft") || pressed("ShiftRight") || pressed("KeyN");
   if (world.pursuit?.reviewUntilTick) return;
   if (isPursuing()) {
     if (paused) return;
@@ -1591,8 +1871,9 @@ function input() {
     const reverse = pressed("KeyS") || pressed("ArrowDown");
     const command = { type: "pursuit-drive", action: {
       steer: cameraSteer,
-      throttle: Number(reverse || pressed("KeyW") || pressed("ArrowUp")),
+      throttle: Number(reverse || pressed("KeyW") || pressed("ArrowUp") || nitroHeld),
       brake: Number(pressed("Space")), gear: reverse ? -1 : 1,
+      ...(nitroHeld && !reverse && !pressed("Space") ? { nitro: 1 } : {}),
     } };
     const signature = JSON.stringify(command);
     if (signature !== lastInput) {
@@ -1603,7 +1884,7 @@ function input() {
   }
   const targetSpeed = pressed("Space")
     ? 0
-    : pressed("KeyW") || pressed("ArrowUp")
+    : pressed("KeyW") || pressed("ArrowUp") || nitroHeld
       ? world.player.maxSpeed
       : pressed("KeyS") || pressed("ArrowDown")
         ? -2.5
@@ -1615,7 +1896,12 @@ function input() {
     }
     return;
   }
-  const command = { type: "drive", targetSpeed, steer: cameraSteer * .62 };
+  const command = {
+    type: "drive",
+    targetSpeed,
+    steer: cameraSteer * .62,
+    ...(nitroHeld && targetSpeed > 0 ? { nitro: 1 } : {}),
+  };
   const signature = JSON.stringify(command);
   if (signature !== lastInput) {
     world.command(command);
@@ -1661,7 +1947,11 @@ function updateUI() {
   const touchLabel = dispatchDriving ? "Pursuit driving controls" : "Arcade steering";
   if (pursuitTouch.getAttribute("aria-label") !== touchLabel) pursuitTouch.setAttribute("aria-label", touchLabel);
   $("pursuitTouchReverse").hidden = $("pursuitTouchThrottle").hidden = !dispatchDriving;
-  if (!touchDriving) touchPursuit.clear();
+  if ($("touchNitro")) $("touchNitro").hidden = !dispatchDriving;
+  if (!touchDriving) {
+    touchPursuit.clear();
+    touchNitroActive = false;
+  }
   saveVisionComparison();
   if (pursuitPreview && pursuitPreview.run !== activeCinematic()) pursuitPreview = null;
   updatePreview();
@@ -1673,8 +1963,8 @@ function updateUI() {
     : frozen?.status === "fault" ? "PPO stopped" : frozen?.status === "waiting-for-scan" ? "PPO waiting for scan"
     : world.mode === "auto" ? "Autonomous drive" : "Manual drive";
   $("drivingHelp").textContent = frozen
-    ? "W A S D drive · Space brake · V chasing cam · C cockpit · P phone · I takes over"
-    : "W A S D drive · Space brake · V chasing cam · C cockpit · P phone · I auto";
+    ? "W A S D drive · Shift nitro · G +20 people · V cam · C cockpit · I takes over"
+    : "W A S D drive · Shift nitro · Space brake · G +20 people · V cam · C cockpit · I auto";
   if ($("chaseCamBtn")) {
     $("chaseCamBtn").textContent = chaseCameraStyle === "chasing" ? "Chasing cam" : "Behind car";
     $("chaseCamBtn").setAttribute("aria-pressed", String(chaseCameraStyle === "chasing"));
@@ -1732,15 +2022,18 @@ function updateUI() {
     comparison: visionComparisons.get(visionComparisonKey(visionCaseId)) ?? null,
   });
   if (cameraScreenVisible && visualClient) updateCameraScreen();
-  const people = world.actors.filter((actor) => actor.type === "pedestrian")
-    .sort((a, b) => Math.hypot(a.x - world.player.x, a.z - world.player.z)
-      - Math.hypot(b.x - world.player.x, b.z - world.player.z) || a.id.localeCompare(b.id));
-  if (!people.some((person) => person.id === selectedPersonId)) selectedPersonId = people[0]?.id ?? null;
-  if (focusedPersonId && !people.some((person) => person.id === focusedPersonId)) setCarView("chase");
-  peoplePanel?.update({
-    environment, people, selectedId: selectedPersonId,
-    focused: Boolean(focusedPersonId), paused,
-  });
+  const peoplePanelOpen = $("peoplePanel") && !$("peoplePanel").hidden;
+  if (peoplePanelOpen || focusedPersonId) {
+    const people = world.actors.filter((actor) => actor.type === "pedestrian")
+      .sort((a, b) => Math.hypot(a.x - world.player.x, a.z - world.player.z)
+        - Math.hypot(b.x - world.player.x, b.z - world.player.z) || a.id.localeCompare(b.id));
+    if (!people.some((person) => person.id === selectedPersonId)) selectedPersonId = people[0]?.id ?? null;
+    if (focusedPersonId && !people.some((person) => person.id === focusedPersonId)) setCarView("chase");
+    peoplePanel?.update({
+      environment, people, selectedId: selectedPersonId,
+      focused: Boolean(focusedPersonId), paused,
+    });
+  }
   if (environment === "vision")
     $("loadingStatus").textContent = world.visionLab.error
       ?? `Visual prediction · ${world.visionLab.phase} · live camera pixels`;
@@ -1773,6 +2066,25 @@ function updateUI() {
     const metroSnapshot = result && (!pako || result.cityChase || result.pako) ? pursuitSnapshot(world) : null;
     const metroPatrolStatus = dispatch || result?.reviewUntilTick || result?.gta ? packPatrolStatus(result) : null;
     pursuitStrobe.update(metroSnapshot ? { ...metroSnapshot, patrolStatus: metroPatrolStatus } : null);
+    const chaseWorldState = metroSnapshot
+      ? {
+          ...metroSnapshot,
+          patrolStatus: metroPatrolStatus,
+          paused,
+          player: world.player,
+          nitroCharge: world.player.nitroCharge,
+          nitroActive: world.player.nitroActive,
+          nitroSuppressedByPedestrian: world.player.nitroSuppressedByPedestrian,
+          crowdAheadCount: world.crowdAheadCount ?? 0,
+        }
+      : {
+          phase: "ready",
+          player: world.player,
+          nitroCharge: world.player.nitroCharge,
+          nitroActive: world.player.nitroActive,
+          nitroSuppressedByPedestrian: world.player.nitroSuppressedByPedestrian,
+          crowdAheadCount: world.crowdAheadCount ?? 0,
+        };
     pursuitPanel.update(streetPursuitOpen ? {
       ...(metroSnapshot ?? { phase: "ready", metrics: {} }),
       street: true, mode: world.mode, paused,
@@ -1782,18 +2094,23 @@ function updateUI() {
       pako, pakoAvailable: Boolean(approvedPakoPolicy()), pakoBestS,
       pakoDriverMode, chaseCameraStyle, customCheckpoint, ppoSummary: formatPpoSummary(dispatchCheckpoint?.policy),
       checkpointStatus, checkpointReady: dispatchCheckpoint !== null,
+      surface: world.player?.vehicle?.surface ?? null,
       frozenDriver: result?.frozenDriver,
       trace: result?.trace,
       bestSurvivalS, soundMuted: pursuitAudio.muted, soundError: pursuitAudio.error,
       pack: !gta && rushCity && (!dispatch || isPackPursuit(result.variant)),
       labPolicyAvailable: Boolean(labPackCheckpoint),
       speedMps: world.player.speed,
+      nitroCharge: world.player.nitroCharge,
+      nitroActive: world.player.nitroActive,
+      nitroSuppressedByPedestrian: world.player.nitroSuppressedByPedestrian,
+      crowdAheadCount: world.crowdAheadCount ?? 0,
       dispatchWaves: rushCity,
       patrolStatus: metroPatrolStatus,
       appliedSpeedMps: world.player.districtSources?.finalMps,
       appliedSource: world.player.districtSources?.appliedSource,
       level: result?.phase === "running" ? result.level : streetPursuitLevel,
-    } : null);
+    } : null, chaseWorldState);
   } else if (world.district) {
     const state = world.districtCase;
     $("loadingStatus").textContent = state && state.id !== "ambient"
@@ -1830,8 +2147,13 @@ function updateUI() {
     pursuitStrobe.update(null);
     pursuitPanel.update(null);
   }
-  drawMap();
+  const nowMapMs = performance.now();
+  if (!isPursuing() || nowMapMs - lastMapDrawMs >= 360) {
+    lastMapDrawMs = nowMapMs;
+    drawMap();
+  }
 }
+let lastMapDrawMs = -999;
 const map = $("minimap").getContext("2d");
 function drawMap() {
   const scale = environment === "metro"
@@ -1852,25 +2174,29 @@ function drawMap() {
     );
     map.stroke();
   };
-  for (const road of world.roads)
-    line(
-      isDiagonalRoad(road)
-        ? [
-            { x: road.x1, z: road.z1 },
-            { x: road.x2, z: road.z2 },
-          ]
-        : road.axis === "z"
-          ? [
-              { x: road.fixed, z: road.min },
-              { x: road.fixed, z: road.max },
-            ]
-          : [
-              { x: road.min, z: road.fixed },
-              { x: road.max, z: road.fixed },
-            ],
-      road.zone === "avenue" ? "#a3ad9c" : "#738075",
-      road.width * scale,
-    );
+  for (const road of world.roads) {
+    let rx1, rz1, rx2, rz2;
+    if (isDiagonalRoad(road)) {
+      rx1 = road.x1;
+      rz1 = road.z1;
+      rx2 = road.x2;
+      rz2 = road.z2;
+    } else if (road.axis === "z") {
+      rx1 = rx2 = road.fixed;
+      rz1 = road.min;
+      rz2 = road.max;
+    } else {
+      rx1 = road.min;
+      rx2 = road.max;
+      rz1 = rz2 = road.fixed;
+    }
+    map.strokeStyle = road.zone === "avenue" ? "#a3ad9c" : "#738075";
+    map.lineWidth = road.width * scale;
+    map.beginPath();
+    map.moveTo(cx + rx1 * scale, cz + rz1 * scale);
+    map.lineTo(cx + rx2 * scale, cz + rz2 * scale);
+    map.stroke();
+  }
   if (world.player.path.length) line(world.player.path, "#a5e4bc", 1.8);
   const escapeGoal = environment === "metro" && world.pursuit?.phase === "running"
     ? world.pursuit?.gta?.escapeGoal
@@ -2001,16 +2327,71 @@ function mountedCameraPose(player, mode) {
   player.localToWorld(target);
   return true;
 }
+const previewDetailMeshCache = new WeakMap();
+const sceneOverlayNodeCache = new WeakMap();
+const rigOverlayNodeCache = new WeakMap();
+function getPreviewFineDetailMeshes(activeView) {
+  let cached = previewDetailMeshCache.get(activeView);
+  if (!cached) {
+    cached = [
+      activeView.scene.getObjectByName("egypt-painted-curb"),
+      activeView.scene.getObjectByName("road-markings"),
+      activeView.scene.getObjectByName("egypt-asphalt-repairs"),
+      activeView.scene.getObjectByName("street-manholes-and-cracks"),
+    ].filter(Boolean);
+    previewDetailMeshCache.set(activeView, cached);
+  }
+  return cached;
+}
+function getSceneOverlayNodes(activeView) {
+  let cached = sceneOverlayNodeCache.get(activeView);
+  if (!cached || (activeView.pursuitView && !cached.pursuitHalos)) {
+    cached = {
+      pursuitHalos: activeView.scene.getObjectByName("pursuit-lightbar-halos") ?? null,
+      bounceRed: activeView.scene.getObjectByName("pursuit-bounce-red") ?? null,
+      bounceBlue: activeView.scene.getObjectByName("pursuit-bounce-blue") ?? null,
+      streetPt: activeView.scene.getObjectByName("player-street-key-light") ?? null,
+      sculptPt: activeView.scene.getObjectByName("player-sculpt-fill-light") ?? null,
+    };
+    sceneOverlayNodeCache.set(activeView, cached);
+  }
+  return cached;
+}
+function getRigOverlayNodes(rig) {
+  if (!rig?.root) return null;
+  let cached = rigOverlayNodeCache.get(rig.root);
+  if (!cached) {
+    cached = {
+      debugRays: rig.root.getObjectByName("vehicle-sensor-rays") ?? null,
+      wsCracks: rig.root.getObjectByName("suv-windshield-cracks") ?? null,
+      rwCracks: rig.root.getObjectByName("suv-rear-window-cracks") ?? null,
+      roadPools: rig.root.getObjectByName("suv-road-light-pools") ?? null,
+      nitroFlames: rig.nitroFlames ?? rig.root.getObjectByName("player-nitro-flames") ?? null,
+    };
+    rigOverlayNodeCache.set(rig.root, cached);
+  }
+  return cached;
+}
+let lastFrameWorkMs = 0;
+let lastPreviewTargetWorld = null;
+let lastPreviewSensorCam = null;
+let lastPreviewRenderFrame = -999;
 function frame(time) {
   requestAnimationFrame(frame);
-  const delta = (time - lastTime) / 1000;
+  const frameStartMs = performance.now();
+  renderer.info.reset();
+  const delta = lastTime === null ? 1 / 60 : Math.max(0, (time - lastTime) / 1000);
   lastTime = time;
   const perspective = environment === "lab" ? ghostPlayback.perspective() : null;
   const replayCity = perspective && views.get(worlds.metro);
   if (!replayCity) input();
   const survivalReview = world.pursuit?.survival && world.pursuit.reviewUntilTick;
-  if (!paused && !document.hidden) clock.advance(delta * (survivalReview && !reducedMotion.matches ? .33 : 1),
-    stepWorld, environment === "metro" ? 5 : Infinity);
+  const tickBeforeAdvance = world.tick;
+  if (!paused && !document.hidden) {
+    clock.advance(delta * (survivalReview && !reducedMotion.matches ? .33 : 1),
+      stepWorld, environment === "metro" ? 5 : Infinity);
+  }
+  const stepsRanThisFrame = Math.max(0, world.tick - tickBeforeAdvance);
   if (replayCity) {
     if (!lastPerspectiveReplay) {
       $("environmentLabel").textContent = "Recorded Metro playback";
@@ -2019,9 +2400,10 @@ function frame(time) {
     renderer.setScissorTest(false);
     renderer.setViewport(0, 0, viewportWidth, viewportHeight);
     lastPerspectiveReplay = perspectiveGhosts.draw(renderer, replayCity, perspective, viewportWidth, viewportHeight);
-    mainCalls = renderer.info.render.calls;
-    mainTriangles = renderer.info.render.triangles;
+    mainCalls = totalFrameCalls = renderer.info.render.calls;
+    mainTriangles = totalFrameTriangles = renderer.info.render.triangles;
     renderedFrames++;
+    lastFrameWorkMs = performance.now() - frameStartMs;
     return;
   }
   if (lastPerspectiveReplay) {
@@ -2036,12 +2418,30 @@ function frame(time) {
   const preview = previewVisible(cinematic);
   // Keep the full scene and camera cadence; the static sun's depth map
   // does not need to be rebuilt up to 60 times a second in a dense City.
-  const shadowTicks = (world.config.cityVersion ?? 0) >= 4 && world.capacity.traffic >= 64 ? 3 : 1;
-  if (environment !== "metro" || world !== lastShadowWorld || world.tick - lastShadowTick >= shadowTicks ||
-      isInspection() || cameraSnap || appliedCutaway !== cutaway) {
+  const simSecNow = world.tick / 60;
+  const visionIntervalTicks = 6;
+  const wantVisionSample = Boolean(
+    (visualClient.enabled || cameraScreenVisible || cityPerception.open) &&
+      (world.tick < lastVisionCaptureTick || world.tick - lastVisionCaptureTick >= visionIntervalTicks),
+  );
+  const shadowFrames = (world.config.cityVersion ?? 0) >= 4
+    ? (isIntegratedApu ? 24 : 12)
+    : 1;
+  const currentImpactsPre = world.player?.vehicle?.damage?.impactCount ?? 0;
+  const deferShadowOnHeavyTick =
+    environment === "metro" &&
+    world === lastShadowWorld &&
+    renderedFrames - lastShadowFrame < shadowFrames + 16 &&
+    (stepsRanThisFrame > 0 ||
+      currentImpactsPre > lastImpactCount ||
+      lastFrameWorkMs > 11.0);
+  if (environment !== "metro" || world !== lastShadowWorld ||
+      (!wantVisionSample && !deferShadowOnHeavyTick && renderedFrames - lastShadowFrame >= shadowFrames) ||
+      isInspection() || cameraSnap || Boolean(freeCameraShotOverride) || appliedCutaway !== cutaway) {
     renderer.shadowMap.needsUpdate = true;
     lastShadowWorld = world;
-    lastShadowTick = world.tick;
+    lastShadowFrame = renderedFrames;
+    shadowPassFrames++;
   }
   if (view.playerRig && (inspectionRig !== view.playerRig
       || appliedCutaway !== cutaway || appliedSensors !== sensorView)) {
@@ -2053,7 +2453,33 @@ function frame(time) {
   forward.set(Math.sin(player.rotation.y), 0, Math.cos(player.rotation.y));
   const personRoot = focusedPersonId ? view.roots.get(focusedPersonId)?.root : null;
   const pursuitShot = cinematic && !personRoot && cameraMode === "chase" ? cinematic : null;
-  if (personRoot) {
+  const grandCityMetro = environment === "metro" && (world.config.cityVersion ?? 0) >= 5;
+  const currentImpacts = world.player?.vehicle?.damage?.impactCount ?? 0;
+  if (world !== lastImpactWorld) {
+    lastImpactWorld = world;
+    lastImpactCount = currentImpacts;
+    cameraImpactPulse = 0;
+  } else if (currentImpacts > lastImpactCount) {
+    cameraImpactPulse = 1;
+    lastImpactCount = currentImpacts;
+  } else {
+    cameraImpactPulse *= Math.exp(-5.5 * Math.max(0, Math.min(delta || 0, 0.1)));
+    if (cameraImpactPulse < 1e-4) cameraImpactPulse = 0;
+  }
+  if (freeCameraShotOverride) {
+    camera.up.set(0, 1, 0);
+    camera.position.set(
+      freeCameraShotOverride.pos.x,
+      freeCameraShotOverride.pos.y,
+      freeCameraShotOverride.pos.z,
+    );
+    camera.lookAt(
+      freeCameraShotOverride.lookAt.x,
+      freeCameraShotOverride.lookAt.y,
+      freeCameraShotOverride.lookAt.z,
+    );
+  } else if (personRoot) {
+    camera.up.set(0, 1, 0);
     const person = world.actors.find((actor) => actor.id === focusedPersonId);
     target.copy(personRoot.position);
     target.y += (person.body?.heightM ?? 1.78) * 0.55;
@@ -2067,6 +2493,7 @@ function frame(time) {
     orbit.target.copy(target);
     orbit.update();
   } else if (cameraMode !== "chase" && mountedCameraPose(player, cameraMode)) {
+    camera.up.set(0, 1, 0);
     if (isInspection()) {
       if (cameraSnap) {
         camera.position.copy(offset);
@@ -2077,8 +2504,16 @@ function frame(time) {
       camera.position.copy(offset);
       camera.lookAt(target);
     }
-  } else if (pursuitShot || (environment === "metro" && (world.config.cityVersion ?? 0) >= 5 && cameraMode === "chase")) {
+  } else if (pursuitShot || (grandCityMetro && cameraMode === "chase")) {
     const packActive = Boolean(pursuitShot && isPackPursuit(pursuitShot.variant));
+    const prevSpeed = world.player.previous?.speed ?? world.player.speed ?? 0;
+    const accelMps2 = world.sensors?.imu?.longitudinalAccelMps2
+      ?? ((world.player.speed ?? 0) - prevSpeed) * 60;
+    const surfKind = world.player.vehicle?.surface?.kind ?? "asphalt";
+    const baseRough = surfKind === "cobble" ? 0.78 : surfKind === "sand" ? 0.62 : surfKind === "water" ? 0.28 : 0.16;
+    const activeScrape = world.player.vehicle?.interaction?.scraping;
+    const scrapeIntensity = activeScrape?.active ? (activeScrape.intensity ?? 0) : 0;
+    const surfaceRoughness = Math.min(1, Math.max(baseRough + (world.player.curbSupportId ? 0.42 : 0), scrapeIntensity * 0.85));
     pursuitCamera.update(camera, {
       position: player.position,
       heading: player.rotation.y,
@@ -2093,8 +2528,18 @@ function frame(time) {
       cameraStyle: packActive ? "auto" : chaseCameraStyle,
       trailingVehicles: pursuitShot?.gta?.config.ruleset === "dispatch-v1" ? pursuitShot.patrols : null,
       impactReview: Boolean(pursuitShot && (pursuitShot.metrics.terminalCause === "pedestrian-impact" || Boolean(survivalReview && !reducedMotion.matches))),
+      cinematicMotion: grandCityMetro && !packActive,
+      accelMps2,
+      slipRad: world.player.chaseSlip ?? world.player.arcadeSlip ?? 0,
+      surfaceRoughness,
+      impactPulse: Math.max(cameraImpactPulse, scrapeIntensity * 0.28),
     });
+    if (world.terrainElevationAt) {
+      const minCamY = 0.12 + world.terrainElevationAt(camera.position.x, camera.position.z) + 1.15;
+      if (camera.position.y < minCamY) camera.position.y = minCamY;
+    }
   } else {
+    camera.up.set(0, 1, 0);
     const openPursuit = world.pursuit?.variant === "rush" && world.pursuit.phase === "running" &&
       onRoadLimit(world, world.player).width >= 10;
     offset.copy(player.position).addScaledVector(forward, openPursuit ? -19.8 : -10.5);
@@ -2125,70 +2570,250 @@ function frame(time) {
     frontCamera.position.y += 1.25;
     frontCamera.lookAt(target.copy(frontCamera.position).addScaledVector(forward, 20));
   }
-  const captureVision = (visualClient.enabled || cameraScreenVisible || cityPerception.open) && mountedCameraPose(player, "sensor");
+  const captureVision =
+    (visualClient.enabled || cameraScreenVisible || cityPerception.open) &&
+    mountedCameraPose(player, "sensor");
   if (captureVision) {
     visionCamera.position.copy(offset);
     visionCamera.lookAt(target);
   }
   view.selectedPersonId = $("peopleToggleBtn").getAttribute("aria-expanded") === "true" ? selectedPersonId : null;
-  view.prepareFrame({ cameras: [camera, preview ? frontCamera : null, captureVision ? visionCamera : null] });
-  if (captureVision) {
-    const debugRays = view.playerRig?.root.getObjectByName("vehicle-sensor-rays");
-    const raysVisible = debugRays?.visible;
-    const routeVisible = view.route.visible;
+  const extraPreviewCam = preview && (cameraMode !== "chase" || sensorCamera === "rear") ? frontCamera : null;
+  const extraVisionCam = captureVision && wantVisionSample && cameraMode !== "chase" ? visionCamera : null;
+  view.prepareFrame({ cameras: [camera, extraPreviewCam, extraVisionCam] });
+  const sceneOverlayNodes = getSceneOverlayNodes(view);
+  const rigOverlayNodes = getRigOverlayNodes(view.playerRig);
+  const withCleanSensorOverlays = (fn) => {
+    const rigRoot = sensorCamera === "front" ? view.playerRig?.root : null;
+    const debugRays = rigOverlayNodes?.debugRays ?? null;
+    const wsCracks = rigOverlayNodes?.wsCracks ?? null;
+    const rwCracks = rigOverlayNodes?.rwCracks ?? null;
+    const roadPools = rigOverlayNodes?.roadPools ?? null;
+    const nitroFlames = rigOverlayNodes?.nitroFlames ?? null;
+    const fxLayer = view.crashEffects?.layer;
+    const surfFx = view.streetSurfaces?.fxGroup;
+    const pursuitHalos = sceneOverlayNodes.pursuitHalos;
+    const apuRed = isIntegratedApu ? sceneOverlayNodes.bounceRed : null;
+    const apuBlue = isIntegratedApu ? sceneOverlayNodes.bounceBlue : null;
+    const apuStreet = isIntegratedApu ? sceneOverlayNodes.streetPt : null;
+    const apuSculpt = isIntegratedApu ? sceneOverlayNodes.sculptPt : null;
+    const rigVis = rigRoot?.visible;
+    const raysVis = debugRays?.visible;
+    const wsVis = wsCracks?.visible;
+    const rwVis = rwCracks?.visible;
+    const poolsVis = roadPools?.visible;
+    const nitroVis = nitroFlames?.visible;
+    const fxVis = fxLayer?.visible;
+    const surfFxVis = surfFx?.visible;
+    const halosVis = pursuitHalos?.visible;
+    const apuRedVis = apuRed?.visible;
+    const apuBlueVis = apuBlue?.visible;
+    const apuStreetVis = apuStreet?.visible;
+    const apuSculptVis = apuSculpt?.visible;
+    const rVis = view.route.visible;
+    if (rigRoot) rigRoot.visible = false;
     if (debugRays) debugRays.visible = false;
+    if (wsCracks) wsCracks.visible = false;
+    if (rwCracks) rwCracks.visible = false;
+    if (roadPools) roadPools.visible = false;
+    if (nitroFlames) nitroFlames.visible = false;
+    if (fxLayer) fxLayer.visible = false;
+    if (surfFx) surfFx.visible = false;
+    if (pursuitHalos) pursuitHalos.visible = false;
+    if (apuRed) apuRed.visible = false;
+    if (apuBlue) apuBlue.visible = false;
+    if (apuStreet) apuStreet.visible = false;
+    if (apuSculpt) apuSculpt.visible = false;
+    view.streetSurfaces?.setSensorCleanMode?.(true);
     view.route.visible = false;
     try {
-      visualClient.capture(view.scene, visionCamera, world.player, world.tick / 60);
+      return fn();
     } finally {
-      if (debugRays) debugRays.visible = raysVisible;
-      view.route.visible = routeVisible;
+      if (rigRoot) rigRoot.visible = rigVis;
+      if (debugRays) debugRays.visible = raysVis;
+      if (wsCracks) wsCracks.visible = wsVis;
+      if (rwCracks) rwCracks.visible = rwVis;
+      if (roadPools) roadPools.visible = poolsVis;
+      if (nitroFlames) nitroFlames.visible = nitroVis;
+      if (fxLayer) fxLayer.visible = fxVis;
+      if (pursuitHalos) pursuitHalos.visible = halosVis;
+      if (apuRed) apuRed.visible = apuRedVis;
+      if (apuBlue) apuBlue.visible = apuBlueVis;
+      if (apuStreet) apuStreet.visible = apuStreetVis;
+      if (apuSculpt) apuSculpt.visible = apuSculptVis;
+      view.streetSurfaces?.setSensorCleanMode?.(false);
+      if (surfFx) surfFx.visible = surfFxVis;
+      view.route.visible = rVis;
+    }
+  };
+  let didVisionCaptureThisFrame = false;
+  if (captureVision && wantVisionSample) {
+    const callsBeforeCap = renderer.info.render.calls;
+    withCleanSensorOverlays(() => {
+      const playerRoot = view.playerRig?.root;
+      const pVis = playerRoot?.visible;
+      if (playerRoot) playerRoot.visible = false;
+      try {
+        visualClient.capture(view.scene, visionCamera, world.player, simSecNow);
+      } finally {
+        if (playerRoot) playerRoot.visible = pVis;
+      }
+    });
+    if (renderer.info.render.calls > callsBeforeCap) {
+      lastVisionCaptureTick = world.tick;
+      visionCaptureFrames++;
+      didVisionCaptureThisFrame = true;
     }
   }
   renderer.setScissorTest(false);
   renderer.setViewport(0, 0, viewportWidth, viewportHeight);
   const routeVisible = view.route.visible;
   if (cinematic && $("inspectorPanel").hidden) view.route.visible = false;
-  if (environment === "metro" && cityPerception.open) {
+  const showForecastGhosts =
+    environment === "metro" &&
+    (cityPerception.open || (world.pursuit?.phase === "running" && Boolean(world.pursuit.cityChase)));
+  if (showForecastGhosts) {
     const pursuitScan = world.pursuit?.phase === "running" && world.pursuit.gta?.scan;
     if (!pursuitScan && (senseWorld !== world || !senseScan)) {
       senseWorld = world;
       senseScan = senseScanner.sample(world);
     }
-    if (time - lastUI > 120)
-      senseForecasts = cityPerception.update({ scan: pursuitScan || senseScan, tick: world.tick,
-        evidence: currentCameraEvidence() });
-    if (pedestrianForecastView.group.parent !== view.scene) view.scene.add(pedestrianForecastView.group);
-    pedestrianForecastView.update(senseForecasts);
-    pedestrianForecastView.group.updateMatrixWorld(true);
+    const mountedNow = pedestrianForecastView.group.parent !== view.scene;
+    if (mountedNow) view.scene.add(pedestrianForecastView.group);
+    const shadowUpdatedThisFrame = lastShadowFrame === renderedFrames;
+    if (mountedNow || (!shadowUpdatedThisFrame && time - lastPerceptionTime > 150)) {
+      lastPerceptionTime = time;
+      const activeScan = pursuitScan || senseScan;
+      senseForecasts = cityPerception.open
+        ? cityPerception.update({ scan: activeScan, tick: world.tick, evidence: currentCameraEvidence() })
+        : pedestrianForecasts({ scan: activeScan, tick: world.tick, pair: null });
+      pedestrianForecastView.update(senseForecasts, world.terrainElevationAt);
+      pedestrianForecastView.group.updateMatrixWorld(true);
+    }
   }
-  pedestrianForecastView.group.visible = environment === "metro" && cityPerception.open && senseForecasts.length > 0;
-  renderer.render(view.scene, camera);
+  pedestrianForecastView.group.visible = showForecastGhosts && senseForecasts.length > 0;
+  if (grandCityMetro && view.metroSkinnedPrototypes?.size > 0) {
+    const ad = view.actorDiagnostics?.();
+    if ((ad?.loadingPeopleAssets ?? 0) === 0 && (ad?.unwarmedPeopleAssets ?? 0) > 0) {
+      prewarmPrototypesOnly(view.scene, view);
+      view._allPeoplePrewarmed = true;
+    }
+  }
+  const withChaseSuvCull =
+    cameraMode === "chase" && !cutaway && !sensorView && view.playerRig?.withExteriorChaseCulling
+      ? view.playerRig.withExteriorChaseCulling
+      : (fn) => fn();
+  if (grandCityMetro) {
+    const camDiag = pursuitCamera.diagnostics();
+    const apuBounceRed = isIntegratedApu ? sceneOverlayNodes.bounceRed : null;
+    const apuBounceBlue = isIntegratedApu ? sceneOverlayNodes.bounceBlue : null;
+    const apuStreetPt = isIntegratedApu ? sceneOverlayNodes.streetPt : null;
+    const apuSculptPt = isIntegratedApu ? sceneOverlayNodes.sculptPt : null;
+    const prevRedVis = apuBounceRed?.visible;
+    const prevBlueVis = apuBounceBlue?.visible;
+    const prevStreetPtVis = apuStreetPt?.visible;
+    const prevSculptPtVis = apuSculptPt?.visible;
+    if (apuBounceRed) apuBounceRed.visible = false;
+    if (apuBounceBlue) apuBounceBlue.visible = false;
+    if (apuStreetPt) apuStreetPt.visible = false;
+    if (apuSculptPt) apuSculptPt.visible = false;
+    try {
+      withChaseSuvCull(() => {
+        cinematicPost.render(view.scene, camera, {
+          speedNorm: cameraMode === "chase" ? camDiag.speedNorm : Math.min(1, Math.abs(world.player.speed ?? 0) / 19),
+          turnNorm: cameraMode === "chase" ? camDiag.turnNorm : 0,
+          impactPulse: cameraImpactPulse,
+          timeS: time * 0.001,
+          reducedMotion: Boolean(reducedMotion?.matches),
+          enabled: true,
+        });
+      });
+    } finally {
+      if (apuBounceRed) apuBounceRed.visible = prevRedVis;
+      if (apuBounceBlue) apuBounceBlue.visible = prevBlueVis;
+      if (apuStreetPt) apuStreetPt.visible = prevStreetPtVis;
+      if (apuSculptPt) apuSculptPt.visible = prevSculptPtVis;
+    }
+    const postDiag = cinematicPost.diagnostics();
+    mainCalls = postDiag.sceneCalls + postDiag.postCalls;
+    mainTriangles = postDiag.sceneTriangles + 1;
+  } else {
+    const beforeCalls = renderer.info.render.calls;
+    const beforeTris = renderer.info.render.triangles;
+    withChaseSuvCull(() => {
+      renderer.render(view.scene, camera);
+    });
+    mainCalls = renderer.info.render.calls - beforeCalls;
+    mainTriangles = renderer.info.render.triangles - beforeTris;
+  }
   pedestrianForecastView.group.visible = false;
-  mainCalls = renderer.info.render.calls;
-  mainTriangles = renderer.info.render.triangles;
   renderedFrames++;
   if (preview) {
+    frontPreviewFrames++;
     const { x, y, width, height } = previewViewport;
+    if (didVisionCaptureThisFrame && sensorCamera === "front" && visualClient?.previewTexture) {
+      previewBlitMat.map = visualClient.previewTexture;
+    } else {
+      const shadowJustUpdated = lastShadowFrame === renderedFrames - 1;
+      const forceFreshPreview =
+        !grandCityMetro ||
+        lastPreviewTargetWorld !== world ||
+        lastPreviewSensorCam !== sensorCamera ||
+        renderedFrames - lastPreviewRenderFrame >= 2;
+      if (forceFreshPreview && (!shadowJustUpdated || lastPreviewTargetWorld !== world || lastPreviewSensorCam !== sensorCamera || renderedFrames - lastPreviewRenderFrame >= 3)) {
+        const prevTarget = renderer.getRenderTarget();
+        withCleanSensorOverlays(() => {
+          const fineMeshes = getPreviewFineDetailMeshes(view);
+          const fineVis = new Array(fineMeshes.length);
+          for (let i = 0; i < fineMeshes.length; i++) {
+            fineVis[i] = fineMeshes[i].visible;
+            fineMeshes[i].visible = false;
+          }
+          view.streetSurfaces?.setPreviewThumbnailMode?.(true);
+          try {
+            renderer.setRenderTarget(frontPreviewTarget);
+            renderer.render(view.scene, frontCamera);
+          } finally {
+            renderer.setRenderTarget(prevTarget);
+            view.streetSurfaces?.setPreviewThumbnailMode?.(false);
+            for (let i = 0; i < fineMeshes.length; i++) fineMeshes[i].visible = fineVis[i];
+          }
+        });
+        lastPreviewTargetWorld = world;
+        lastPreviewSensorCam = sensorCamera;
+        lastPreviewRenderFrame = renderedFrames;
+      }
+      previewBlitMat.map = frontPreviewTarget.texture;
+    }
     renderer.setScissorTest(true);
     renderer.setScissor(x, y, width, height);
     renderer.setViewport(x, y, width, height);
     renderer.clearDepth();
-    renderer.render(view.scene, frontCamera);
+    renderer.render(previewBlitScene, previewBlitCam);
     perceptionOverlay.setViewport(previewViewport);
     if (time - lastFrame > 1000) {
-      bridge.sendFrame(previewViewport);
+      const asyncB64 = sensorCamera === "front" ? visualClient?.latestFrame?.imageJpegBase64 ?? null : null;
+      bridge.sendFrame(previewViewport, asyncB64);
       lastFrame = time;
     }
     renderer.setScissorTest(false);
   }
   view.route.visible = routeVisible;
-  if (time - lastUI > 180) {
+  totalFrameCalls = renderer.info.render.calls;
+  totalFrameTriangles = renderer.info.render.triangles;
+  if (time - lastUI > 180 && lastShadowFrame !== renderedFrames - 1 && lastPerceptionTime !== time) {
     updateUI();
     lastUI = time;
   }
+  lastFrameWorkMs = performance.now() - frameStartMs;
 }
 activate("metro");
+if (isIntegratedApu && view?.scene) {
+  const initNodes = getSceneOverlayNodes(view);
+  if (initNodes.streetPt) initNodes.streetPt.visible = false;
+  if (initNodes.sculptPt) initNodes.sculptPt.visible = false;
+}
+prewarmSceneShaders(view.scene, view);
 void loadDefaultChasePolicy();
 requestAnimationFrame(frame);
 // Reproducible diagnostics used by browser smoke tests and Python adapters.
@@ -2198,6 +2823,38 @@ window.sim = {
   get cityPerception() { return cityPerception.report; },
   get pursuitTraining() { return labSession && { ...labSession }; },
   pursuitAudio: () => ({ ...pursuitAudio.cues, muted: pursuitAudio.muted, audible: Boolean(pursuitAudio.audible) }),
+  crashDiagnostics: () => view?.crashDiagnostics?.() ?? null,
+  streetSurfaceDiagnostics: () => view?.streetSurfaceDiagnostics?.() ?? null,
+  spawnCrowdAhead: (count = 20) => spawnChaseCrowdAhead(count),
+  setSensorCamera: (dir) => carAction("sensor-camera", dir),
+  setFreeCameraShot: (shot) => {
+    freeCameraShotOverride = shot && shot.pos && shot.lookAt ? shot : null;
+    if (!freeCameraShotOverride) cameraSnap = true;
+  },
+  nitroStatus: () => ({
+    charge: world?.player?.nitroCharge ?? 1,
+    active: Boolean(world?.player?.nitroActive),
+    intensity: world?.player?.nitroIntensity ?? 0,
+    suppressedByPedestrian: Boolean(world?.player?.nitroSuppressedByPedestrian),
+    crowdAheadCount: world?.crowdAheadCount ?? 0,
+    lastCrowdSpawn: world?.lastCrowdSpawn ?? null,
+  }),
+  forecastDiagnostics: () => {
+    let visibleInstances = 0;
+    pedestrianForecastView?.group?.traverse?.((c) => {
+      if (c.isInstancedMesh && c.visible) visibleInstances += c.count ?? 0;
+    });
+    return {
+      count: senseForecasts?.length ?? 0,
+      visibleMeshes: visibleInstances,
+      groupParented: pedestrianForecastView?.group?.parent === view?.scene,
+    };
+  },
+  cinematicDiagnostics: () => ({
+    camera: pursuitCamera.diagnostics(),
+    post: cinematicPost.diagnostics(),
+    atmosphere: view?.atmosphereDiagnostics?.() ?? null,
+  }),
   cameraFrame(streamId, frameId) {
     return visualClient.getFrame(streamId, frameId);
   },
@@ -2233,15 +2890,24 @@ window.sim = {
   },
   get chaseCameraStyle() { return chaseCameraStyle; },
   setChaseCameraStyle(style) { setChaseCameraStyle(style); },
+  carAction(action, value) { return carAction(action, value); },
+  prewarmShaders() { prewarmSceneShaders(view?.scene, view); },
   renderDiagnostics() {
     const gl = renderer.getContext();
     return {
       renderedFrames, cameraMode, chaseCameraStyle, cameraFov: camera.fov, cutaway, sensorView, sensorCamera,
       width: renderer.domElement.width, height: renderer.domElement.height,
       pixelRatio: renderer.getPixelRatio(),
-      renderCalls: renderer.info.render.calls,
-      triangles: renderer.info.render.triangles,
+      renderCalls: totalFrameCalls,
+      triangles: totalFrameTriangles,
+      autoReset: renderer.info.autoReset,
+      shadowPassFrames,
+      visionCaptureFrames,
+      frontPreviewFrames,
+      previewActive: Boolean(previewVisible()),
+      cameraScreenVisible,
       mainCalls, mainTriangles,
+      lastFrameWorkMs,
       residentGeometries: renderer.info.memory.geometries,
       actors: view.actorDiagnostics(),
       backend: gl.getParameter(gl.VERSION),
@@ -2256,9 +2922,11 @@ window.sim = {
   },
   pause(value = true) {
     paused = value;
+    updateUI();
   },
   step(count = 1) {
     for (let i = 0; i < count; i++) world.step();
+    updateUI();
   },
   snapshot: () => world.snapshot(),
   audit: () => world.audit(),

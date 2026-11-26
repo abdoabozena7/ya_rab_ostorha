@@ -8,6 +8,7 @@ import {
   overlaps,
   pointOnRoad,
   roadFrame,
+  roadIntersection,
   roadPoseAt,
   roadProject,
 } from "./geometry.js";
@@ -18,10 +19,30 @@ export const TACTICAL_PURSUIT_MODE = "gta-tactical-v1";
 
 const SQUAD_BY_STAR = Object.freeze([0, 4, 6, 8, 11, 14]);
 const SEARCH_FAN_ANGLES = Object.freeze([0, 0.58, -0.58, 1.15, -1.15, 1.75, -1.75, Math.PI]);
-const OVERTAKE_STEER_OFFSETS = Object.freeze([0.09, -0.09, 0.15, -0.15, 0.22, -0.22, 0.38, -0.38, 0.55, -0.55]);
+const OVERTAKE_STEER_OFFSETS = Object.freeze([0.08, -0.08, 0.15, -0.15, 0.24, -0.24, 0.38, -0.38, 0.54, -0.54, 0.68, -0.68]);
 const LOOKAHEAD_DISTANCES = Object.freeze([8, 18, 30]);
 
 const staticReachCache = new WeakMap();
+const tacticalRoadListCache = new WeakMap();
+
+function getCachedTacticalRoadLists(rawRoads) {
+  if (!Array.isArray(rawRoads) || rawRoads.length === 0) {
+    return { roads: [], standardRoads: [] };
+  }
+  let cached = tacticalRoadListCache.get(rawRoads);
+  const len = rawRoads.length;
+  const first = rawRoads[0];
+  const last = rawRoads[len - 1];
+  if (!cached || cached.len !== len || cached.first !== first || cached.last !== last) {
+    const drivableRoads = rawRoads.filter((r) => r && !r.parkingBay && !r.supportApron);
+    const roads = drivableRoads.length > 0 ? drivableRoads : rawRoads;
+    const standardRoads = roads.filter((r) => r.axis != null || isDiagonalRoad(r));
+    cached = { len, first, last, roads, standardRoads };
+    tacticalRoadListCache.set(rawRoads, cached);
+  }
+  return cached;
+}
+const roadJunctionCache = new WeakMap();
 
 function headingTo(from, to) {
   return Math.atan2(to.x - from.x, to.z - from.z);
@@ -300,6 +321,160 @@ export function tacticalPatrolPace(pursuit, car, reportSpeed = 0, range = 30) {
   return clamp(Math.max(spd + 5.2, 21), 17, top);
 }
 
+export function tacticalSurgePace(pursuit, car, reportSpeed = 0, range = 30, headingError = 0) {
+  const base = tacticalPatrolPace(pursuit, car, reportSpeed, range);
+  const top = car?.maxSpeed ?? base;
+  const straightAligned = Math.abs(headingError) < 0.14 && Math.abs(car?.steer ?? 0) < 0.10;
+  if (car?.unitType === "interceptor" && straightAligned && range > 8.5) {
+    return top;
+  }
+  if (straightAligned && range > 16) {
+    return top;
+  }
+  return base;
+}
+
+function getWorldJunctions(world) {
+  if (Array.isArray(world?.pursuit?.junctions) && world.pursuit.junctions.length > 0) {
+    return world.pursuit.junctions;
+  }
+  const roads = world?.drivingRoads;
+  if (!Array.isArray(roads) || roads.length === 0) return [];
+  const cached = roadJunctionCache.get(roads);
+  if (cached && cached.len === roads.length) return cached.junctions;
+  const nonApron = roads.filter((r) => r && !r.supportApron && !r.parkingBay);
+  const junctions = [];
+  for (let i = 0; i < nonApron.length; i++) {
+    for (let j = i + 1; j < nonApron.length; j++) {
+      const hit = roadIntersection(nonApron[i], nonApron[j], 0.5);
+      if (hit && !junctions.some((p) => Math.hypot(p.x - hit.x, p.z - hit.z) < 0.8)) {
+        junctions.push({ x: hit.x, z: hit.z });
+      }
+    }
+  }
+  roadJunctionCache.set(roads, { len: roads.length, junctions });
+  return junctions;
+}
+
+/**
+ * Multi-role tactical pursuit target coordination when legal contact is active (unitsInContact > 0).
+ * Never reads world.player directly — strictly projects from the legal sighting report!
+ */
+export function planTacticalInterceptAim(world, car, report, slotIndex = 0) {
+  if (!report) return { x: 0, z: 0, heading: 0, role: "LEAD", horizonS: 0, junctionIntercept: false };
+  const unitsInContact = world?.pursuit?.response?.unitsInContact;
+  if (unitsInContact !== undefined && unitsInContact <= 0) {
+    const order = car?.gtaAI?.order ?? slotIndex;
+    return { ...selectTacticalSearchTarget(world, car, report, order), role: "SEARCH", horizonS: 0, junctionIntercept: false };
+  }
+
+  const rawSpeed = Number.isFinite(report.speed) ? report.speed : 0;
+  const vx = Number.isFinite(report.vx) ? report.vx : Math.sin(report.heading ?? 0) * rawSpeed;
+  const vz = Number.isFinite(report.vz) ? report.vz : Math.cos(report.heading ?? 0) * rawSpeed;
+  const velMag = Math.hypot(vx, vz);
+  const heading = velMag > 0.8 ? Math.atan2(vx, vz) : (report.heading ?? 0);
+  const fx = Math.sin(heading);
+  const fz = Math.cos(heading);
+  const rx = Math.cos(heading);
+  const rz = -Math.sin(heading);
+  const range = car && Number.isFinite(car.x) && Number.isFinite(car.z) ? distance(car, report) : 24;
+  const slot = Math.max(0, Math.trunc(slotIndex || 0));
+
+  // Slot 0 (Lead unit): clean pursuit line on the suspect corridor with closing pressure.
+  if (slot === 0) {
+    const leadHorizonS = clamp(0.34 + range * 0.015, 0.30, 1.08);
+    const leadDist = clamp((velMag > 0.2 ? velMag : rawSpeed) * leadHorizonS, -10, 19);
+    const rawAim = {
+      x: report.x + fx * leadDist,
+      z: report.z + fz * leadDist,
+      heading,
+    };
+    const resolved = resolveTacticalRoadAim(world, car, rawAim, { vx: fx * Math.max(velMag, 10), vz: fz * Math.max(velMag, 10) });
+    return {
+      x: resolved.x,
+      z: resolved.z,
+      heading: resolved.heading ?? heading,
+      role: "LEAD",
+      horizonS: leadHorizonS,
+      junctionIntercept: false,
+    };
+  }
+
+  // Slots 1..2 (Flank / Cutoff units) & outer support: project velocity 1.6..2.6 s ahead toward intersections & parallel lanes.
+  const horizonS = slot === 1
+    ? clamp(1.65 + range * 0.006, 1.6, 2.15)
+    : slot === 2
+      ? clamp(2.15 + range * 0.008, 2.05, 2.6)
+      : clamp(1.75 + (slot % 3) * 0.35, 1.6, 2.6);
+  const projSpeed = Math.max(velMag, Math.abs(rawSpeed), 9.5);
+  const projDist = clamp(projSpeed * horizonS, 15, 86);
+  const projPoint = {
+    x: report.x + fx * projDist,
+    z: report.z + fz * projDist,
+  };
+  const side = car?.squadSide || (slot % 2 === 1 ? 1 : -1);
+
+  const junctions = getWorldJunctions(world);
+  let bestJunction = null;
+  let bestJScore = Infinity;
+  const minFwd = Math.max(11, projSpeed * 0.85);
+  const maxFwd = Math.max(30, projDist + 22);
+  for (let i = 0; i < junctions.length; i++) {
+    const j = junctions[i];
+    const jx = j.x - report.x;
+    const jz = j.z - report.z;
+    const fwd = jx * fx + jz * fz;
+    if (fwd < minFwd || fwd > maxFwd) continue;
+    const lat = Math.abs(jx * rx + jz * rz);
+    if (lat > 16.5) continue;
+    const dProj = Math.hypot(j.x - projPoint.x, j.z - projPoint.z) + lat * 0.65;
+    if (dProj < bestJScore) {
+      bestJScore = dProj;
+      bestJunction = j;
+    }
+  }
+
+  let rawAim;
+  if (bestJunction) {
+    if (slot === 2 || car?.squadRole === "INTERCEPTOR") {
+      // Cutoff throat just past/across the upcoming intersection
+      rawAim = {
+        x: bestJunction.x + fx * 3.8 + rx * (side * 2.8),
+        z: bestJunction.z + fz * 3.8 + rz * (side * 2.8),
+        heading,
+      };
+    } else {
+      // Flanker pinches the parallel / cross approach into the upcoming intersection
+      rawAim = {
+        x: bestJunction.x - fx * 2.6 + rx * (side * 4.5),
+        z: bestJunction.z - fz * 2.6 + rz * (side * 4.5),
+        heading,
+      };
+    }
+  } else {
+    const lateralOffsetM = slot === 1 ? side * 4.3 : slot === 2 ? side * 3.4 : side * 4.8;
+    rawAim = {
+      x: projPoint.x + rx * lateralOffsetM,
+      z: projPoint.z + rz * lateralOffsetM,
+      heading,
+    };
+  }
+
+  const resolved = resolveTacticalRoadAim(world, car, rawAim, {
+    vx: fx * projSpeed,
+    vz: fz * projSpeed,
+  });
+
+  return {
+    x: resolved.x,
+    z: resolved.z,
+    heading: resolved.heading ?? heading,
+    role: slot === 1 ? "FLANK" : slot === 2 ? "CUTOFF" : "CONTAIN",
+    horizonS,
+    junctionIntercept: Boolean(bestJunction),
+  };
+}
+
 export function canPatrolUseCurbPrivilege(world, car) {
   return Boolean(
     isTacticalPursuit(world?.pursuit) &&
@@ -472,15 +647,13 @@ export function canDrivePrivilegedDirect(world, car, aim, options = {}) {
 export function resolveTacticalRoadAim(world, car, aim, velocity = null) {
   if (!aim) return { x: 0, z: 0, snapped: false, roadId: null };
   const rawRoads = world?.drivingRoads ?? world?.roads ?? [];
-  const drivableRoads = rawRoads.filter((r) => r && !r.parkingBay && !r.supportApron);
-  const roads = drivableRoads.length > 0 ? drivableRoads : rawRoads;
+  const { roads, standardRoads } = getCachedTacticalRoadLists(rawRoads);
   if (roads.length === 0) {
     return { x: aim.x, z: aim.z, snapped: false, roadId: null };
   }
 
   const carWidth = car?.width ?? 1.9;
   const carLength = car?.length ?? 4.5;
-  const standardRoads = roads.filter((r) => r.axis != null || isDiagonalRoad(r));
   const statics = world?.statics ?? [];
 
   const probe = {
@@ -543,6 +716,15 @@ export function resolveTacticalRoadAim(world, car, aim, velocity = null) {
       for (let sideIdx = 0; sideIdx < sides.length; sideIdx++) {
         const side = sides[sideIdx];
         let cand = snapPoseOnRoad(road, sample, side, carWidth, carLength);
+        if (bestScore < Infinity) {
+          const rawDistAim = Math.hypot(aim.x - cand.centerX, aim.z - cand.centerZ);
+          const rawDistCar = hasCarPose ? Math.hypot(car.x - cand.centerX, car.z - cand.centerZ) : 0;
+          const minPossibleScore =
+            Math.max(0, rawDistAim - 8.0) -
+            (speed > 1.0 ? 14.35 : 0.35) +
+            0.18 * Math.max(0, rawDistCar - 8.0);
+          if (minPossibleScore >= bestScore) continue;
+        }
         let candBox = {
           x: cand.x,
           z: cand.z,
@@ -615,13 +797,41 @@ export function resolveTacticalRoadAim(world, car, aim, velocity = null) {
   return best ?? { x: aim.x, z: aim.z, snapped: false, roadId: null };
 }
 
+const overtakeDecisionCache = new WeakMap();
+
 export function tacticalTrafficOvertake(world, car, baseSteer, desiredSpeed) {
   if (!world || !car || !Number.isFinite(desiredSpeed) || desiredSpeed <= 0) return null;
 
-  const dt = 0.14;
-  const substeps = 8;
   const maxSteer = car.spec?.maxSteer ?? VEHICLE.maxSteer;
   const base = clamp(Number.isFinite(baseSteer) ? baseSteer : 0, -maxSteer, maxSteer);
+
+  if (Number.isSafeInteger(world.tick)) {
+    const cached = overtakeDecisionCache.get(car);
+    if (
+      cached &&
+      world.tick > cached.tick &&
+      world.tick - cached.tick <= 3 &&
+      cached.actorsLen === (world.actors?.length ?? 0) &&
+      Math.abs(cached.base - base) <= 0.08
+    ) {
+      return cached.result;
+    }
+  }
+
+  const saveOvertake = (result) => {
+    if (Number.isSafeInteger(world.tick)) {
+      overtakeDecisionCache.set(car, {
+        tick: world.tick,
+        actorsLen: world.actors?.length ?? 0,
+        base,
+        result,
+      });
+    }
+    return result;
+  };
+
+  const dt = 0.14;
+  const substeps = 8;
   const curSpeed = Number.isFinite(car.speed) ? car.speed : desiredSpeed;
   const checkSpeed = Math.max(desiredSpeed, curSpeed, 10);
   const forwardRange = Math.max(30, checkSpeed * 1.15);
@@ -674,7 +884,24 @@ export function tacticalTrafficOvertake(world, car, baseSteer, desiredSpeed) {
     }
   }
 
-  if (forwardBlockers.length === 0) return null;
+  const nearbyStatics = queryNearbyStatics(world, car, searchRadius);
+  const candidateStatics = [];
+  const cornerHazardStatics = [];
+  for (let i = 0; i < nearbyStatics.length; i++) {
+    const st = nearbyStatics[i];
+    if (!st) continue;
+    const stRadius = Math.hypot(st.width ?? 0, st.length ?? 0) * 0.5;
+    const centerGap = Math.hypot(st.x - car.x, st.z - car.z) - stRadius;
+    if (centerGap <= forwardRange + 8) {
+      candidateStatics.push(st);
+      if (st.kind !== "parked-vehicle" && centerGap <= 28) {
+        const fwd = (st.x - car.x) * sin0 + (st.z - car.z) * cos0;
+        if (fwd + stRadius > -1.0) cornerHazardStatics.push(st);
+      }
+    }
+  }
+
+  if (forwardBlockers.length === 0 && cornerHazardStatics.length === 0) return saveOvertake(null);
 
   const startBox = { x: car.x, z: car.z, heading: heading0, width, length };
   for (let p = 0; p < pedestrians.length; p++) {
@@ -706,8 +933,19 @@ export function tacticalTrafficOvertake(world, car, baseSteer, desiredSpeed) {
     if (!blockerFound) {
       for (let b = 0; b < forwardBlockers.length; b++) {
         const obs = forwardBlockers[b];
+        const stalled = obs.type === "static" || Math.abs(obs.speed ?? 0) < 1.5 || (obs.wait ?? 0) > 0.3;
+        const triggerGap = stalled ? 0.92 : 0.62;
         const movedObs = obs.type === "static" ? obs : advanceActorPose(obs, elapsed);
-        if (gapBetween(baseProbe, obs) <= 0.62 || gapBetween(baseProbe, movedObs) <= 0.62) {
+        if (gapBetween(baseProbe, obs) <= triggerGap || gapBetween(baseProbe, movedObs) <= triggerGap) {
+          blockerFound = true;
+          break;
+        }
+      }
+    }
+
+    if (!blockerFound && step <= 7) {
+      for (let c = 0; c < cornerHazardStatics.length; c++) {
+        if (overlaps(baseProbe, normalizeRect(cornerHazardStatics[c]), 0.32)) {
           blockerFound = true;
           break;
         }
@@ -715,18 +953,7 @@ export function tacticalTrafficOvertake(world, car, baseSteer, desiredSpeed) {
     }
   }
 
-  if (!blockerFound) return null;
-
-  const nearbyStatics = queryNearbyStatics(world, car, searchRadius);
-  const candidateStatics = [];
-  for (let i = 0; i < nearbyStatics.length; i++) {
-    const st = nearbyStatics[i];
-    if (!st) continue;
-    const stRadius = Math.hypot(st.width ?? 0, st.length ?? 0) * 0.5;
-    if (Math.hypot(st.x - car.x, st.z - car.z) - stRadius <= forwardRange + 8) {
-      candidateStatics.push(st);
-    }
-  }
+  if (!blockerFound) return saveOvertake(null);
 
   const candidateSteers = [];
   const pushSteer = (val) => {
@@ -868,9 +1095,11 @@ export function tacticalTrafficOvertake(world, car, baseSteer, desiredSpeed) {
     }
   }
 
-  return best
-    ? { steer: best.steer, targetSpeed: best.targetSpeed, reason: "tactical-overtake" }
-    : null;
+  return saveOvertake(
+    best
+      ? { steer: best.steer, targetSpeed: best.targetSpeed, reason: "tactical-overtake" }
+      : null,
+  );
 }
 
 export function selectTacticalSearchTarget(world, car, lastSeen, unitIndex = 0) {

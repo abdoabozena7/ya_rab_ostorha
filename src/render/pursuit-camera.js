@@ -46,17 +46,21 @@ export function createPursuitCamera() {
   const cabin = new Vector3(), lifted = new Vector3();
   const reducedMotion = globalThis.matchMedia?.("(prefers-reduced-motion: reduce)");
   let initialized = false, packMode = false, room = 0, stretch = 0, avenue = 0, bearing = 0, reviewMix = 0;
-  let lastHeading = 0, turnRate = 0, yawLead = 0, chasingFovActive = false, baseFov = 62;
+  let lastHeading = 0, turnRate = 0, yawLead = 0, chasingFovActive = false, baseFov = 62, lastFov = 62;
   let lastStreetWidth = 0, smoothedSpeed = 0, smoothedY = 0;
   let followMix = 0, chasingMix = 0, cityChaseMix = 0;
   let smoothedVisibility = 1, aimScale = 1, smoothedLead = 0, smoothedSideLead = 0;
+  let prevRawSpeed = 0, dampedAccel = 0, accelLagM = 0, lateralSwingM = 0;
+  let rollRad = 0, shakePhase = 0, impactShake = 0, shakeAmpM = 0, speedNorm = 0;
 
   function update(camera, {
     position, heading, speedMps, streetWidthM, staticIndex, deltaS, snap,
     pack = false, packLab = false, cityChase = false, impactReview = false,
     trailingVehicles = null, cameraStyle = "auto",
+    cinematicMotion = false, accelMps2, slipRad = 0, surfaceRoughness = 0.2, impactPulse = 0,
   }) {
-    const reset = snap || !initialized || pack !== packMode;
+    const jumped = initialized && Math.hypot(position.x - lastClearPivot.x, position.z - lastClearPivot.z) > 28;
+    const reset = snap || !initialized || pack !== packMode || jumped;
     packMode = pack;
     const isFollow = !pack && cameraStyle === "follow";
     const isChasing = !pack && cameraStyle === "chasing";
@@ -90,6 +94,58 @@ export function createPursuitCamera() {
     bearing = reset ? heading : bearing + Math.atan2(Math.sin(turn), Math.cos(turn)) * frameEase;
     const camYaw = bearing + yawLead * 0.35 * chasingMix;
     const sin = Math.sin(camYaw), cos = Math.cos(camYaw);
+    speedNorm = MathUtils.clamp(smoothedSpeed / 19, 0, 1);
+    const cinematicActive = Boolean(cinematicMotion) && !pack;
+    const reduceMotion = Boolean(reducedMotion?.matches);
+    if (Number.isFinite(accelMps2)) {
+      dampedAccel = MathUtils.clamp(accelMps2, -12, 10);
+    } else {
+      const fdAccel = !reset && dt > 1e-5
+        ? MathUtils.clamp((rawSpeed - prevRawSpeed) / dt, -12, 10)
+        : 0;
+      dampedAccel = reset ? 0 : MathUtils.damp(dampedAccel, fdAccel, 7, dt);
+    }
+    prevRawSpeed = rawSpeed;
+
+    if (cinematicActive) {
+      const targetAccelLag = reduceMotion
+        ? 0
+        : MathUtils.clamp(dampedAccel * 0.14, -0.95, 1.25) * (1 - reviewMix);
+      accelLagM = reset ? targetAccelLag : MathUtils.damp(accelLagM, targetAccelLag, 6.5, dt);
+
+      const slipClamped = MathUtils.clamp(Number.isFinite(slipRad) ? slipRad : 0, -0.65, 0.65);
+      const swingRoom = MathUtils.smoothstep(width, 5.2, 12.5);
+      const targetLateralSwing = reduceMotion
+        ? 0
+        : (turnRate * (0.28 + 0.42 * speedNorm) - slipClamped * 0.95) * swingRoom * (1 - reviewMix);
+      lateralSwingM = swingRoom === 0
+        ? 0
+        : (reset ? targetLateralSwing : MathUtils.damp(lateralSwingM, targetLateralSwing, 7.5, dt));
+
+      const targetRoll = reduceMotion
+        ? 0
+        : MathUtils.clamp(-(turnRate * smoothedSpeed * 0.0036 + slipClamped * 0.075), -0.052, 0.052) * (1 - reviewMix);
+      rollRad = reset ? targetRoll : MathUtils.damp(rollRad, targetRoll, 8.5, dt);
+
+      shakePhase += dt * (18 + 26 * speedNorm);
+      if (shakePhase > 1e6) shakePhase -= 1e6;
+      const pulseClamped = Number.isFinite(impactPulse) ? MathUtils.clamp(impactPulse, 0, 1) : 0;
+      const peakImpact = Math.max(reset ? 0 : impactShake, pulseClamped);
+      impactShake = dt > 0 && !reset ? MathUtils.damp(peakImpact, 0, 9, dt) : peakImpact;
+      const roughnessFactor = MathUtils.clamp(
+        Number.isFinite(surfaceRoughness) ? surfaceRoughness : 0.2, 0.08, 1.0,
+      );
+      shakeAmpM = reduceMotion
+        ? 0
+        : (0.004 + 0.018 * roughnessFactor) * MathUtils.smoothstep(smoothedSpeed, 2.0, 16.0) + 0.065 * impactShake;
+    } else {
+      accelLagM = 0;
+      lateralSwingM = 0;
+      rollRad = 0;
+      impactShake = 0;
+      shakeAmpM = 0;
+    }
+
     const followBack = 8.4 + 2.4 * stretch;
     const chasingBack = 12.2 + 6.8 * stretch + avenue * (0.8 + 2.8 * stretch);
     const cityChaseBack = 11.8 + 6.4 * stretch + avenue * (0.6 + 3.2 * stretch);
@@ -117,6 +173,10 @@ export function createPursuitCamera() {
       back = MathUtils.lerp(back, -2.6, reviewMix);
       shoulder = MathUtils.lerp(shoulder, 5.6, reviewMix);
       rise = MathUtils.lerp(rise, 7.8 * reviewHeightScale, reviewMix);
+    }
+    if (cinematicActive) {
+      back += accelLagM;
+      shoulder += lateralSwingM * (0.55 * followMix + 0.85 * (chasingMix + cityChaseMix + autoMix));
     }
     pivot.set(position.x, smoothedY + TETHER_HEIGHT_M, position.z);
     ideal.set(position.x - back * sin + shoulder * cos, smoothedY + rise,
@@ -192,7 +252,25 @@ export function createPursuitCamera() {
     }
     if (reset || sweepFraction(pivot, eye, sites) === 1) lastClearPivot.copy(pivot);
 
-    if (isChasing && camera.isPerspectiveCamera) {
+    if (cinematicActive && camera.isPerspectiveCamera) {
+      if (!chasingFovActive) {
+        baseFov = camera.fov || 62;
+        chasingFovActive = true;
+      }
+      const fovCurve = MathUtils.smoothstep(smoothedSpeed, 0.8, 18.5);
+      const followGain = -2.0 + 7.2 * fovCurve;
+      const pursuitGain = -1.5 + 8.8 * fovCurve;
+      const styleGain = MathUtils.lerp(pursuitGain, followGain, followMix);
+      const gForceDelta = 1.35 * MathUtils.clamp(dampedAccel / 6.5, 0, 1)
+        - 1.75 * MathUtils.clamp(-dampedAccel / 8.0, 0, 1);
+      const dynamicDelta = (styleGain + gForceDelta) * (reduceMotion ? 0.3 : 1) * (1 - reviewMix);
+      const targetFov = baseFov + dynamicDelta;
+      const nextFov = reset ? targetFov : MathUtils.damp(camera.fov, targetFov, 6.5, dt);
+      if (Math.abs(camera.fov - nextFov) > 1e-4) {
+        camera.fov = nextFov;
+        camera.updateProjectionMatrix();
+      }
+    } else if (isChasing && camera.isPerspectiveCamera) {
       if (!chasingFovActive) {
         baseFov = camera.fov || 62;
         chasingFovActive = true;
@@ -215,6 +293,7 @@ export function createPursuitCamera() {
         camera.updateProjectionMatrix();
       }
     }
+    lastFov = camera.fov || 62;
 
     // Keep the avenue foreground in the composition, but not when the
     // physical eye is still retracted near the car after a corner.
@@ -228,8 +307,11 @@ export function createPursuitCamera() {
     const rawVisibility = MathUtils.smoothstep(tether, 0.15, 0.8);
     smoothedVisibility = reset ? rawVisibility : MathUtils.damp(smoothedVisibility, rawVisibility, 9, dt);
     const desiredLead = MathUtils.lerp(wideLead, 1.25, reviewMix) * smoothedVisibility;
+    const cinematicApexLead = cinematicActive
+      ? lateralSwingM * (1.15 * followMix + 1.45 * (chasingMix + cityChaseMix + autoMix)) * smoothedVisibility
+      : 0;
     const desiredSideLead = labFraming ? -3.2 * (1 - reviewMix) * smoothedVisibility
-      : yawLead * 4.0 * chasingMix * (1 - reviewMix) * smoothedVisibility;
+      : yawLead * 4.0 * chasingMix * (1 - reviewMix) * smoothedVisibility + cinematicApexLead;
     smoothedLead = reset ? desiredLead : MathUtils.damp(smoothedLead, desiredLead, 9, dt);
     smoothedSideLead = reset ? desiredSideLead : MathUtils.damp(smoothedSideLead, desiredSideLead, 9, dt);
     aim.set(position.x, smoothedY + MathUtils.lerp(1.12, 0.65, reviewMix), position.z);
@@ -258,9 +340,32 @@ export function createPursuitCamera() {
     if (aimScale < 1) {
       forwardAim.lerp(aim, 1 - aimScale);
     }
+    if (shakeAmpM > 0) {
+      const shakeLat = Math.cos(shakePhase * 1.13) * shakeAmpM * 0.65;
+      forwardAim.x += shakeLat * cos;
+      forwardAim.y += Math.sin(shakePhase * 1.7) * shakeAmpM;
+      forwardAim.z -= shakeLat * sin;
+    }
+    if (cinematicActive && !reduceMotion && Math.abs(rollRad) > 1e-5) {
+      camera.up.set(Math.sin(rollRad) * cos, Math.cos(rollRad), -Math.sin(rollRad) * sin).normalize();
+    } else {
+      camera.up.set(0, 1, 0);
+    }
     camera.position.copy(eye);
     camera.lookAt(forwardAim);
   }
 
-  return { update };
+  function diagnostics() {
+    return {
+      fov: lastFov,
+      rollRad,
+      accelLagM,
+      lateralSwingM,
+      shakeAmpM,
+      speedNorm,
+      turnNorm: MathUtils.clamp(turnRate / 1.8, -1, 1),
+    };
+  }
+
+  return { update, diagnostics };
 }

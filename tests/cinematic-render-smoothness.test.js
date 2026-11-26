@@ -73,26 +73,28 @@ test("syncMetroPlayer(alpha) interpolates sub-frame pose smoothly and snaps clea
   assert.ok(Math.abs(rootSnap.rotation.y - 1.25) < 1e-6);
 });
 
-test("Grand Metro City v5 uses golden-hour cinema lighting and texel-snapped player-following 2048 sun shadows", (t) => {
+test("Grand Metro City v5 uses moody high-contrast twilight cinema lighting and texel-snapped player-following 2048 sun shadows", (t) => {
   const { world, player } = makeGrandCityFixture();
   const view = new WorldView(world);
   t.after(() => view.dispose());
 
-  // Golden-hour atmosphere, hemisphere sky/sandstone fill, warm sun, and zero-shadow cool rim light
-  assert.equal(view.scene.background.getHex(), 0xd8cab8);
-  assert.equal(view.scene.fog.color.getHex(), 0xd8cab8);
-  assert.equal(view.hemiLight.color.getHex(), 0x9dc3e6);
-  assert.equal(view.hemiLight.groundColor.getHex(), 0x8d6e4e);
-  assert.equal(view.sun.color.getHex(), 0xffdfad);
+  // Moody twilight atmosphere, low-fill hemisphere contrast, raking warm sun, and zero-shadow cool rim light
+  assert.equal(view.scene.background.getHex(), 0x465668);
+  assert.equal(view.scene.fog.color.getHex(), 0x565f6a);
+  assert.equal(view.hemiLight.color.getHex(), 0x8ba3be);
+  assert.equal(view.hemiLight.groundColor.getHex(), 0x564d42);
+  assert.ok(view.hemiLight.intensity <= 0.72, "controlled hemisphere fill preserves deep shadow contrast");
+  assert.equal(view.sun.color.getHex(), 0xffc68c);
   assert.ok(view.sun.intensity > 2.0);
   assert.equal(view.sun.shadow.mapSize.x, 2048);
   assert.equal(view.sun.shadow.mapSize.y, 2048);
   assert.equal(view.sun.shadow.camera.left, -85);
   assert.equal(view.sun.shadow.camera.right, 85);
-  assert.equal(view.sun.shadow.camera.far, 290);
+  assert.equal(view.sun.shadow.camera.far, 310);
   assert.ok(view.rimLight?.isDirectionalLight);
   assert.equal(view.rimLight.castShadow, false);
-  assert.equal(view.rimLight.color.getHex(), 0x7faad9);
+  assert.equal(view.rimLight.color.getHex(), 0x6c8eb2);
+  assert.ok(view.skyDome?.isMesh, "twilight sky dome is mounted");
 
   // Move player far from origin to (340, -260) in Grand Metro City v5
   player.previous = null;
@@ -105,9 +107,9 @@ test("Grand Metro City v5 uses golden-hour cinema lighting and texel-snapped pla
     view.sun.target.position.z - (-260),
   );
   assert.ok(distToPlayer <= 2.0, `sun target must follow within 2m of (340, -260), got dist=${distToPlayer}`);
-  assert.equal(view.sun.position.x, view.sun.target.position.x - 88);
-  assert.equal(view.sun.position.y, 92);
-  assert.equal(view.sun.position.z, view.sun.target.position.z - 58);
+  assert.equal(view.sun.position.x, view.sun.target.position.x - 114);
+  assert.equal(view.sun.position.y, 58);
+  assert.equal(view.sun.position.z, view.sun.target.position.z - 70);
 
   // Quantization must be in the sun camera's image plane, at actual texel resolution.
   const lightCamera = new THREE.PerspectiveCamera();

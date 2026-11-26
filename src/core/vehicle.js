@@ -1,24 +1,31 @@
 import { STEP, VEHICLE, clamp } from "./config.js";
 import { angleDelta, corners, distance, interpolate, overlaps } from "./geometry.js";
 import { PLAYER_VEHICLE } from "./vehicle-spec.js";
+import {
+  WHEEL_SCRUB_MODE,
+  applyScrapingContactResponse,
+  copyContactSlide,
+  deleteContactSlide,
+  getContactSlide,
+  registerContactContext,
+  resolveObstacleContactMechanics,
+  setContactSlide,
+} from "./wheel-interaction-physics.js";
 const approach = (a, b, amount) => a + clamp(b - a, -amount, amount);
 const fixedPathGeometry = new WeakMap();
 const immutablePaths = new WeakSet();
-const contactSlide = new WeakMap();
 
 export function copyVehicleMotion(source, target) {
-  if (contactSlide.has(source)) contactSlide.set(target, contactSlide.get(source));
-  else contactSlide.delete(target);
-  return target;
+  return copyContactSlide(source, target);
 }
 
 export function clearVehicleMotion(body) {
-  contactSlide.delete(body);
+  deleteContactSlide(body);
 }
 
 export function vehicleVelocity(body) {
   const s = Math.sin(body.heading ?? 0), c = Math.cos(body.heading ?? 0);
-  const lateral = contactSlide.get(body) ?? 0;
+  const lateral = getContactSlide(body);
   return { x: s * (body.speed ?? 0) + c * lateral,
     z: c * (body.speed ?? 0) - s * lateral };
 }
@@ -68,40 +75,78 @@ function immutablePathGeometry(path) {
 // A probe needs the plant inputs and footprint, not its actor's whole route
 // and history. A caller can advance this private pose in place.
 export function vehicleProbe(body, speed) {
+  const spec = body.spec && typeof body.spec === "object" && body.spec.wheelInteractionPhysics !== undefined
+    ? body.spec
+    : body.spec;
   return copyVehicleMotion(body, { x: body.x, z: body.z, heading: body.heading, speed, steer: body.steer,
-    maxSpeed: body.maxSpeed, spec: body.spec, type: body.type,
+    maxSpeed: body.maxSpeed, spec, type: body.type,
     length: body.length, width: body.width, radius: body.radius,
     ...(body.arcadeSlip ? { arcadeSlip: body.arcadeSlip } : {}),
     ...(body.realisticDynamics !== undefined ? { realisticDynamics: body.realisticDynamics } : {}),
+    ...(body.wheelInteractionPhysics !== undefined ? { wheelInteractionPhysics: body.wheelInteractionPhysics } : {}),
     ...(body.chaseSlipRad !== undefined ? { chaseSlipRad: body.chaseSlipRad } : {}) });
 }
 
 export function integrateVehicle(body, command, dt, out = null) {
   if (!Number.isFinite(dt) || dt < 0)
     throw new RangeError("Vehicle integration needs a nonnegative step");
-  const spec = body.spec == null ? VEHICLE : { ...VEHICLE, ...body.spec };
-  const realistic = spec.realisticDynamics === true;
+  const rawSpec = body.spec;
+  const realistic = rawSpec?.realisticDynamics === true;
+  const specBraking = rawSpec?.braking !== undefined ? rawSpec.braking : VEHICLE.braking;
+  const specSteerRate = rawSpec?.steerRate !== undefined ? rawSpec.steerRate : VEHICLE.steerRate;
+  const specMaxSteer = rawSpec?.maxSteer !== undefined ? rawSpec.maxSteer : VEHICLE.maxSteer;
+  const specReverseSpeed = rawSpec?.reverseSpeed !== undefined ? rawSpec.reverseSpeed : VEHICLE.reverseSpeed;
+  const specAcceleration = rawSpec?.acceleration !== undefined ? rawSpec.acceleration : VEHICLE.acceleration;
+  const specWheelbase = rawSpec?.wheelbase !== undefined ? rawSpec.wheelbase : VEHICLE.wheelbase;
+  const specTireGrip = rawSpec?.tireGripMps2 !== undefined ? rawSpec.tireGripMps2 : VEHICLE.tireGripMps2;
+  const specContactResponse = rawSpec?.contactResponse !== undefined ? rawSpec.contactResponse : VEHICLE.contactResponse;
   const explicitDeceleration = Object.prototype.hasOwnProperty.call(command, "decelerationMps2");
-  if (explicitDeceleration && (!Number.isFinite(spec.braking) || spec.braking <= 0 ||
+  if (explicitDeceleration && (!Number.isFinite(specBraking) || specBraking <= 0 ||
       !Number.isFinite(command.decelerationMps2) ||
-      command.decelerationMps2 <= 0 || command.decelerationMps2 > spec.braking))
+      command.decelerationMps2 <= 0 || command.decelerationMps2 > specBraking))
     throw new RangeError("Explicit vehicle deceleration must be finite, positive and at most spec.braking");
   const absSpeed = Math.abs(body.speed ?? 0);
   const effectiveSteerRate = realistic && absSpeed > 11
-    ? spec.steerRate * clamp(1.08 - 0.011 * Math.max(0, absSpeed - 11), 0.72, 1.0)
-    : spec.steerRate;
+    ? specSteerRate * clamp(1.08 - 0.011 * Math.max(0, absSpeed - 11), 0.72, 1.0)
+    : specSteerRate;
   const effectiveMaxSteer = realistic && absSpeed > 11
-    ? spec.maxSteer * clamp(1.0 - 0.009 * Math.max(0, absSpeed - 14), 0.74, 1.0)
-    : spec.maxSteer;
+    ? specMaxSteer * clamp(1.0 - 0.009 * Math.max(0, absSpeed - 14), 0.74, 1.0)
+    : specMaxSteer;
   const steer = approach(
     body.steer ?? 0,
     clamp(Number.isFinite(command.steer) ? command.steer : 0, -effectiveMaxSteer, effectiveMaxSteer),
     effectiveSteerRate * dt,
   );
+  const rawSurface = realistic && command?.surface && typeof command.surface === "object"
+    ? command.surface
+    : null;
+  const surfaceKind = rawSurface ? (rawSurface.surfaceKind ?? rawSurface.kind ?? "asphalt") : "asphalt";
+  const surfGripMult = rawSurface
+    ? clamp(Number.isFinite(rawSurface.gripMultiplier) ? rawSurface.gripMultiplier : 1, 0.3, 1.2)
+    : 1;
+  const surfGradeSin = rawSurface
+    ? clamp(Number.isFinite(rawSurface.gradeSin) ? rawSurface.gradeSin : 0, -0.35, 0.35)
+    : 0;
+  const surfRollingDrag = rawSurface && Number.isFinite(rawSurface.rollingDragMps2)
+    ? Math.max(0, rawSurface.rollingDragMps2)
+    : 0;
+  const surfHydroCoeff = rawSurface && Number.isFinite(rawSurface.hydroDragCoeff)
+    ? Math.max(0, rawSurface.hydroDragCoeff)
+    : 0;
+  const hasActiveSurface = Boolean(
+    rawSurface &&
+      (surfGripMult !== 1 ||
+        surfGradeSin !== 0 ||
+        surfRollingDrag !== 0 ||
+        surfHydroCoeff !== 0 ||
+        surfaceKind === "water"),
+  );
+
+  const maxForwardSpeed = (body.maxSpeed ?? 13.89) * (hasActiveSurface && surfGradeSin < -0.02 ? 1.12 : 1.0);
   const requested = clamp(
     Number.isFinite(command.targetSpeed) ? command.targetSpeed : 0,
-    -spec.reverseSpeed,
-    body.maxSpeed ?? 13.89,
+    -specReverseSpeed,
+    maxForwardSpeed,
   );
   const coastingDrag = realistic &&
     command.coasting === true &&
@@ -112,28 +157,114 @@ export function integrateVehicle(body, command, dt, out = null) {
     ? command.decelerationMps2
     : coastingDrag
       ? 1.65 + 0.0018 * (body.speed ?? 0) ** 2
-      : spec.braking;
-  const reversing = (body.speed ?? 0) * requested < 0;
+      : specBraking;
+  const v0 = body.speed ?? 0;
+  const reversing = v0 * requested < 0;
   const target = reversing ? 0 : requested;
   const slowing = Math.abs(target) < absSpeed || reversing;
-  const rate = slowing ? braking : spec.acceleration;
-  const grip = realistic && Number.isFinite(spec.tireGripMps2) && spec.tireGripMps2 > 0
-    ? spec.tireGripMps2 : Infinity;
-  const speed = approach(
-    body.speed ?? 0,
-    target,
-    Math.min(rate, grip) * dt,
-  );
-  const average = (speed + (body.speed ?? 0)) / 2;
+  const rate = slowing ? braking : specAcceleration;
+  const baseGrip = realistic
+    ? Number.isFinite(specTireGrip) && specTireGrip > 0
+      ? specTireGrip
+      : hasActiveSurface
+        ? 8
+        : Infinity
+    : Infinity;
+  const grip = hasActiveSurface && Number.isFinite(baseGrip) ? baseGrip * surfGripMult : baseGrip;
+
+  let speed;
+  let tireLongitudinal = 0;
+  if (!hasActiveSurface || dt === 0) {
+    speed = approach(v0, target, Math.min(rate, grip) * dt);
+    tireLongitudinal = dt > 0 ? Math.abs(speed - v0) / dt : 0;
+  } else {
+    const slopeAccel = -9.81 * surfGradeSin;
+    const hydroDrag = surfHydroCoeff * absSpeed * absSpeed;
+    if (command.coasting === true && !explicitDeceleration && Math.abs(requested) < 0.05) {
+      const rollingWithGravity = slopeAccel !== 0 && v0 * slopeAccel >= 0;
+      const baseCoast = rollingWithGravity
+        ? 0.32 + 0.0025 * v0 * v0
+        : absSpeed > 0.2
+          ? 1.65 + 0.0018 * v0 * v0
+          : 0.35;
+      const coastDecel = baseCoast + surfRollingDrag + hydroDrag;
+      if (absSpeed > 0) {
+        const dragStep = approach(v0, 0, coastDecel * dt);
+        if (dragStep === 0) {
+          const gravExcess = Math.max(0, Math.abs(slopeAccel) - (0.32 + surfRollingDrag));
+          speed = gravExcess > 0 ? Math.sign(slopeAccel) * gravExcess * dt : 0;
+        } else {
+          speed = dragStep + slopeAccel * dt;
+        }
+      } else {
+        const gravExcess = Math.max(0, Math.abs(slopeAccel) - (0.32 + surfRollingDrag));
+        speed = gravExcess > 0 ? Math.sign(slopeAccel) * gravExcess * dt : 0;
+      }
+      speed = clamp(speed, -specReverseSpeed, maxForwardSpeed);
+      tireLongitudinal = 0;
+    } else if (Math.abs(requested) < 1e-6) {
+      const brakeCap = Math.min(braking, grip);
+      const passiveAssist = Math.min(0.45, surfRollingDrag * 0.25 + hydroDrag * 0.02);
+      if (absSpeed < 0.08 && Math.abs(surfGradeSin) < 0.25 && Math.abs(slopeAccel) <= brakeCap) {
+        if (v0 === 0) {
+          speed = 0;
+        } else {
+          const dir = Math.sign(v0);
+          const netDecel = Math.max(0.5, brakeCap + passiveAssist - dir * slopeAccel);
+          speed = approach(v0, 0, netDecel * dt);
+        }
+      } else if (absSpeed > 0) {
+        const dir = Math.sign(v0);
+        const netDecel = brakeCap + passiveAssist - dir * slopeAccel;
+        if (netDecel >= 0) {
+          speed = approach(v0, 0, netDecel * dt);
+        } else {
+          speed = clamp(v0 + dir * (-netDecel) * dt, -specReverseSpeed, maxForwardSpeed);
+        }
+      } else {
+        const excess = Math.max(0, Math.abs(slopeAccel) - brakeCap);
+        speed = excess > 0
+          ? clamp(Math.sign(slopeAccel) * excess * dt, -specReverseSpeed, maxForwardSpeed)
+          : 0;
+      }
+      tireLongitudinal = Math.min(grip, Math.abs(v0) > 0 ? Math.min(brakeCap, Math.abs(v0) / dt) : 0);
+    } else if (slowing) {
+      const dir = absSpeed > 0 ? Math.sign(v0) : Math.sign(requested);
+      const brakeCap = Math.min(braking, grip);
+      const passiveAssist = Math.min(0.45, surfRollingDrag * 0.25 + hydroDrag * 0.02);
+      const netDecel = brakeCap + passiveAssist - dir * slopeAccel;
+      if (netDecel >= 0) {
+        speed = approach(v0, target, netDecel * dt);
+      } else {
+        speed = clamp(v0 + dir * (-netDecel) * dt, -specReverseSpeed, maxForwardSpeed);
+      }
+      tireLongitudinal = Math.min(grip, Math.min(brakeCap, Math.abs(target - v0) / dt));
+    } else {
+      const wantDir = Math.sign(requested);
+      const driveCap = Math.min(specAcceleration, grip);
+      const neededAccel = Math.abs(requested - v0) / dt;
+      const driveDragFactor = 0.42 + 0.25 * clamp(absSpeed / 8, 0, 1);
+      const resistDecel = surfRollingDrag * driveDragFactor + hydroDrag;
+      const requiredDrive = Math.min(
+        driveCap,
+        neededAccel + resistDecel - Math.min(0, wantDir * slopeAccel),
+      );
+      const activeStep = v0 + wantDir * requiredDrive * dt + slopeAccel * dt;
+      speed = clamp(approach(activeStep, 0, resistDecel * dt), -specReverseSpeed, maxForwardSpeed);
+      tireLongitudinal = Math.min(requiredDrive, grip * 0.75);
+    }
+  }
+
+  const average = (speed + v0) / 2;
   const tangent = Math.tan(steer);
   let beta = Math.atan(0.5 * tangent);
-  let yawRate = (average / spec.wheelbase) * Math.cos(beta) * tangent;
-  if (realistic && Number.isFinite(spec.tireGripMps2) && spec.tireGripMps2 > 0) {
-    const longitudinal = dt > 0 ? Math.abs(speed - (body.speed ?? 0)) / dt : 0;
-    const lateralBudget = Math.sqrt(Math.max(0, spec.tireGripMps2 ** 2 - longitudinal ** 2));
-    const demanded = Math.abs(average * yawRate);
-    if (demanded > lateralBudget) {
-      const scale = lateralBudget / demanded;
+  let yawRate = (average / specWheelbase) * Math.cos(beta) * tangent;
+  const rawDemandedLat = Math.abs(average * yawRate);
+  let lateralBudget = Infinity;
+  if (realistic && Number.isFinite(grip) && grip > 0) {
+    lateralBudget = Math.sqrt(Math.max(0, grip ** 2 - tireLongitudinal ** 2));
+    if (rawDemandedLat > lateralBudget) {
+      const scale = lateralBudget / rawDemandedLat;
       yawRate *= scale;
       beta = Math.atan(Math.tan(beta) * scale);
     }
@@ -145,9 +276,23 @@ export function integrateVehicle(body, command, dt, out = null) {
   let nextChaseSlip = 0;
   if (realistic) {
     const latAccel = average * yawRate;
-    const targetChaseSlip = Math.abs(latAccel) > 3.8 && average > 6
-      ? clamp(-Math.sign(latAccel) * (Math.abs(latAccel) - 3.8) * 0.016, -0.14, 0.14)
-      : 0;
+    let targetChaseSlip = 0;
+    if (!hasActiveSurface) {
+      targetChaseSlip = Math.abs(latAccel) > 3.8 && average > 6
+        ? clamp(-Math.sign(latAccel) * (Math.abs(latAccel) - 3.8) * 0.016, -0.14, 0.14)
+        : 0;
+    } else {
+      const effectiveLat = Math.abs(latAccel) / surfGripMult;
+      const slideOvershoot = Number.isFinite(lateralBudget) && rawDemandedLat > lateralBudget
+        ? Math.min(3.6, (rawDemandedLat - lateralBudget) * Math.max(0, 1 - surfGripMult) * 0.65)
+        : 0;
+      const equivLat = effectiveLat + slideOvershoot;
+      const slipBoost = surfaceKind === "water" ? 1.35 : 1.0;
+      const maxSlip = surfaceKind === "water" ? 0.22 : surfGripMult < 0.95 ? 0.18 : 0.14;
+      targetChaseSlip = equivLat > 3.8 && Math.abs(average) > 5.5 && latAccel !== 0
+        ? clamp(-Math.sign(latAccel) * (equivLat - 3.8) * 0.016 * slipBoost, -maxSlip, maxSlip)
+        : 0;
+    }
     const prevChaseSlip = body.chaseSlipRad ?? 0;
     const rawChaseSlip = prevChaseSlip + (targetChaseSlip - prevChaseSlip) * (1 - Math.exp(-8.5 * dt));
     nextChaseSlip = Math.abs(rawChaseSlip) < 1e-12 ? 0 : rawChaseSlip;
@@ -164,13 +309,13 @@ export function integrateVehicle(body, command, dt, out = null) {
   result.speed = speed;
   if (drift || body.arcadeSlip !== undefined) result.arcadeSlip = slip;
   if (realistic) result.chaseSlipRad = nextChaseSlip;
-  if (spec.contactResponse === "inelastic-slide-v1") {
-    const oldSlide = contactSlide.get(body) ?? 0;
+  if (specContactResponse === "inelastic-slide-v1") {
+    const oldSlide = getContactSlide(body);
     const slide = approach(oldSlide, 0, 3 * dt);
     result.x += Math.cos(midHeading) * (oldSlide + slide) * dt / 2;
     result.z -= Math.sin(midHeading) * (oldSlide + slide) * dt / 2;
-    if (slide) contactSlide.set(result, slide);
-    else contactSlide.delete(result);
+    if (slide) setContactSlide(result, slide);
+    else deleteContactSlide(result);
   }
   return result;
 }
@@ -180,17 +325,33 @@ export function resolveVehicleContact(before, proposed, obstacle, dt = STEP) {
   if (!Number.isFinite(dt) || dt <= 0)
     throw new RangeError("Contact needs a positive step");
   if (overlaps(before, obstacle)) return null;
+  const scrubEnabled =
+    (before.spec?.wheelInteractionPhysics ?? before.wheelInteractionPhysics) === WHEEL_SCRUB_MODE;
+  const obstacleSpeed = obstacle.speed ?? 0;
+  const obsVx = Number.isFinite(obstacle.vx)
+    ? obstacle.vx
+    : Math.sin(obstacle.heading ?? 0) * obstacleSpeed;
+  const obsVz = Number.isFinite(obstacle.vz)
+    ? obstacle.vz
+    : Math.cos(obstacle.heading ?? 0) * obstacleSpeed;
+  const obsEnd =
+    scrubEnabled && obstacle.type !== "static" && (Math.abs(obsVx) > 1e-9 || Math.abs(obsVz) > 1e-9)
+      ? { ...obstacle, x: obstacle.x + obsVx * dt, z: obstacle.z + obsVz * dt }
+      : obstacle;
+  const obsTravel = obsEnd === obstacle ? 0 : Math.hypot(obsVx * dt, obsVz * dt);
   const travel =
     distance(before, proposed) +
     Math.abs(angleDelta(proposed.heading, before.heading)) *
       Math.hypot(before.length, before.width) / 2;
-  if (travel < 1e-10) return null;
-  const steps = Math.max(1, Math.ceil(travel / 0.04));
+  if (travel + obsTravel < 1e-10) return null;
+  const obsAt = (t) => (obsEnd === obstacle ? obstacle : interpolate(obstacle, obsEnd, t));
+  const steps = Math.max(1, Math.ceil((travel + obsTravel) / 0.04));
   let low = 0;
   let high = null;
   for (let i = 1; i <= steps; i++) {
-    if (overlaps(interpolate(before, proposed, i / steps), obstacle)) {
-      high = i / steps;
+    const t = i / steps;
+    if (overlaps(interpolate(before, proposed, t), obsAt(t))) {
+      high = t;
       low = (i - 1) / steps;
       break;
     }
@@ -198,15 +359,16 @@ export function resolveVehicleContact(before, proposed, obstacle, dt = STEP) {
   if (high === null) return null;
   for (let i = 0; i < 32; i++) {
     const middle = (low + high) / 2;
-    if (overlaps(interpolate(before, proposed, middle), obstacle)) high = middle;
+    if (overlaps(interpolate(before, proposed, middle), obsAt(middle))) high = middle;
     else low = middle;
   }
   const body = interpolate(before, proposed, low);
+  const touchObstacle = obsAt(low);
   const a = corners(body);
-  const b = corners(obstacle);
+  const b = corners(touchObstacle);
   let separation = -Infinity;
   let normal;
-  for (const shape of [body, obstacle]) {
+  for (const shape of [body, touchObstacle]) {
     for (const offset of [0, Math.PI / 2]) {
       const axis = {
         x: Math.sin((shape.heading ?? 0) + offset),
@@ -229,48 +391,77 @@ export function resolveVehicleContact(before, proposed, obstacle, dt = STEP) {
   const side = Math.abs(forward) >= Math.abs(right)
     ? forward > 0 ? "front" : "rear"
     : right > 0 ? "right" : "left";
-  const obstacleSpeed = obstacle.speed ?? 0;
-  const vx = (proposed.x - before.x) / dt - Math.sin(obstacle.heading ?? 0) * obstacleSpeed;
-  const vz = (proposed.z - before.z) / dt - Math.cos(obstacle.heading ?? 0) * obstacleSpeed;
+  const vx = (proposed.x - before.x) / dt - obsVx;
+  const vz = (proposed.z - before.z) / dt - obsVz;
   const closingSpeedMps = Math.max(0, vx * normal.x + vz * normal.z);
   if (before.spec?.contactResponse === "inelastic-slide-v1") {
+    const mass = Number.isFinite(before.spec.massKg) && before.spec.massKg > 0
+      ? before.spec.massKg : PLAYER_VEHICLE.massKg;
+    const contactMech = resolveObstacleContactMechanics(
+      mass,
+      obstacle,
+      closingSpeedMps,
+      scrubEnabled,
+      dt,
+    );
+    const otherMass = contactMech.obsMassKg;
+    const reducedMass = contactMech.reducedMassKg;
     const incoming = { x: (proposed.x - before.x) / dt, z: (proposed.z - before.z) / dt };
-    const velocity = { x: incoming.x - normal.x * closingSpeedMps,
-      z: incoming.z - normal.z * closingSpeedMps };
-    // Other City actors remain kinematic obstacles. A moving obstacle may
-    // constrain velocity, but must not inject kinetic energy into the SUV.
+    // Unified 2-body + parked breakaway ground-stiction impulse!
+    const normalDelta = contactMech.egoNormalDelta;
+    const sharedNormalImpulseNs = contactMech.egoNormalImpulseNs;
+    const actorNetNormalImpulseNs = contactMech.actorNetNormalImpulseNs;
+    const velocity = { x: incoming.x - normal.x * normalDelta,
+      z: incoming.z - normal.z * normalDelta };
     const incomingSpeed = Math.hypot(incoming.x, incoming.z);
+    const maxNormalSpeed = scrubEnabled && (contactMech.obsMomentumShare > 0)
+      ? Math.max(incomingSpeed, Math.hypot(velocity.x, velocity.z))
+      : incomingSpeed;
     const outgoingSpeed = Math.hypot(velocity.x, velocity.z);
-    if (outgoingSpeed > incomingSpeed) {
-      velocity.x *= incomingSpeed / outgoingSpeed;
-      velocity.z *= incomingSpeed / outgoingSpeed;
+    if (outgoingSpeed > maxNormalSpeed && outgoingSpeed > 0) {
+      velocity.x *= maxNormalSpeed / outgoingSpeed;
+      velocity.z *= maxNormalSpeed / outgoingSpeed;
     }
     const remaining = dt * (1 - low);
     const slid = { ...body, x: body.x + velocity.x * remaining,
       z: body.z + velocity.z * remaining };
-    const accepted = overlaps(slid, obstacle) ? body : slid;
+    const accepted = overlaps(slid, obstacle) || overlaps(slid, obsEnd) ? body : slid;
     const s = Math.sin(body.heading), c = Math.cos(body.heading);
     const response = { ...accepted, speed: velocity.x * s + velocity.z * c,
       reason: "vehicle-contact", blockedBy: obstacle.id };
     if (Math.abs(response.speed) < 1e-12) response.speed = 0;
     const slide = velocity.x * c - velocity.z * s;
-    if (Math.abs(slide) > 1e-12) contactSlide.set(response, slide);
-    const mass = Number.isFinite(before.spec.massKg) && before.spec.massKg > 0
-      ? before.spec.massKg : PLAYER_VEHICLE.massKg;
-    const otherMass = obstacle.type === "static" ? Infinity
-      : obstacle.spec?.massKg ?? (obstacle.kind === "tuktuk" ? 620 : 1450);
-    const reducedMass = Number.isFinite(otherMass) && otherMass > 0
-      ? mass * otherMass / (mass + otherMass) : mass;
-    return { body: response, hitId: obstacle.id, side, normal, closingSpeedMps,
+    if (Math.abs(slide) > 1e-12) setContactSlide(response, slide);
+    const baseResult = { body: response, hitId: obstacle.id, side, normal, closingSpeedMps,
+      otherX: touchObstacle.x, otherZ: touchObstacle.z,
       energyJ: 0.5 * reducedMass * closingSpeedMps ** 2,
+      sharedNormalImpulseNs,
+      actorNetNormalImpulseNs,
+      stictionBroken: contactMech.stictionBroken,
+      egoMassKg: mass,
+      otherMassKg: otherMass,
       contactFraction: low,
-      proposedTravelM: distance(before, proposed) };
+      proposedTravelM: distance(before, proposed),
+      relativeTravelM: travel + obsTravel };
+    registerContactContext(baseResult, {
+      touchBody: body,
+      incomingVelocity: incoming,
+      baseVelocity: velocity,
+      incomingSpeed: maxNormalSpeed,
+      remainingDt: remaining,
+    });
+    if (scrubEnabled) {
+      return applyScrapingContactResponse(before, baseResult, touchObstacle, dt);
+    }
+    return baseResult;
   }
   return {
     body: { ...body, speed: 0, reason: "vehicle-contact", blockedBy: obstacle.id },
     hitId: obstacle.id,
     side,
     normal,
+    otherX: obstacle.x,
+    otherZ: obstacle.z,
     closingSpeedMps,
     energyJ: 0.5 * PLAYER_VEHICLE.massKg * closingSpeedMps ** 2,
     proposedTravelM: distance(before, proposed),

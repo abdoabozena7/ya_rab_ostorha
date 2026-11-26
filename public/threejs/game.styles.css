@@ -203,8 +203,34 @@
   font-size: 12px;
   font-weight: 500;
 }
+.car-damage-status {
+  margin-top: 14px;
+  padding-top: 11px;
+  border-top: 1px solid var(--car-line);
+}
+.car-damage-status h3 {
+  margin: 0 0 5px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.car-part-damage {
+  margin: 0;
+  padding: 6px 8px;
+  color: var(--car-ink);
+  background: #212d27;
+  border: 1px solid #8ca39240;
+  border-radius: 5px;
+  font-size: 11px;
+  line-height: 1.45;
+  font-variant-numeric: tabular-nums;
+}
+.car-part-damage[data-damaged=true] {
+  color: #f3c396;
+  background: #2b211d;
+  border-color: #d69c6a66;
+}
 .car-impact {
-  margin-top: 16px;
+  margin-top: 14px;
   padding-top: 12px;
   border-top: 1px solid var(--car-line);
 }
@@ -231,8 +257,19 @@
 }
 .car-impact-actions {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(112px, 1fr));
   gap: 6px;
+}
+#carHeavyImpactBtn:not(:disabled) {
+  color: #f3c396;
+  background: #362821;
+  border-color: #cf966873;
+}
+#carHeavyImpactBtn:not(:disabled):hover {
+  background: #463329;
+}
+#carResetBtn {
+  grid-column: 1 / -1;
 }
 #carReturnBtn {
   margin-top: 7px;
@@ -1517,6 +1554,298 @@ body[data-pako-perspective] :is(.driving-hud, #minimap, .map-label, .camera-labe
     max-height: min(45dvh, calc(100dvh - 156px));
   }
 }
+.touch-controls-host {
+  display: contents;
+}
+.chase-bar {
+  position: fixed;
+  z-index: 3;
+  top: 58px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 10px;
+  max-width: calc(100vw - 24px);
+  padding: 5px 8px 5px 14px;
+  border: 1px solid rgba(164, 198, 176, 0.34);
+  border-radius: 999px;
+  color: #eef4ef;
+  background: rgba(20, 29, 25, 0.84);
+  backdrop-filter: blur(12px) saturate(1.25);
+  -webkit-backdrop-filter: blur(12px) saturate(1.25);
+  box-shadow: 0 10px 28px rgba(8, 16, 13, 0.48);
+  font-size: 12px;
+  line-height: 1.25;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.chase-bar[hidden],
+.chase-bar [hidden] {
+  display: none !important;
+}
+.chase-bar__stars {
+  flex: 0 0 auto;
+  color: #f8cc79;
+  font-size: 14px;
+  letter-spacing: 1px;
+  line-height: 1;
+}
+.chase-bar__stars[data-cooling=true] {
+  color: #fde68a;
+  opacity: 0.9;
+}
+.chase-bar__status {
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 250px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #d6e5da;
+  font-weight: 600;
+}
+.chase-nitro {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 9px;
+  border: 1px solid rgba(94, 234, 212, 0.36);
+  border-radius: 999px;
+  background: rgba(12, 24, 28, 0.78);
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    background 160ms ease;
+}
+.chase-nitro__label {
+  min-width: 54px;
+  color: #9be7ff;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-align: center;
+  text-transform: uppercase;
+}
+.chase-nitro__track {
+  position: relative;
+  width: 68px;
+  height: 7px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.13);
+}
+.chase-nitro__fill {
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  background:
+    linear-gradient(
+      90deg,
+      #38bdf8 0%,
+      #5eead4 100%);
+  transition:
+    width 90ms linear,
+    background 160ms ease,
+    box-shadow 160ms ease;
+}
+.chase-nitro[data-nitro-state=boosting] {
+  border-color: rgba(103, 232, 249, 0.85);
+  background: rgba(14, 34, 42, 0.92);
+  box-shadow: 0 0 14px rgba(34, 211, 238, 0.42), inset 0 0 8px rgba(251, 191, 36, 0.22);
+}
+.chase-nitro[data-nitro-state=boosting] .chase-nitro__label {
+  color: #fef08a;
+}
+.chase-nitro[data-nitro-state=boosting] .chase-nitro__fill {
+  background:
+    linear-gradient(
+      90deg,
+      #22d3ee 0%,
+      #67e8f9 48%,
+      #fbbf24 100%);
+  box-shadow: 0 0 10px rgba(34, 211, 238, 0.65);
+}
+.chase-nitro[data-nitro-state=ped-hold] {
+  border-color: rgba(251, 191, 36, 0.78);
+  background: rgba(44, 37, 17, 0.9);
+  box-shadow: 0 0 12px rgba(245, 158, 11, 0.28);
+}
+.chase-nitro[data-nitro-state=ped-hold] .chase-nitro__label {
+  color: #fcd34d;
+}
+.chase-nitro[data-nitro-state=ped-hold] .chase-nitro__fill {
+  background:
+    linear-gradient(
+      90deg,
+      #10b981 0%,
+      #f59e0b 100%);
+}
+.chase-nitro[data-nitro-state=recharging] {
+  border-color: rgba(148, 163, 184, 0.34);
+  background: rgba(18, 25, 30, 0.76);
+}
+.chase-nitro[data-nitro-state=recharging] .chase-nitro__label {
+  color: #94a3b8;
+}
+.chase-nitro[data-nitro-state=recharging] .chase-nitro__fill {
+  background:
+    linear-gradient(
+      90deg,
+      #64748b 0%,
+      #94a3b8 100%);
+}
+.chase-bar__crowd-btn,
+.chase-bar__stop-btn {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 30px;
+  padding: 4px 11px;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    background 150ms ease,
+    border-color 150ms ease,
+    box-shadow 150ms ease,
+    color 150ms ease;
+}
+.chase-bar__crowd-btn {
+  border: 1px solid rgba(251, 191, 36, 0.58);
+  color: #fde68a;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(64, 49, 21, 0.92),
+      rgba(44, 34, 15, 0.92));
+}
+.chase-bar__crowd-btn:not(:disabled):hover {
+  border-color: rgba(253, 224, 71, 0.84);
+  background:
+    linear-gradient(
+      180deg,
+      rgba(82, 63, 26, 0.95),
+      rgba(56, 43, 19, 0.95));
+}
+.chase-bar__crowd-btn:not([data-just-spawned=true])::after {
+  content: "G";
+  display: inline-block;
+  padding: 1px 5px;
+  border: 1px solid rgba(253, 230, 138, 0.36);
+  border-radius: 4px;
+  color: #fef3c7;
+  background: rgba(255, 255, 255, 0.08);
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+.chase-bar__crowd-btn[data-just-spawned=true] {
+  border-color: #6ee7b7;
+  color: #ecfdf5;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(16, 94, 67, 0.96),
+      rgba(12, 68, 49, 0.96));
+  box-shadow: 0 0 14px rgba(52, 211, 153, 0.42);
+}
+.chase-bar__stop-btn {
+  border: 1px solid rgba(248, 165, 152, 0.48);
+  color: #fecaca;
+  background: rgba(68, 33, 30, 0.86);
+}
+.chase-bar__stop-btn:not(:disabled):hover {
+  border-color: rgba(252, 165, 165, 0.76);
+  background: rgba(90, 41, 37, 0.92);
+}
+.chase-bar :is(button):focus-visible {
+  outline: 2px solid #b6dfc3;
+  outline-offset: 2px;
+}
+#pursuitTouch #touchNitro {
+  border: 1px solid rgba(56, 189, 248, 0.65);
+  color: #bae6fd;
+  background: #172b34;
+  letter-spacing: 0.04em;
+}
+#pursuitTouch #touchNitro[data-nitro-state=boosting],
+#pursuitTouch #touchNitro:active {
+  border-color: #67e8f9;
+  color: #fef08a;
+  background: #164152;
+  box-shadow: 0 0 12px rgba(34, 211, 238, 0.42);
+}
+#pursuitTouch #touchNitro[data-nitro-state=ped-hold] {
+  border-color: rgba(251, 191, 36, 0.75);
+  color: #fcd34d;
+  background: #332b16;
+}
+@media (max-width: 960px) {
+  .chase-bar {
+    gap: 7px;
+    padding: 4px 7px 4px 11px;
+  }
+  .chase-bar__status {
+    max-width: 148px;
+  }
+  .chase-nitro__track {
+    width: 52px;
+  }
+  .chase-bar__crowd-btn:not([data-just-spawned=true])::after {
+    display: none;
+  }
+}
+@media (max-width: 640px) {
+  .chase-bar {
+    top: 54px;
+    left: 8px;
+    right: 8px;
+    transform: none;
+    max-width: none;
+    justify-content: space-between;
+    gap: 6px;
+    padding: 4px 8px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .chase-bar::-webkit-scrollbar {
+    display: none;
+  }
+  .chase-bar__status {
+    max-width: 96px;
+    font-size: 11px;
+  }
+  .chase-nitro {
+    gap: 5px;
+    padding: 3px 7px;
+  }
+  .chase-nitro__label {
+    min-width: 46px;
+    font-size: 9.5px;
+  }
+  .chase-nitro__track {
+    width: 42px;
+  }
+  .chase-bar__crowd-btn,
+  .chase-bar__stop-btn {
+    min-height: 28px;
+    padding: 3px 8px;
+    font-size: 11px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .chase-nitro,
+  .chase-nitro__fill,
+  .chase-bar__crowd-btn,
+  .chase-bar__stop-btn {
+    transition: none !important;
+  }
+}
 
 /* src/ui/styles.css */
 :root {
@@ -2422,57 +2751,43 @@ body[data-city-sense] :is(#minimap, .map-label, #cameraBtn) {
 .pursuit-strobe__red {
   background:
     radial-gradient(
-      ellipse 14% 34% at 3% 18%,
-      rgba(255, 112, 96, 0.94) 0%,
-      #ff1e3a 32%,
-      rgba(216, 14, 48, 0.30) 64%,
-      transparent 100%),
+      ellipse 5.5% 18% at 0.8% 24%,
+      rgba(255, 112, 96, 0.44) 0%,
+      rgba(255, 30, 58, 0.20) 30%,
+      transparent 52%),
     radial-gradient(
-      ellipse 13% 30% at 2% 80%,
-      rgba(255, 92, 88, 0.80) 0%,
-      rgba(255, 30, 58, 0.66) 36%,
-      rgba(188, 10, 42, 0.20) 68%,
-      transparent 100%),
-    radial-gradient(
-      ellipse 18% 11% at 9% 3%,
-      rgba(255, 84, 92, 0.62) 0%,
-      rgba(255, 30, 58, 0.24) 56%,
-      transparent 100%);
+      ellipse 5.0% 16% at 0.8% 76%,
+      rgba(255, 92, 88, 0.36) 0%,
+      rgba(216, 14, 48, 0.15) 32%,
+      transparent 52%);
   animation: pursuitStrobeRed var(--strobe-cycle-ms, 420ms) cubic-bezier(0.22, 0.61, 0.36, 1) infinite;
 }
 .pursuit-strobe__blue {
   background:
     radial-gradient(
-      ellipse 14% 34% at 97% 18%,
-      rgba(124, 232, 255, 0.94) 0%,
-      #1a75ff 32%,
-      rgba(16, 76, 224, 0.30) 64%,
-      transparent 100%),
+      ellipse 5.5% 18% at 99.2% 24%,
+      rgba(124, 232, 255, 0.44) 0%,
+      rgba(26, 117, 255, 0.20) 30%,
+      transparent 52%),
     radial-gradient(
-      ellipse 13% 30% at 98% 80%,
-      rgba(92, 210, 255, 0.80) 0%,
-      rgba(26, 117, 255, 0.66) 36%,
-      rgba(12, 62, 198, 0.20) 68%,
-      transparent 100%),
-    radial-gradient(
-      ellipse 18% 11% at 91% 3%,
-      rgba(96, 196, 255, 0.62) 0%,
-      rgba(26, 117, 255, 0.24) 56%,
-      transparent 100%);
+      ellipse 5.0% 16% at 99.2% 76%,
+      rgba(92, 210, 255, 0.36) 0%,
+      rgba(16, 76, 224, 0.15) 32%,
+      transparent 52%);
   animation: pursuitStrobeBlue var(--strobe-cycle-ms, 420ms) cubic-bezier(0.22, 0.61, 0.36, 1) infinite;
 }
 .pursuit-strobe__ambient {
   background:
     radial-gradient(
-      ellipse 30% 10% at 15% 2.5%,
-      rgba(255, 30, 58, 0.56) 0%,
-      rgba(255, 78, 96, 0.20) 52%,
-      transparent 100%),
+      ellipse 6.5% 14% at 1.2% 50%,
+      rgba(255, 30, 58, 0.28) 0%,
+      rgba(255, 78, 96, 0.10) 30%,
+      transparent 50%),
     radial-gradient(
-      ellipse 30% 10% at 85% 2.5%,
-      rgba(26, 117, 255, 0.56) 0%,
-      rgba(92, 212, 255, 0.20) 52%,
-      transparent 100%);
+      ellipse 6.5% 14% at 98.8% 50%,
+      rgba(26, 117, 255, 0.28) 0%,
+      rgba(92, 212, 255, 0.10) 30%,
+      transparent 50%);
   animation: pursuitStrobeAmbient var(--strobe-cycle-ms, 420ms) ease-in-out infinite;
 }
 .pursuit-strobe[data-mode=searching] :is(.pursuit-strobe__red, .pursuit-strobe__blue, .pursuit-strobe__ambient) {
@@ -2484,79 +2799,79 @@ body[data-city-sense] :is(#minimap, .map-label, #cameraBtn) {
 }
 @keyframes pursuitStrobeRed {
   0% {
-    opacity: calc(var(--strobe-intensity, 0) * 0.10);
+    opacity: calc(var(--strobe-intensity, 0) * 0.03);
     transform: translate3d(0, 0, 0) scale3d(0.99, 0.99, 1);
   }
   14% {
-    opacity: var(--strobe-intensity, 0);
+    opacity: calc(var(--strobe-intensity, 0) * 0.24);
     transform: translate3d(0, 0, 0) scale3d(1.04, 1.02, 1);
   }
   21% {
-    opacity: calc(var(--strobe-intensity, 0) * 0.30);
+    opacity: calc(var(--strobe-intensity, 0) * 0.08);
     transform: translate3d(0, 0, 0) scale3d(1.01, 1.005, 1);
   }
   32% {
-    opacity: calc(var(--strobe-intensity, 0) * 0.96);
+    opacity: calc(var(--strobe-intensity, 0) * 0.17);
     transform: translate3d(0, 0, 0) scale3d(1.04, 1.02, 1);
   }
   52% {
-    opacity: calc(var(--strobe-intensity, 0) * 0.16);
+    opacity: calc(var(--strobe-intensity, 0) * 0.04);
     transform: translate3d(0, 0, 0) scale3d(1, 0.995, 1);
   }
   78% {
-    opacity: calc(var(--strobe-intensity, 0) * 0.05);
+    opacity: calc(var(--strobe-intensity, 0) * 0.015);
     transform: translate3d(0, 0, 0) scale3d(0.985, 0.99, 1);
   }
   100% {
-    opacity: calc(var(--strobe-intensity, 0) * 0.10);
+    opacity: calc(var(--strobe-intensity, 0) * 0.03);
     transform: translate3d(0, 0, 0) scale3d(0.99, 0.99, 1);
   }
 }
 @keyframes pursuitStrobeBlue {
   0% {
-    opacity: calc(var(--strobe-intensity, 0) * 0.16);
+    opacity: calc(var(--strobe-intensity, 0) * 0.04);
     transform: translate3d(0, 0, 0) scale3d(1, 0.995, 1);
   }
   28% {
-    opacity: calc(var(--strobe-intensity, 0) * 0.05);
+    opacity: calc(var(--strobe-intensity, 0) * 0.015);
     transform: translate3d(0, 0, 0) scale3d(0.985, 0.99, 1);
   }
   50% {
-    opacity: calc(var(--strobe-intensity, 0) * 0.10);
+    opacity: calc(var(--strobe-intensity, 0) * 0.03);
     transform: translate3d(0, 0, 0) scale3d(0.99, 0.99, 1);
   }
   64% {
-    opacity: var(--strobe-intensity, 0);
+    opacity: calc(var(--strobe-intensity, 0) * 0.24);
     transform: translate3d(0, 0, 0) scale3d(1.04, 1.02, 1);
   }
   71% {
-    opacity: calc(var(--strobe-intensity, 0) * 0.30);
+    opacity: calc(var(--strobe-intensity, 0) * 0.08);
     transform: translate3d(0, 0, 0) scale3d(1.01, 1.005, 1);
   }
   82% {
-    opacity: calc(var(--strobe-intensity, 0) * 0.96);
+    opacity: calc(var(--strobe-intensity, 0) * 0.17);
     transform: translate3d(0, 0, 0) scale3d(1.04, 1.02, 1);
   }
   100% {
-    opacity: calc(var(--strobe-intensity, 0) * 0.16);
+    opacity: calc(var(--strobe-intensity, 0) * 0.04);
     transform: translate3d(0, 0, 0) scale3d(1, 0.995, 1);
   }
 }
 @keyframes pursuitStrobeAmbient {
   0%, 100% {
-    opacity: calc(var(--strobe-intensity, 0) * 0.30);
+    opacity: calc(var(--strobe-intensity, 0) * 0.07);
     transform: translate3d(0, 0, 0) scale3d(1, 1, 1);
   }
   22% {
-    opacity: calc(var(--strobe-intensity, 0) * 0.54);
+    opacity: calc(var(--strobe-intensity, 0) * 0.14);
     transform: translate3d(-1.2%, 0, 0) scale3d(1.03, 1.015, 1);
   }
   50% {
-    opacity: calc(var(--strobe-intensity, 0) * 0.28);
+    opacity: calc(var(--strobe-intensity, 0) * 0.06);
     transform: translate3d(0, 0, 0) scale3d(0.995, 1, 1);
   }
   72% {
-    opacity: calc(var(--strobe-intensity, 0) * 0.54);
+    opacity: calc(var(--strobe-intensity, 0) * 0.14);
     transform: translate3d(1.2%, 0, 0) scale3d(1.03, 1.015, 1);
   }
 }
@@ -2615,10 +2930,10 @@ body[data-city-sense] :is(#minimap, .map-label, #cameraBtn) {
     animation: none !important;
     transform: none !important;
     will-change: auto;
-    opacity: calc(var(--strobe-intensity, 0) * 0.38);
+    opacity: calc(var(--strobe-intensity, 0) * 0.12);
   }
   .pursuit-strobe__ambient {
-    opacity: calc(var(--strobe-intensity, 0) * 0.24);
+    opacity: calc(var(--strobe-intensity, 0) * 0.07);
   }
   .pursuit-star,
   .pursuit-star--cooling,

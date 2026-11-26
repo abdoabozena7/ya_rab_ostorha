@@ -9,6 +9,8 @@ const EXIT_COMPENSATION_M = 0.5;
 const RECOVERY_M = 8;
 const MAX_ROAD_GRAPHS = 32;
 const roadGraphCache = new Map();
+const roadTurnGeomCache = new Map();
+const roadTurnStaticOkCache = new Map();
 const frozenRoadsSigCache = new WeakMap();
 const staticIndexCache = new WeakMap();
 const f64Buf = new Float64Array(1);
@@ -262,7 +264,7 @@ function graphFor(district, body) {
       }
     }
   }
-  graph = { nodes, links, linkCells, singleSegments: new Map(), staticVer: staticEntry.version, roadsSig };
+  graph = { nodes, links, linkCells, singleSegments: new Map(), staticVer: staticEntry.version, staticEntry, roadsSig };
   if (cached.shapes.size >= 12) cached.shapes.delete(cached.shapes.keys().next().value);
   cached.shapes.set(shapeKey, graph);
   return graph;
@@ -344,62 +346,150 @@ function turnBetween(incoming, outgoing) {
   };
 }
 
-function clearPose(district, shape, point, yaw) {
-  const pose = {
-    type: shape.type,
-    x: point.x,
-    z: point.z,
-    heading: yaw,
-    width: shape.width,
-    length: shape.length,
-    radius: shape.radius,
-  };
-  if (!bodyOnRoad(pose, district.roads, 0.12)) return false;
-  const statics = district.statics;
-  if (!statics || !statics.length) return true;
-  const entry = lookupStaticEntryFast(statics);
-  const poseReach = pose.type === "pedestrian"
-    ? (pose.radius ?? 0)
-    : Math.hypot(pose.width ?? 0, pose.length ?? 0) * 0.5;
+const _navPoseScratch = {
+  type: "vehicle",
+  x: 0,
+  z: 0,
+  heading: 0,
+  width: 0,
+  length: 0,
+  radius: 0,
+};
+
+function clearStaticsOnly(entry, shape, point, yaw) {
+  if (!entry || !entry.len) return true;
+  _navPoseScratch.type = shape.type;
+  _navPoseScratch.x = point.x;
+  _navPoseScratch.z = point.z;
+  _navPoseScratch.heading = yaw;
+  _navPoseScratch.width = shape.width;
+  _navPoseScratch.length = shape.length;
+  _navPoseScratch.radius = shape.radius;
+  const poseReach = shape.type === "pedestrian"
+    ? (shape.radius ?? 0)
+    : Math.hypot(shape.width ?? 0, shape.length ?? 0) * 0.5;
   if (poseReach + 0.12 <= STATIC_PAD_M) {
-    const k = (Math.floor(pose.x * STATIC_INV_CELL) << 16) ^ (Math.floor(pose.z * STATIC_INV_CELL) & 0xffff);
+    const k = (Math.floor(point.x * STATIC_INV_CELL) << 16) ^ (Math.floor(point.z * STATIC_INV_CELL) & 0xffff);
     const bucket = entry.cells.get(k);
     if (!bucket) return true;
     for (let i = 0; i < bucket.length; i++) {
-      if (overlaps(pose, bucket[i], 0.12)) return false;
+      if (overlaps(_navPoseScratch, bucket[i], 0.12)) return false;
     }
     return true;
   }
-  const near = entry.index.near(pose, entry.reach + poseReach + 0.3);
+  const near = entry.index.near(_navPoseScratch, entry.reach + poseReach + 0.3);
   for (let i = 0; i < near.length; i++) {
-    if (overlaps(pose, near[i], 0.12)) return false;
+    if (overlaps(_navPoseScratch, near[i], 0.12)) return false;
   }
   return true;
+}
+
+function clearRoadOnly(roads, shape, point, yaw) {
+  _navPoseScratch.type = shape.type;
+  _navPoseScratch.x = point.x;
+  _navPoseScratch.z = point.z;
+  _navPoseScratch.heading = yaw;
+  _navPoseScratch.width = shape.width;
+  _navPoseScratch.length = shape.length;
+  _navPoseScratch.radius = shape.radius;
+  return bodyOnRoad(_navPoseScratch, roads, 0.12);
+}
+
+function clearPose(district, shape, point, yaw) {
+  if (!clearRoadOnly(district.roads, shape, point, yaw)) return false;
+  const statics = district.statics;
+  if (!statics || !statics.length) return true;
+  return clearStaticsOnly(lookupStaticEntryFast(statics), shape, point, yaw);
 }
 
 function clearPath(district, body, path) {
+  const entry = district.statics?.length ? lookupStaticEntryFast(district.statics) : null;
   for (let i = 1; i < path.length; i++) {
     const yaw = Math.atan2(path[i].x - path[i - 1].x, path[i].z - path[i - 1].z);
-    if (!clearPose(district, body, path[i], yaw)) return false;
+    if (!clearRoadOnly(district.roads, body, path[i], yaw)) return false;
+    if (entry && !clearStaticsOnly(entry, body, path[i], yaw)) return false;
   }
   return true;
 }
 
-function allowedTurn(district, body, incoming, outgoing) {
+function allowedTurn(district, body, incoming, outgoing, roadsSigHint = null, staticEntryHint = null) {
   if (incoming.turnCache.has(outgoing.id)) return incoming.turnCache.get(outgoing.id);
-  const turn = turnBetween(incoming, outgoing);
-  const guide = [];
-  if (turn) {
-    append(guide, turn.start);
-    for (const point of turn.points) append(guide, point);
-    append(guide, turn.end);
+  const rSig = roadsSigHint ?? roadsSignature(district.roads);
+  const geomKey = `${rSig}:${body.type ?? "v"}:${body.length}:${body.width}:${body.radius ?? 0}:${incoming.id}->${outgoing.id}`;
+  let baseGeom = roadTurnGeomCache.get(geomKey);
+  if (baseGeom === undefined) {
+    const turn = turnBetween(incoming, outgoing);
+    const guide = [];
+    let guideYaws = null;
+    let roadValid = false;
+    if (turn && turn.inset + 2.2 <= incoming.length && turn.outset + 2.2 <= outgoing.length) {
+      append(guide, turn.start);
+      for (const point of turn.points) append(guide, point);
+      append(guide, turn.end);
+      roadValid = turn.points.every((p) => clearRoadOnly(district.roads, body, p, p.heading ?? incoming.heading));
+      if (roadValid) {
+        guideYaws = new Float64Array(guide.length);
+        for (let i = 1; i < guide.length; i++) {
+          const yaw = Math.atan2(guide[i].x - guide[i - 1].x, guide[i].z - guide[i - 1].z);
+          guideYaws[i] = yaw;
+          if (!clearRoadOnly(district.roads, body, guide[i], yaw)) {
+            roadValid = false;
+            break;
+          }
+        }
+      }
+    }
+    baseGeom = roadValid ? { turn, guide, guideYaws } : null;
+    if (roadTurnGeomCache.size >= 4096) {
+      roadTurnGeomCache.delete(roadTurnGeomCache.keys().next().value);
+    }
+    roadTurnGeomCache.set(geomKey, baseGeom);
   }
-  const valid = turn && turn.inset + 2.2 <= incoming.length && turn.outset + 2.2 <= outgoing.length
-    && turn.points.every((p) => clearPose(district, body, p, p.heading ?? incoming.heading))
-    && clearPath(district, body, guide);
-  if (valid) Object.assign(turn, { guide, heads: new Map(), bridges: new Map(), tails: new Map() });
-  incoming.turnCache.set(outgoing.id, valid ? turn : null);
-  return valid ? turn : null;
+  if (!baseGeom) {
+    incoming.turnCache.set(outgoing.id, null);
+    return null;
+  }
+  const entry = staticEntryHint ?? (district.statics?.length ? lookupStaticEntryFast(district.statics) : null);
+  if (entry && entry.len > 0) {
+    const stKey = `${geomKey}#${entry.version}`;
+    let stOk = roadTurnStaticOkCache.get(stKey);
+    if (stOk === undefined) {
+      stOk = true;
+      const { turn, guide, guideYaws } = baseGeom;
+      for (let i = 0; i < turn.points.length; i++) {
+        const p = turn.points[i];
+        if (!clearStaticsOnly(entry, body, p, p.heading ?? incoming.heading)) {
+          stOk = false;
+          break;
+        }
+      }
+      if (stOk) {
+        for (let i = 1; i < guide.length; i++) {
+          if (!clearStaticsOnly(entry, body, guide[i], guideYaws[i])) {
+            stOk = false;
+            break;
+          }
+        }
+      }
+      if (roadTurnStaticOkCache.size >= 8192) {
+        roadTurnStaticOkCache.delete(roadTurnStaticOkCache.keys().next().value);
+      }
+      roadTurnStaticOkCache.set(stKey, stOk);
+    }
+    if (!stOk) {
+      incoming.turnCache.set(outgoing.id, null);
+      return null;
+    }
+  }
+  const resolvedTurn = {
+    ...baseGeom.turn,
+    guide: baseGeom.guide,
+    heads: new Map(),
+    bridges: new Map(),
+    tails: new Map(),
+  };
+  incoming.turnCache.set(outgoing.id, resolvedTurn);
+  return resolvedTurn;
 }
 
 function attachments(district, graph, pose, body, isGoal) {
@@ -428,7 +518,7 @@ function attachments(district, graph, pose, body, isGoal) {
 function routePath(district, graph, body, goal, links, startAlong, endAlong) {
   const transitions = [];
   for (let i = 1; i < links.length; i++) {
-    const turn = allowedTurn(district, body, links[i - 1], links[i]);
+    const turn = allowedTurn(district, body, links[i - 1], links[i], graph.roadsSig, graph.staticEntry);
     if (!turn) return [];
     transitions.push(turn);
   }
@@ -565,8 +655,14 @@ export function planDistrictRoute(district, body, goal, actors = []) {
   // Actors do not move during a synchronous search. The same outgoing link
   // can be scored from several arrivals, but its traffic cost is identical.
   const occupancy = new Map();
+  const vehicles = [];
+  for (let aIdx = 0; aIdx < actors.length; aIdx++) {
+    const actor = actors[aIdx];
+    if (actor.type !== "pedestrian" && actor.id !== body.id) vehicles.push(actor);
+  }
   while (open.length) {
     const current = heapPop(open);
+    if (current.parent && current.cost > (best.get(current.link.id) ?? Infinity)) continue;
     const end = endByLink.get(current.link.id);
     if (end && (current.parent || end.along > current.start.along + 0.75)) {
       const links = [];
@@ -575,16 +671,19 @@ export function planDistrictRoute(district, body, goal, actors = []) {
       if (path.length > 2) return path;
     }
     for (const next of current.link.to.outgoing) {
-      const turn = allowedTurn(district, body, current.link, next);
+      const turn = allowedTurn(district, body, current.link, next, graph.roadsSig, graph.staticEntry);
       if (!turn || (!current.parent
           && current.link.length - current.start.along < turn.inset + 0.5)) continue;
       let occupied = occupancy.get(next);
       if (occupied === undefined) {
         occupied = 0;
         const midpoint = laneAt(next, next.length / 2);
-        for (const actor of actors)
-          if (actor.id !== body.id && actor.type !== "pedestrian" &&
+        const mx = midpoint.x, mz = midpoint.z;
+        for (let vIdx = 0; vIdx < vehicles.length; vIdx++) {
+          const actor = vehicles[vIdx];
+          if (Math.abs(actor.x - mx) < 9 && Math.abs(actor.z - mz) < 9 &&
               distance(actor, midpoint) < 9) occupied++;
+        }
         occupancy.set(next, occupied);
       }
       const length = current.parent ? current.link.length : current.link.length - current.start.along;

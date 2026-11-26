@@ -3,6 +3,7 @@ import { getVehicleMounts, mountToWorld } from "../core/vehicle-spec.js";
 
 export const PURSUIT_SCAN_RAYS = 72;
 export const PURSUIT_SCAN_RANGE_M = 48;
+export const PURSUIT_LONG_RANGE_M = 104;
 export const PURSUIT_SCAN_TICKS = 6;
 export const PURSUIT_TRACK_TTL_S = .5;
 
@@ -13,6 +14,7 @@ const PED_RAY_STEP = RAY_STEP / PED_RAYS_PER_PRIMARY;
 const TRACK_TTL_TICKS = Math.round(PURSUIT_TRACK_TTL_S / STEP);
 const MAX_TTC_S = 6;
 const EPS = 1e-9;
+const BOUND_EPS = 1e-7;
 const zeroSmall = n => Math.abs(n) < EPS ? 0 : n;
 const direction = angle => ({
   right: zeroSmall(Math.sin(angle)),
@@ -22,37 +24,150 @@ const beams = Array.from({ length: PURSUIT_SCAN_RAYS }, (_, i) => direction(i * 
 const pedBeams = Array.from({ length: PED_RAYS }, (_, i) =>
   i % PED_RAYS_PER_PRIMARY ? direction(i * PED_RAY_STEP) : beams[i / PED_RAYS_PER_PRIMARY]);
 const priority = { none: 0, civilian: 1, pedestrian: 2, police: 3, static: 4 };
+const spatialIndexMetaCache = new WeakMap();
 
-function candidates(world, heading, origin = world.player) {
-  const { player } = world, c = Math.cos(heading), s = Math.sin(heading);
+const STATIC_NEAR_RADIUS_CAP_M = 24;
+
+function getStaticIndexMeta(spatialIndex) {
+  let meta = spatialIndexMetaCache.get(spatialIndex);
+  if (meta) return meta;
+  if (!(spatialIndex?.cells instanceof Map) || typeof spatialIndex.near !== "function") return null;
+  const indexedSet = new Set();
+  const largeStatics = [];
+  let maxSmallRadius = 0;
+  let first = undefined;
+  let last = undefined;
+  for (const bucket of spatialIndex.cells.values()) {
+    for (let i = 0; i < bucket.length; i++) {
+      const b = bucket[i];
+      if (!b || indexedSet.has(b)) continue;
+      if (indexedSet.size === 0) first = b;
+      last = b;
+      indexedSet.add(b);
+      const r = Math.hypot((b.width ?? 0) * 0.5, (b.length ?? 0) * 0.5);
+      if (Number.isFinite(r) && r > STATIC_NEAR_RADIUS_CAP_M) {
+        largeStatics.push(b);
+      } else if (Number.isFinite(r) && r > maxSmallRadius) {
+        maxSmallRadius = r;
+      }
+    }
+  }
+  meta = { indexedSet, largeStatics, count: indexedSet.size, maxSmallRadius, first, last };
+  spatialIndexMetaCache.set(spatialIndex, meta);
+  return meta;
+}
+
+function gatherCandidates(world, heading, maxRangeM, origin, corridorHalfWidthM) {
+  const { player } = world;
+  const ox = origin.x, oz = origin.z;
+  const c = Math.cos(heading), s = Math.sin(heading);
   const shapes = [];
   function add(body, kind) {
     if (body === player) return;
-    const dx = body.x - origin.x, dz = body.z - origin.z;
-    const right = dx * c - dz * s, forward = dx * s + dz * c;
     const circle = kind === "pedestrian";
-    const w = body.width / 2, l = body.length / 2;
-    if (!circle && !(w > 0 && l > 0)) return;
-    const radius = circle ? body.radius : Math.hypot(w, l);
-    if (!Number.isFinite(radius) || !(radius > 0) ||
-        !(Math.hypot(dx, dz) <= PURSUIT_SCAN_RANGE_M + radius + EPS)) return;
+    let w = 0, l = 0, maxHalfSpan = 0;
     if (circle) {
-      shapes.push({ kind, radius, right, forward });
+      maxHalfSpan = body.radius;
+      if (!Number.isFinite(maxHalfSpan) || !(maxHalfSpan > 0)) return;
+    } else {
+      w = body.width / 2;
+      l = body.length / 2;
+      if (!(w > 0 && l > 0) || !Number.isFinite(w) || !Number.isFinite(l)) return;
+      maxHalfSpan = w + l;
+    }
+    const dx = body.x - ox, dz = body.z - oz;
+    const coarseLimit = maxRangeM + maxHalfSpan + BOUND_EPS;
+    if (!(Math.abs(dx) <= coarseLimit && Math.abs(dz) <= coarseLimit)) return;
+    const radius = circle ? maxHalfSpan : Math.hypot(w, l);
+    if (!Number.isFinite(radius) || !(radius > 0) ||
+        !(Math.hypot(dx, dz) <= maxRangeM + radius + EPS)) return;
+    const right = dx * c - dz * s, forward = dx * s + dz * c;
+    if (corridorHalfWidthM !== null) {
+      if (forward + radius < -EPS) return;
+      if (Math.abs(right) > corridorHalfWidthM + radius + BOUND_EPS) return;
+    }
+    if (circle) {
+      shapes.push({
+        kind, right, forward, radius, boundRadius: radius,
+        w: 0, l: 0, cos: 1, sin: 0, x: 0, z: 0,
+      });
     } else {
       const angle = (body.heading ?? 0) - heading;
       if (!Number.isFinite(angle)) return;
       const cos = Math.cos(angle), sin = Math.sin(angle);
-      shapes.push({ kind, w, l, cos, sin,
-        x: -right * cos + forward * sin, z: -right * sin - forward * cos });
+      shapes.push({
+        kind, right, forward, radius, boundRadius: radius,
+        w, l, cos, sin,
+        x: -right * cos + forward * sin,
+        z: -right * sin - forward * cos,
+      });
     }
   }
-  for (const body of world.statics) add(body, "static");
-  for (const body of world.actors) {
+  const { statics, actors, staticIndex, actorIndex } = world;
+  const addActorBody = (body) => {
+    if (!body) return;
     if (body.type === "pedestrian" || body.type === "static") add(body, body.type);
     else if (body.type === "vehicle")
       add(body, body.pursuitRole === "police" ? "police" : "civilian");
+  };
+
+  if (Array.isArray(statics) && statics.length > 24 && staticIndex) {
+    const sMeta = getStaticIndexMeta(staticIndex);
+    const isSuperset =
+      sMeta &&
+      sMeta.count > 0 &&
+      typeof staticIndex.isAppendedSuperset === "function" &&
+      staticIndex.isAppendedSuperset(statics);
+    if (isSuperset) {
+      const nearStatics = staticIndex.near(origin, maxRangeM + sMeta.maxSmallRadius + 0.05);
+      const seen = new Set();
+      for (let i = 0; i < nearStatics.length; i++) {
+        const st = nearStatics[i];
+        seen.add(st);
+        add(st, "static");
+      }
+      for (let i = 0; i < sMeta.largeStatics.length; i++) {
+        const st = sMeta.largeStatics[i];
+        if (!seen.has(st)) {
+          seen.add(st);
+          add(st, "static");
+        }
+      }
+      const snapLen = staticIndex.snapshot.length;
+      for (let i = snapLen; i < statics.length; i++) {
+        const st = statics[i];
+        if (!seen.has(st)) add(st, "static");
+      }
+    } else {
+      for (let i = 0; i < statics.length; i++) add(statics[i], "static");
+    }
+  } else if (Array.isArray(statics)) {
+    for (let i = 0; i < statics.length; i++) add(statics[i], "static");
+  } else if (statics) {
+    for (const body of statics) add(body, "static");
+  }
+
+  if (
+    Array.isArray(actors) &&
+    actors.length > 32 &&
+    actorIndex &&
+    typeof actorIndex.near === "function" &&
+    typeof actorIndex.matchesItems === "function" &&
+    actorIndex.matchesItems(actors)
+  ) {
+    const actorPadM = Math.max(4.5, Number.isFinite(actorIndex.maxHalfDiag) ? actorIndex.maxHalfDiag : 4.5) + 0.1;
+    const nearActors = actorIndex.near(origin, maxRangeM + actorPadM);
+    for (let i = 0; i < nearActors.length; i++) addActorBody(nearActors[i]);
+  } else if (Array.isArray(actors)) {
+    for (let i = 0; i < actors.length; i++) addActorBody(actors[i]);
+  } else if (actors) {
+    for (const body of actors) addActorBody(body);
   }
   return shapes;
+}
+
+function candidates(world, heading, origin = world.player) {
+  return gatherCandidates(world, heading, PURSUIT_SCAN_RANGE_M, origin, null);
 }
 
 function circleHit({ right, forward, radius }, r, f) {
@@ -84,11 +199,92 @@ function boxHit({ x, z, w, l, cos, sin }, r, f, far) {
   return near <= far + EPS ? near : Infinity;
 }
 
+const LONG_RANGE_CORRIDOR_OFFSETS_M = Object.freeze([-1.55, -1.03, -0.52, 0, 0.52, 1.03, 1.55]);
+const NARROW_CENTER_OFFSET_M = Object.freeze([0]);
+const FORWARD_UNIT_DIR = Object.freeze({ right: 0, forward: 1 });
+const _shiftedCircleScratch = { right: 0, forward: 0, radius: 0 };
+const _shiftedBoxScratch = { w: 0, l: 0, cos: 1, sin: 0, x: 0, z: 0 };
+
+function candidatesWithinRange(world, heading, maxRangeM, origin = world.player, corridorHalfWidthM = 1.55) {
+  return gatherCandidates(world, heading, maxRangeM, origin, corridorHalfWidthM);
+}
+
+function firstReturnAtLateralOffset(shapes, offsetRightM, maxRangeM) {
+  let rangeM = maxRangeM, kind = "none";
+  for (let i = 0; i < shapes.length; i++) {
+    const body = shapes[i];
+    const relRight = body.right - offsetRightM;
+    if (Math.abs(relRight) > body.boundRadius + BOUND_EPS ||
+        body.forward - body.boundRadius > rangeM + BOUND_EPS) continue;
+    let hit;
+    if (body.kind === "pedestrian") {
+      _shiftedCircleScratch.right = relRight;
+      _shiftedCircleScratch.forward = body.forward;
+      _shiftedCircleScratch.radius = body.radius;
+      hit = circleHit(_shiftedCircleScratch, 0, 1);
+    } else {
+      _shiftedBoxScratch.w = body.w;
+      _shiftedBoxScratch.l = body.l;
+      _shiftedBoxScratch.cos = body.cos;
+      _shiftedBoxScratch.sin = body.sin;
+      _shiftedBoxScratch.x = body.x + offsetRightM * body.cos;
+      _shiftedBoxScratch.z = body.z + offsetRightM * body.sin;
+      hit = boxHit(_shiftedBoxScratch, 0, 1, rangeM);
+    }
+    if (hit > maxRangeM + EPS) continue;
+    const measured = Math.min(hit, maxRangeM);
+    if (measured < rangeM || (measured === rangeM && priority[body.kind] > priority[kind])) {
+      rangeM = measured;
+      kind = body.kind;
+    }
+  }
+  return { rangeM, kind };
+}
+
+function sampleForwardLongRange(world, heading) {
+  const offsets = world?.pursuit?.frozenDriver?._faultNarrowCenterBeamOnly
+    ? NARROW_CENTER_OFFSET_M
+    : LONG_RANGE_CORRIDOR_OFFSETS_M;
+  const corridorHalfWidthM = offsets.length === 1 ? 0 : 1.55;
+  const shapes = candidatesWithinRange(world, heading, PURSUIT_LONG_RANGE_M + 4, world.player, corridorHalfWidthM);
+  let minCorridorM = PURSUIT_LONG_RANGE_M;
+  let pedestrianAheadM = null;
+  const beamRanges = [];
+  for (let i = 0; i < offsets.length; i++) {
+    const offsetRightM = offsets[i];
+    const hit = firstReturnAtLateralOffset(shapes, offsetRightM, PURSUIT_LONG_RANGE_M);
+    const fwdM = hit.rangeM * FORWARD_UNIT_DIR.forward;
+    beamRanges.push(Object.freeze({ offsetRightM, rangeM: hit.rangeM, forwardM: fwdM, kind: hit.kind }));
+    if (hit.kind !== "none" && fwdM < minCorridorM) {
+      minCorridorM = fwdM;
+    }
+    if (hit.kind === "pedestrian" && (pedestrianAheadM === null || fwdM < pedestrianAheadM)) {
+      pedestrianAheadM = fwdM;
+    }
+  }
+  return Object.freeze({
+    maxRangeM: PURSUIT_LONG_RANGE_M,
+    corridorHalfWidthM,
+    minCorridorM,
+    pedestrianAheadM,
+    beams: Object.freeze(beamRanges),
+  });
+}
+
 function firstReturn(shapes, { right, forward }) {
   let rangeM = PURSUIT_SCAN_RANGE_M, kind = "none";
-  for (const body of shapes) {
-    const hit = body.kind === "pedestrian"
-      ? circleHit(body, right, forward) : boxHit(body, right, forward, rangeM);
+  for (let i = 0; i < shapes.length; i++) {
+    const body = shapes[i];
+    let hit;
+    if (body.kind === "pedestrian") {
+      hit = circleHit(body, right, forward);
+    } else {
+      const dot = body.right * right + body.forward * forward;
+      if (dot + body.boundRadius < -BOUND_EPS || dot - body.boundRadius > rangeM + BOUND_EPS) continue;
+      const perp = Math.abs(body.right * forward - body.forward * right);
+      if (perp > body.boundRadius + BOUND_EPS) continue;
+      hit = boxHit(body, right, forward, rangeM);
+    }
     if (hit > PURSUIT_SCAN_RANGE_M + EPS) continue;
     const measured = Math.min(hit, PURSUIT_SCAN_RANGE_M);
     if (measured < rangeM || (measured === rangeM && priority[body.kind] > priority[kind])) {
@@ -129,9 +325,10 @@ export function samplePursuitCornerRays(world) {
 
 function pedestrianReturns(shapes, rays) {
   let samples;
-  for (const body of shapes) {
+  for (let sIdx = 0; sIdx < shapes.length; sIdx++) {
+    const body = shapes[sIdx];
     if (body.kind !== "pedestrian") continue;
-    samples ??= new Array(PED_RAYS);
+    samples ??= new Array(PED_RAYS).fill(undefined);
     // The footprint schedules bins on a fixed grid, never an aim ray at
     // the actor center. Both primary and finer bins must win first return.
     const coverage = (body.radius + EPS) / Math.hypot(body.right, body.forward);
@@ -186,22 +383,42 @@ function offer(best, index, distance) {
 }
 
 function correspond(current, previous, heading) {
-  const from = options(current.length), to = options(previous.length);
-  const aligned = previous.map(point => {
+  const curLen = current.length, prevLen = previous.length;
+  const from = options(curLen), to = options(prevLen);
+  const aligned = new Array(prevLen);
+  let cachedPointHeading = NaN, cachedCos = 1, cachedSin = 0;
+  for (let j = 0; j < prevLen; j++) {
+    const point = previous[j];
     // Rotate the previous relative vector into the current axes before
     // differencing; the relative displacement still includes ego translation.
-    const angle = heading - point.heading, c = Math.cos(angle), s = Math.sin(angle);
-    return { rightM: point.rightM * c - point.forwardM * s,
-      forwardM: point.rightM * s + point.forwardM * c };
-  });
-  for (const [i, point] of current.entries()) {
-    for (const [j, old] of previous.entries()) {
+    if (point.heading !== cachedPointHeading) {
+      cachedPointHeading = point.heading;
+      const angle = heading - cachedPointHeading;
+      cachedCos = Math.cos(angle);
+      cachedSin = Math.sin(angle);
+    }
+    aligned[j] = {
+      rightM: point.rightM * cachedCos - point.forwardM * cachedSin,
+      forwardM: point.rightM * cachedSin + point.forwardM * cachedCos,
+    };
+  }
+  const baseMaxD = 75 * STEP * PURSUIT_SCAN_TICKS;
+  for (let i = 0; i < curLen; i++) {
+    const point = current[i];
+    const spacing = point.kind === "pedestrian" ? PED_RAY_STEP : RAY_STEP;
+    const maxD = baseMaxD + point.rangeM * spacing;
+    const coarseMaxD = maxD + BOUND_EPS;
+    for (let j = 0; j < prevLen; j++) {
+      const old = previous[j];
       if (point.kind !== old.kind) continue;
-      const d = Math.hypot(point.rightM - aligned[j].rightM, point.forwardM - aligned[j].forwardM);
+      const al = aligned[j];
+      const dr = point.rightM - al.rightM;
+      const df = point.forwardM - al.forwardM;
+      if (Math.abs(dr) > coarseMaxD || Math.abs(df) > coarseMaxD) continue;
+      const d = Math.hypot(dr, df);
       // Allow rapid closure plus one beam of angular quantization, but do
       // not infer continuous motion through a missed or ambiguous match.
-      const spacing = point.kind === "pedestrian" ? PED_RAY_STEP : RAY_STEP;
-      if (d > 75 * STEP * PURSUIT_SCAN_TICKS + point.rangeM * spacing) continue;
+      if (d > maxD) continue;
       offer(from[i], j, d);
       offer(to[j], i, d);
     }
@@ -214,6 +431,8 @@ function correspond(current, previous, heading) {
 }
 
 const vehicleForecastMotion = new WeakMap();
+const SIN_HALF_PED_STEP = Math.sin(PED_RAY_STEP / 2);
+const SIN_HALF_RAY_STEP = Math.sin(RAY_STEP / 2);
 
 function track(point, tick, match, previous) {
   const { kind, rightM, forwardM, rangeM } = point;
@@ -230,10 +449,10 @@ function track(point, tick, match, previous) {
     // observation horizon. It does not predict a future swept collision.
     if (closing > EPS) ttcS = Math.min(MAX_TTC_S, rangeM / closing);
   }
-  const angularStep = kind === "pedestrian" ? PED_RAY_STEP : RAY_STEP;
+  const halfStepSin = kind === "pedestrian" ? SIN_HALF_PED_STEP : SIN_HALF_RAY_STEP;
   // Result is a measured surface point, not the object's center. This is a
   // quantization allowance; face changes and misassociation can exceed it.
-  const positionAllowanceM = Math.max(.1, rangeM * Math.sin(angularStep / 2));
+  const positionAllowanceM = Math.max(.1, rangeM * halfStepSin);
   const elapsedS = PURSUIT_SCAN_TICKS * STEP;
   const estimatedXMps = old ? (point.worldX - old.worldX) / elapsedS : null;
   const estimatedZMps = old ? (point.worldZ - old.worldZ) / elapsedS : null;
@@ -318,8 +537,9 @@ export class PursuitScanner {
     const tracks = current.map((point, i) => track(point, tick, matches[i], previous));
     // Keep last measured coordinates as uncertain history, never extrapolate.
     for (const point of stale) tracks.push(track(point, tick, null, previous));
+    const longRangeForward = sampleForwardLongRange(world, heading);
     this.#history = current.concat(stale);
-    this.#frame = Object.freeze({ tick, rays, tracks: Object.freeze(tracks) });
+    this.#frame = Object.freeze({ tick, rays, tracks: Object.freeze(tracks), longRangeForward });
     return this.#frame;
   }
 }

@@ -197,6 +197,21 @@ test("a bounded render-frame catch-up budgets the work without dropping a brief 
   assert.equal(clock.advance(1 / 60, () => ticks++, 3), 1);
   assert.equal(ticks, 7);
   assert.equal(clock.discardedSeconds, 0);
+
+  // Stall-and-recovery regression: a 260 ms frame + 650 ms multi-frame stall retains 100% of backlog across maxSteps=5 catch-up frames
+  const recoveryClock = new FixedClock();
+  let recoveryTicks = 0;
+  let totalElapsedS = 0;
+  const stepFn = () => { recoveryTicks++; };
+  totalElapsedS += 0.26;
+  assert.equal(recoveryClock.advance(0.26, stepFn, 5), 5);
+  for (let i = 0; i < 119; i++) {
+    const dt = i === 40 ? 0.65 : (1 / 72);
+    totalElapsedS += dt;
+    recoveryClock.advance(dt, stepFn, 5);
+  }
+  assert.equal(recoveryClock.discardedSeconds, 0, "stalls must retain backlog rather than discarding simulation time");
+  assert.equal(recoveryTicks, Math.floor((totalElapsedS + 1e-10) / STEP));
 });
 
 test("seed and recorded commands reproduce the complete resulting state", () => {

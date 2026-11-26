@@ -103,7 +103,7 @@ function samePath(previous, path) {
   });
 }
 
-function updateTrace(trace, path, matrix) {
+function updateTrace(trace, path, matrix, elevationAt = null) {
   let metres = 0;
   for (let i = 1; i < path.length; i++) metres += distance(path[i - 1], path[i]);
   trace.count = Math.max(1, Math.min(DOTS, Math.round(metres / DOT_SPACING)));
@@ -117,7 +117,9 @@ function updateTrace(trace, path, matrix) {
     }
     const a = path[Math.max(0, segment - 1)], b = path[segment];
     const t = end > start ? (at - start) / (end - start) : 0;
-    trace.setMatrixAt(i, matrix.makeTranslation(a.x + (b.x - a.x) * t, GROUND_Y, a.z + (b.z - a.z) * t));
+    const dx = a.x + (b.x - a.x) * t, dz = a.z + (b.z - a.z) * t;
+    const dy = GROUND_Y + (elevationAt ? elevationAt(dx, dz) : 0);
+    trace.setMatrixAt(i, matrix.makeTranslation(dx, dy, dz));
   }
   trace.instanceMatrix.updateRange.count = trace.count * 16;
   trace.instanceMatrix.needsUpdate = true;
@@ -156,7 +158,7 @@ export function createPedestrianForecastView() {
   const path = [], poses = [], matrix = new THREE.Matrix4();
   let active = 0, disposed = false;
 
-  function update(predictions) {
+  function update(predictions, elevationAt = null) {
     if (disposed) return;
     let count = 0;
     if (Array.isArray(predictions)) for (const track of predictions) {
@@ -165,21 +167,22 @@ export function createPedestrianForecastView() {
       readPath(track.points, path);
       const slot = slots[count];
       // Compare values, so fresh DTO copies and in-place updates both work.
-      if (slot.source !== track.source || slot.heading !== track.heading || !samePath(slot.previous, path)) {
+      if (slot.source !== track.source || slot.heading !== track.heading || slot.elevFn !== elevationAt || !samePath(slot.previous, path)) {
         selectPoses(path, poses);
         if (!poses.length) continue;
         for (let i = 0; i < GHOSTS; i++) {
           const ghost = slot.ghosts[i], point = poses[i];
           ghost.visible = Boolean(point);
           if (!point) continue;
-          ghost.position.set(point.x, GROUND_Y, point.z);
+          const gy = GROUND_Y + (elevationAt ? elevationAt(point.x, point.z) : 0);
+          ghost.position.set(point.x, gy, point.z);
           ghost.rotation.y = track.heading;
           ghost.updateMatrix();
           ghost.material.color.setHex(TINT[track.source]);
           ghost.material.opacity = .62 / (1 + .9 * point.secondsAhead);
         }
         slot.trace.material = tracePaint[track.source];
-        updateTrace(slot.trace, path, matrix);
+        updateTrace(slot.trace, path, matrix, elevationAt);
         for (let i = 0; i < path.length; i++) {
           const point = path[i], old = slot.previous[i] ?? (slot.previous[i] = {});
           old.x = point.x;
@@ -189,6 +192,7 @@ export function createPedestrianForecastView() {
         slot.previous.length = path.length;
         slot.source = track.source;
         slot.heading = track.heading;
+        slot.elevFn = elevationAt;
       }
       // Leave group.visible to the caller (in particular during sensor passes).
       if (count >= active) group.add(slot.root);

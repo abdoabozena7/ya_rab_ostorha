@@ -6,6 +6,8 @@ const TAXI_PAINT = [0xddd0ac, 0xd5c49e, 0xe4dbba];
 const TUK_PAINT = [0xbb9142, 0x547868, 0x974d38];
 const RUBBER = 0x292c2c, TRIM = 0x3e4543, GLASS = 0x3d5359;
 const LAMP = 0xf1e3be, AMBER = 0xcd8a37, TAIL = 0xb94335;
+const PLATE = 0xd4cbb0, EXHAUST = 0x757d78, MIRROR_GLASS = 0x8fa6ad;
+const WIPER = 0x242929, AIR_DAM = 0x1e2323;
 
 // Each profile sets its own waist, overhangs and greenhouse, even on the
 // identical sedan-sized hulls used for four-wheel traffic. Coordinates are
@@ -179,6 +181,65 @@ function carCabin(f, p, paint, kind) {
   for (let s = 0; s < 2; s++)
     glazing(f, [b[s], a[s], c[s], d[s]], s === 0, paint, p.panes);
   roof(f, c, d, p.roof, paint);
+  windshieldWipers(f, p);
+}
+
+function windshieldWipers(f, p) {
+  const [n, nTop, nw, nTw] = p.front;
+  const lower = p.belt - .027, upper = p.roof - .030;
+  // Cowl plenum strip along windshield base plus twin angled wiper blades.
+  f.face([
+    [-nw * .88, lower + .004, n + .014], [nw * .88, lower + .004, n + .014],
+    [nw * .88, lower + .016, n + .002], [-nw * .88, lower + .016, n + .002],
+  ], WIPER);
+  const onGlass = (u, v, lift = .006) => {
+    const w = lerp(nw, nTw, v);
+    return [u * w, lerp(lower, upper, v) + lift * .65, lerp(n, nTop, v) + lift];
+  };
+  for (const [u0, u1, v0, v1] of [[-.68, -.06, .048, .125], [.04, .64, .048, .122]]) {
+    f.face([
+      onGlass(u0, v0, .005), onGlass(u1, v1, .005),
+      onGlass(u1, v1 + .020, .008), onGlass(u0, v0 + .020, .008),
+    ], WIPER);
+  }
+}
+
+function sideMirror(f, side, p, paint) {
+  const z0 = p.front[0] - .062, z1 = p.front[0] - .020;
+  const yMid = Math.max(p.belt + .036, .585);
+  const xRoot = p.front[2] - .006, xNeck = .456, xOuter = .4995;
+  // Stalk connecting A-pillar sail panel to mirror housing (visible top & front).
+  const [sx0, sx1] = side < 0 ? [-xNeck, -xRoot] : [xRoot, xNeck];
+  const sz0 = z0 + .010, sz1 = z1 - .006;
+  f.face([[sx0, yMid - .004, sz0], [sx0, yMid - .004, sz1], [sx1, yMid - .004, sz1], [sx1, yMid - .004, sz0]], TRIM);
+  f.face([[sx0, yMid - .014, sz1], [sx1, yMid - .014, sz1], [sx1, yMid - .004, sz1], [sx0, yMid - .004, sz1]], TRIM);
+  // Sculpted tapered aerodynamic mirror shell + rear reflective glass face.
+  const [xa0, xb0] = side < 0 ? [-xOuter, -xNeck] : [xNeck, xOuter];
+  const [xa1, xb1] = side < 0 ? [-xOuter + .008, -xNeck - .003] : [xNeck + .003, xOuter - .008];
+  const pts = [
+    [xa0, yMid - .021, z0], [xb0, yMid - .021, z0], [xb1, yMid - .014, z1], [xa1, yMid - .014, z1],
+    [xa0, yMid + .021, z0], [xb0, yMid + .021, z0], [xb1, yMid + .015, z1], [xa1, yMid + .015, z1],
+  ];
+  f.face([pts[0], pts[1], pts[2], pts[3]], TRIM);
+  f.face([pts[4], pts[7], pts[6], pts[5]], paint);
+  f.face([pts[2], pts[6], pts[7], pts[3]], paint);
+  if (side > 0) f.face([pts[1], pts[5], pts[6], pts[2]], paint);
+  else f.face([pts[3], pts[7], pts[4], pts[0]], paint);
+  f.face([pts[0], pts[4], pts[5], pts[1]], MIRROR_GLASS);
+}
+
+function rearTailpipe(f, p) {
+  const cx = -(p.ends[0] - .115), cy = p.sill + .019;
+  const zFront = -.458, zBack = -.4995, r = .0155, steps = 5;
+  const ring = Array.from({ length: steps }, (_, i) => {
+    const a = (i * Math.PI * 2) / steps;
+    return [cx + Math.cos(a) * r, cy + Math.sin(a) * r];
+  });
+  for (let i = 0; i < steps; i++) {
+    const [x0, y0] = ring[i], [x1, y1] = ring[(i + 1) % steps];
+    f.face([[x0, y0, zFront], [x1, y1, zFront], [x1, y1, zBack], [x0, y0, zBack]], EXHAUST);
+  }
+  f.face(ring.map(([x, y]) => [cx + (x - cx) * .72, cy + (y - cy) * .72, zBack]), AIR_DAM, true);
 }
 
 function carEnds(f, p, kind) {
@@ -186,12 +247,24 @@ function carEnds(f, p, kind) {
   const lightY = p.nose - (kind === "van" ? .105 : .116);
   const rearY = p.tail - .105;
   const split = kind === "suv" ? .200 : .191;
-  fascia(f, 1, -front + .023, front - .023, p.sill + .026, p.sill + .095, TRIM, .5, true);
+  fascia(f, 1, -front + .023, front - .023, p.sill + .040, p.sill + .096, TRIM, .498, true);
+  // Front lower air-dam recess & chin splitter lip.
+  const damHalf = Math.min(front - .040, split * 1.18);
+  const damY0 = p.sill + .017, damY1 = p.sill + .039;
+  f.face([[-damHalf, damY0, .488], [damHalf, damY0, .488], [damHalf, damY1, .488], [-damHalf, damY1, .488]], AIR_DAM);
+  f.face([[-damHalf, damY1, .488], [damHalf, damY1, .488], [damHalf, damY1, .498], [-damHalf, damY1, .498]], AIR_DAM);
+  const spHalf = front - .020, spY0 = p.sill + .007, spY1 = p.sill + .018;
+  f.face([[-spHalf, spY0, .5], [spHalf, spY0, .5], [spHalf, spY1, .5], [-spHalf, spY1, .5]], WIPER);
+  f.face([[-spHalf, spY1, .5], [spHalf, spY1, .5], [spHalf, spY1, .486], [-spHalf, spY1, .486]], TRIM);
+  // Front license plate & backing frame.
+  f.face([[-.103, p.sill + .042, .4992], [.103, p.sill + .042, .4992], [.103, p.sill + .093, .4992], [-.103, p.sill + .093, .4992]], WIPER);
+  f.face([[-.096, p.sill + .047, .5], [.096, p.sill + .047, .5], [.096, p.sill + .088, .5], [-.096, p.sill + .088, .5]], PLATE);
   fascia(f, -1, -rear + .020, rear - .020, p.sill + .033, p.sill + .094, TRIM, .5, true);
   fascia(f, 1, -split, split, lightY - .037, p.nose - .025, 0x303636);
   fascia(f, 1, -split + .026, split - .026, lightY + .012, lightY + .026, 0x656c66, .5);
   fascia(f, 1, -split + .026, split - .026, lightY + .044, lightY + .056, 0x656c66, .5);
-  fascia(f, -1, -.096, .096, rearY - .019, rearY + .029, 0xd4cbb0);
+  fascia(f, -1, -.096, .096, rearY - .019, rearY + .029, PLATE);
+  rearTailpipe(f, p);
   for (const side of [-1, 1]) {
     const lens = (end, inner, outer, y0, y1, color, z) => side < 0
       ? fascia(f, end, -outer, -inner, y0, y1, color, z)
@@ -216,6 +289,7 @@ function car(f, p, arches, paint, kind) {
   carCabin(f, p, paint, kind);
   carEnds(f, p, kind);
   for (const side of [-1, 1]) {
+    sideMirror(f, side, p, paint);
     for (const z of [.041, kind === "van" ? -.205 : -.187]) {
       box(f, side * .491, p.belt - .098, z, .018, .020, .054, TRIM);
     }
@@ -297,6 +371,82 @@ function tireGeometry(radius, thickness) {
 }
 
 const ownedModels = new WeakMap();
+const sharedDamagedByPristine = new WeakMap();
+const MAX_SHARED_DAMAGED_PER_GEOMETRY = 8;
+
+function defineHidden(target, key, value) {
+  if (!target) return value;
+  Object.defineProperty(target, key, {
+    value,
+    writable: true,
+    configurable: true,
+    enumerable: false,
+  });
+  return value;
+}
+
+function pushSharedDamagedGeometry(pristine, geometry, shell) {
+  if (!pristine || !geometry) return;
+  let bucket = sharedDamagedByPristine.get(pristine);
+  if (!bucket) {
+    bucket = [];
+    sharedDamagedByPristine.set(pristine, bucket);
+    pristine.addEventListener("dispose", () => flushSharedDamagedPool(pristine));
+  }
+  for (let i = 0; i < bucket.length; i++) {
+    if (bucket[i].geometry === geometry) {
+      bucket[i].shell = shell;
+      return;
+    }
+  }
+  if (bucket.length >= MAX_SHARED_DAMAGED_PER_GEOMETRY) {
+    const evicted = bucket.shift();
+    if (evicted.shell?.userData?.pooledDamagedGeometry === evicted.geometry) {
+      defineHidden(evicted.shell.userData, "pooledDamagedGeometry", null);
+      defineHidden(evicted.shell.userData, "pooledSourceGeometry", null);
+    }
+    evicted.geometry.userData.owned = false;
+    evicted.geometry.dispose();
+  }
+  bucket.push({ geometry, shell });
+}
+
+function removeFromSharedDamagedPool(pristine, geometry) {
+  const bucket = pristine ? sharedDamagedByPristine.get(pristine) : null;
+  if (!bucket) return;
+  for (let i = bucket.length - 1; i >= 0; i--) {
+    if (bucket[i].geometry === geometry) {
+      bucket.splice(i, 1);
+    }
+  }
+}
+
+function popSharedDamagedGeometry(pristine) {
+  const bucket = pristine ? sharedDamagedByPristine.get(pristine) : null;
+  if (!bucket || bucket.length === 0) return null;
+  const entry = bucket.pop();
+  if (entry.shell?.userData?.pooledDamagedGeometry === entry.geometry) {
+    defineHidden(entry.shell.userData, "pooledDamagedGeometry", null);
+    defineHidden(entry.shell.userData, "pooledSourceGeometry", null);
+  }
+  return entry.geometry;
+}
+
+function flushSharedDamagedPool(pristine) {
+  const bucket = pristine ? sharedDamagedByPristine.get(pristine) : null;
+  if (!bucket || bucket.length === 0) return;
+  const items = bucket.splice(0, bucket.length);
+  for (let i = 0; i < items.length; i++) {
+    const { geometry, shell } = items[i];
+    if (shell?.userData?.pooledDamagedGeometry === geometry) {
+      defineHidden(shell.userData, "pooledDamagedGeometry", null);
+      defineHidden(shell.userData, "pooledSourceGeometry", null);
+    }
+    geometry.userData.owned = false;
+    geometry.dispose();
+  }
+}
+
 const matte = (roughness) => new THREE.MeshStandardMaterial({
   vertexColors: true, flatShading: true, roughness, metalness: 0,
 });
@@ -335,10 +485,13 @@ export function createUnifiedTrafficModel(actor) {
 
   const root = new THREE.Group();
   root.name = `traffic-${kind}`;
-  const shell = markOwner(new THREE.Mesh(f.geometry(), matte(.93)));
+  const shellGeometry = f.geometry();
+  const shell = markOwner(new THREE.Mesh(shellGeometry, matte(.93)));
   shell.name = "traffic-shell";
+  shell.userData.crashSignature = "0:0:0:0:0";
   shell.castShadow = shell.receiveShadow = true;
   root.add(shell);
+  defineHidden(root.userData, "trafficShell", shell);
 
   const tire = tireGeometry(radius, thickness), tireMaterial = matte(.97);
   const wheels = [];
@@ -359,8 +512,231 @@ export function createUnifiedTrafficModel(actor) {
   }
   // Within this instance the wheels borrow one pair of resources. Flag one
   // custodian so WorldView's legacy `userData.owned` traversal disposes it once.
-  ownedModels.set(root, [shell, markOwner(wheels[0].part)]);
+  ownedModels.set(root, { shell, shellGeometry, wheel: markOwner(wheels[0].part) });
   return { root, wheels };
+}
+
+const clamp01 = (n) => (Number.isFinite(n) ? Math.max(0, Math.min(1, n)) : 0);
+
+/**
+ * Visibly crumples and scuffs a procedural traffic/police shell in place.
+ * Lazily clones `shell.geometry` once so shared pool or police livery buffers
+ * remain untouched, and restores pristine geometry cleanly when reset to 0.
+ */
+export function applyTrafficCrashDamage(root, damageSpec = {}) {
+  let shell = root?.userData?.trafficShell?.parent === root ? root.userData.trafficShell : null;
+  if (!shell) {
+    const first = root?.children?.[0];
+    shell = (first?.isMesh && first.name === "traffic-shell")
+      ? first
+      : root?.getObjectByName?.("traffic-shell");
+    if (shell && shell.parent === root && root?.userData) {
+      defineHidden(root.userData, "trafficShell", shell);
+    }
+  }
+  if (!shell?.isMesh || !shell.geometry) return false;
+  const front = clamp01(damageSpec?.front);
+  const rear = clamp01(damageSpec?.rear);
+  const left = clamp01(damageSpec?.left);
+  const right = clamp01(damageSpec?.right);
+  const wrecked = Boolean(damageSpec?.wrecked);
+  const sig = `${Math.round(front * 20)}:${Math.round(rear * 20)}:${Math.round(left * 20)}:${Math.round(right * 20)}:${wrecked ? 1 : 0}`;
+  if (shell.userData.crashSignature === sig) return false;
+
+  if (sig === "0:0:0:0:0") {
+    shell.userData.crashSignature = sig;
+    if (shell.userData.pristineGeometry) {
+      const pristine = shell.userData.pristineGeometry;
+      const damaged = shell.userData.damagedGeometry;
+      defineHidden(shell.userData, "damagedGeometry", null);
+      shell.geometry = pristine;
+      defineHidden(shell.userData, "pristineGeometry", null);
+      if (damaged) {
+        defineHidden(shell.userData, "pooledDamagedGeometry", damaged);
+        defineHidden(shell.userData, "pooledSourceGeometry", pristine);
+        pushSharedDamagedGeometry(pristine, damaged, shell);
+      }
+      return true;
+    }
+    return false;
+  }
+
+  if (shell.userData.damagedGeometry && shell.geometry !== shell.userData.damagedGeometry) {
+    const stale = shell.userData.damagedGeometry;
+    const staleSource = shell.userData.pristineGeometry;
+    defineHidden(shell.userData, "damagedGeometry", null);
+    defineHidden(shell.userData, "pristineGeometry", null);
+    if (staleSource) {
+      defineHidden(shell.userData, "pooledDamagedGeometry", stale);
+      defineHidden(shell.userData, "pooledSourceGeometry", staleSource);
+      pushSharedDamagedGeometry(staleSource, stale, shell);
+    } else {
+      stale.dispose();
+    }
+  }
+
+  if (!shell.userData.damagedGeometry) {
+    const pristine = shell.geometry;
+    if (!pristine.boundingBox) pristine.computeBoundingBox();
+    let clone = null;
+    const localPooled = shell.userData.pooledDamagedGeometry;
+    if (localPooled) {
+      const pooledSrc = shell.userData.pooledSourceGeometry;
+      if (pooledSrc === pristine) {
+        removeFromSharedDamagedPool(pristine, localPooled);
+        clone = localPooled;
+      }
+      defineHidden(shell.userData, "pooledDamagedGeometry", null);
+      defineHidden(shell.userData, "pooledSourceGeometry", null);
+    }
+    if (!clone) {
+      clone = popSharedDamagedGeometry(pristine);
+    }
+    if (!clone) {
+      clone = pristine.clone();
+      defineHidden(clone.userData, "ownerShell", null);
+      defineHidden(clone.userData, "ownerPristine", null);
+      clone.addEventListener("dispose", () => {
+        const curShell = clone.userData.ownerShell;
+        const curPristine = clone.userData.ownerPristine;
+        if (curShell?.userData?.damagedGeometry === clone && curPristine?.userData?.owned) {
+          curPristine.userData.owned = false;
+          curPristine.dispose();
+        }
+      });
+    }
+    clone.userData.owned = Boolean(shell.userData.owned);
+    defineHidden(clone.userData, "ownerShell", shell);
+    defineHidden(clone.userData, "ownerPristine", pristine);
+    defineHidden(shell.userData, "pristineGeometry", pristine);
+    defineHidden(shell.userData, "damagedGeometry", clone);
+    shell.geometry = clone;
+  }
+
+  const pristine = shell.userData.pristineGeometry;
+  const damaged = shell.userData.damagedGeometry;
+  if (!pristine.boundingBox) pristine.computeBoundingBox();
+  const { min, max } = pristine.boundingBox;
+  const width = Math.max(.4, max.x - min.x);
+  const height = Math.max(.4, max.y - min.y);
+  const length = Math.max(.8, max.z - min.z);
+  const cx = (min.x + max.x) / 2;
+  const cz = (min.z + max.z) / 2;
+
+  const effFront = wrecked ? Math.max(front, .88) : front;
+  const effRear = wrecked ? Math.max(rear, .52) : rear;
+  const effLeft = wrecked ? Math.max(left, .58) : left;
+  const effRight = wrecked ? Math.max(right, .58) : right;
+
+  const srcPos = pristine.attributes.position;
+  const dstPos = damaged.attributes.position;
+  const srcCol = pristine.attributes.color;
+  const dstCol = damaged.attributes.color;
+  const srcPosArr = srcPos.array;
+  const dstPosArr = dstPos.array;
+  const hasColor = Boolean(srcCol && dstCol);
+  const srcColArr = hasColor ? srcCol.array : null;
+  const dstColArr = hasColor ? dstCol.array : null;
+  const vertCount = srcPos.count;
+  const strainScaleX = width * .10;
+  const strainScaleY = height * .09;
+  const strainScaleZ = length * .10;
+
+  for (let i = 0; i < vertCount; i++) {
+    const i3 = i * 3;
+    const x = srcPosArr[i3];
+    const y = srcPosArr[i3 + 1];
+    const z = srcPosArr[i3 + 2];
+    const xn = (x - cx) / width;
+    const yn = (y - min.y) / height;
+    const zn = (z - cz) / length;
+    let dx = 0, dy = 0, dz = 0;
+
+    if (effFront > 0) {
+      if (zn > .18) {
+        const ft = clamp01((zn - .18) / .32);
+        const lat = .76 + .24 * Math.cos(xn * Math.PI * 1.4) + .08 * Math.cos(xn * 11);
+        dz -= effFront * length * .115 * (ft ** 1.3) * lat;
+      }
+      if (zn > .16 && zn < .45 && yn > .34) {
+        const hoodArch = Math.sin(Math.PI * clamp01((zn - .16) / .29));
+        const hoodLat = Math.max(.25, 1 - (xn / .52) ** 2);
+        dy += effFront * height * .115 * hoodArch * (.52 + .48 * hoodLat);
+      }
+      if (zn > .36 && yn < .36) {
+        const bt = clamp01((zn - .36) / .14);
+        const corner = .35 + .65 * Math.min(1, Math.abs(xn) / .40);
+        dy -= effFront * height * .075 * bt * corner;
+        dx -= Math.sign(xn) * effFront * width * .042 * bt * Math.min(1, Math.abs(xn) * 2);
+      }
+    }
+
+    if (effRear > 0) {
+      if (zn < -.18) {
+        const rt = clamp01((-zn - .18) / .32);
+        dz += effRear * length * .098 * (rt ** 1.3) * (.82 + .18 * Math.cos(xn * 9));
+      }
+      if (zn < -.20 && zn > -.44 && yn > .36) {
+        const trunkArch = Math.sin(Math.PI * clamp01((-zn - .20) / .24));
+        dy += effRear * height * .055 * trunkArch * Math.max(0, 1 - (xn / .45) ** 2);
+      }
+      if (zn < -.36 && yn < .36) {
+        const rbt = clamp01((-zn - .36) / .14);
+        dy -= effRear * height * .068 * rbt * (.35 + .65 * Math.min(1, Math.abs(xn) / .40));
+      }
+    }
+
+    if (effLeft > 0 || effRight > 0) {
+      const alongZ = Math.max(0, 1 - (zn / .46) ** 2);
+      const vert = yn < .86 ? .28 + .72 * Math.sin(Math.PI * clamp01(yn / .86)) : .12;
+      const ripple = .78 + .22 * Math.sin(zn * 18 + yn * 8);
+      if (effLeft > 0 && xn < -.16) {
+        const lt = clamp01((-xn - .16) / .34);
+        dx += effLeft * width * .105 * lt * alongZ * vert * ripple;
+        dy -= effLeft * height * .020 * lt * alongZ * Math.sin(zn * 13);
+      }
+      if (effRight > 0 && xn > .16) {
+        const rt = clamp01((xn - .16) / .34);
+        dx -= effRight * width * .105 * rt * alongZ * vert * ripple;
+        dy += effRight * height * .020 * rt * alongZ * Math.cos(zn * 13);
+      }
+    }
+
+    dstPosArr[i3] = x + dx;
+    dstPosArr[i3 + 1] = y + dy;
+    dstPosArr[i3 + 2] = z + dz;
+
+    if (hasColor) {
+      if (!wrecked && dx === 0 && dy === 0 && dz === 0) {
+        dstColArr[i3] = clamp01(srcColArr[i3]);
+        dstColArr[i3 + 1] = clamp01(srcColArr[i3 + 1]);
+        dstColArr[i3 + 2] = clamp01(srcColArr[i3 + 2]);
+      } else {
+        const strain = clamp01(Math.hypot(
+          dx / strainScaleX,
+          dy / strainScaleY,
+          dz / strainScaleZ,
+        ));
+        let shade = 1 - .38 * strain;
+        if (wrecked) {
+          const scorch = clamp01((zn - .05) / .16) * clamp01((yn - .20) / .20);
+          shade = Math.min(shade, lerp(.68, .44, scorch));
+        }
+        const scuff = !wrecked && strain > .35 ? (strain - .35) * .025 : 0;
+        dstColArr[i3] = clamp01(srcColArr[i3] * shade + scuff);
+        dstColArr[i3 + 1] = clamp01(srcColArr[i3 + 1] * shade + scuff);
+        dstColArr[i3 + 2] = clamp01(srcColArr[i3 + 2] * shade + scuff * 1.05);
+      }
+    }
+  }
+
+  dstPos.needsUpdate = true;
+  if (dstCol) dstCol.needsUpdate = true;
+  damaged.computeVertexNormals();
+  damaged.computeBoundingBox();
+  damaged.computeBoundingSphere();
+  shell.userData.crashSignature = sig;
+  return true;
 }
 
 /**
@@ -369,13 +745,37 @@ export function createUnifiedTrafficModel(actor) {
  * it attached for WorldView's owned-mesh teardown. Use one path per model.
  */
 export function disposeUnifiedTrafficModel(root) {
-  const owners = ownedModels.get(root);
-  if (!owners) return;
+  const record = ownedModels.get(root);
+  if (!record) return;
   ownedModels.delete(root);
   root.removeFromParent();
-  for (const part of owners) {
-    part.userData.owned = part.geometry.userData.owned = part.material.userData.owned = false;
-    part.geometry.dispose();
-    part.material.dispose();
+  const { shell, shellGeometry, wheel } = record;
+  shell.userData.owned = shellGeometry.userData.owned = shell.material.userData.owned = false;
+  const activeDamaged = shell.userData.damagedGeometry;
+  const pooledDamaged = shell.userData.pooledDamagedGeometry;
+  const pooledSrc = shell.userData.pooledSourceGeometry;
+  defineHidden(shell.userData, "damagedGeometry", null);
+  defineHidden(shell.userData, "pooledDamagedGeometry", null);
+  defineHidden(shell.userData, "pooledSourceGeometry", null);
+  shell.geometry = shell.userData.pristineGeometry ?? shellGeometry;
+  defineHidden(shell.userData, "pristineGeometry", null);
+  if (activeDamaged) {
+    defineHidden(activeDamaged.userData, "ownerShell", null);
+    defineHidden(activeDamaged.userData, "ownerPristine", null);
+    activeDamaged.userData.owned = false;
+    activeDamaged.dispose();
   }
+  if (pooledDamaged && pooledDamaged !== activeDamaged) {
+    removeFromSharedDamagedPool(pooledSrc ?? shellGeometry, pooledDamaged);
+    defineHidden(pooledDamaged.userData, "ownerShell", null);
+    defineHidden(pooledDamaged.userData, "ownerPristine", null);
+    pooledDamaged.userData.owned = false;
+    pooledDamaged.dispose();
+  }
+  flushSharedDamagedPool(shellGeometry);
+  shellGeometry.dispose();
+  shell.material.dispose();
+  wheel.userData.owned = wheel.geometry.userData.owned = wheel.material.userData.owned = false;
+  wheel.geometry.dispose();
+  wheel.material.dispose();
 }

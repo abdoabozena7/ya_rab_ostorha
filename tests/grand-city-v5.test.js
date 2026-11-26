@@ -95,8 +95,8 @@ function walkwayFootprintBody(line) {
 }
 
 test("grand=false preserves legacy v2, v3, and v4 Metro City bit-for-bit", () => {
-  assert.deepEqual(GRAND_CITY_POPULATION_LIMITS, { traffic: 140, pedestrians: 220 });
-  assert.deepEqual(GRAND_CITY_POPULATION_DEFAULTS, { traffic: 68, pedestrians: 135 });
+  assert.deepEqual(GRAND_CITY_POPULATION_LIMITS, { traffic: 140, pedestrians: 280 });
+  assert.deepEqual(GRAND_CITY_POPULATION_DEFAULTS, { traffic: 68, pedestrians: 190 });
 
   const v2Default = createUnifiedCity();
   const v2Explicit = createUnifiedCity({ dense: false, rush: false, grand: false });

@@ -1,4 +1,10 @@
 {
   "schema": 1,
-  "verified": []
+  "verified": [
+    {
+      "sha256": "181705df35baa1c9cee3a9b78a2ab231c5c25123deb1a1aa76c171486a148608",
+      "observation": "dispatch-route-v2",
+      "evasionProfile": "bounded-recovery-v1"
+    }
+  ]
 }

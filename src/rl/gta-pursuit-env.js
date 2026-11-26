@@ -55,6 +55,38 @@ const scanTrackCount = 16;
 const QUALIFIED_REWARD = "qualified-progress-v2";
 const PRACTICE_REWARD = "maneuver-practice-v1";
 export const CLEAN_ESCAPE_REWARD = "clean-escape-v1";
+export const SMOOTH_SMART_ESCAPE_REWARD = "smooth-smart-escape-v3";
+
+function dispatchCommandAction(action) {
+  if (!action?.nitro) return action;
+  try {
+    return validatePursuitAction(action);
+  } catch {
+    const { steer, throttle, brake, gear } = action;
+    return { steer, throttle, brake, gear };
+  }
+}
+
+function validateStepInputAction(action) {
+  if (
+    action &&
+    Object.getPrototypeOf(action) === Object.prototype &&
+    Object.keys(action).length === 5 &&
+    Object.prototype.hasOwnProperty.call(action, "nitro")
+  ) {
+    if (!Number.isFinite(action.nitro) || action.nitro < 0 || action.nitro > 1) {
+      throw new RangeError("Pursuit action nitro must be a finite number in [0, 1]");
+    }
+    const base = validatePursuitAction({
+      steer: action.steer,
+      throttle: action.throttle,
+      brake: action.brake,
+      gear: action.gear,
+    });
+    return action.nitro >= 0.5 ? { ...base, nitro: action.nitro } : base;
+  }
+  return validatePursuitAction(action);
+}
 
 export const DISPATCH_OBSERVATION_SCHEMA = Object.freeze({
   version: "dispatch-scan-v3", source: "virtual first-return geometry", dtype: "Float32Array",
@@ -229,7 +261,8 @@ export class GtaPursuitEnv {
       throw new TypeError("practiceProgress must be a boolean");
     if (practiceProgress && (options.ruleset !== "dispatch-v1" || options.maxActivePatrols !== 0))
       throw new TypeError("Progress practice is only available in no-patrol Dispatch drills");
-    if (rewardProfile !== undefined && (rewardProfile !== CLEAN_ESCAPE_REWARD || !shield ||
+    if (rewardProfile !== undefined && (
+        ![CLEAN_ESCAPE_REWARD, SMOOTH_SMART_ESCAPE_REWARD].includes(rewardProfile) || !shield ||
         options.ruleset !== "dispatch-v1" || options.maxActivePatrols === 0 || practiceProgress))
       throw new TypeError("Clean escape reward profile requires a guarded Metro Dispatch pursuit with patrols");
     if (scenario !== undefined && (options.ruleset !== "dispatch-v1" ||
@@ -273,6 +306,8 @@ export class GtaPursuitEnv {
     this.world = world;
     this.schema = options.ruleset === "dispatch-v1" ? schema : GTA_OBSERVATION_SCHEMA;
     this.furthestM = 0;
+    this.prevPoliceGapM = null;
+    this.prevCmdSteer = 0;
     this.shield = shield;
     this.evasion = evasion;
     this.evasiveControl = evasiveControl;
@@ -297,8 +332,8 @@ export class GtaPursuitEnv {
     if (world?.pursuit.phase !== "running") throw new Error("Reset the GTA environment before stepping");
     if (!Number.isSafeInteger(actionRepeat) || actionRepeat < 1)
       throw new RangeError("actionRepeat must be a positive integer");
-    const requestedAction = { ...validatePursuitAction(action) }, events = [];
-    if (!this.shield) world.command({ type: "pursuit-drive", action: requestedAction }, false);
+    const requestedAction = { ...validateStepInputAction(action) }, events = [];
+    if (!this.shield) world.command({ type: "pursuit-drive", action: dispatchCommandAction(requestedAction) }, false);
     const dispatch = this.observationSchema !== GTA_OBSERVATION_SCHEMA;
     const rewardComponents = dispatch ? { progress: 0, time: 0, instability: 0, safety: 0, capture: 0, outcome: 0 } : null;
     const trace = this.decisionTrace;
@@ -339,7 +374,7 @@ export class GtaPursuitEnv {
       if (movement) {
         const { action: safe, reason } = movement;
         planner = movement.planner ?? null;
-        world.command({ type: "pursuit-drive", action: safe }, false);
+        world.command({ type: "pursuit-drive", action: dispatchCommandAction(safe) }, false);
         shieldTick = movement.tick;
         shieldReason = reason;
         if (reason) interventions++;
@@ -378,6 +413,81 @@ export class GtaPursuitEnv {
 
   scoreDispatchTick(reward, beforeSteer, events) {
     const { player, pursuit } = this.world;
+    if (this.rewardProfile === SMOOTH_SMART_ESCAPE_REWARD) {
+      const separation = Math.min(140, distance(player, pursuit.playerStart));
+      if (pursuit.response.dispatch.escapeEligible) {
+        reward.progress += .08 * Math.max(0, separation - this.furthestM);
+      }
+      this.furthestM = Math.max(this.furthestM, separation);
+      if (player.speed > 1.2 && pursuit.metrics.collisions === 0) {
+        reward.progress += .008 * Math.min(22, player.speed) * STEP;
+      }
+
+      const scan = pursuit.gta?.scan;
+      if (scan) {
+        let nearestPoliceM = Infinity;
+        let minFrontClearM = PURSUIT_SCAN_RANGE_M;
+        for (let i = 0; i < scan.rays.length; i++) {
+          const ray = scan.rays[i];
+          if (ray.kind === "police" && ray.rangeM < nearestPoliceM) nearestPoliceM = ray.rangeM;
+          if (ray.kind !== "none" && (i <= 14 || i >= 58) && ray.rangeM < minFrontClearM) {
+            minFrontClearM = ray.rangeM;
+          }
+        }
+        for (const tr of scan.tracks) {
+          if (tr.kind === "police" && tr.ageS === 0) {
+            const r = Math.hypot(tr.rightM, tr.forwardM);
+            if (r < nearestPoliceM) nearestPoliceM = r;
+          }
+        }
+        if (Number.isFinite(nearestPoliceM)) {
+          if (Number.isFinite(this.prevPoliceGapM)) {
+            reward.progress += .035 * clamp(nearestPoliceM - this.prevPoliceGapM, -1.5, 1.5);
+          }
+          this.prevPoliceGapM = nearestPoliceM;
+        } else {
+          this.prevPoliceGapM = null;
+        }
+        if (player.speed > 2.0 && minFrontClearM >= 6.0) {
+          reward.safety += .025 * STEP;
+        } else if (minFrontClearM < 2.8) {
+          reward.safety -= .08 * STEP * (2.8 - minFrontClearM);
+        }
+      }
+
+      const cmdSteer = pursuit.manualAction?.steer ?? 0;
+      reward.time -= .04 * STEP;
+      reward.instability -=
+        .03 * Math.abs(player.steer - beforeSteer) +
+        (.08 / PURSUIT_SCAN_TICKS) * Math.abs(cmdSteer - this.prevCmdSteer) +
+        .012 * STEP * Math.abs(player.gtaSlipMps ?? 0);
+      this.prevCmdSteer = cmdSteer;
+
+      for (const event of events) {
+        if (event.type === "patrol_collision")
+          reward.safety -= 2.5 + 6 * event.damageToPlayer / player.maxHealth;
+        else if (event.type === "static_or_civilian_hit")
+          reward.safety -= (event.kind === "pedestrian" ? 30 : 5.5) + 10 * event.damageToPlayer / player.maxHealth;
+        else if (event.type === "ambient_collision") {
+          const { first, second } = event;
+          const pedestrian = first.type === "pedestrian" || second.type === "pedestrian";
+          const civilianVehicle = (first.type === "vehicle" && !first.patrol) ||
+            (second.type === "vehicle" && !second.patrol);
+          if (pedestrian || civilianVehicle) reward.safety -= (pedestrian ? 28 : 4) + 8 * event.severity;
+        } else if (event.type === "near_miss")
+          reward.safety -= .20 * (1 - unit(event.minDist, .82));
+        else if (event.type === "pinned_progress")
+          reward.capture -= .25 * STEP * event.ratio;
+      }
+      if (pursuit.phase === "escaped") {
+        if (pursuit.response.dispatch.escapeEligible && pursuit.metrics.collisions === 0)
+          reward.outcome += 15;
+      } else if (pursuit.phase === "busted" || pursuit.phase === "wrecked") {
+        reward.outcome -= 10;
+      }
+      return;
+    }
+
     // Advance the watermark even before qualifying so earlier travel is never paid retroactively.
     const separation = Math.min(100, distance(player, pursuit.playerStart));
     if (this.rewardProfile === PRACTICE_REWARD || pursuit.response.dispatch.escapeEligible)

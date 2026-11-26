@@ -5,11 +5,21 @@ simulator is required or started.** The city, vehicle motion, traffic,
 pedestrians, road graph and driving controls run in the browser with Three.js.
 Continue this version rather than the historical native integrations below.
 
-![Grand Metro City v5 5-star RL pursuit with cinematic golden-hour lighting, pedestrian prediction ghosts, and blurred police lens strobe](./docs/screenshots/grand-city-v5-hot-pursuit.png)
+![5-star tactical RL pursuit at 138 km/h with twin Nitro exhaust flames, Pearl-Silver Clearcoat SUV, and subtle outer-rim police strobe](./docs/screenshots/02-chase-5star-nitro-boost.png)
 
-| Dynamic Chasing Camera & Diagonal Boulevards | GTA-Style Alley Hiding & Star-by-Star Cooldown |
+### Live Gameplay & Surface Showcase (Grand Metro City v5 — Ultra-Smooth 60+ FPS)
+
+| Bright Cairo Avenue Cruising (`45+ km/h`) & Pearl-Silver SUV | 5-Star Chase & Nitro Boost (`138+ km/h`) |
 | --- | --- |
-| ![Elevated Chasing camera over diagonal boulevards with 3D red and blue police siren light bounce](./docs/screenshots/grand-city-v5-chasing-cam-diagonal.png) | ![SUV hidden in building cover losing wanted stars one by one as the police strobe calms down](./docs/screenshots/grand-city-v5-hidden-star-decay.png) |
+| ![Bright Cairo avenue cruising at 45+ km/h with warm streetlamps, Pearl-Silver Clearcoat SUV, 190 pedestrians and 68 vehicles](./docs/screenshots/01-bright-city-avenue-suv.png) | ![5-star Chase Nitro Boost at 139 km/h outrunning police interceptor with twin afterburner flames](./docs/screenshots/02-chase-5star-nitro-boost.png) |
+| **`+20 Pedestrians Ahead` & 3D Forecast Ghosts (`PED SAFE`)** | **Cockpit, Body Cutaway & Mounted Virtual Sensor Inspection** |
+| ![Live +20 Pedestrians Ahead crowd spawn with 3D golden prediction ghosts and PED SAFE Nitro hold](./docs/screenshots/03-crowd-20-ahead-forecast-ghosts.png) | ![Cutaway SUV inspection showing left-hand cabin cockpit, steering wheel, digital cluster, running gear and mounted virtual sensor rays](./docs/screenshots/04-cockpit-cutaway-sensor-inspection.png) |
+| **Standing Water Puddle Hydroplaning & Fresnel Splash** | **Sandy Street Drift, Carved Ruts & Desert Silt Billows** |
+| ![Standing rainwater puddle hydroplaning with Fresnel sky reflection, wake ripples, rooster-tail spray and wet tire tracks](./docs/screenshots/05-water-puddle-hydro-splash.png) | ![Low-angle sandy Cairo street drift with carved 4-wheel sand ruts, ballistic grit and billowing desert silt clouds](./docs/screenshots/06-sandy-street-dust-and-ruts.png) |
+| **Historic Cobblestone Market & Cairo Storefronts (`العمارات والمحلات`)** | **Elevated Ramses Flyover (`2.9 m` Embankment) & Climbing Grade** |
+| ![Historic Cairo cobblestone boulevard flanked by Egyptian apartment balconies, split-AC units and ground-floor Arabic shopfronts](./docs/screenshots/07-cobblestone-historic-market.png) | ![Open-plaza profile vista of the elevated 2.9 m Ramses Flyover showing vertical stone retaining wall embankment, sloped carriageway and climbing SUV](./docs/screenshots/08-elevated-flyover-slope-vista.png) |
+| **Elevated Chasing Camera Over Diagonal Boulevards** | **Real 17-Part Physical Crash, Detached Parts, Sparks & Smoke** |
+| ![Elevated Chasing camera over diagonal Talaat Harb boulevard with multi-unit tactical police pack pursuit](./docs/screenshots/09-chasing-camera-diagonal-pack.png) | ![Unobstructed front-quarter close-up of real 17-part physical crash showing detached hood, exposed engine bay, sparks, debris and rising volumetric smoke](./docs/screenshots/10-real-part-crash-sparks-smoke.png) |
 
 ## Run the game
 
@@ -70,25 +80,38 @@ the fixed-step vehicle state, not independent decorative animations.
 
 The SUV now has staggered tread and shoulder lugs, open split-spoke wheels with
 visible brake discs and lug hardware, shaped hood creases, recessed grille and
-projector details, lower intakes and windshield wipers. Wheel detail shares
-geometry across all four corners and follows the existing steering/rolling
-assemblies; calipers stay fixed to the uprights. Nearby traffic receives
-recessed wheel hubs without extra vehicle draw calls.
+projector details, lower intakes, windshield wipers, under-hood mechanical
+assemblies (radiator core, front crash bar, battery box, coolant hose), front
+tow hooks, fender vents with amber repeaters, reflective mirror glass, dual
+rear exhausts, license plates, a high-mount brake lamp, and cockpit pedals and
+center display. Wheel detail shares geometry across all four corners and
+follows the existing steering/rolling assemblies; calipers stay fixed to the
+uprights. Nearby traffic and police cruisers receive recessed grilles, bumpers,
+lamps, mirrors, trim, and wheel hubs, and visibly crumple when struck.
 
 Five front-bumper, three rear and two side proximity units use shared local
 metre-space mounts. The front and rear RGB camera selection changes the actual
-rendered feed. Sensor visualization displays the measured geometry rays;
+rendered feed, keeping debug rays, glass-crack lines and crash particle plumes
+out of the sensor camera render pass. Sensor visualization displays the measured geometry rays;
 the roof IMU/GNSS enclosure reports explicitly virtual vehicle-state telemetry.
 These are not hardware radar/lidar, satellite fixes or neural detections.
 The existing five filtered front readings remain compatible with their
 consumers. Ordinary city collision avoidance remains enabled.
 
 **Vehicle test bay** enters a separate car-only instance of the existing lab
-roads. Its explicit contact run drives at no more than **6 m/s (21.6 km/h)**
-toward a fixed barrier. Damage derives from an actual nonpenetrating contact,
-with localized panel deformation; it is not a full soft-body crash model.
-Resetting the test car restores pristine geometry and state. **Return to city**
-restores the original paused city rather than replacing it with the test.
+roads, offering both the standard **Run impact** (**5–6 m/s**) and **Heavy crash
+(50 km/h)** (**15 m/s**) barrier runs alongside a live **Body & parts**
+component readout in the Car panel. Collisions in the bay and in City/Chase
+drive localized 17-part component damage—hinging or detaching the hood to
+expose the radiator bay, unclipping/crushing bumper corners while retaining the
+bolted lower skid flange, detaching the grille, mirrors, plates, spare cover or
+exhaust, swinging struck doors ajar, shattering lamps, cracking glazing, and
+spawning pooled 3D tumbling car parts, glass shards, sparks, and radiator steam
+or engine smoke—while remaining a bounded procedural damage approximation
+rather than a finite-element crashworthiness model. **Repair / reset** restores
+pristine geometry, transforms and state in place and clears active player
+debris. **Return to city** restores the original paused city rather than
+replacing it with the test.
 
 The vehicle remains a bounded game-physics approximation, not a calibrated
 tire, suspension, crashworthiness or real-road safety model. No external
@@ -119,11 +142,45 @@ SUV, virtual sensor mounts, manual controls, city navigation and isolated car
 fixture remain part of the same standalone game.
 
 City surfaces now include recessed brick mortar, fine plaster relief, smoother
-window/shutter finishes and varied asphalt/pavement roughness. The detail maps
-are generated locally and shared by the streamed facade batches; they add no
-extra building draw calls or collision geometry. Sun shadows follow actual
-light-space texels instead of jumping on a coarse two-metre grid. The existing
-golden-hour lighting, map and ambient population are retained.
+window/shutter finishes and varied asphalt/pavement roughness. In Grand Metro
+City v5 (`terrainProfile: "cairo-surfaces-v1"`), boulevard and neighborhood
+apartment towers (`العمارات`) stream full-height 3D balconies, split AC outdoor
+units, louvered shutters, rooftop water tanks/satellite dishes, and ground-floor
+commercial storefronts (`المحلات`) with sloped awnings, illuminated dusk
+vitrines, and Arabic signage, paired with instanced street lamps + warm dusk
+ground light pools, slotted cast-iron tree grates with muted olive foliage,
+electrical feeder cabinets, and sidewalk furniture inside the streamed GPU
+budget. Streets and sidewalks use `512×512` procedural PBR dark coarse bitumen
+asphalt (tire-wear polish ruts, tar crack seams, cast-iron manholes) and
+recessed-mortar Cairo sidewalk tiles, bordered by 3D segmented weathered
+charcoal-and-stone Egyptian curb blocks (`بلدورة الرصيف`) and storm-drain
+grates. A moody twilight Cairo sky dome, low-fill raking sun shadows, and a
+single-pass MSAA WebGL film grade (`src/render/cinematic-post.js` — dark
+exposure, filmic S-curve contrast, selective desaturation preserving police
+strobes, cold-shadow/warm-highlight split-toning, anamorphic vignette, and
+peripheral speed streaks) grade the main display viewport while leaving AI
+`visionCamera` / `frontCamera` RGB streams ungraded. Both **Behind car** and
+**Chasing cam** drive speed/G-force reactive FOV, horizon Dutch-angle banking,
+throttle/brake boom inertia, and road-roughness micro-vibration alongside
+sub-frame `alpha`-interpolated SUV suspension and projected headlamp/brake road
+pools. Roads follow a smooth `C²` 3D elevation field of overpass ramps and
+district ridges with retaining walls, plus Schlick-Fresnel semi-transparent
+standing water puddles (`roughness 0.045`, live wind micro-ripples, expanding
+tire-wake concentric ripples, wispy FBM spray billboards, and 15 m decaying wet
+asphalt tire tracks), rippled sand stretches (`roughness 0.94`, persistent
+4-wheel carved sand ruts, volumetric FBM dust billows, and ballistic grit), and
+cobblestone/curb zones that physically govern tire grip, sand rolling drag, wet
+braking/hydroplane slip, slope gravity (`-g sin(grade)`), and suspension
+chatter. Live `interactionProfile: "wheel-scrub-v1"` (`src/core/wheel-interaction-physics.js`)
+models shallow curb-grazing sidewall drag & aligning yaw deflection, wheel-by-wheel
+manual curb climbing, Coulomb sideswipe friction & contact-patch pivot yaw
+deflection, `WeakMap`-backed two-body rocking on struck/sideswiped vehicles, and
+camera-facing FBM volumetric engine/tire/scrape smoke billboards + asphalt skid
+ribbons (`src/render/crash-effects.js`). Historical City replays without
+`terrainProfile` / `interactionProfile` retain flat legacy dynamics. The detail
+maps are generated locally and shared by the streamed facade batches; sun
+shadows follow actual light-space texels instead of jumping on a coarse
+two-metre grid.
 
 See [the exact data boundary, existing model measurements and experiment
 limits](docs/VISION_FIRST.md). No new model or package is downloaded automatically;
@@ -151,12 +208,15 @@ retained or reused from the earlier work and what remains engine-specific.
 
 ## One connected city
 
-The game opens directly in **Grand Metro City (`cityVersion: 5`)** (`~960 × 800 m`, `> 765,000 m²`, preserving `cityVersion: 1..4` for deterministic legacy tests and replays). Broad boulevards, **5 diagonal radial avenues & market slash streets** (`qasr-diagonal`, `talaat-diagonal`, `ramses-diagonal`, `bazaar-slash`, `citadel-diagonal`), monumental multi-story Egyptian buildings (`28–56 m` tall), **66 curbside parked vehicles**, dense pedestrian crowd hotspots, traffic convergence hubs, and narrow neighborhood alleys share one road graph, traffic population, and set of Phone destinations. Switch live between the grounded **Behind car** camera and the dynamic speed-reactive **Chasing cam** using the HUD camera button (`Behind car` / `Chasing cam`), the Chase card toggle, or **V** (**C** switches to cockpit).
+The game opens directly in **Grand Metro City (`cityVersion: 5`)** (`~960 × 800 m`, `> 765,000 m²`, preserving `cityVersion: 1..4` for deterministic legacy tests and replays). Broad boulevards, **5 diagonal radial avenues & market slash streets** (`qasr-diagonal`, `talaat-diagonal`, `ramses-diagonal`, `bazaar-slash`, `citadel-diagonal`), monumental multi-story Egyptian buildings (`28–56 m` tall), **66 curbside parked vehicles**, **190 default street pedestrians** (configurable up to **280** with 3-tier CPU & skeletal render LOD for 60+ FPS), traffic convergence hubs, warm golden streetlamp pools, and a player-following street key light illuminating the Pearl-Silver Clearcoat SUV (`CITY_CLEAR_CINEMATIC_GRADE`) share one road graph, traffic population, and set of Phone destinations. Switch live between the grounded **Behind car** camera and the dynamic speed-reactive **Chasing cam** using the HUD camera button (`Behind car` / `Chasing cam`), the Chase card toggle, or **V** (**C** switches to cockpit).
 
 Use **Chase** on the main toolbar to pick a pursuit level (`Level 1` up to `5 · Max`) and press **Start chase** on the same City streets:
-- A trained **RL PPO checkpoint** (`public/threejs/pako-chase-ppo.json`) is preloaded by default (`RL AI` vs `Manual` toggle, or press **I** / **WASD** to take over).
-- Vanguard police cruisers deploy in close view (`18–33 m`) with backup waves, interceptors, SWAT units, and roadblocks scaling up to Level 5 Max.
-- **City-wide curb & courtyard support** (`metro-city-curbs-v2`, 316 surveyed orthogonal + diagonal sidewalk spans and interior courtyard blocks) and **sensor-only path-changing evasion** (`pako-evasive-v2`) let the SUV weave through curbside parked-car chicanes, yield/wait calmly for crossing pedestrian crowd waves, hop clear sidewalks, cut through open alleys between buildings, or execute fast 2-phase K-turns from 360° range rays, surface tracks, and front-camera forecasts.
+- A smoother, low-collision **RL PPO checkpoint** (`public/threejs/pako-chase-ppo.json`) is preloaded by default (`RL AI` vs `Manual` toggle, or press **I** / **WASD** to take over).
+- An initial beat unit spots the car from a genuine line-of-sight berth (`66.5–109.5 m`) before vanguard cruisers coordinate multi-unit tactical lead pressure, intersection flank cutoffs, straightaway interceptors, SWAT units, and subtle outer-bezel police strobe lighting scaling up to Level 5 Max (strictly never spawning or teleporting near an out-of-contact player).
+- **Ultra-smooth zero-hitch simulation & rendering**: spatial-indexed `PursuitScanner` ray prefilters (`~0.22 ms`/scan), `WeakMap`-cached tactical road & scene-node lookups, `32 m` spatial surface cells with zero-allocation wheel scratch buffers, dirty-tracked bounded GPU instanced uploads (`0` idle buffer uploads on dry/calm frames), single-pass volumetric smoke billboarding, and pooled traffic crash-deformation VBOs sustain **73–86+ FPS** across 210-pedestrian 5-star Chases, standing water puddle splashes, sandy street drifts, and multi-car part-detaching pileups.
+- **Rechargeable Nitro Boost (`NITRO_SPEC`, up to `38.5 m/s`)**: faster than 5-star police interceptors, complete with twin 3D rear afterburner flames and a live `#chaseNitroMeter` HUD bar (**Shift** / **N** or touch **NITRO** in manual mode). In autonomous RL Chase, the sensor-only controller engages Nitro on clear straightaways (`>= 30 m` clear scan) to break police containment and **unconditionally inhibits Nitro (`PED SAFE`)** the instant any 360° range ray, tracked motion vector, or camera forecast detects a pedestrian in the forward safety corridor.
+- **Live `+20 Pedestrians Ahead` Test Button (`#spawnCrowdAheadBtn` or `G`)**: available right inside the active `#chaseBar` HUD to drop 20 random walking pedestrians `22–42 m` ahead of the SUV on the street (`spawn-crowd-ahead`) so you can immediately watch the car's scan/camera forecast ghosts, `PED SAFE` Nitro hold, and zero-collision evasive weaving in real time.
+- **City-wide curb & courtyard support** (`metro-city-curbs-v2`, 316 surveyed orthogonal + diagonal sidewalk spans and interior courtyard blocks) and **sensor-only path-changing evasion** (`pako-evasive-v2`) let the SUV anticipate closing vehicles `24–40 m` ahead, weave smoothly through curbside parked-car chicanes, yield or steer around dense walking crowds, hop clear sidewalks, cut through open alleys between buildings, or execute fast 2-phase reverse pivots from 360° range rays, surface tracks, and front-camera forecasts.
 - Use **Train & test** inside Chase to run multi-episode PPO updates in the background Worker, watch full actor replays, and apply updated checkpoints directly back into City Chase.
 
 Use **Tools → Experiments → Arcade chase → Start pursuit** to start the original arcade variant on the
