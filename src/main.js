@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { World } from "./core/world.js";
+import { KING_LONG_MICROBUS_ID } from "./core/vehicle-spec.js";
 import {
   GRAND_CITY_POPULATION_LIMITS,
   METRO_POPULATION_LIMITS,
@@ -247,7 +248,25 @@ function setCarView(mode) {
 }
 function carAction(action, value) {
   if (action === "view") setCarView(value);
-  else if (action === "cutaway") cutaway = Boolean(value);
+  else if (action === "player-vehicle") {
+    const result = world.command({ type: "player-vehicle", model: value });
+    if (!result.ok || !result.changed) return result;
+    keys.clear();
+    touchPursuit.clear();
+    touchNitroActive = false;
+    lastInput = "";
+    freeCameraShotOverride = null;
+    cameraSnap = true;
+    senseWorld = senseScan = null;
+    senseForecasts = [];
+    lastVisionCaptureTick = -999;
+    world.command({ type: "visual-reset", streamId: visualClient.reset() });
+    perceptionOverlay.setExternal(null);
+    phone.reset();
+    view.crashEffects?.clearPlayerDebris();
+    view.sync(1);
+    return result;
+  } else if (action === "cutaway") cutaway = Boolean(value);
   else if (action === "sensors") sensorView = Boolean(value);
   else if (action === "sensor-camera") {
     if (!["front", "rear"].includes(value))
@@ -1463,6 +1482,7 @@ const pursuitPanel = mountPursuitPanel({
   container: $("pursuitPanelHost"),
   onCheckpoint: file => loadDispatchCheckpoint(file, file?.name, true),
   onDriverMode: mode => {
+    if (world.player.vehicleModel === KING_LONG_MICROBUS_ID) return;
     pakoDriverMode = mode === "manual" ? "manual" : "rl";
     updateUI();
   },
@@ -1486,7 +1506,9 @@ const pursuitPanel = mountPursuitPanel({
     const active = world;
     if (active.environment === "metro") {
       const simple = pakoPanelOpen;
-      const simpleRl = simple && pakoDriverMode !== "manual" && Boolean(dispatchCheckpoint);
+      const microbus = active.player.vehicleModel === KING_LONG_MICROBUS_ID;
+      if (microbus && !simple) throw new Error("Use Chase for the microbus. Experimental pursuit modes require the SUV.");
+      const simpleRl = simple && !microbus && pakoDriverMode !== "manual" && Boolean(dispatchCheckpoint);
       const release = simpleRl ? approvedPakoPolicy() : null;
       const style = simple ? release ? "pako" : simpleRl ? "dispatch-ppo" : "dispatch" : streetPursuitStyle;
       rememberPackPractice(active);
@@ -1886,12 +1908,13 @@ function input() {
     }
     return;
   }
+  const microbusSpec = world.player.vehicleModel === KING_LONG_MICROBUS_ID ? world.player.spec : null;
   const targetSpeed = pressed("Space")
     ? 0
     : pressed("KeyW") || pressed("ArrowUp") || nitroHeld
       ? world.player.maxSpeed
       : pressed("KeyS") || pressed("ArrowDown")
-        ? -2.5
+        ? -(microbusSpec?.reverseSpeed ?? 2.5)
         : 0;
   if (environment === "vision") {
     if (pressed("Space") && !world.visionLab.error) {
@@ -1903,7 +1926,7 @@ function input() {
   const command = {
     type: "drive",
     targetSpeed,
-    steer: cameraSteer * .62,
+    steer: cameraSteer * (microbusSpec?.maxSteer ?? .62),
     ...(nitroHeld && targetSpeed > 0 ? { nitro: 1 } : {}),
   };
   const signature = JSON.stringify(command);
@@ -2097,6 +2120,7 @@ function updateUI() {
       cityPursuitStyle: rushCity ? streetPursuitStyle : null,
       pako, pakoAvailable: Boolean(approvedPakoPolicy()), pakoBestS,
       pakoDriverMode, chaseCameraStyle, customCheckpoint, ppoSummary: formatPpoSummary(dispatchCheckpoint?.policy),
+      microbus: world.player.vehicleModel === KING_LONG_MICROBUS_ID,
       checkpointStatus, checkpointReady: dispatchCheckpoint !== null,
       surface: world.player?.vehicle?.surface ?? null,
       frozenDriver: result?.frozenDriver,

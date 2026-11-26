@@ -2,8 +2,12 @@ import {
   angleDelta, bodyOnRoad, distance, isDiagonalRoad, overlaps, roadIntersection, roadPointAt,
 } from "./geometry.js";
 import { SpatialIndex } from "./spatial-index.js";
+import { KING_LONG_MICROBUS, KING_LONG_MICROBUS_ID } from "./vehicle-spec.js";
 
 const RADIUS_M = 3.8;
+// Allow some steering reserve for tracking and the exit-lane transition.
+const MICROBUS_RADIUS_M = 1.12 * KING_LONG_MICROBUS.wheelbaseM / Math.tan(KING_LONG_MICROBUS.maxSteerRad);
+const turnRadius = (body) => body.vehicleModel === KING_LONG_MICROBUS_ID ? MICROBUS_RADIUS_M : RADIUS_M;
 const SAMPLE_M = 0.35;
 const EXIT_COMPENSATION_M = 0.5;
 const RECOVERY_M = 8;
@@ -193,7 +197,7 @@ function graphFor(district, body) {
   const roadsSig = district.roads === district.drivingRoads
     ? signature
     : roadsSignature(district.roads);
-  const shapeKey = `${body.length}:${body.width}:${staticEntry.version}:${roadsSig}`;
+  const shapeKey = `${body.length}:${body.width}:${turnRadius(body)}:${staticEntry.version}:${roadsSig}`;
   let graph = cached.shapes.get(shapeKey);
   if (graph) {
     cached.shapes.delete(shapeKey);
@@ -286,7 +290,7 @@ function append(path, point) {
   });
 }
 
-function turnBetween(incoming, outgoing) {
+function turnBetween(incoming, outgoing, radius) {
   const diagTurn = isDiagonalRoad(incoming.road) || isDiagonalRoad(outgoing.road);
   const bend = angleDelta(outgoing.heading, incoming.heading);
   if (Math.abs(bend) > Math.PI * (diagTurn ? 0.78 : 0.75)) return null;
@@ -308,9 +312,9 @@ function turnBetween(incoming, outgoing) {
   if (orthogonalExact) {
     intersection = incoming.road.axis === "z"
       ? { x: inLane.x, z: outLane.z } : { x: outLane.x, z: inLane.z };
-    start = shift(intersection, incoming.direction, -RADIUS_M);
-    end = shift(intersection, outgoing.direction, RADIUS_M);
-    center = shift(start, outgoing.direction, RADIUS_M);
+    start = shift(intersection, incoming.direction, -radius);
+    end = shift(intersection, outgoing.direction, radius);
+    center = shift(start, outgoing.direction, radius);
   } else {
     const det = -incoming.direction.x * outgoing.direction.z +
       incoming.direction.z * outgoing.direction.x;
@@ -318,24 +322,24 @@ function turnBetween(incoming, outgoing) {
     const dx = outLane.x - inLane.x, dz = outLane.z - inLane.z;
     const t = (-outgoing.direction.z * dx + outgoing.direction.x * dz) / det;
     intersection = shift(inLane, incoming.direction, t);
-    const tangentDist = RADIUS_M * Math.tan(Math.abs(bend) / 2);
+    const tangentDist = radius * Math.tan(Math.abs(bend) / 2);
     start = shift(intersection, incoming.direction, -tangentDist);
     end = shift(intersection, outgoing.direction, tangentDist);
-    center = shift(start, incoming.normal, -Math.sign(bend) * RADIUS_M);
+    center = shift(start, incoming.normal, -Math.sign(bend) * radius);
   }
   const first = Math.atan2(start.z - center.z, start.x - center.x);
   const last = Math.atan2(end.z - center.z, end.x - center.x);
   const arc = angleDelta(last, first);
   const points = [];
-  const steps = Math.max(1, Math.ceil(Math.abs(arc) * RADIUS_M / SAMPLE_M));
+  const steps = Math.max(1, Math.ceil(Math.abs(arc) * radius / SAMPLE_M));
   // The unchanged rear-axle follower otherwise swings the body outside the exit.
   const insideScale = orthogonalExact ? 1 : Math.min(1, Math.abs(bend) / (Math.PI / 2));
   const inside = -Math.sign(bend) * EXIT_COMPENSATION_M * insideScale;
   for (let i = 0; i <= steps; i++) {
     const a = first + arc * i / steps;
     const t = i / steps, correction = inside * t * t * (3 - 2 * t);
-    points.push({ x: center.x + Math.cos(a) * RADIUS_M + outgoing.normal.x * correction,
-      z: center.z + Math.sin(a) * RADIUS_M + outgoing.normal.z * correction,
+    points.push({ x: center.x + Math.cos(a) * radius + outgoing.normal.x * correction,
+      z: center.z + Math.sin(a) * radius + outgoing.normal.z * correction,
       heading: incoming.heading + bend * i / steps });
   }
   return {
@@ -415,10 +419,11 @@ function clearPath(district, body, path) {
 function allowedTurn(district, body, incoming, outgoing, roadsSigHint = null, staticEntryHint = null) {
   if (incoming.turnCache.has(outgoing.id)) return incoming.turnCache.get(outgoing.id);
   const rSig = roadsSigHint ?? roadsSignature(district.roads);
-  const geomKey = `${rSig}:${body.type ?? "v"}:${body.length}:${body.width}:${body.radius ?? 0}:${incoming.id}->${outgoing.id}`;
+  const radius = turnRadius(body);
+  const geomKey = `${rSig}:${body.type ?? "v"}:${body.length}:${body.width}:${body.radius ?? 0}:${radius}:${incoming.id}->${outgoing.id}`;
   let baseGeom = roadTurnGeomCache.get(geomKey);
   if (baseGeom === undefined) {
-    const turn = turnBetween(incoming, outgoing);
+    const turn = turnBetween(incoming, outgoing, radius);
     const guide = [];
     let guideYaws = null;
     let roadValid = false;
@@ -527,7 +532,8 @@ function routePath(district, graph, body, goal, links, startAlong, endAlong) {
   if (transitions.length && endAlong < transitions.at(-1).outset + 1)
     return [];
   const wheelbase = body.spec?.wheelbase ?? 2.6;
-  const rearStart = shift(body, { x: Math.sin(body.heading), z: Math.cos(body.heading) }, -wheelbase / 2);
+  const axleCenterZ = body.vehicleModel === KING_LONG_MICROBUS_ID ? KING_LONG_MICROBUS.axleCenterZM : 0;
+  const rearStart = shift(body, { x: Math.sin(body.heading), z: Math.cos(body.heading) }, -wheelbase / 2 + axleCenterZ);
   if (!transitions.length) {
     const singleKey = `${links[0].id}:${rearStart.x}:${rearStart.z}>${goal.x}:${goal.z}`;
     let single = graph.singleSegments.get(singleKey);

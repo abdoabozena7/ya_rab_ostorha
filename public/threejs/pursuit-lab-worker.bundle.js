@@ -694,6 +694,8 @@
   }
 
   // src/core/vehicle-spec.js
+  var JETOUR_T2_ID = "jetour-t2";
+  var KING_LONG_MICROBUS_ID = "king-long-microbus";
   var PLAYER_VEHICLE = Object.freeze({
     lengthM: 4.2,
     widthM: 1.85,
@@ -709,6 +711,45 @@
     centerOfMassHeightM: 0.68,
     suspensionTravelM: 0.07
   });
+  var KING_LONG_MICROBUS = Object.freeze({
+    lengthM: 4.84,
+    widthM: 1.7,
+    heightM: 2.02,
+    wheelbaseM: 2.57,
+    trackM: 1.45,
+    wheelRadiusM: 0.315,
+    wheelWidthM: 0.195,
+    axleCenterZM: 0.27,
+    massKg: 2250,
+    steeringRatio: 18,
+    maxSteerRad: 0.51,
+    maxRangeM: 35,
+    roadHeightM: 0.12,
+    centerOfMassHeightM: 0.91,
+    suspensionTravelM: 0.085,
+    curbClearanceM: 0.13,
+    frontWeightFraction: 0.46,
+    rollGradient: 0.0205,
+    rollLimitRad: 0.12,
+    accelerationMps2: 1.8,
+    brakingMps2: 5.6,
+    steerRateRadS: 0.72,
+    reverseSpeedMps: 1.95,
+    maxSpeedMps: 12.5,
+    tireGripMps2: 7,
+    chaseAccelerationMps2: 4.5,
+    chaseSteerRateRadS: 1.15,
+    chaseReverseSpeedMps: 3.1,
+    chaseMaxSpeedMps: 25,
+    nitroAccelerationMultiplier: 1.3
+  });
+  function playerVehicleDimensions(body) {
+    return body?.vehicleModel === KING_LONG_MICROBUS_ID ? KING_LONG_MICROBUS : PLAYER_VEHICLE;
+  }
+  function staticVehicleWheelLoadN(dimensions, front) {
+    const frontFraction = dimensions.frontWeightFraction ?? 0.5;
+    return dimensions.massKg * 9.81 * (front ? frontFraction : 1 - frontFraction) / 2;
+  }
   var rangeLayout = [
     ["left-outer", -70, -0.76],
     ["left-inner", -35, -0.43],
@@ -719,12 +760,14 @@
   var dimension = (value, fallback) => Number.isFinite(value) && value > 0 ? value : fallback;
   function getVehicleMounts(body = {}) {
     const scale = body.giantScale ?? 1;
-    const length = dimension(body.length, PLAYER_VEHICLE.lengthM) / scale;
-    const width = dimension(body.width, PLAYER_VEHICLE.widthM) / scale;
+    const dimensions = playerVehicleDimensions(body);
+    const microbus = dimensions === KING_LONG_MICROBUS;
+    const length = dimension(body.length, dimensions.lengthM) / scale;
+    const width = dimension(body.width, dimensions.widthM) / scale;
     const camera = {
       id: "front-camera",
       angleDeg: 0,
-      position: { x: 0, y: 1.46, z: 0.72 }
+      position: microbus ? { x: 0, y: 1.67, z: 1.67 } : { x: 0, y: 1.46, z: 0.72 }
     };
     const mounts2 = {
       ranges: rangeLayout.map(([id, angleDeg, x]) => ({
@@ -767,12 +810,12 @@
         {
           id: "rear-camera",
           angleDeg: 180,
-          position: { x: 0, y: 1.3, z: -length / 2 - 0.035 }
+          position: { x: 0, y: microbus ? 1.5 : 1.3, z: -length / 2 - 0.035 }
         }
       ],
       telemetry: {
         id: "roof-imu-gnss",
-        position: { x: 0, y: 1.88, z: -0.15 }
+        position: { x: 0, y: microbus ? 2.05 : 1.88, z: -0.15 }
       }
     };
     if (scale !== 1) {
@@ -789,7 +832,7 @@
     const s = Math.sin(body.heading ?? 0);
     return {
       x: body.x + position2.x * c + position2.z * s,
-      y: PLAYER_VEHICLE.roadHeightM + (body.y ?? 0) + position2.y,
+      y: playerVehicleDimensions(body).roadHeightM + (body.y ?? 0) + position2.y,
       z: body.z - position2.x * s + position2.z * c
     };
   }
@@ -1447,9 +1490,9 @@
     return SIDEWALK_Y + (COURT_Y - SIDEWALK_Y) * clamp((out - 2.38) / 0.16, 0, 1);
   }
   function wheelHeights(site, body) {
-    const { trackM, wheelbaseM } = PLAYER_VEHICLE;
+    const { trackM, wheelbaseM, axleCenterZM = 0 } = playerVehicleDimensions(body);
     const c = Math.cos(body.heading), s = Math.sin(body.heading);
-    return WHEELS.map(([, side, axle]) => wheelSurface(body.z - side * trackM * s / 2 + axle * wheelbaseM * c / 2 - site.edgeZ) - ASPHALT_Y);
+    return WHEELS.map(([, side, axle]) => wheelSurface(body.z - side * trackM * s / 2 + axle * wheelbaseM * c / 2 + axleCenterZM * c - site.edgeZ) - ASPHALT_Y);
   }
   function pointRectDistance(x, z, rect) {
     const dx = x < rect.minX ? rect.minX - x : x > rect.maxX ? x - rect.maxX : 0;
@@ -1469,14 +1512,14 @@
   }
   function cityWheelHeights(curb, roads, pose5) {
     const grid2 = getCurbGrid(curb);
-    const { trackM, wheelbaseM } = PLAYER_VEHICLE;
+    const { trackM, wheelbaseM, axleCenterZM = 0 } = playerVehicleDimensions(pose5);
     const c = Math.cos(pose5.heading), s = Math.sin(pose5.heading);
     let activeSite = null, wheelInCourtyard = false;
     const heights = [0, 0, 0, 0];
     for (let w = 0; w < 4; w++) {
       const side = WHEELS[w][1], axle = WHEELS[w][2];
-      const wx = pose5.x + side * trackM * c / 2 + axle * wheelbaseM * s / 2;
-      const wz = pose5.z - side * trackM * s / 2 + axle * wheelbaseM * c / 2;
+      const wx = pose5.x + side * trackM * c / 2 + axle * wheelbaseM * s / 2 + axleCenterZM * s;
+      const wz = pose5.z - side * trackM * s / 2 + axle * wheelbaseM * c / 2 + axleCenterZM * c;
       if (roads) {
         scratchPoint.x = wx;
         scratchPoint.z = wz;
@@ -1593,7 +1636,7 @@
     }
     const h0 = heights[0], h1 = heights[1], h2 = heights[2], h3 = heights[3];
     const mean = (h0 + h1 + h2 + h3) / 4;
-    const stroke = PLAYER_VEHICLE.suspensionTravelM;
+    const stroke = playerVehicleDimensions(pose5).suspensionTravelM;
     const lo = Math.max(h0, h1, h2, h3) - stroke, hi = Math.min(h0, h1, h2, h3) + stroke;
     const support = curb.sites && lo > hi ? (lo + hi) / 2 : clamp(mean, lo, hi);
     pose5.y = pose5.supportHeightM = support;
@@ -1754,7 +1797,8 @@
       return { reason: "road-boundary" };
     if (Math.max(effectivePace(actor), effectivePace(next)) > maxPace + 1e-8 || Math.max(Math.abs(actor.gtaYawRate ?? 0), Math.abs(next.gtaYawRate ?? 0)) > maxYaw)
       return { reason: "curb-speed" };
-    if (actor.width !== PLAYER_VEHICLE.widthM || actor.length !== PLAYER_VEHICLE.lengthM || (actor.spec?.wheelbase ?? VEHICLE.wheelbase) !== PLAYER_VEHICLE.wheelbaseM || LIP_Y - SIDEWALK_Y >= CLEARANCE) return { reason: "curb-clearance" };
+    const dimensions = playerVehicleDimensions(actor);
+    if (actor.width !== dimensions.widthM || actor.length !== dimensions.lengthM || (actor.spec?.wheelbase ?? VEHICLE.wheelbase) !== dimensions.wheelbaseM || LIP_Y - SIDEWALK_Y >= (dimensions.curbClearanceM ?? CLEARANCE)) return { reason: "curb-clearance" };
     const egoRadius = ego.radius ?? Math.hypot(actor.width, actor.length) / 2;
     if (!v2) {
       const movers = (plans ?? []).filter((p) => p.a !== actor && distance(actor, p.a) <= egoRadius + p.radius + 1 + brakeWindow * (maxPace + p.travel / STEP));
@@ -1934,7 +1978,6 @@
     ["rearLeft", -1, -1],
     ["rearRight", 1, -1]
   ]);
-  var STATIC_WHEEL_LOAD_N = PLAYER_VEHICLE.massKg * 9.81 / 4;
   var CURB_CELL_M2 = 24;
   var CURB_INV_CELL2 = 1 / CURB_CELL_M2;
   var contactSlideMap = /* @__PURE__ */ new WeakMap();
@@ -2061,14 +2104,19 @@
     };
   }
   function computeWheelWorldPositions(pose5) {
-    const x = Number.isFinite(pose5?.x) ? pose5.x : 0;
-    const z = Number.isFinite(pose5?.z) ? pose5.z : 0;
+    let x = Number.isFinite(pose5?.x) ? pose5.x : 0;
+    let z = Number.isFinite(pose5?.z) ? pose5.z : 0;
     const heading2 = Number.isFinite(pose5?.heading) ? pose5.heading : 0;
     const scale = Number.isFinite(pose5?.giantScale) && pose5.giantScale > 0 ? pose5.giantScale : 1;
-    const halfTrack = PLAYER_VEHICLE.trackM * scale / 2;
-    const halfWheelbase = PLAYER_VEHICLE.wheelbaseM * scale / 2;
+    const dimensions = playerVehicleDimensions(pose5);
+    const halfTrack = dimensions.trackM * scale / 2;
+    const halfWheelbase = dimensions.wheelbaseM * scale / 2;
     const c = Math.cos(heading2);
     const s = Math.sin(heading2);
+    if (dimensions.axleCenterZM) {
+      x += dimensions.axleCenterZM * scale * s;
+      z += dimensions.axleCenterZM * scale * c;
+    }
     const ct = c * halfTrack;
     const st = s * halfTrack;
     const cw = c * halfWheelbase;
@@ -2312,6 +2360,7 @@
     const grazing = absAttack < 0.4 && absSpeed > 0.5;
     const tangentialSpeedMps = cleanZero(Math.abs(absSpeed * Math.cos(attackAngle)));
     const h = after.heading ?? 0;
+    const radiusRatio = PLAYER_VEHICLE.wheelRadiusM / playerVehicleDimensions(after).wheelRadiusM;
     const bodyDirX = Math.sin(h) * dirSign;
     const bodyDirZ = Math.cos(h) * dirSign;
     const bodyAttack = Math.asin(clamp(-(bodyDirX * nx + bodyDirZ * nz), -1, 1));
@@ -2360,14 +2409,14 @@
       heaveImpulse = cleanZero(-0.12 * intensity);
     } else {
       intensity = clamp(
-        absSpeed / 10 * (0.55 + 0.45 * Math.sin(Math.min(Math.PI / 2, absAttack))),
+        absSpeed / 10 * (0.55 + 0.45 * Math.sin(Math.min(Math.PI / 2, absAttack))) * radiusRatio,
         0.12,
         1
       );
       const climbedStep = (after.y ?? 0) > (prevPose.y ?? 0) + 2e-3;
       if (applyDeflection && climbedStep) {
         const absAfterSpeed = Math.abs(afterSpeed);
-        const speedLoss = Math.min(absAfterSpeed * 0.18, 1.15 * dt);
+        const speedLoss = Math.min(absAfterSpeed * 0.18, 1.15 * dt * radiusRatio);
         const nextSpeedMag = Math.max(0, absAfterSpeed - speedLoss);
         const nextSpeed = afterSpeed === 0 ? 0 : Math.sign(afterSpeed) * nextSpeedMag;
         const speedScale = absAfterSpeed > 1e-6 ? nextSpeedMag / absAfterSpeed : 1;
@@ -2581,7 +2630,7 @@
     const outNx = cleanZero(-nx);
     const outNz = cleanZero(-nz);
     const isVehicleObstacle = obstacle.type === "vehicle" || obstacle.kind === "parked-vehicle";
-    const egoMassKg = Number.isFinite(before?.spec?.massKg) && before.spec.massKg > 0 ? before.spec.massKg : PLAYER_VEHICLE.massKg;
+    const egoMassKg = Number.isFinite(before?.spec?.massKg) && before.spec.massKg > 0 ? before.spec.massKg : playerVehicleDimensions(before).massKg;
     const contactMech = resolveObstacleContactMechanics(
       egoMassKg,
       obstacle,
@@ -3023,10 +3072,11 @@
     const rawScrape = contact?.scraping ?? scraping ?? (curbScrub?.active ? curbScrub : null);
     const scrapeActive = Boolean(rawScrape?.active);
     const yaw = angleDelta(after?.heading ?? 0, before?.heading ?? 0);
+    const dimensions = playerVehicleDimensions(before);
     const yawRate = yaw / safeDt;
     const lateralAccel = avgSpeed * yawRate;
     const hasContactRebound = Boolean(contact) || scrapeActive || Boolean(before?.vehicle?.interaction?.scraping?.active) || Boolean(suspension?.active);
-    const steeredLatAccel = hasContactRebound ? avgSpeed * avgSpeed * Math.tan(clamp(after?.steer ?? 0, -0.7, 0.7)) / Math.max(1.5, PLAYER_VEHICLE.wheelbaseM) : lateralAccel;
+    const steeredLatAccel = hasContactRebound ? avgSpeed * avgSpeed * Math.tan(clamp(after?.steer ?? 0, -0.7, 0.7)) / Math.max(1.5, dimensions.wheelbaseM) : lateralAccel;
     const signedAccel = (newSpeed - oldSpeed) / safeDt;
     const decel = !contact ? Math.max(0, (Math.abs(oldSpeed) - Math.abs(newSpeed)) / safeDt) : 0;
     const accelMag = !contact ? Math.max(0, (Math.abs(newSpeed) - Math.abs(oldSpeed)) / safeDt) : 0;
@@ -3043,8 +3093,9 @@
     let maxSlipAngleRad = 0;
     for (let i = 0; i < WHEEL_LAYOUT.length; i++) {
       const [name, sideSign, axleSign] = WHEEL_LAYOUT[i];
-      const loadN = wheelLoadsN && Number.isFinite(wheelLoadsN[name]) ? wheelLoadsN[name] : STATIC_WHEEL_LOAD_N;
-      const unloadRatio = clamp(STATIC_WHEEL_LOAD_N / Math.max(400, loadN), 0.65, 1.55);
+      const restLoadN = staticVehicleWheelLoadN(dimensions, axleSign > 0);
+      const loadN = wheelLoadsN && Number.isFinite(wheelLoadsN[name]) ? wheelLoadsN[name] : restLoadN;
+      const unloadRatio = clamp(restLoadN / Math.max(400, loadN), 0.65, 1.55);
       const dynamicCornerSlip = maxAbsSpeed > 0.8 ? clamp(
         -(steeredLatAccel / (8 * gripMult)) * 0.085 * (axleSign > 0 ? 1.06 : 0.96) * unloadRatio + chaseSlipRad,
         -0.45,
@@ -3177,6 +3228,14 @@
   function clearVehicleMotion(body) {
     deleteContactSlide(body);
   }
+  function vehicleVelocity(body) {
+    const s = Math.sin(body.heading ?? 0), c = Math.cos(body.heading ?? 0);
+    const lateral2 = getContactSlide(body);
+    return {
+      x: s * (body.speed ?? 0) + c * lateral2,
+      z: c * (body.speed ?? 0) - s * lateral2
+    };
+  }
   function markImmutablePath(path) {
     for (let i = 0; i < path.length; i++) Object.freeze(path[i]);
     Object.freeze(path);
@@ -3230,6 +3289,7 @@
       length: body.length,
       width: body.width,
       radius: body.radius,
+      ...body.vehicleModel === KING_LONG_MICROBUS_ID ? { vehicleModel: body.vehicleModel } : {},
       ...body.arcadeSlip ? { arcadeSlip: body.arcadeSlip } : {},
       ...body.realisticDynamics !== void 0 ? { realisticDynamics: body.realisticDynamics } : {},
       ...body.wheelInteractionPhysics !== void 0 ? { wheelInteractionPhysics: body.wheelInteractionPhysics } : {},
@@ -3269,7 +3329,9 @@
     const hasActiveSurface = Boolean(
       rawSurface && (surfGripMult !== 1 || surfGradeSin !== 0 || surfRollingDrag !== 0 || surfHydroCoeff !== 0 || surfaceKind === "water")
     );
-    const maxForwardSpeed = (body.maxSpeed ?? 13.89) * (hasActiveSurface && surfGradeSin < -0.02 ? 1.12 : 1);
+    const microbus = body.vehicleModel === KING_LONG_MICROBUS_ID;
+    const allowSlopeOverspeed = !microbus && rawSpec?.hardSpeedCap !== true;
+    const maxForwardSpeed = (body.maxSpeed ?? 13.89) * (allowSlopeOverspeed && hasActiveSurface && surfGradeSin < -0.02 ? 1.12 : 1);
     const requested = clamp(
       Number.isFinite(command.targetSpeed) ? command.targetSpeed : 0,
       -specReverseSpeed,
@@ -3362,7 +3424,8 @@
     }
     const average = (speed + v0) / 2;
     const tangent = Math.tan(steer);
-    let beta = Math.atan(0.5 * tangent);
+    const rearAxleFraction = microbus ? 0.5 - KING_LONG_MICROBUS.axleCenterZM / specWheelbase : 0.5;
+    let beta = Math.atan(rearAxleFraction * tangent);
     let yawRate = average / specWheelbase * Math.cos(beta) * tangent;
     const rawDemandedLat = Math.abs(average * yawRate);
     let lateralBudget = Infinity;
@@ -3475,7 +3538,7 @@
     const vz = (proposed.z - before.z) / dt - obsVz;
     const closingSpeedMps = Math.max(0, vx * normal2.x + vz * normal2.z);
     if (before.spec?.contactResponse === "inelastic-slide-v1") {
-      const mass2 = Number.isFinite(before.spec.massKg) && before.spec.massKg > 0 ? before.spec.massKg : PLAYER_VEHICLE.massKg;
+      const mass2 = Number.isFinite(before.spec.massKg) && before.spec.massKg > 0 ? before.spec.massKg : playerVehicleDimensions(before).massKg;
       const contactMech = resolveObstacleContactMechanics(
         mass2,
         obstacle,
@@ -3555,7 +3618,7 @@
       otherX: obstacle.x,
       otherZ: obstacle.z,
       closingSpeedMps,
-      energyJ: 0.5 * PLAYER_VEHICLE.massKg * closingSpeedMps ** 2,
+      energyJ: 0.5 * playerVehicleDimensions(before).massKg * closingSpeedMps ** 2,
       proposedTravelM: distance(before, proposed)
     };
   }
@@ -3578,8 +3641,10 @@
       return { steer: 0, targetSpeed: 0, cursor, remaining: 0 };
     const wheelbase = body.spec?.wheelbase ?? VEHICLE.wheelbase;
     const fixed = immutablePathGeometry(path);
-    const x = body.x - Math.sin(body.heading) * wheelbase / 2;
-    const z = body.z - Math.cos(body.heading) * wheelbase / 2;
+    const axleCenterZ = body.vehicleModel === KING_LONG_MICROBUS_ID ? KING_LONG_MICROBUS.axleCenterZM : 0;
+    const rearAxleDistance = wheelbase / 2 - axleCenterZ;
+    const x = body.x - Math.sin(body.heading) * rearAxleDistance;
+    const z = body.z - Math.cos(body.heading) * rearAxleDistance;
     const nearest2 = nearestPathPoint(path, x, z, cursor);
     let target = nearest2, length = 0;
     const lookahead = 2 + Math.abs(body.speed ?? 0) * 0.18;
@@ -5811,6 +5876,7 @@
   }
   function initializeGtaPursuit(state, player, config) {
     const dispatch = config.ruleset === DISPATCH_RULESET;
+    const fairPatrolMaxSpeedMps = config.policeFairness === CITY_FAIR_POLICE ? playerVehicleDimensions(player).chaseMaxSpeedMps : void 0;
     state.wantedLevel = config.wantedLevelStart;
     state.stepEvents = [];
     state.gta = {
@@ -5824,7 +5890,8 @@
       heat: 0,
       nextDispatchTick: 0,
       nextRoadblockTick: 0,
-      nextSquadTick: 0
+      nextSquadTick: 0,
+      ...fairPatrolMaxSpeedMps === void 0 ? {} : { fairPatrolMaxSpeedMps }
     };
     if (dispatch) state.response.dispatch = createDispatchResponse();
   }
@@ -5833,7 +5900,7 @@
   }
   function initializeGtaPatrol(car, unitType, state) {
     const profile = GTA_PATROL_PROFILES[unitType];
-    const { config } = state.gta;
+    const { config, fairPatrolMaxSpeedMps } = state.gta;
     const tactical = isTacticalPursuit(state);
     const faster = config.ruleset === DISPATCH_RULESET && DISPATCH_LIGHT_PACE[unitType];
     car.unitType = unitType;
@@ -5854,9 +5921,10 @@
         steerRate: spec.steerRate,
         wheelbase: spec.wheelbase,
         reverseSpeed: spec.reverseSpeed,
-        realisticDynamics: true
+        realisticDynamics: true,
+        ...fairPatrolMaxSpeedMps === void 0 ? {} : { hardSpeedCap: true }
       };
-      car.maxSpeed = spec.maxSpeed;
+      car.maxSpeed = Math.min(spec.maxSpeed, fairPatrolMaxSpeedMps ?? Infinity);
     } else {
       car.spec = {
         acceleration: faster?.acceleration ?? profile.acceleration,
@@ -5881,7 +5949,7 @@
         steerRate: spec.steerRate,
         reverseSpeed: spec.reverseSpeed
       };
-      car.maxSpeed = spec.maxSpeed;
+      car.maxSpeed = Math.min(spec.maxSpeed, state.gta.fairPatrolMaxSpeedMps ?? Infinity);
     }
   }
   function gtaOffset(from, forward2, right = 0) {
@@ -6350,7 +6418,7 @@
           normalZ: -outNz,
           closingSpeedMps: closingSpeed2,
           tangentialSpeedMps,
-          egoMassKg: PLAYER_VEHICLE.massKg,
+          egoMassKg: playerVehicleDimensions(player).massKg,
           tick: world.tick
         });
         world._activeJoltActors?.add(other);
@@ -7657,7 +7725,6 @@
     "tailLampLeft",
     "tailLampRight"
   ];
-  var staticWheelLoad = PLAYER_VEHICLE.massKg * 9.81 / 4;
   var tau = Math.PI * 2;
   var VEHICLE_PART_IDS = Object.freeze([
     "hood",
@@ -7763,7 +7830,8 @@
       parts: cloneParts(source.parts)
     };
   }
-  function createVehicleState() {
+  function createVehicleState(body) {
+    const dimensions = playerVehicleDimensions(body);
     return {
       wheelAngles: { frontLeft: 0, frontRight: 0 },
       wheelSpinRad: 0,
@@ -7778,7 +7846,7 @@
         wheelOffsetsM: Object.fromEntries(wheelNames.map((name) => [name, 0]))
       },
       wheelLoadsN: Object.fromEntries(
-        wheelNames.map((name) => [name, staticWheelLoad])
+        wheelNames.map((name) => [name, staticVehicleWheelLoadN(dimensions, name.startsWith("front"))])
       ),
       controls: { throttle: 0, brake: 0, gear: "N" },
       contact: null,
@@ -7873,8 +7941,9 @@
     if (part.damage >= 0.36) part.leaking = true;
   }
   function resolveImpactOffsets(impact = {}, after = null) {
-    const halfWidth = PLAYER_VEHICLE.widthM / 2;
-    const halfLength = PLAYER_VEHICLE.lengthM / 2;
+    const dimensions = playerVehicleDimensions(after);
+    const halfWidth = dimensions.widthM / 2;
+    const halfLength = dimensions.lengthM / 2;
     const hasExplicitLat = Number.isFinite(impact.lateralOffsetM);
     const hasExplicitLong = Number.isFinite(impact.longitudinalOffsetM);
     let derivedLat = 0;
@@ -7918,10 +7987,11 @@
       prevShattered[id] = Boolean(parts[id].shattered);
     }
     const side = impact.side;
+    const dimensions = playerVehicleDimensions(after);
     const energyJ = Number.isFinite(impact.energyJ) ? Math.max(0, impact.energyJ) : 0;
     const energyNorm = clamp(energyJ / 45e3, 0, 1.8);
     const { lateralOffsetM, longitudinalOffsetM } = resolveImpactOffsets(impact, after);
-    const latNorm = clamp(lateralOffsetM / (PLAYER_VEHICLE.widthM * 0.45), -1, 1);
+    const latNorm = clamp(lateralOffsetM / (dimensions.widthM * 0.45), -1, 1);
     const leftBias = clamp(
       1 - Math.max(0, latNorm) * 0.72 + Math.max(0, -latNorm) * 0.45,
       0.25,
@@ -7975,7 +8045,7 @@
       addPartDamage(mirror, energyNorm * 1.05);
       updateMirrorFlags(mirror);
       const longNorm = clamp(
-        longitudinalOffsetM / (PLAYER_VEHICLE.lengthM * 0.42),
+        longitudinalOffsetM / (dimensions.lengthM * 0.42),
         -1,
         1
       );
@@ -8029,15 +8099,15 @@
       shatteredGlass
     };
   }
-  function wheelAngles(steer) {
+  function wheelAngles(steer, dimensions) {
     if (Math.abs(steer) < 1e-10) return { frontLeft: 0, frontRight: 0 };
     const sign = Math.sign(steer);
-    const radius = PLAYER_VEHICLE.wheelbaseM / Math.tan(Math.abs(steer));
+    const radius = dimensions.wheelbaseM / Math.tan(Math.abs(steer));
     const inner = Math.atan(
-      PLAYER_VEHICLE.wheelbaseM / (radius - PLAYER_VEHICLE.trackM / 2)
+      dimensions.wheelbaseM / (radius - dimensions.trackM / 2)
     );
     const outer = Math.atan(
-      PLAYER_VEHICLE.wheelbaseM / (radius + PLAYER_VEHICLE.trackM / 2)
+      dimensions.wheelbaseM / (radius + dimensions.trackM / 2)
     );
     return sign > 0 ? { frontLeft: outer, frontRight: inner } : { frontLeft: -inner, frontRight: -outer };
   }
@@ -8086,8 +8156,10 @@
   } = {}) {
     if (!Number.isFinite(dt) || dt <= 0)
       throw new RangeError("Vehicle state needs a positive fixed step");
-    const previous = before.vehicle ?? createVehicleState();
-    const steer = clamp(after.steer ?? 0, -PLAYER_VEHICLE.maxSteerRad, PLAYER_VEHICLE.maxSteerRad);
+    const dimensions = playerVehicleDimensions(before);
+    const microbus = dimensions === KING_LONG_MICROBUS;
+    const previous = before.vehicle ?? createVehicleState(before);
+    const steer = clamp(after.steer ?? 0, -dimensions.maxSteerRad, dimensions.maxSteerRad);
     const yaw = angleDelta(after.heading, before.heading);
     const heading2 = before.heading + yaw / 2;
     const dx = after.x - before.x;
@@ -8119,7 +8191,7 @@
       const camberSin = Number.isFinite(surface.camberSin) ? clamp(surface.camberSin, -0.35, 0.35) : 0;
       slopePitchBias = clamp(-gradeSin * 0.22, -0.04, 0.04);
       slopeRollBias = clamp(-camberSin * 0.14, -0.025, 0.025);
-      gradeLoadTransfer = PLAYER_VEHICLE.massKg * 9.81 * gradeSin * PLAYER_VEHICLE.centerOfMassHeightM / (2 * PLAYER_VEHICLE.wheelbaseM);
+      gradeLoadTransfer = dimensions.massKg * 9.81 * gradeSin * dimensions.centerOfMassHeightM / (2 * dimensions.wheelbaseM);
       if (absSpeed > 0.4) {
         const roughAmp = Number.isFinite(surface.roughnessAmp) ? Math.max(0, surface.roughnessAmp) : 0;
         const roughFreq = Number.isFinite(surface.roughnessFreq) ? Math.max(0, surface.roughnessFreq) : 8;
@@ -8151,12 +8223,14 @@
       0.072,
       dt
     );
+    const rollLimit = dimensions.rollLimitRad ?? 0.082;
+    const rollTargetLimit = microbus ? rollLimit - 4e-3 : 0.078;
     const roll = spring(
       load.rollRad,
       load.rollVelocityRadS + surfaceRollImpulse + scrapeRollImpulse,
-      clamp(lateral2 * 0.0115 + slopeRollBias, -0.078, 0.078),
-      10,
-      0.082,
+      clamp(lateral2 * (dimensions.rollGradient ?? 0.0115) + slopeRollBias, -rollTargetLimit, rollTargetLimit),
+      microbus ? 8.5 : 10,
+      rollLimit,
       dt
     );
     const heave = spring(
@@ -8169,22 +8243,22 @@
     );
     const wheelOffsetsM = {};
     const wheelLoadsN = {};
-    const weight = PLAYER_VEHICLE.massKg * 9.81;
-    const foreTransfer = PLAYER_VEHICLE.massKg * acceleration * PLAYER_VEHICLE.centerOfMassHeightM / (2 * PLAYER_VEHICLE.wheelbaseM) + gradeLoadTransfer;
-    const sideTransfer = PLAYER_VEHICLE.massKg * lateral2 * PLAYER_VEHICLE.centerOfMassHeightM / (2 * PLAYER_VEHICLE.trackM);
+    const weight = dimensions.massKg * 9.81;
+    const foreTransfer = dimensions.massKg * acceleration * dimensions.centerOfMassHeightM / (2 * dimensions.wheelbaseM) + gradeLoadTransfer;
+    const sideTransfer = dimensions.massKg * lateral2 * dimensions.centerOfMassHeightM / (2 * dimensions.trackM);
     for (const name of wheelNames) {
       const front = name.startsWith("front");
       const left = name.endsWith("Left");
-      const x = (left ? -1 : 1) * PLAYER_VEHICLE.trackM / 2;
-      const z = (front ? 1 : -1) * PLAYER_VEHICLE.wheelbaseM / 2;
+      const x = (left ? -1 : 1) * dimensions.trackM / 2;
+      const z = (front ? 1 : -1) * dimensions.wheelbaseM / 2 + (dimensions.axleCenterZM ?? 0);
       wheelOffsetsM[name] = clamp(
         -heave.value + Math.sin(pitch.value) * z - Math.sin(roll.value) * x,
-        -PLAYER_VEHICLE.suspensionTravelM,
-        PLAYER_VEHICLE.suspensionTravelM
+        -dimensions.suspensionTravelM,
+        dimensions.suspensionTravelM
       );
       wheelLoadsN[name] = Math.max(
         weight * 0.02,
-        staticWheelLoad + (front ? -foreTransfer : foreTransfer) + (left ? sideTransfer : -sideTransfer)
+        staticVehicleWheelLoadN(dimensions, front) + (front ? -foreTransfer : foreTransfer) + (left ? sideTransfer : -sideTransfer)
       );
     }
     const loadScale = weight / Object.values(wheelLoadsN).reduce((a, b) => a + b, 0);
@@ -8223,7 +8297,7 @@
       const scrubEnabled = (before.spec?.wheelInteractionPhysics ?? before.wheelInteractionPhysics) === WHEEL_SCRUB_MODE;
       const hasMotion = scrubEnabled ? (contact.relativeTravelM ?? contact.proposedTravelM ?? 0) > 1e-8 : Math.abs(oldSpeed) >= 0.15 && contact.proposedTravelM > 1e-8;
       if (!freshImpacts && closingSpeedMps >= 0.35 && hasMotion && latchedContact?.hitId !== contact.hitId && damageSides.includes(contact.side)) {
-        const energyJ = before.spec?.contactResponse === "inelastic-slide-v1" ? Math.max(0, Number.isFinite(contact.energyJ) ? contact.energyJ : 0) : 0.5 * PLAYER_VEHICLE.massKg * closingSpeedMps ** 2;
+        const energyJ = before.spec?.contactResponse === "inelastic-slide-v1" ? Math.max(0, Number.isFinite(contact.energyJ) ? contact.energyJ : 0) : 0.5 * dimensions.massKg * closingSpeedMps ** 2;
         dent(damage2, { ...contact, closingSpeedMps, energyJ }, tick, after, false);
       }
       latchedContact = {
@@ -8251,11 +8325,11 @@
       wheelLoadsN,
       { surface, contact, curbScrub, scraping, driverCommand, dt }
     );
-    const rawSteeringWheelRad = steer * PLAYER_VEHICLE.steeringRatio + scrapeSteerKickRad * (PLAYER_VEHICLE.steeringRatio * 0.55);
+    const rawSteeringWheelRad = steer * dimensions.steeringRatio + scrapeSteerKickRad * (dimensions.steeringRatio * 0.55);
     const steeringWheelRad = Object.is(rawSteeringWheelRad, -0) ? 0 : rawSteeringWheelRad;
     return {
-      wheelAngles: wheelAngles(steer),
-      wheelSpinRad: (previous.wheelSpinRad + signedTravel / (PLAYER_VEHICLE.wheelRadiusM * (before.giantScale ?? 1))) % tau,
+      wheelAngles: wheelAngles(steer, dimensions),
+      wheelSpinRad: (previous.wheelSpinRad + signedTravel / (dimensions.wheelRadiusM * (before.giantScale ?? 1))) % tau,
       steeringWheelRad,
       suspension,
       wheelLoadsN,
@@ -11893,6 +11967,8 @@
 
   // src/core/district-navigation.js
   var RADIUS_M = 3.8;
+  var MICROBUS_RADIUS_M = 1.12 * KING_LONG_MICROBUS.wheelbaseM / Math.tan(KING_LONG_MICROBUS.maxSteerRad);
+  var turnRadius = (body) => body.vehicleModel === KING_LONG_MICROBUS_ID ? MICROBUS_RADIUS_M : RADIUS_M;
   var SAMPLE_M = 0.35;
   var EXIT_COMPENSATION_M = 0.5;
   var RECOVERY_M = 8;
@@ -12060,7 +12136,7 @@
     }
     const staticEntry = verifyStaticEntry(district.statics);
     const roadsSig = district.roads === district.drivingRoads ? signature : roadsSignature(district.roads);
-    const shapeKey = `${body.length}:${body.width}:${staticEntry.version}:${roadsSig}`;
+    const shapeKey = `${body.length}:${body.width}:${turnRadius(body)}:${staticEntry.version}:${roadsSig}`;
     let graph = cached.shapes.get(shapeKey);
     if (graph) {
       cached.shapes.delete(shapeKey);
@@ -12160,7 +12236,7 @@
       z: from.z + (point2.z - from.z) * i / count
     });
   }
-  function turnBetween(incoming, outgoing) {
+  function turnBetween(incoming, outgoing, radius) {
     const diagTurn = isDiagonalRoad(incoming.road) || isDiagonalRoad(outgoing.road);
     const bend = angleDelta(outgoing.heading, incoming.heading);
     if (Math.abs(bend) > Math.PI * (diagTurn ? 0.78 : 0.75)) return null;
@@ -12180,33 +12256,33 @@
     let intersection, start, end, center;
     if (orthogonalExact) {
       intersection = incoming.road.axis === "z" ? { x: inLane.x, z: outLane.z } : { x: outLane.x, z: inLane.z };
-      start = shift(intersection, incoming.direction, -RADIUS_M);
-      end = shift(intersection, outgoing.direction, RADIUS_M);
-      center = shift(start, outgoing.direction, RADIUS_M);
+      start = shift(intersection, incoming.direction, -radius);
+      end = shift(intersection, outgoing.direction, radius);
+      center = shift(start, outgoing.direction, radius);
     } else {
       const det = -incoming.direction.x * outgoing.direction.z + incoming.direction.z * outgoing.direction.x;
       if (Math.abs(det) < 1e-6) return null;
       const dx = outLane.x - inLane.x, dz = outLane.z - inLane.z;
       const t = (-outgoing.direction.z * dx + outgoing.direction.x * dz) / det;
       intersection = shift(inLane, incoming.direction, t);
-      const tangentDist = RADIUS_M * Math.tan(Math.abs(bend) / 2);
+      const tangentDist = radius * Math.tan(Math.abs(bend) / 2);
       start = shift(intersection, incoming.direction, -tangentDist);
       end = shift(intersection, outgoing.direction, tangentDist);
-      center = shift(start, incoming.normal, -Math.sign(bend) * RADIUS_M);
+      center = shift(start, incoming.normal, -Math.sign(bend) * radius);
     }
     const first = Math.atan2(start.z - center.z, start.x - center.x);
     const last = Math.atan2(end.z - center.z, end.x - center.x);
     const arc = angleDelta(last, first);
     const points = [];
-    const steps = Math.max(1, Math.ceil(Math.abs(arc) * RADIUS_M / SAMPLE_M));
+    const steps = Math.max(1, Math.ceil(Math.abs(arc) * radius / SAMPLE_M));
     const insideScale = orthogonalExact ? 1 : Math.min(1, Math.abs(bend) / (Math.PI / 2));
     const inside = -Math.sign(bend) * EXIT_COMPENSATION_M * insideScale;
     for (let i = 0; i <= steps; i++) {
       const a = first + arc * i / steps;
       const t = i / steps, correction = inside * t * t * (3 - 2 * t);
       points.push({
-        x: center.x + Math.cos(a) * RADIUS_M + outgoing.normal.x * correction,
-        z: center.z + Math.sin(a) * RADIUS_M + outgoing.normal.z * correction,
+        x: center.x + Math.cos(a) * radius + outgoing.normal.x * correction,
+        z: center.z + Math.sin(a) * radius + outgoing.normal.z * correction,
         heading: incoming.heading + bend * i / steps
       });
     }
@@ -12282,10 +12358,11 @@
   function allowedTurn(district, body, incoming, outgoing, roadsSigHint = null, staticEntryHint = null) {
     if (incoming.turnCache.has(outgoing.id)) return incoming.turnCache.get(outgoing.id);
     const rSig = roadsSigHint ?? roadsSignature(district.roads);
-    const geomKey = `${rSig}:${body.type ?? "v"}:${body.length}:${body.width}:${body.radius ?? 0}:${incoming.id}->${outgoing.id}`;
+    const radius = turnRadius(body);
+    const geomKey = `${rSig}:${body.type ?? "v"}:${body.length}:${body.width}:${body.radius ?? 0}:${radius}:${incoming.id}->${outgoing.id}`;
     let baseGeom = roadTurnGeomCache.get(geomKey);
     if (baseGeom === void 0) {
-      const turn = turnBetween(incoming, outgoing);
+      const turn = turnBetween(incoming, outgoing, radius);
       const guide = [];
       let guideYaws = null;
       let roadValid = false;
@@ -12389,7 +12466,8 @@
     if (transitions.length && endAlong < transitions.at(-1).outset + 1)
       return [];
     const wheelbase = body.spec?.wheelbase ?? 2.6;
-    const rearStart = shift(body, { x: Math.sin(body.heading), z: Math.cos(body.heading) }, -wheelbase / 2);
+    const axleCenterZ = body.vehicleModel === KING_LONG_MICROBUS_ID ? KING_LONG_MICROBUS.axleCenterZM : 0;
+    const rearStart = shift(body, { x: Math.sin(body.heading), z: Math.cos(body.heading) }, -wheelbase / 2 + axleCenterZ);
     if (!transitions.length) {
       const singleKey = `${links[0].id}:${rearStart.x}:${rearStart.z}>${goal.x}:${goal.z}`;
       let single = graph.singleSegments.get(singleKey);
@@ -16135,6 +16213,13 @@
     accelMultiplier: 1.72,
     maxBoostSpeedMps: 38.5
   });
+  function nitroBoostLimits(body) {
+    const baseMaxSpeed = body.maxSpeed ?? 9.72;
+    return body.vehicleModel === KING_LONG_MICROBUS_ID ? { maxSpeed: baseMaxSpeed, accelMultiplier: KING_LONG_MICROBUS.nitroAccelerationMultiplier } : {
+      maxSpeed: Math.min(NITRO_SPEC.maxBoostSpeedMps, baseMaxSpeed * NITRO_SPEC.speedMultiplier),
+      accelMultiplier: NITRO_SPEC.accelMultiplier
+    };
+  }
   function validatePursuitAction(action) {
     if (!action || Object.getPrototypeOf(action) !== Object.prototype)
       throw new RangeError("Pursuit action needs normalized steering, throttle and brake, and gear 1 or -1");
@@ -16184,7 +16269,7 @@
     const boostedSpec = {
       ...baseSpec ?? {},
       acceleration: boostedAccel,
-      ...Number.isFinite(rawGrip) ? { tireGripMps2: Math.max(rawGrip, boostedAccel) } : {}
+      ...actor.vehicleModel !== KING_LONG_MICROBUS_ID && Number.isFinite(rawGrip) ? { tireGripMps2: Math.max(rawGrip, boostedAccel) } : {}
     };
     const boosted = {
       ...actor,
@@ -16204,23 +16289,18 @@
     };
     const speed = body.speed ?? 0;
     if ((action?.nitro ?? 0) >= 0.5 && isNitroEngaged(body, action)) {
-      const baseMaxSpeed = body.maxSpeed ?? 9.72;
-      const boostedMaxSpeed = Math.min(
-        NITRO_SPEC.maxBoostSpeedMps,
-        baseMaxSpeed * NITRO_SPEC.speedMultiplier
-      );
+      const boost = nitroBoostLimits(body);
       const baseAccel = body.spec?.acceleration ?? VEHICLE.acceleration;
-      const acceleration2 = baseAccel * NITRO_SPEC.accelMultiplier * action.throttle;
+      const acceleration2 = baseAccel * boost.accelMultiplier * action.throttle;
       const targetSpeed2 = action.gear * clamp(
         speed * action.gear + acceleration2 * dt,
         acceleration2 * dt,
-        boostedMaxSpeed
+        boost.maxSpeed
       );
       return {
         steer,
         targetSpeed: targetSpeed2,
-        maxSpeed: boostedMaxSpeed,
-        accelMultiplier: NITRO_SPEC.accelMultiplier
+        ...boost
       };
     }
     const limit = action.gear > 0 ? body.maxSpeed ?? 9.72 : body.spec?.reverseSpeed ?? VEHICLE.reverseSpeed;
@@ -18820,6 +18900,10 @@
     if (world.pursuit?.phase === "running") throw new Error("Street pursuit is already running");
     if (world.pursuit?.reviewUntilTick > world.tick) throw new Error("Let the impact review finish first");
     const { player } = world;
+    const dimensions = playerVehicleDimensions(player);
+    const microbus = dimensions === KING_LONG_MICROBUS;
+    if (microbus && (gtaConfig?.ruleset !== "dispatch-v1" || gtaConfig.policeFairness !== CITY_FAIR_POLICE))
+      throw new Error("The King Long microbus supports only standard manual City Chase.");
     const citySpec = player.spec;
     if (!bodyOnRoad(player, world.roads)) throw new Error("No safe street pursuit deployment");
     const curb = gtaConfig?.curbSupport ? surveyMetroCurb(world, gtaConfig.curbSupport) : null;
@@ -18885,8 +18969,17 @@
         const initialCap = isFairCityPolice(state) ? count : isTacticalPursuit(state) ? Math.min(1, count) : Math.max(0, count - (!isAggressiveChase(state) && gtaRoadblocksEnabled(state) ? 2 : 0));
         fillGtaPatrols(world, state, initialCap);
         if (count && !state.patrols.size) throw new Error("No safe GTA patrol deployment");
-        initializeGtaDurability(player, isAggressiveChase(state) ? Math.max(gtaConfig.playerMaxHealth, 180) : gtaConfig.playerMaxHealth, PLAYER_VEHICLE.massKg);
-        if (isAggressiveChase(state)) {
+        initializeGtaDurability(player, isAggressiveChase(state) ? Math.max(gtaConfig.playerMaxHealth, 180) : gtaConfig.playerMaxHealth, dimensions.massKg);
+        if (microbus) {
+          player.spec = {
+            ...player.spec,
+            acceleration: dimensions.chaseAccelerationMps2,
+            steerRate: dimensions.chaseSteerRateRadS,
+            reverseSpeed: dimensions.chaseReverseSpeedMps
+          };
+          player.maxSpeed = dimensions.chaseMaxSpeedMps;
+          player.wait = 0;
+        } else if (isAggressiveChase(state)) {
           state.gta.normalSpec = player.spec;
           player.spec = {
             ...player.spec,
@@ -18983,12 +19076,14 @@
     if (citySpec?.contactResponse === "inelastic-slide-v1") {
       streetCitySpecs.set(state, citySpec);
       player.spec = { ...player.spec };
-      if (isTacticalPursuit(state)) {
-        player.spec.tireGripMps2 = Math.max(citySpec.tireGripMps2, player.spec.braking ?? VEHICLE.braking);
-      } else delete player.spec.tireGripMps2;
+      if (!microbus) {
+        if (isTacticalPursuit(state)) {
+          player.spec.tireGripMps2 = Math.max(citySpec.tireGripMps2, player.spec.braking ?? VEHICLE.braking);
+        } else delete player.spec.tireGripMps2;
+        delete player.spec.massKg;
+        if (!isTacticalPursuit(state)) delete player.spec.realisticDynamics;
+      }
       delete player.spec.contactResponse;
-      delete player.spec.massKg;
-      if (!isTacticalPursuit(state)) delete player.spec.realisticDynamics;
       clearVehicleMotion(player);
     }
     logEvent(world, "start", player);
@@ -19165,12 +19260,14 @@
   function heightOnSupport(state, a) {
     if (!state.support.length) return 0;
     const reach = (a.spec?.wheelbase ?? VEHICLE.wheelbase) / 2;
-    const track2 = a.id === "player" ? PLAYER_VEHICLE.trackM : a.width * 0.83;
+    const dimensions = a.id === "player" ? playerVehicleDimensions(a) : null;
+    const track2 = dimensions?.trackM ?? a.width * 0.83;
+    const axleCenterZ = dimensions?.axleCenterZM ?? 0;
     const cos = Math.cos(a.heading), sin = Math.sin(a.heading);
     let support = 0;
     for (const side of [-1, 1]) for (const end of [-1, 1]) {
-      const x = a.x + side * track2 * cos / 2 + end * reach * sin;
-      const z = a.z - side * track2 * sin / 2 + end * reach * cos;
+      const x = a.x + side * track2 * cos / 2 + (end * reach + axleCenterZ) * sin;
+      const z = a.z - side * track2 * sin / 2 + (end * reach + axleCenterZ) * cos;
       let height = 0;
       for (const r of state.support) {
         const inside = Math.min(x - r.minX, r.maxX - x, z - r.minZ, r.maxZ - z);
@@ -19792,7 +19889,7 @@
     const right = normal2.x * Math.cos(a.heading) - normal2.z * Math.sin(a.heading);
     const side = Math.abs(front) >= Math.abs(right) ? front > 0 ? "front" : "rear" : right > 0 ? "right" : "left";
     const closingSpeedMps = Math.max(0, closingSpeed(ego, other, overlapAt, normal2));
-    const mass2 = PLAYER_VEHICLE.massKg;
+    const mass2 = playerVehicleDimensions(ego.a).massKg;
     const otherMass = b.type === "pedestrian" ? other.a.body?.massKg ?? 75 : b.type === "vehicle" ? b.kind === "tuktuk" ? 620 : 1450 : Infinity;
     const effectiveMass = b.type === "static" ? mass2 : mass2 * otherMass / (mass2 + otherMass);
     const energyJ = 0.5 * effectiveMass * closingSpeedMps ** 2;
@@ -20361,11 +20458,12 @@
         if (gta && isFairCityPolice(world.pursuit) && world.pursuit.response.sightedBy.has(actor)) {
           const report = world.pursuit.response.lastSeen;
           if (report) {
+            const egoDimensions = playerVehicleDimensions(world.player);
             const relative = gtaLocal2(actor, report);
-            if (relative.forward > 0 && Math.abs(relative.right) < (actor.width + PLAYER_VEHICLE.widthM) / 2 + 0.5) {
+            if (relative.forward > 0 && Math.abs(relative.right) < (actor.width + egoDimensions.widthM) / 2 + 0.5) {
               const braking = actor.spec?.braking ?? VEHICLE.braking;
               const leadSpeed = Math.max(0, (report.vx ?? 0) * Math.sin(actor.heading) + (report.vz ?? 0) * Math.cos(actor.heading));
-              const gap = relative.forward - (actor.length + PLAYER_VEHICLE.lengthM) / 2;
+              const gap = relative.forward - (actor.length + egoDimensions.lengthM) / 2;
               const room = Math.max(0, gap - 4 - Math.max(0, actor.speed) * 0.4);
               const pace = Math.sqrt(leadSpeed * leadSpeed + 2 * braking * room);
               if (pace < command.targetSpeed) command = {
@@ -20905,7 +21003,7 @@
           const suspension = next.vehicle.suspension;
           const { wheelOffsetsM } = suspension;
           suspension.terrainOffsetsM = terrainOffsets;
-          const limit = PLAYER_VEHICLE.suspensionTravelM;
+          const limit = playerVehicleDimensions(a).suspensionTravelM;
           for (const wheel of Object.keys(terrainOffsets))
             wheelOffsetsM[wheel] = clamp(wheelOffsetsM[wheel] + terrainOffsets[wheel], -limit, limit);
         }
@@ -23376,6 +23474,36 @@
   var distantWorldVehicleCmdCache = /* @__PURE__ */ new WeakMap();
   var vehicleSingleRoadCache = /* @__PURE__ */ new WeakMap();
   var worldRoadGridCache = /* @__PURE__ */ new WeakMap();
+  var isPlayerVehicleModel = (model) => model === JETOUR_T2_ID || model === KING_LONG_MICROBUS_ID;
+  function cityPlayerSpec(config, model) {
+    if (model === KING_LONG_MICROBUS_ID) {
+      const van = KING_LONG_MICROBUS;
+      return {
+        wheelbase: van.wheelbaseM,
+        maxSteer: van.maxSteerRad,
+        steerRate: van.steerRateRadS,
+        acceleration: van.accelerationMps2,
+        braking: van.brakingMps2,
+        reverseSpeed: van.reverseSpeedMps,
+        realisticDynamics: true,
+        tireGripMps2: van.tireGripMps2,
+        contactResponse: "inelastic-slide-v1",
+        massKg: van.massKg,
+        ...config.interactionProfile === WHEEL_SCRUB_MODE ? { wheelInteractionPhysics: WHEEL_SCRUB_MODE } : {}
+      };
+    }
+    return {
+      wheelbase: PLAYER_VEHICLE.wheelbaseM,
+      maxSteer: PLAYER_VEHICLE.maxSteerRad,
+      ...config.vehicleDynamics === "city-realism-v1" ? {
+        realisticDynamics: true,
+        tireGripMps2: 8,
+        contactResponse: "inelastic-slide-v1",
+        massKg: PLAYER_VEHICLE.massKg,
+        ...config.interactionProfile === WHEEL_SCRUB_MODE ? { wheelInteractionPhysics: WHEEL_SCRUB_MODE } : {}
+      } : {}
+    };
+  }
   function localVehicleRoads(roads, body) {
     if (!Array.isArray(roads) || roads.length <= 16) return roads;
     let grid2 = worldRoadGridCache.get(roads);
@@ -23632,17 +23760,7 @@
         steer: 0,
         length: id === "player" ? PLAYER_VEHICLE.lengthM : tuk ? 2.9 : VEHICLE.length,
         width: id === "player" ? PLAYER_VEHICLE.widthM : tuk ? 1.5 : VEHICLE.width,
-        spec: id === "player" ? {
-          wheelbase: PLAYER_VEHICLE.wheelbaseM,
-          maxSteer: PLAYER_VEHICLE.maxSteerRad,
-          ...this.config.vehicleDynamics === "city-realism-v1" ? {
-            realisticDynamics: true,
-            tireGripMps2: 8,
-            contactResponse: "inelastic-slide-v1",
-            massKg: PLAYER_VEHICLE.massKg,
-            ...this.config.interactionProfile === WHEEL_SCRUB_MODE ? { wheelInteractionPhysics: WHEEL_SCRUB_MODE } : {}
-          } : {}
-        } : tuk ? { wheelbase: 1.9 } : null,
+        spec: id === "player" ? cityPlayerSpec(this.config) : tuk ? { wheelbase: 1.9 } : null,
         maxSpeed: this.config.speedLimit / 3.6 * (tuk ? 0.7 : 1),
         path: [],
         cursor: 0,
@@ -23895,7 +24013,67 @@
     nextWalk(person) {
       return this.district ? nextDistrictWalk(this, person) : nextWalk(this, person);
     }
+    selectPlayerVehicle(model, record = true) {
+      if (!isPlayerVehicleModel(model)) return { ok: false, error: "Unknown player vehicle." };
+      if (this.environment !== "metro") return { ok: false, error: "Vehicle selection is only available in City." };
+      const { player } = this;
+      if ((player.vehicleModel ?? JETOUR_T2_ID) === model) return { ok: true, changed: false };
+      if (this.pursuit?.phase === "running" || this.pursuit?.reviewUntilTick)
+        return { ok: false, error: "End Chase and finish any impact review before changing vehicles." };
+      const velocity = vehicleVelocity(player);
+      const manual = manualControlMap.get(this);
+      const busy = this.mode === "auto" ? player.path.length > 0 : manual ? manual.throttle > 0 && manual.brake === 0 : this.input.targetSpeed !== 0;
+      if (busy || Math.hypot(velocity.x, velocity.z, player.gtaSlipMps ?? 0) > 1e-4)
+        return { ok: false, error: "Stop and idle the player vehicle before changing models." };
+      const dimensions = playerVehicleDimensions({ vehicleModel: model });
+      const footprint = { ...copyPose2(player), length: dimensions.lengthM, width: dimensions.widthM };
+      if (this.statics.some((body) => overlaps(footprint, body)) || this.actors.some((body) => body !== player && overlaps(footprint, body)))
+        return { ok: false, error: "There is not enough clear space for the selected vehicle." };
+      const microbus = model === KING_LONG_MICROBUS_ID;
+      const cityLimit = this.config.speedLimit / 3.6;
+      Object.assign(player, {
+        length: dimensions.lengthM,
+        width: dimensions.widthM,
+        height: dimensions.heightM,
+        spec: cityPlayerSpec(this.config, model),
+        maxSpeed: microbus ? Math.min(cityLimit, dimensions.maxSpeedMps) : cityLimit,
+        speed: 0,
+        steer: 0,
+        blockedBy: null,
+        nitroActive: false,
+        nitroIntensity: 0,
+        nitroSuppressedByPedestrian: false,
+        vehicle: { ...createVehicleState({ vehicleModel: model }), nitroCharge: player.nitroCharge }
+      });
+      if (microbus) player.vehicleModel = model;
+      else delete player.vehicleModel;
+      if (player.spec.realisticDynamics) player.chaseSlipRad = 0;
+      else delete player.chaseSlipRad;
+      clearVehicleMotion(player);
+      player.previous = copyPose2(player);
+      vehicleSingleRoadCache.delete(player);
+      distantStaticClearCache.delete(player);
+      manualControlMap.delete(this);
+      driveNitroMap.delete(this);
+      this.input = { targetSpeed: 0, steer: 0 };
+      if (player.path.length || player.parking || this.destination) {
+        player.path = [];
+        player.cursor = 0;
+        player.parking = null;
+        this.destination = null;
+        this.routeRevision++;
+      }
+      this.districtSpeedState = createDistrictSpeedState();
+      if (this.visualPredictor.streamId !== null) this.visualPredictor.reset(this.visualPredictor.streamId);
+      this.visualDecision = this.visualState = null;
+      this.sensorProcessor = new RangeSignalProcessor();
+      this.actorIndex = new SpatialIndex(this.actors);
+      this.updateSensors();
+      if (record) this.events.push({ tick: this.tick, command: { type: "player-vehicle", model } });
+      return { ok: true, changed: true };
+    }
     command(command, record = true) {
+      if (command.type === "player-vehicle") return this.selectPlayerVehicle(command.model, record);
       if (command.type === "street-pursuit-start" || command.type === "street-pursuit-stop") {
         if (this.environment !== "metro") throw new Error("Street pursuit is only available in City");
         if (command.type === "street-pursuit-start") {
@@ -24124,7 +24302,7 @@
       }
       if (this.vehicleTest?.phase === "running" && ["drive", "mode", "destination", "scenario"].includes(command.type))
         return false;
-      if (this.environment === "metro" && (this.pursuit?.phase === "running" || this.pursuit?.reviewUntilTick) && command.type === "destination")
+      if (this.environment === "metro" && (this.pursuit?.phase === "running" || this.pursuit?.reviewUntilTick) && (command.type === "destination" || command.type === "mode" && command.mode === "auto" && this.player.vehicleModel === KING_LONG_MICROBUS_ID))
         return false;
       if (command.type === "policy" && command.weights)
         validatePolicy(command.weights);
@@ -24133,10 +24311,11 @@
       if (command.type === "drive") {
         manualControlMap.delete(this);
         const rawTargetSpeed = Number(command.targetSpeed) || 0;
+        const microbus = this.player.vehicleModel === KING_LONG_MICROBUS_ID;
         const clampedSteer = clamp(
           Number(command.steer) || 0,
-          -VEHICLE.maxSteer,
-          VEHICLE.maxSteer
+          -(microbus ? this.player.spec.maxSteer : VEHICLE.maxSteer),
+          microbus ? this.player.spec.maxSteer : VEHICLE.maxSteer
         );
         if (command.nitro !== void 0) {
           const nitro = clamp(Number(command.nitro) || 0, 0, 1);
@@ -24154,7 +24333,7 @@
         this.input = {
           targetSpeed: clamp(
             rawTargetSpeed,
-            -2.5,
+            microbus ? -this.player.spec.reverseSpeed : -2.5,
             this.player.maxSpeed
           ),
           steer: clampedSteer
@@ -24652,15 +24831,11 @@
               } else if (driveNitro) {
                 manualActionForNitro = driveNitro;
                 if ((driveNitro.nitro ?? 0) >= 0.5 && isNitroEngaged(actor, driveNitro) && this.input.targetSpeed > 0) {
-                  const boostedMaxSpeed = Math.min(
-                    NITRO_SPEC.maxBoostSpeedMps,
-                    actor.maxSpeed * NITRO_SPEC.speedMultiplier
-                  );
+                  const boost = nitroBoostLimits(actor);
                   command = {
-                    targetSpeed: boostedMaxSpeed,
+                    targetSpeed: boost.maxSpeed,
                     steer: this.input.steer,
-                    maxSpeed: boostedMaxSpeed,
-                    accelMultiplier: NITRO_SPEC.accelMultiplier
+                    ...boost
                   };
                 } else {
                   command = { ...this.input };
@@ -24889,7 +25064,7 @@
                 sharedImpulse: contact.sharedImpulse ?? null,
                 contactX: contact.scraping?.worldX ?? next.x,
                 contactZ: contact.scraping?.worldZ ?? next.z,
-                egoMassKg: PLAYER_VEHICLE.massKg,
+                egoMassKg: playerVehicleDimensions(actor).massKg,
                 tick: this.tick
               });
               this._activeJoltActors?.add(liveObstacle);
@@ -25046,7 +25221,7 @@
             const suspension = next.vehicle.suspension;
             const { wheelOffsetsM } = suspension;
             suspension.terrainOffsetsM = terrainOffsets;
-            const limit = PLAYER_VEHICLE.suspensionTravelM;
+            const limit = playerVehicleDimensions(actor).suspensionTravelM;
             for (const wheel of Object.keys(terrainOffsets))
               wheelOffsetsM[wheel] = clamp(wheelOffsetsM[wheel] + terrainOffsets[wheel], -limit, limit);
           }
@@ -25181,6 +25356,7 @@
         player: {
           id: this.player.id,
           type: this.player.type,
+          ...this.player.vehicleModel === KING_LONG_MICROBUS_ID ? { vehicleModel: this.player.vehicleModel } : {},
           x: this.player.x,
           z: this.player.z,
           y: this.player.y ?? 0,
@@ -25236,6 +25412,7 @@
         actors: this.actors.map((a) => ({
           id: a.id,
           type: a.type,
+          ...a.vehicleModel === KING_LONG_MICROBUS_ID ? { vehicleModel: a.vehicleModel } : {},
           x: a.x,
           z: a.z,
           heading: a.heading,
@@ -25283,6 +25460,7 @@
           "visual-mode",
           "vision-run",
           "vehicle-test",
+          "player-vehicle",
           "pedestrian-motion",
           "district-run",
           "pursuit-run",
@@ -25293,7 +25471,7 @@
           "street-pursuit-stop",
           "spawn-crowd-ahead",
           "manual"
-        ].includes(event2.command?.type) || event2.command.type === "vehicle-test" && (data.environment !== "vehicle" || !["run", "reset"].includes(event2.command.operation) || event2.command.heavy !== void 0 && typeof event2.command.heavy !== "boolean"))
+        ].includes(event2.command?.type) || event2.command.type === "vehicle-test" && (data.environment !== "vehicle" || !["run", "reset"].includes(event2.command.operation) || event2.command.heavy !== void 0 && typeof event2.command.heavy !== "boolean") || event2.command.type === "player-vehicle" && (data.environment !== "metro" || !isPlayerVehicleModel(event2.command.model)))
           throw new Error("Invalid replay event");
         lastTick = event2.tick;
       }
@@ -25305,10 +25483,15 @@
         ...data.config.cityPropProfile === void 0 ? { cityPropProfile: "none" } : {}
       } : data.config;
       const world = new _World(options2, data.environment);
+      const applyCommand = ({ command }) => {
+        const result = world.command(command);
+        if (command.type === "player-vehicle" && !result.changed)
+          throw new Error(`Invalid replay vehicle swap: ${result.error ?? "model was already selected"}`);
+      };
       let index = 0;
       while (world.tick < data.totalTicks) {
         while (index < data.events.length && data.events[index].tick === world.tick)
-          world.command(data.events[index++].command);
+          applyCommand(data.events[index++]);
         const beforeTick = world.tick;
         world.step();
         if (world.tick === beforeTick)
@@ -25316,7 +25499,7 @@
         if (world.tick % 120 === 0 || shouldYield?.()) yield world;
       }
       while (index < data.events.length && data.events[index].tick === world.tick)
-        world.command(data.events[index++].command);
+        applyCommand(data.events[index++]);
       return world;
     }
     static fromReplay(data) {

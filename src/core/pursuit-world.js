@@ -33,7 +33,7 @@ import {
 } from "./pako-curb.js";
 import { patrolChainYield, patrolLateralYield, PATROL_LATERAL_YIELD } from "./pako-patrol-yield.js";
 import {
-  canDrivePrivilegedDirect, canPatrolUseCurbPrivilege, isFairCityPolice, isTacticalPursuit,
+  CITY_FAIR_POLICE, canDrivePrivilegedDirect, canPatrolUseCurbPrivilege, isFairCityPolice, isTacticalPursuit,
   resolveTacticalRoadAim, tacticalSquadCap, tacticalTrafficOvertake,
 } from "./pako-tactical-police.js";
 import {
@@ -67,7 +67,7 @@ import {
   clearVehicleMotion,
   copyVehicleMotion,
 } from "./vehicle.js";
-import { PLAYER_VEHICLE } from "./vehicle-spec.js";
+import { KING_LONG_MICROBUS, playerVehicleDimensions } from "./vehicle-spec.js";
 import { advanceVehicleState } from "./vehicle-state.js";
 import { PursuitScanner, PURSUIT_SCAN_TICKS } from "../signal_processing/pursuit-scanner.js";
 
@@ -1197,6 +1197,10 @@ export function beginStreetPursuit(world, level = 1, variant = "legacy", config)
   if (world.pursuit?.phase === "running") throw new Error("Street pursuit is already running");
   if (world.pursuit?.reviewUntilTick > world.tick) throw new Error("Let the impact review finish first");
   const { player } = world;
+  const dimensions = playerVehicleDimensions(player);
+  const microbus = dimensions === KING_LONG_MICROBUS;
+  if (microbus && (gtaConfig?.ruleset !== "dispatch-v1" || gtaConfig.policeFairness !== CITY_FAIR_POLICE))
+    throw new Error("The King Long microbus supports only standard manual City Chase.");
   const citySpec = player.spec;
   if (!bodyOnRoad(player, world.roads)) throw new Error("No safe street pursuit deployment");
   const curb = gtaConfig?.curbSupport ? surveyMetroCurb(world, gtaConfig.curbSupport) : null;
@@ -1251,8 +1255,16 @@ export function beginStreetPursuit(world, level = 1, variant = "legacy", config)
         : Math.max(0, count - (!isAggressiveChase(state) && gtaRoadblocksEnabled(state) ? 2 : 0));
       fillGtaPatrols(world, state, initialCap);
       if (count && !state.patrols.size) throw new Error("No safe GTA patrol deployment");
-      initializeGtaDurability(player, isAggressiveChase(state) ? Math.max(gtaConfig.playerMaxHealth, 180) : gtaConfig.playerMaxHealth, PLAYER_VEHICLE.massKg);
-      if (isAggressiveChase(state)) {
+      initializeGtaDurability(player, isAggressiveChase(state) ? Math.max(gtaConfig.playerMaxHealth, 180) : gtaConfig.playerMaxHealth, dimensions.massKg);
+      if (microbus) {
+        player.spec = { ...player.spec,
+          acceleration: dimensions.chaseAccelerationMps2,
+          steerRate: dimensions.chaseSteerRateRadS,
+          reverseSpeed: dimensions.chaseReverseSpeedMps,
+        };
+        player.maxSpeed = dimensions.chaseMaxSpeedMps;
+        player.wait = 0;
+      } else if (isAggressiveChase(state)) {
         state.gta.normalSpec = player.spec;
         player.spec = {
           ...player.spec,
@@ -1357,16 +1369,18 @@ export function beginStreetPursuit(world, level = 1, variant = "legacy", config)
   if (citySpec?.contactResponse === "inelastic-slide-v1") {
     streetCitySpecs.set(state, citySpec);
     player.spec = { ...player.spec };
-    if (isTacticalPursuit(state)) {
-      // Fresh profiled tactical runs retain bounded tire grip without reducing
-      // the braking authority used by their existing safety predictions.
-      player.spec.tireGripMps2 = Math.max(citySpec.tireGripMps2, player.spec.braking ?? VEHICLE.braking);
-    } else delete player.spec.tireGripMps2;
+    if (!microbus) {
+      if (isTacticalPursuit(state)) {
+        // Fresh profiled tactical runs retain bounded tire grip without reducing
+        // the braking authority used by their existing safety predictions.
+        player.spec.tireGripMps2 = Math.max(citySpec.tireGripMps2, player.spec.braking ?? VEHICLE.braking);
+      } else delete player.spec.tireGripMps2;
+      delete player.spec.massKg;
+      if (!isTacticalPursuit(state)) delete player.spec.realisticDynamics;
+    }
     // Pursuit's shared multi-body swept/impulse solver owns collisions, health,
     // and curb interactions; do not layer City's one-sided contact solver on it.
     delete player.spec.contactResponse;
-    delete player.spec.massKg;
-    if (!isTacticalPursuit(state)) delete player.spec.realisticDynamics;
     clearVehicleMotion(player);
   }
   logEvent(world, "start", player);
@@ -1555,12 +1569,14 @@ function copyPose(a) {
 function heightOnSupport(state, a) {
   if (!state.support.length) return 0;
   const reach = (a.spec?.wheelbase ?? VEHICLE.wheelbase) / 2;
-  const track = a.id === "player" ? PLAYER_VEHICLE.trackM : a.width * 0.83;
+  const dimensions = a.id === "player" ? playerVehicleDimensions(a) : null;
+  const track = dimensions?.trackM ?? a.width * 0.83;
+  const axleCenterZ = dimensions?.axleCenterZM ?? 0;
   const cos = Math.cos(a.heading), sin = Math.sin(a.heading);
   let support = 0;
   for (const side of [-1, 1]) for (const end of [-1, 1]) {
-    const x = a.x + side * track * cos / 2 + end * reach * sin;
-    const z = a.z - side * track * sin / 2 + end * reach * cos;
+    const x = a.x + side * track * cos / 2 + (end * reach + axleCenterZ) * sin;
+    const z = a.z - side * track * sin / 2 + (end * reach + axleCenterZ) * cos;
     let height = 0;
     for (const r of state.support) {
       const inside = Math.min(x - r.minX, r.maxX - x, z - r.minZ, r.maxZ - z);
@@ -2235,7 +2251,7 @@ function contactImpact(ego, other, time, overlapAt, tick) {
     ? front > 0 ? "front" : "rear"
     : right > 0 ? "right" : "left";
   const closingSpeedMps = Math.max(0, closingSpeed(ego, other, overlapAt, normal));
-  const mass = PLAYER_VEHICLE.massKg;
+  const mass = playerVehicleDimensions(ego.a).massKg;
   const otherMass = b.type === "pedestrian" ? other.a.body?.massKg ?? 75 :
     b.type === "vehicle" ? b.kind === "tuktuk" ? 620 : 1450 : Infinity;
   const effectiveMass = b.type === "static" ? mass : mass * otherMass / (mass + otherMass);
@@ -2854,12 +2870,13 @@ function motionPlan(world, actor, action, streetHooks) {
       if (gta && isFairCityPolice(world.pursuit) && world.pursuit.response.sightedBy.has(actor)) {
         const report = world.pursuit.response.lastSeen;
         if (report) {
+          const egoDimensions = playerVehicleDimensions(world.player);
           const relative = gtaLocal(actor, report);
-          if (relative.forward > 0 && Math.abs(relative.right) < (actor.width + PLAYER_VEHICLE.widthM) / 2 + .5) {
+          if (relative.forward > 0 && Math.abs(relative.right) < (actor.width + egoDimensions.widthM) / 2 + .5) {
             const braking = actor.spec?.braking ?? VEHICLE.braking;
             const leadSpeed = Math.max(0, (report.vx ?? 0) * Math.sin(actor.heading) +
               (report.vz ?? 0) * Math.cos(actor.heading));
-            const gap = relative.forward - (actor.length + PLAYER_VEHICLE.lengthM) / 2;
+            const gap = relative.forward - (actor.length + egoDimensions.lengthM) / 2;
             const room = Math.max(0, gap - 4 - Math.max(0, actor.speed) * .4);
             const pace = Math.sqrt(leadSpeed * leadSpeed + 2 * braking * room);
             if (pace < command.targetSpeed) command = { ...command, targetSpeed: pace,
@@ -3398,7 +3415,7 @@ export function stepPursuit(world, action, streetHooks = null) {
         const suspension = next.vehicle.suspension;
         const { wheelOffsetsM } = suspension;
         suspension.terrainOffsetsM = terrainOffsets;
-        const limit = PLAYER_VEHICLE.suspensionTravelM;
+        const limit = playerVehicleDimensions(a).suspensionTravelM;
         for (const wheel of Object.keys(terrainOffsets))
           wheelOffsetsM[wheel] = clamp(wheelOffsetsM[wheel] + terrainOffsets[wheel], -limit, limit);
       }

@@ -1,4 +1,5 @@
 import { STEP, VEHICLE, clamp } from "./config.js";
+import { KING_LONG_MICROBUS, KING_LONG_MICROBUS_ID } from "./vehicle-spec.js";
 
 export const PURSUIT_STOP = Object.freeze({ steer: 0, throttle: 0, brake: 1, gear: 1 });
 
@@ -10,6 +11,16 @@ export const NITRO_SPEC = Object.freeze({
   accelMultiplier: 1.72,
   maxBoostSpeedMps: 38.5,
 });
+
+export function nitroBoostLimits(body) {
+  const baseMaxSpeed = body.maxSpeed ?? 9.72;
+  return body.vehicleModel === KING_LONG_MICROBUS_ID
+    ? { maxSpeed: baseMaxSpeed, accelMultiplier: KING_LONG_MICROBUS.nitroAccelerationMultiplier }
+    : {
+        maxSpeed: Math.min(NITRO_SPEC.maxBoostSpeedMps, baseMaxSpeed * NITRO_SPEC.speedMultiplier),
+        accelMultiplier: NITRO_SPEC.accelMultiplier,
+      };
+}
 
 export function validatePursuitAction(action) {
   if (!action || Object.getPrototypeOf(action) !== Object.prototype)
@@ -85,7 +96,8 @@ export function buildNitroBoostPose(actor, command, copyMotion = null) {
   const boostedSpec = {
     ...(baseSpec ?? {}),
     acceleration: boostedAccel,
-    ...(Number.isFinite(rawGrip) ? { tireGripMps2: Math.max(rawGrip, boostedAccel) } : {}),
+    ...(actor.vehicleModel !== KING_LONG_MICROBUS_ID && Number.isFinite(rawGrip)
+      ? { tireGripMps2: Math.max(rawGrip, boostedAccel) } : {}),
   };
   const boosted = {
     ...actor,
@@ -105,23 +117,18 @@ export function pursuitCommand(body, action, dt = STEP) {
   };
   const speed = body.speed ?? 0;
   if ((action?.nitro ?? 0) >= 0.5 && isNitroEngaged(body, action)) {
-    const baseMaxSpeed = body.maxSpeed ?? 9.72;
-    const boostedMaxSpeed = Math.min(
-      NITRO_SPEC.maxBoostSpeedMps,
-      baseMaxSpeed * NITRO_SPEC.speedMultiplier,
-    );
+    const boost = nitroBoostLimits(body);
     const baseAccel = body.spec?.acceleration ?? VEHICLE.acceleration;
-    const acceleration = baseAccel * NITRO_SPEC.accelMultiplier * action.throttle;
+    const acceleration = baseAccel * boost.accelMultiplier * action.throttle;
     const targetSpeed = action.gear * clamp(
       speed * action.gear + acceleration * dt,
       acceleration * dt,
-      boostedMaxSpeed,
+      boost.maxSpeed,
     );
     return {
       steer,
       targetSpeed,
-      maxSpeed: boostedMaxSpeed,
-      accelMultiplier: NITRO_SPEC.accelMultiplier,
+      ...boost,
     };
   }
   const limit = action.gear > 0 ? body.maxSpeed ?? 9.72 : (body.spec?.reverseSpeed ?? VEHICLE.reverseSpeed);

@@ -1,5 +1,6 @@
 import * as THREE from "three";
-import { PLAYER_VEHICLE } from "../core/vehicle-spec.js";
+import { KING_LONG_MICROBUS_ID, playerVehicleDimensions } from "../core/vehicle-spec.js";
+import { createKingLongModel } from "./king-long-model.js";
 import { createSuvModel } from "./suv-model.js";
 
 const finite = (n, fallback = 0) => Number.isFinite(n) ? n : fallback;
@@ -9,6 +10,8 @@ const point = (p) => ({ x: p.x, y: p.y, z: p.z });
 const UP = new THREE.Vector3(0, 1, 0);
 const _scratchVecA = new THREE.Vector3();
 const _scratchVecB = new THREE.Vector3();
+const _scratchLinkTop = new THREE.Vector3();
+const _scratchLinkBottom = new THREE.Vector3();
 const _scratchInvRoot = new THREE.Matrix4();
 const lerpNum = (a, b, t) => t >= 1 ? b : t <= 0 ? a : a + (b - a) * t;
 
@@ -338,15 +341,18 @@ function hasAnyNonIntactPart(parts) {
 }
 
 export function createPlayerVehicle(_templateScene, initialActor = {}) {
+  const microbus = initialActor.vehicleModel === KING_LONG_MICROBUS_ID;
   const scale = initialActor.giantScale;
   // An active Giant replay still builds one unscaled rig. WorldView applies its size.
   const modelBody = scale
     ? { length: initialActor.length / scale, width: initialActor.width / scale }
     : { ...initialActor };
+  if (microbus) modelBody.vehicleModel = KING_LONG_MICROBUS_ID;
   if (!initialActor?.pearlClearcoat && modelBody.matteLabFinish === undefined) {
     modelBody.matteLabFinish = true;
   }
-  const model = createSuvModel(modelBody);
+  const dimensions = playerVehicleDimensions(modelBody);
+  const model = microbus ? createKingLongModel(modelBody) : createSuvModel(modelBody);
   const { root, chassis, kit } = model;
   const drawDashboard = dashboardPainter(model);
   const poolTexture = createRoadPoolTexture(model.resources.textures);
@@ -368,7 +374,7 @@ export function createPlayerVehicle(_templateScene, initialActor = {}) {
     }));
     const pool = new THREE.Mesh(headlampPoolGeo, mat);
     pool.name = name;
-    pool.position.set(x, 0, 7.4);
+    pool.position.set(x, 0, microbus ? dimensions.lengthM / 2 + 5.3 : 7.4);
     pool.rotation.x = -Math.PI / 2;
     pool.renderOrder = 2;
     pool.castShadow = false;
@@ -376,8 +382,9 @@ export function createPlayerVehicle(_templateScene, initialActor = {}) {
     lightPools.add(pool);
     return { mesh: pool, material: mat };
   };
-  const leftHeadlampPool = makeHeadlampPool("suv-headlamp-pool-left", -0.64);
-  const rightHeadlampPool = makeHeadlampPool("suv-headlamp-pool-right", 0.64);
+  const poolWidth = microbus ? 0.54 : 0.64;
+  const leftHeadlampPool = makeHeadlampPool("suv-headlamp-pool-left", -poolWidth);
+  const rightHeadlampPool = makeHeadlampPool("suv-headlamp-pool-right", poolWidth);
   const tailPoolMat = kit.ownMaterial(new THREE.MeshBasicMaterial({
     map: poolTexture,
     color: 0xff2a20,
@@ -392,17 +399,17 @@ export function createPlayerVehicle(_templateScene, initialActor = {}) {
     tailPoolMat,
   );
   tailPool.name = "suv-tail-pool";
-  tailPool.position.set(0, 0, -3.15);
+  tailPool.position.set(0, 0, microbus ? -dimensions.lengthM / 2 - 1.05 : -3.15);
   tailPool.rotation.x = -Math.PI / 2;
   tailPool.renderOrder = 2;
   tailPool.castShadow = false;
   tailPool.receiveShadow = false;
   lightPools.add(tailPool);
 
-  // Twin Nitro Afterburner Exhaust FX attached to SUV rear tailpipes (±0.52, 0.34, -2.075)
+  // The SUV has twin tailpipes; the microbus has one offset underfloor exit.
   const nitroFlames = new THREE.Group();
   nitroFlames.name = "player-nitro-flames";
-  nitroFlames.position.set(0, 0.34, -2.075);
+  nitroFlames.position.set(...(model.exhaust ?? [0, 0.34, -2.075]));
   nitroFlames.visible = false;
   nitroFlames.renderOrder = 5;
   chassis.add(nitroFlames);
@@ -459,8 +466,8 @@ export function createPlayerVehicle(_templateScene, initialActor = {}) {
     nitroFlames.add(plume);
     return plume;
   };
-  const nitroPlumeLeft = makeExhaustPlume("left", -0.52);
-  const nitroPlumeRight = makeExhaustPlume("right", 0.52);
+  const nitroPlumeLeft = makeExhaustPlume(microbus ? "single" : "left", microbus ? 0 : -0.52);
+  const nitroPlumeRight = microbus ? null : makeExhaustPlume("right", 0.52);
 
   const nitroGroundPoolMat = kit.ownMaterial(new THREE.MeshBasicMaterial({
     name: "nitro-ground-pool-mat",
@@ -478,7 +485,7 @@ export function createPlayerVehicle(_templateScene, initialActor = {}) {
     nitroGroundPoolMat,
   );
   nitroGroundPool.name = "nitro-ground-pool";
-  nitroGroundPool.position.set(0, -0.315, -1.15);
+  nitroGroundPool.position.set(0, microbus ? 0.025 - model.exhaust[1] : -0.315, -1.15);
   nitroGroundPool.rotation.x = -Math.PI / 2;
   nitroGroundPool.castShadow = false;
   nitroGroundPool.receiveShadow = false;
@@ -516,9 +523,9 @@ export function createPlayerVehicle(_templateScene, initialActor = {}) {
     /^suv-(hood|faceted-roof|front-bumper|rear-bumper|front-fascia|rear-hatch|rear-spare|spare-cover|left-front-fender|right-front-fender|left-rear-quarter|right-rear-quarter|left-doors|right-doors|left-pillar|right-pillar|left-mirror|right-mirror)|^wheel-.*-(tire|rim)/;
   const SEALED_EXTERIOR_OCCLUDED_RE =
     /^cockpit-|^suv-(seat|headrest|cabin-floor|cargo-floor|center-console|console-top|gear-selector|selector-grip|-?1-inner-door|-?1-armrest|subframe|differential|transverse-powerunit|powerunit|airbox|intake-join)|^suv-.*-(door-seam|headlamp-well|rear-lamp-well|roof-foot)|^chassis-center-spine|^wheel-.*-(wishbone|damper|spring|upright|halfshaft|brake-|strut-tower|disc|hub)|^range-(housing|ring|support)-|^sensor-range-|^front-camera-(foot|windscreen-support|header-foot)|^rear-camera-(foot|pedestal)|^roof-telemetry-(base|foot)/;
-  const sealedInteriorParts = [];
+  const sealedInteriorParts = model.chaseHidden ?? [];
   const hoodPart = root.getObjectByName("suv-hood");
-  root.traverse((part) => {
+  if (!microbus) root.traverse((part) => {
     if (!part.isMesh) return;
     if (!EXTERIOR_HULL_SHADOW_RE.test(part.name)) {
       part.castShadow = false;
@@ -550,15 +557,25 @@ export function createPlayerVehicle(_templateScene, initialActor = {}) {
   function withSensorOverlayCulling(fn) {
     if (disposed) return fn();
     const savedNitroVis = nitroFlames.visible;
+    const savedBeams = beams.visible, savedPools = lightPools.visible;
     nitroFlames.visible = false;
+    if (microbus) {
+      beams.visible = false;
+      lightPools.visible = false;
+    }
     try {
       return fn();
     } finally {
       nitroFlames.visible = savedNitroVis;
+      if (microbus) {
+        beams.visible = savedBeams;
+        lightPools.visible = savedPools;
+      }
     }
   }
   const diagnostics = {
-    asset: "Original faceted SUV",
+    asset: microbus ? "King Long microbus" : "Original faceted SUV",
+    ...(microbus ? { vehicleModel: KING_LONG_MICROBUS_ID } : {}),
     ready: true, disposed: false, cutaway: false, sensorVisualization: false,
     coordinates: "+X right, +Y up, +Z forward; metres/radians",
     wheels: {}, cockpit: {}, sensors: { ranges: [], auxiliary: [], cameras: [] },
@@ -577,7 +594,20 @@ export function createPlayerVehicle(_templateScene, initialActor = {}) {
     brokenParts: [], detachedParts: [],
     radiatorExposed: false, windshieldCracked: false, rearWindowCracked: false,
   };
-  const fixedPoses = {
+  const fixedPoses = microbus ? {
+    cockpit: {
+      position: { x: -0.386, y: 1.68, z: 0.88 },
+      target: { x: -0.386, y: 1.06, z: 6.05 },
+    },
+    inspection: {
+      position: { x: -4.85, y: 3.2, z: 5.85 },
+      target: { x: 0, y: 0.98, z: 0 },
+    },
+    "running-gear": {
+      position: { x: -3.18, y: 0.92, z: 3.1 },
+      target: { x: -0.39, y: 0.43, z: 0.89 },
+    },
+  } : {
     cockpit: {
       position: { x: -0.36, y: 1.4, z: 0.03 },
       target: { x: -0.36, y: 1.32, z: 4.2 },
@@ -659,6 +689,7 @@ export function createPlayerVehicle(_templateScene, initialActor = {}) {
   }
 
   function syncPristineTailBrakes(brake) {
+    model.updateLights?.(PRISTINE_STATES, brake);
     const cp = model.crashParts;
     if (cp) {
       for (const rec of [cp.tailLamps.left, cp.tailLamps.right]) {
@@ -675,6 +706,11 @@ export function createPlayerVehicle(_templateScene, initialActor = {}) {
   }
 
   function applyCrashParts(crash, actor, brake) {
+    if (microbus) {
+      model.updateLights(crash.states, brake);
+      syncLightPools(crash.states, brake);
+      return;
+    }
     const cp = model.crashParts;
     if (!cp) return;
     const setTailLamp = (rec, state) => {
@@ -951,8 +987,8 @@ export function createPlayerVehicle(_templateScene, initialActor = {}) {
               : Math.exp(-((x / 0.7) ** 2) * 1.6)
             : Math.exp(-(((z - 0.12) / 0.65) ** 2) * 1.6);
           const depth = end
-            ? (z - (side === 0 ? 2.1 : -2.1)) / 0.4
-            : (x - (side === 2 ? -0.925 : 0.925)) / 0.22;
+            ? (z - (side === 0 ? 1 : -1) * (dimensions.lengthM / 2)) / 0.4
+            : (x - (side === 2 ? -1 : 1) * (dimensions.widthM / 2)) / 0.22;
           const vertical = (y - (end ? 0.65 : 0.78)) / 0.38;
           const rawInfluence = m * sides[side] * acrossTerm * Math.exp(-depth * depth * 1.5 - vertical * vertical);
           const influence = rawInfluence < 1e-6 ? 0 : rawInfluence;
@@ -1010,10 +1046,10 @@ export function createPlayerVehicle(_templateScene, initialActor = {}) {
       ...metadata,
       deformedVertices: count,
       maximumDisplacementM: maximum,
-      brokenParts: crash.brokenParts,
-      detachedParts: crash.detachedParts,
-      radiatorExposed: crash.radiatorExposed,
-      windshieldCracked: crash.windshieldCracked,
+      brokenParts: microbus ? crash.brokenParts.filter((k) => model.litDamageParts.has(k)) : crash.brokenParts,
+      detachedParts: microbus ? [] : crash.detachedParts,
+      radiatorExposed: !microbus && crash.radiatorExposed,
+      windshieldCracked: !microbus && crash.windshieldCracked,
     };
   }
 
@@ -1048,9 +1084,11 @@ export function createPlayerVehicle(_templateScene, initialActor = {}) {
     const lenScale = 0.46 + 0.94 * norm;
     const radScale = 0.74 + 0.40 * norm;
     nitroPlumeLeft.scale.set(radScale, radScale, lenScale * flickerL);
-    nitroPlumeRight.scale.set(radScale, radScale, lenScale * flickerR);
     nitroPlumeLeft.rotation.z = (phase * 1.9) % (Math.PI * 2);
-    nitroPlumeRight.rotation.z = -(phase * 2.1 + 0.6) % (Math.PI * 2);
+    if (nitroPlumeRight) {
+      nitroPlumeRight.scale.set(radScale, radScale, lenScale * flickerR);
+      nitroPlumeRight.rotation.z = -(phase * 2.1 + 0.6) % (Math.PI * 2);
+    }
     const gain = clamp(nitroIntensity, 0, 1);
     nitroCoreMat.opacity = 0.56 + 0.40 * gain;
     nitroMidMat.opacity = 0.36 + 0.40 * gain;
@@ -1082,9 +1120,10 @@ export function createPlayerVehicle(_templateScene, initialActor = {}) {
     const pitchRad = prevSusp ? lerpNum(finite(prevSusp.pitchRad, currPitch), currPitch, t) : currPitch;
     const rollRad = prevSusp ? lerpNum(finite(prevSusp.rollRad, currRoll), currRoll, t) : currRoll;
     chassis.position.y = clamp(heaveM, -0.055, 0.055);
+    const rollLimit = dimensions.rollLimitRad ?? 0.115;
     chassis.rotation.set(
       clamp(pitchRad, -0.115, 0.115), 0,
-      clamp(rollRad, -0.115, 0.115),
+      clamp(rollRad, -rollLimit, rollLimit),
     );
     chassis.updateMatrix();
     const currSpin = finite(vehicle.wheelSpinRad);
@@ -1109,14 +1148,15 @@ export function createPlayerVehicle(_templateScene, initialActor = {}) {
       wheel.pivot.rotation.set(0, interpSteer + wheelSteerJudder, wheelCamberJudder);
       wheel.spin.rotation.set(interpSpin, 0, 0);
       diagnostics.wheels[wheel.key] = {
-        center: point(wheel.pivot.position), radiusM: PLAYER_VEHICLE.wheelRadiusM,
+        center: point(wheel.pivot.position), radiusM: dimensions.wheelRadiusM,
         steerRad: wheel.pivot.rotation.y, spinRad: wheel.spin.rotation.x,
         caliperSpinRad: wheel.caliper.rotation.x, spinAxis: { x: 1, y: 0, z: 0 },
       };
     }
     for (const link of model.links) {
-      const top = link.upper.clone().applyMatrix4(chassis.matrix);
-      const bottom = link.lower.clone();
+      const top = _scratchLinkTop.copy(link.upper).applyMatrix4(chassis.matrix);
+      const bottom = _scratchLinkBottom.copy(link.lower);
+      if (link.wheel) bottom.y += link.wheel.position.y - dimensions.wheelRadiusM;
       if (link.steering) {
         bottom.sub(link.steering.position)
           .applyAxisAngle(UP, link.steering.rotation.y).add(link.steering.position);
@@ -1171,7 +1211,7 @@ export function createPlayerVehicle(_templateScene, initialActor = {}) {
         direction: point(record.lens.getWorldDirection(_scratchVecB)),
         rayOrigin: ray?.origin ? { ...ray.origin } : null,
         rayEnd: ray?.end ? { ...ray.end } : null,
-        rangeM: finite(ray?.rangeM, PLAYER_VEHICLE.maxRangeM),
+        rangeM: finite(ray?.rangeM, dimensions.maxRangeM),
         hitId: ray?.hitId ?? null,
       };
     });

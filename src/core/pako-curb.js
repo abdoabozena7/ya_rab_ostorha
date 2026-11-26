@@ -2,7 +2,7 @@ import { STEP, VEHICLE, clamp } from "./config.js";
 import {
   angleDelta, bodyOnRoad, corners, distance, interpolate, overlaps, pointOnRoad, roadRect,
 } from "./geometry.js";
-import { PLAYER_VEHICLE } from "./vehicle-spec.js";
+import { playerVehicleDimensions } from "./vehicle-spec.js";
 
 export const METRO_CURB_SUPPORT = "metro-survey-v1";
 export const METRO_CITY_CURBS = "metro-city-curbs-v2";
@@ -751,10 +751,10 @@ function streetWheelSurface(out) {
 }
 
 function wheelHeights(site, body) {
-  const { trackM, wheelbaseM } = PLAYER_VEHICLE;
+  const { trackM, wheelbaseM, axleCenterZM = 0 } = playerVehicleDimensions(body);
   const c = Math.cos(body.heading), s = Math.sin(body.heading);
   return WHEELS.map(([, side, axle]) =>
-    wheelSurface(body.z - side * trackM * s / 2 + axle * wheelbaseM * c / 2 - site.edgeZ) - ASPHALT_Y);
+    wheelSurface(body.z - side * trackM * s / 2 + axle * wheelbaseM * c / 2 + axleCenterZM * c - site.edgeZ) - ASPHALT_Y);
 }
 
 function pointRectDistance(x, z, rect) {
@@ -777,14 +777,14 @@ function pointSiteDistance(x, z, site) {
 
 function cityWheelHeights(curb, roads, pose) {
   const grid = getCurbGrid(curb);
-  const { trackM, wheelbaseM } = PLAYER_VEHICLE;
+  const { trackM, wheelbaseM, axleCenterZM = 0 } = playerVehicleDimensions(pose);
   const c = Math.cos(pose.heading), s = Math.sin(pose.heading);
   let activeSite = null, wheelInCourtyard = false;
   const heights = [0, 0, 0, 0];
   for (let w = 0; w < 4; w++) {
     const side = WHEELS[w][1], axle = WHEELS[w][2];
-    const wx = pose.x + side * trackM * c / 2 + axle * wheelbaseM * s / 2;
-    const wz = pose.z - side * trackM * s / 2 + axle * wheelbaseM * c / 2;
+    const wx = pose.x + side * trackM * c / 2 + axle * wheelbaseM * s / 2 + axleCenterZM * s;
+    const wz = pose.z - side * trackM * s / 2 + axle * wheelbaseM * c / 2 + axleCenterZM * c;
     if (roads) {
       scratchPoint.x = wx;
       scratchPoint.z = wz;
@@ -904,8 +904,8 @@ export function acceptCurbPose(curb, roads, pose) {
   }
   const h0 = heights[0], h1 = heights[1], h2 = heights[2], h3 = heights[3];
   const mean = (h0 + h1 + h2 + h3) / 4;
-  // Keep even a single wheel on the lip within the original strut stroke.
-  const stroke = PLAYER_VEHICLE.suspensionTravelM;
+  // Keep even a single wheel on the lip within its strut stroke.
+  const stroke = playerVehicleDimensions(pose).suspensionTravelM;
   const lo = Math.max(h0, h1, h2, h3) - stroke, hi = Math.min(h0, h1, h2, h3) + stroke;
   const support = curb.sites && lo > hi ? (lo + hi) / 2 : clamp(mean, lo, hi);
   pose.y = pose.supportHeightM = support;
@@ -1093,9 +1093,10 @@ export function curbClearance(world, curb, ego, plans, project) {
   if (Math.max(effectivePace(actor), effectivePace(next)) > maxPace + 1e-8 ||
       Math.max(Math.abs(actor.gtaYawRate ?? 0), Math.abs(next.gtaYawRate ?? 0)) > maxYaw)
     return { reason: "curb-speed" };
-  if (actor.width !== PLAYER_VEHICLE.widthM || actor.length !== PLAYER_VEHICLE.lengthM ||
-      (actor.spec?.wheelbase ?? VEHICLE.wheelbase) !== PLAYER_VEHICLE.wheelbaseM ||
-      LIP_Y - SIDEWALK_Y >= CLEARANCE) return { reason: "curb-clearance" };
+  const dimensions = playerVehicleDimensions(actor);
+  if (actor.width !== dimensions.widthM || actor.length !== dimensions.lengthM ||
+      (actor.spec?.wheelbase ?? VEHICLE.wheelbase) !== dimensions.wheelbaseM ||
+      LIP_Y - SIDEWALK_Y >= (dimensions.curbClearanceM ?? CLEARANCE)) return { reason: "curb-clearance" };
 
   const egoRadius = ego.radius ?? Math.hypot(actor.width, actor.length) / 2;
   if (!v2) {

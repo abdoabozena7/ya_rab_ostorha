@@ -1,6 +1,6 @@
 import { STEP, VEHICLE, clamp } from "./config.js";
 import { angleDelta, corners, distance, interpolate, overlaps } from "./geometry.js";
-import { PLAYER_VEHICLE } from "./vehicle-spec.js";
+import { KING_LONG_MICROBUS, KING_LONG_MICROBUS_ID, playerVehicleDimensions } from "./vehicle-spec.js";
 import {
   WHEEL_SCRUB_MODE,
   applyScrapingContactResponse,
@@ -81,6 +81,7 @@ export function vehicleProbe(body, speed) {
   return copyVehicleMotion(body, { x: body.x, z: body.z, heading: body.heading, speed, steer: body.steer,
     maxSpeed: body.maxSpeed, spec, type: body.type,
     length: body.length, width: body.width, radius: body.radius,
+    ...(body.vehicleModel === KING_LONG_MICROBUS_ID ? { vehicleModel: body.vehicleModel } : {}),
     ...(body.arcadeSlip ? { arcadeSlip: body.arcadeSlip } : {}),
     ...(body.realisticDynamics !== undefined ? { realisticDynamics: body.realisticDynamics } : {}),
     ...(body.wheelInteractionPhysics !== undefined ? { wheelInteractionPhysics: body.wheelInteractionPhysics } : {}),
@@ -142,7 +143,9 @@ export function integrateVehicle(body, command, dt, out = null) {
         surfaceKind === "water"),
   );
 
-  const maxForwardSpeed = (body.maxSpeed ?? 13.89) * (hasActiveSurface && surfGradeSin < -0.02 ? 1.12 : 1.0);
+  const microbus = body.vehicleModel === KING_LONG_MICROBUS_ID;
+  const allowSlopeOverspeed = !microbus && rawSpec?.hardSpeedCap !== true;
+  const maxForwardSpeed = (body.maxSpeed ?? 13.89) * (allowSlopeOverspeed && hasActiveSurface && surfGradeSin < -0.02 ? 1.12 : 1.0);
   const requested = clamp(
     Number.isFinite(command.targetSpeed) ? command.targetSpeed : 0,
     -specReverseSpeed,
@@ -257,7 +260,8 @@ export function integrateVehicle(body, command, dt, out = null) {
 
   const average = (speed + v0) / 2;
   const tangent = Math.tan(steer);
-  let beta = Math.atan(0.5 * tangent);
+  const rearAxleFraction = microbus ? 0.5 - KING_LONG_MICROBUS.axleCenterZM / specWheelbase : 0.5;
+  let beta = Math.atan(rearAxleFraction * tangent);
   let yawRate = (average / specWheelbase) * Math.cos(beta) * tangent;
   const rawDemandedLat = Math.abs(average * yawRate);
   let lateralBudget = Infinity;
@@ -396,7 +400,7 @@ export function resolveVehicleContact(before, proposed, obstacle, dt = STEP) {
   const closingSpeedMps = Math.max(0, vx * normal.x + vz * normal.z);
   if (before.spec?.contactResponse === "inelastic-slide-v1") {
     const mass = Number.isFinite(before.spec.massKg) && before.spec.massKg > 0
-      ? before.spec.massKg : PLAYER_VEHICLE.massKg;
+      ? before.spec.massKg : playerVehicleDimensions(before).massKg;
     const contactMech = resolveObstacleContactMechanics(
       mass,
       obstacle,
@@ -463,7 +467,7 @@ export function resolveVehicleContact(before, proposed, obstacle, dt = STEP) {
     otherX: obstacle.x,
     otherZ: obstacle.z,
     closingSpeedMps,
-    energyJ: 0.5 * PLAYER_VEHICLE.massKg * closingSpeedMps ** 2,
+    energyJ: 0.5 * playerVehicleDimensions(before).massKg * closingSpeedMps ** 2,
     proposedTravelM: distance(before, proposed),
   };
 }
@@ -492,8 +496,10 @@ export function followPath(body, path, cursor = 0, steeringOnly = false, maxRema
   const fixed = immutablePathGeometry(path);
   // Pure pursuit is derived at the rear axle, while the simulated pose is the
   // body centre. Using the centre here steers early and cuts the inner curb.
-  const x = body.x - (Math.sin(body.heading) * wheelbase) / 2;
-  const z = body.z - (Math.cos(body.heading) * wheelbase) / 2;
+  const axleCenterZ = body.vehicleModel === KING_LONG_MICROBUS_ID ? KING_LONG_MICROBUS.axleCenterZM : 0;
+  const rearAxleDistance = wheelbase / 2 - axleCenterZ;
+  const x = body.x - Math.sin(body.heading) * rearAxleDistance;
+  const z = body.z - Math.cos(body.heading) * rearAxleDistance;
   const nearest = nearestPathPoint(path, x, z, cursor);
   let target = nearest,
     length = 0;

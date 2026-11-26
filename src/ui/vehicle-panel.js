@@ -1,3 +1,5 @@
+import { JETOUR_T2_ID, KING_LONG_MICROBUS_ID } from "../core/vehicle-spec.js";
+
 const VIEWS = [
   ["chase", "Chase"],
   ["cockpit", "Cockpit"],
@@ -541,6 +543,21 @@ export function mountVehiclePanel({ toolbar, onAction }) {
     "car-panel-note",
     "Faceted SUV · left-hand cockpit",
   );
+  const vehicleLabel = node("label", "car-camera-select");
+  vehicleLabel.append(node("span", "", "Player vehicle"));
+  const vehicleSelect = node("select");
+  vehicleSelect.id = "playerVehicleSelect";
+  vehicleSelect.setAttribute("aria-describedby", "playerVehicleHint");
+  for (const [value, label] of [[JETOUR_T2_ID, "Jetour T2 · SUV"], [KING_LONG_MICROBUS_ID, "King Long · Microbus"]]) {
+    const option = node("option", "", label);
+    option.value = value;
+    vehicleSelect.append(option);
+  }
+  vehicleLabel.append(vehicleSelect);
+  const vehicleHint = node("p", "car-panel-note");
+  vehicleHint.id = "playerVehicleHint";
+  listen(vehicleSelect, "change", () =>
+    dispatch("player-vehicle", vehicleSelect.value, vehicleSelect));
   const viewGroup = node("fieldset", "car-views");
   viewGroup.append(node("legend", "", "View"));
   const viewButtons = VIEWS.map(([value, label]) => {
@@ -681,6 +698,9 @@ export function mountVehiclePanel({ toolbar, onAction }) {
   panel.append(
     head,
     description,
+    vehicleLabel,
+    vehicleHint,
+    error,
     viewGroup,
     driveInfo,
     options,
@@ -692,7 +712,6 @@ export function mountVehiclePanel({ toolbar, onAction }) {
     telemetry,
     damageSection,
     impactSection,
-    error,
     help,
   );
   document.body.append(panel);
@@ -739,6 +758,7 @@ export function mountVehiclePanel({ toolbar, onAction }) {
     if (disposed) return;
     const wasOpen = !panel.hidden;
     panel.hidden = true;
+    error.hidden = true;
     toggleButton.setAttribute("aria-expanded", "false");
     if (restoreFocus && wasOpen) toggleButton.focus();
   }
@@ -778,6 +798,15 @@ export function mountVehiclePanel({ toolbar, onAction }) {
     const running = phase === "running";
     const vehicle = actor?.vehicle;
     const loadingReason = "The detailed car is still loading.";
+    const inMetro = world?.environment === "metro";
+    const onMicrobus = actor?.vehicleModel === KING_LONG_MICROBUS_ID;
+    const pursuitActive = world?.pursuit?.phase === "running" || Boolean(world?.pursuit?.reviewUntilTick);
+    vehicleLabel.hidden = vehicleHint.hidden = !inMetro;
+    vehicleSelect.value = onMicrobus ? KING_LONG_MICROBUS_ID : JETOUR_T2_ID;
+    disabled(vehicleSelect, !loaded || !inMetro || pursuitActive,
+      pursuitActive ? "End Chase before changing vehicle." : loadingReason);
+    text(vehicleHint, pursuitActive ? "End Chase before changing vehicles."
+      : stopped ? "Switch vehicles in place on a clear street." : "Stop in a clear spot before switching.");
     for (const [view, control] of viewButtons) {
       control.setAttribute("aria-pressed", String(mode === view));
       disabled(control, view !== "chase" && !loaded, loadingReason);
@@ -905,8 +934,8 @@ export function mountVehiclePanel({ toolbar, onAction }) {
     text(
       description,
       loaded
-        ? "Faceted SUV · left-hand cockpit"
-        : "Preparing the authored SUV…",
+        ? onMicrobus ? "King Long microbus · left-hand cockpit" : "Faceted SUV · left-hand cockpit"
+        : "Preparing the player vehicle…",
     );
   }
 

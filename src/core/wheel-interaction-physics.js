@@ -1,6 +1,6 @@
 import { STEP, clamp } from "./config.js";
 import { angleDelta, corners, overlaps, pointOnRoad } from "./geometry.js";
-import { PLAYER_VEHICLE } from "./vehicle-spec.js";
+import { PLAYER_VEHICLE, playerVehicleDimensions, staticVehicleWheelLoadN } from "./vehicle-spec.js";
 
 export const WHEEL_SCRUB_MODE = "wheel-scrub-v1";
 
@@ -18,7 +18,6 @@ const WHEEL_LAYOUT = Object.freeze([
   ["rearRight", 1, -1],
 ]);
 
-const STATIC_WHEEL_LOAD_N = (PLAYER_VEHICLE.massKg * 9.81) / 4;
 const CURB_CELL_M = 24;
 const CURB_INV_CELL = 1 / CURB_CELL_M;
 
@@ -164,14 +163,19 @@ export function resolveObstacleContactMechanics(
 }
 
 export function computeWheelWorldPositions(pose) {
-  const x = Number.isFinite(pose?.x) ? pose.x : 0;
-  const z = Number.isFinite(pose?.z) ? pose.z : 0;
+  let x = Number.isFinite(pose?.x) ? pose.x : 0;
+  let z = Number.isFinite(pose?.z) ? pose.z : 0;
   const heading = Number.isFinite(pose?.heading) ? pose.heading : 0;
   const scale = Number.isFinite(pose?.giantScale) && pose.giantScale > 0 ? pose.giantScale : 1;
-  const halfTrack = (PLAYER_VEHICLE.trackM * scale) / 2;
-  const halfWheelbase = (PLAYER_VEHICLE.wheelbaseM * scale) / 2;
+  const dimensions = playerVehicleDimensions(pose);
+  const halfTrack = (dimensions.trackM * scale) / 2;
+  const halfWheelbase = (dimensions.wheelbaseM * scale) / 2;
   const c = Math.cos(heading);
   const s = Math.sin(heading);
+  if (dimensions.axleCenterZM) {
+    x += dimensions.axleCenterZM * scale * s;
+    z += dimensions.axleCenterZM * scale * c;
+  }
   const ct = c * halfTrack;
   const st = s * halfTrack;
   const cw = c * halfWheelbase;
@@ -458,6 +462,8 @@ export function computeCurbWheelScrub(
   const tangentialSpeedMps = cleanZero(Math.abs(absSpeed * Math.cos(attackAngle)));
 
   const h = after.heading ?? 0;
+  // The same curb step takes up more of a smaller tire radius.
+  const radiusRatio = PLAYER_VEHICLE.wheelRadiusM / playerVehicleDimensions(after).wheelRadiusM;
   const bodyDirX = Math.sin(h) * dirSign;
   const bodyDirZ = Math.cos(h) * dirSign;
   const bodyAttack = Math.asin(clamp(-(bodyDirX * nx + bodyDirZ * nz), -1, 1));
@@ -511,14 +517,14 @@ export function computeCurbWheelScrub(
     heaveImpulse = cleanZero(-0.12 * intensity);
   } else {
     intensity = clamp(
-      (absSpeed / 10) * (0.55 + 0.45 * Math.sin(Math.min(Math.PI / 2, absAttack))),
+      (absSpeed / 10) * (0.55 + 0.45 * Math.sin(Math.min(Math.PI / 2, absAttack))) * radiusRatio,
       0.12,
       1.0,
     );
     const climbedStep = (after.y ?? 0) > (prevPose.y ?? 0) + 0.002;
     if (applyDeflection && climbedStep) {
       const absAfterSpeed = Math.abs(afterSpeed);
-      const speedLoss = Math.min(absAfterSpeed * 0.18, 1.15 * dt);
+      const speedLoss = Math.min(absAfterSpeed * 0.18, 1.15 * dt * radiusRatio);
       const nextSpeedMag = Math.max(0, absAfterSpeed - speedLoss);
       const nextSpeed = afterSpeed === 0 ? 0 : Math.sign(afterSpeed) * nextSpeedMag;
       const speedScale = absAfterSpeed > 1e-6 ? nextSpeedMag / absAfterSpeed : 1;
@@ -783,7 +789,7 @@ export function applyScrapingContactResponse(before, baseContact, obstacle, dt =
   const egoMassKg =
     Number.isFinite(before?.spec?.massKg) && before.spec.massKg > 0
       ? before.spec.massKg
-      : PLAYER_VEHICLE.massKg;
+      : playerVehicleDimensions(before).massKg;
   const contactMech = resolveObstacleContactMechanics(
     egoMassKg,
     obstacle,
@@ -1393,6 +1399,7 @@ export function computeWheelInteractionState(
   const scrapeActive = Boolean(rawScrape?.active);
 
   const yaw = angleDelta(after?.heading ?? 0, before?.heading ?? 0);
+  const dimensions = playerVehicleDimensions(before);
   const yawRate = yaw / safeDt;
   const lateralAccel = avgSpeed * yawRate;
   // Exclude collision/scrape heading pivot and post-impact suspension yaw rebound from steered tire cornering slip
@@ -1402,7 +1409,7 @@ export function computeWheelInteractionState(
     Boolean(before?.vehicle?.interaction?.scraping?.active) ||
     Boolean(suspension?.active);
   const steeredLatAccel = hasContactRebound
-    ? (avgSpeed * avgSpeed * Math.tan(clamp(after?.steer ?? 0, -0.7, 0.7))) / Math.max(1.5, PLAYER_VEHICLE.wheelbaseM)
+    ? (avgSpeed * avgSpeed * Math.tan(clamp(after?.steer ?? 0, -0.7, 0.7))) / Math.max(1.5, dimensions.wheelbaseM)
     : lateralAccel;
   const signedAccel = (newSpeed - oldSpeed) / safeDt;
   const decel = !contact
@@ -1434,11 +1441,12 @@ export function computeWheelInteractionState(
 
   for (let i = 0; i < WHEEL_LAYOUT.length; i++) {
     const [name, sideSign, axleSign] = WHEEL_LAYOUT[i];
+    const restLoadN = staticVehicleWheelLoadN(dimensions, axleSign > 0);
     const loadN =
       wheelLoadsN && Number.isFinite(wheelLoadsN[name])
         ? wheelLoadsN[name]
-        : STATIC_WHEEL_LOAD_N;
-    const unloadRatio = clamp(STATIC_WHEEL_LOAD_N / Math.max(400, loadN), 0.65, 1.55);
+        : restLoadN;
+    const unloadRatio = clamp(restLoadN / Math.max(400, loadN), 0.65, 1.55);
 
     const dynamicCornerSlip =
       maxAbsSpeed > 0.8

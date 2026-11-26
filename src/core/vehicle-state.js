@@ -1,6 +1,6 @@
 import { clamp } from "./config.js";
 import { angleDelta } from "./geometry.js";
-import { PLAYER_VEHICLE } from "./vehicle-spec.js";
+import { KING_LONG_MICROBUS, playerVehicleDimensions, staticVehicleWheelLoadN } from "./vehicle-spec.js";
 import {
   WHEEL_SCRUB_MODE,
   cloneWheelInteractionState,
@@ -17,7 +17,6 @@ const glassPartIds = [
   "tailLampLeft",
   "tailLampRight",
 ];
-const staticWheelLoad = (PLAYER_VEHICLE.massKg * 9.81) / 4;
 const tau = Math.PI * 2;
 
 export const VEHICLE_PART_IDS = Object.freeze([
@@ -134,7 +133,8 @@ function cloneDamage(previousDamage) {
   };
 }
 
-export function createVehicleState() {
+export function createVehicleState(body) {
+  const dimensions = playerVehicleDimensions(body);
   return {
     wheelAngles: { frontLeft: 0, frontRight: 0 },
     wheelSpinRad: 0,
@@ -149,7 +149,7 @@ export function createVehicleState() {
       wheelOffsetsM: Object.fromEntries(wheelNames.map((name) => [name, 0])),
     },
     wheelLoadsN: Object.fromEntries(
-      wheelNames.map((name) => [name, staticWheelLoad]),
+      wheelNames.map((name) => [name, staticVehicleWheelLoadN(dimensions, name.startsWith("front"))]),
     ),
     controls: { throttle: 0, brake: 0, gear: "N" },
     contact: null,
@@ -313,8 +313,9 @@ function updateRadiatorFlags(part) {
 }
 
 function resolveImpactOffsets(impact = {}, after = null) {
-  const halfWidth = PLAYER_VEHICLE.widthM / 2;
-  const halfLength = PLAYER_VEHICLE.lengthM / 2;
+  const dimensions = playerVehicleDimensions(after);
+  const halfWidth = dimensions.widthM / 2;
+  const halfLength = dimensions.lengthM / 2;
   const hasExplicitLat = Number.isFinite(impact.lateralOffsetM);
   const hasExplicitLong = Number.isFinite(impact.longitudinalOffsetM);
   let derivedLat = 0;
@@ -378,10 +379,11 @@ export function applyLocalizedPartDamage(damage, impact = {}, after = null) {
   }
 
   const side = impact.side;
+  const dimensions = playerVehicleDimensions(after);
   const energyJ = Number.isFinite(impact.energyJ) ? Math.max(0, impact.energyJ) : 0;
   const energyNorm = clamp(energyJ / 45000, 0, 1.8);
   const { lateralOffsetM, longitudinalOffsetM } = resolveImpactOffsets(impact, after);
-  const latNorm = clamp(lateralOffsetM / (PLAYER_VEHICLE.widthM * 0.45), -1, 1);
+  const latNorm = clamp(lateralOffsetM / (dimensions.widthM * 0.45), -1, 1);
   const leftBias = clamp(
     1 - Math.max(0, latNorm) * 0.72 + Math.max(0, -latNorm) * 0.45,
     0.25,
@@ -450,7 +452,7 @@ export function applyLocalizedPartDamage(damage, impact = {}, after = null) {
     updateMirrorFlags(mirror);
 
     const longNorm = clamp(
-      longitudinalOffsetM / (PLAYER_VEHICLE.lengthM * 0.42),
+      longitudinalOffsetM / (dimensions.lengthM * 0.42),
       -1,
       1,
     );
@@ -525,15 +527,15 @@ export function summarizeDamagedParts(damage) {
   return summary;
 }
 
-function wheelAngles(steer) {
+function wheelAngles(steer, dimensions) {
   if (Math.abs(steer) < 1e-10) return { frontLeft: 0, frontRight: 0 };
   const sign = Math.sign(steer);
-  const radius = PLAYER_VEHICLE.wheelbaseM / Math.tan(Math.abs(steer));
+  const radius = dimensions.wheelbaseM / Math.tan(Math.abs(steer));
   const inner = Math.atan(
-    PLAYER_VEHICLE.wheelbaseM / (radius - PLAYER_VEHICLE.trackM / 2),
+    dimensions.wheelbaseM / (radius - dimensions.trackM / 2),
   );
   const outer = Math.atan(
-    PLAYER_VEHICLE.wheelbaseM / (radius + PLAYER_VEHICLE.trackM / 2),
+    dimensions.wheelbaseM / (radius + dimensions.trackM / 2),
   );
   return sign > 0
     ? { frontLeft: outer, frontRight: inner }
@@ -599,8 +601,10 @@ export function advanceVehicleState(
 ) {
   if (!Number.isFinite(dt) || dt <= 0)
     throw new RangeError("Vehicle state needs a positive fixed step");
-  const previous = before.vehicle ?? createVehicleState();
-  const steer = clamp(after.steer ?? 0, -PLAYER_VEHICLE.maxSteerRad, PLAYER_VEHICLE.maxSteerRad);
+  const dimensions = playerVehicleDimensions(before);
+  const microbus = dimensions === KING_LONG_MICROBUS;
+  const previous = before.vehicle ?? createVehicleState(before);
+  const steer = clamp(after.steer ?? 0, -dimensions.maxSteerRad, dimensions.maxSteerRad);
   const yaw = angleDelta(after.heading, before.heading);
   const heading = before.heading + yaw / 2;
   const dx = after.x - before.x;
@@ -637,8 +641,8 @@ export function advanceVehicleState(
     slopePitchBias = clamp(-gradeSin * 0.22, -0.04, 0.04);
     slopeRollBias = clamp(-camberSin * 0.14, -0.025, 0.025);
     gradeLoadTransfer =
-      (PLAYER_VEHICLE.massKg * 9.81 * gradeSin * PLAYER_VEHICLE.centerOfMassHeightM) /
-      (2 * PLAYER_VEHICLE.wheelbaseM);
+      (dimensions.massKg * 9.81 * gradeSin * dimensions.centerOfMassHeightM) /
+      (2 * dimensions.wheelbaseM);
 
     if (absSpeed > 0.4) {
       const roughAmp = Number.isFinite(surface.roughnessAmp) ? Math.max(0, surface.roughnessAmp) : 0;
@@ -684,12 +688,14 @@ export function advanceVehicleState(
     0.072,
     dt,
   );
+  const rollLimit = dimensions.rollLimitRad ?? 0.082;
+  const rollTargetLimit = microbus ? rollLimit - 0.004 : 0.078;
   const roll = spring(
     load.rollRad,
     load.rollVelocityRadS + surfaceRollImpulse + scrapeRollImpulse,
-    clamp(lateral * 0.0115 + slopeRollBias, -0.078, 0.078),
-    10,
-    0.082,
+    clamp(lateral * (dimensions.rollGradient ?? 0.0115) + slopeRollBias, -rollTargetLimit, rollTargetLimit),
+    microbus ? 8.5 : 10,
+    rollLimit,
     dt,
   );
   const heave = spring(
@@ -702,28 +708,28 @@ export function advanceVehicleState(
   );
   const wheelOffsetsM = {};
   const wheelLoadsN = {};
-  const weight = PLAYER_VEHICLE.massKg * 9.81;
+  const weight = dimensions.massKg * 9.81;
   const foreTransfer =
-    (PLAYER_VEHICLE.massKg * acceleration * PLAYER_VEHICLE.centerOfMassHeightM) /
-      (2 * PLAYER_VEHICLE.wheelbaseM) +
+    (dimensions.massKg * acceleration * dimensions.centerOfMassHeightM) /
+      (2 * dimensions.wheelbaseM) +
     gradeLoadTransfer;
   const sideTransfer =
-    (PLAYER_VEHICLE.massKg * lateral * PLAYER_VEHICLE.centerOfMassHeightM) /
-    (2 * PLAYER_VEHICLE.trackM);
+    (dimensions.massKg * lateral * dimensions.centerOfMassHeightM) /
+    (2 * dimensions.trackM);
   for (const name of wheelNames) {
     const front = name.startsWith("front");
     const left = name.endsWith("Left");
-    const x = (left ? -1 : 1) * PLAYER_VEHICLE.trackM / 2;
-    const z = (front ? 1 : -1) * PLAYER_VEHICLE.wheelbaseM / 2;
+    const x = (left ? -1 : 1) * dimensions.trackM / 2;
+    const z = (front ? 1 : -1) * dimensions.wheelbaseM / 2 + (dimensions.axleCenterZM ?? 0);
     // Strut travel relative to the loaded chassis, not tire motion into asphalt.
     wheelOffsetsM[name] = clamp(
       -heave.value + Math.sin(pitch.value) * z - Math.sin(roll.value) * x,
-      -PLAYER_VEHICLE.suspensionTravelM,
-      PLAYER_VEHICLE.suspensionTravelM,
+      -dimensions.suspensionTravelM,
+      dimensions.suspensionTravelM,
     );
     wheelLoadsN[name] = Math.max(
       weight * 0.02,
-      staticWheelLoad + (front ? -foreTransfer : foreTransfer) + (left ? sideTransfer : -sideTransfer),
+      staticVehicleWheelLoadN(dimensions, front) + (front ? -foreTransfer : foreTransfer) + (left ? sideTransfer : -sideTransfer),
     );
   }
   const loadScale = weight / Object.values(wheelLoadsN).reduce((a, b) => a + b, 0);
@@ -777,7 +783,7 @@ export function advanceVehicleState(
     ) {
       const energyJ = before.spec?.contactResponse === "inelastic-slide-v1"
         ? Math.max(0, Number.isFinite(contact.energyJ) ? contact.energyJ : 0)
-        : 0.5 * PLAYER_VEHICLE.massKg * closingSpeedMps ** 2;
+        : 0.5 * dimensions.massKg * closingSpeedMps ** 2;
       dent(damage, { ...contact, closingSpeedMps, energyJ }, tick, after, false);
     }
     latchedContact = {
@@ -807,13 +813,13 @@ export function advanceVehicleState(
     { surface, contact, curbScrub, scraping, driverCommand, dt },
   );
   const rawSteeringWheelRad =
-    steer * PLAYER_VEHICLE.steeringRatio +
-    scrapeSteerKickRad * (PLAYER_VEHICLE.steeringRatio * 0.55);
+    steer * dimensions.steeringRatio +
+    scrapeSteerKickRad * (dimensions.steeringRatio * 0.55);
   const steeringWheelRad = Object.is(rawSteeringWheelRad, -0) ? 0 : rawSteeringWheelRad;
 
   return {
-    wheelAngles: wheelAngles(steer),
-    wheelSpinRad: (previous.wheelSpinRad + signedTravel / (PLAYER_VEHICLE.wheelRadiusM * (before.giantScale ?? 1))) % tau,
+    wheelAngles: wheelAngles(steer, dimensions),
+    wheelSpinRad: (previous.wheelSpinRad + signedTravel / (dimensions.wheelRadiusM * (before.giantScale ?? 1))) % tau,
     steeringWheelRad,
     suspension,
     wheelLoadsN,

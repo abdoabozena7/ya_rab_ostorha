@@ -46,7 +46,7 @@ fails visibly; the launcher never reuses or stops somebody else's server.
 | I / Manual drive button | Toggle autonomous driving |
 | P / Phone | Choose an Arabic destination from the place buttons |
 | C | Cycle behind car / in-cabin driver / elevated chasing camera |
-| Car | Inspect the player car, running gear, cabin and mounted virtual sensors |
+| Tools → Car | Choose the player vehicle, inspect its running gear, cabin and mounted virtual sensors |
 | Camera | Inspect the actual vehicle-front pixels, exact-frame recognition and observed-motion forecast |
 | People | Inspect real human bodies and explicit world-reference walk/jog/stop controls |
 | Self Driving / Chase | Drive autonomously, or pick a pursuit difficulty (`Level 1` to `5 · Max`) and watch the preloaded RL PPO driver evade visible police across roads and clear curbs (or toggle `Manual` / press `I` to drive yourself) |
@@ -64,12 +64,27 @@ or a road-safety guarantee.
 
 ## Player car
 
-The player is an original **matte, visibly faceted off-road SUV**, inspired by
+The default player vehicle is an original **matte, visibly faceted off-road SUV**, inspired by
 the upright boxy proportions of Jetour T2 and styled to belong beside the
 game's existing low-poly traffic. It is not a branded replica or the earlier
 reflective sports-car model. Its body, cabin and running gear are authored
 locally in `src/render/suv-model.js`; the player needs no downloaded car model.
 Historical assets and their notices remain preserved.
+
+In **Tools → Car → Player vehicle**, choose **King Long · Microbus** to drive
+the white, short-nose Egyptian-market-style microbus. Its white high roof,
+sliding passenger door, dark side windows and road wheels are procedural 3D
+geometry, not a reskin of the Jetour-inspired SUV. Stop in a clear spot to
+switch; the same City, street position and ambient actors remain in place.
+Choose **Jetour T2 · SUV** to return to the original vehicle.
+
+The microbus has a longer and narrower collision footprint (**4.84 × 1.70 m**),
+smaller tires (**0.315 m radius** versus the SUV's **0.35 m**), a heavier plant,
+slower acceleration, a wider turning response and more suspension roll.
+These are game values, not manufacturer specifications. WASD, **C** camera
+cycling, cockpit, inspection and normal destination driving are available.
+Standard **Chase** is manual with the microbus; the preloaded PPO and the
+legacy experiments remain SUV-only. See the [25 live gameplay frames](docs/screenshots/king-long-microbus/README.md).
 
 The **Car** panel is limited to the player vehicle. Chase and left-hand cockpit views
 remain drivable. Inspection and running-gear views pause the world and allow

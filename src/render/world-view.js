@@ -1282,10 +1282,7 @@ export class WorldView {
     root.add(fallback);
     record.fallback = fallback;
     if (actor.id === "player") {
-      const playerInit = this.metro || this.grandCity ? { ...actor, pearlClearcoat: true } : actor;
-      record.vehicleRig = createPlayerVehicle(null, playerInit);
-      record.visual = record.vehicleRig.root;
-      root.add(record.visual);
+      this.syncPlayerRig(record, actor);
       fallback.visible = false;
       this.status.loaded++;
       return;
@@ -1519,8 +1516,20 @@ export class WorldView {
       this.streetFillLight.target.updateMatrixWorld(true);
     }
   }
+  syncPlayerRig(record, actor) {
+    if (record.vehicleRig && record.vehicleModel === actor.vehicleModel) return;
+    const playerInit = this.metro || this.grandCity ? { ...actor, pearlClearcoat: true } : actor;
+    const nextRig = createPlayerVehicle(null, playerInit);
+    record.vehicleRig?.dispose();
+    record.vehicleRig = nextRig;
+    record.vehicleModel = actor.vehicleModel;
+    record.visual = nextRig.root;
+    record.curbWheels = null;
+    record.root.add(record.visual);
+  }
   syncMetroPlayer(alpha) {
     const { world } = this, actor = world.player, record = this.roots.get(actor.id);
+    this.syncPlayerRig(record, actor);
     const t = Number.isFinite(alpha) ? THREE.MathUtils.clamp(alpha, 0, 1) : 1;
     this.metroAlpha = t;
     const prev = actor.previous && Math.hypot(actor.x - actor.previous.x, actor.z - actor.previous.z) < 12

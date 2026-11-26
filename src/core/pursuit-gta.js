@@ -13,7 +13,7 @@ import {
   DEFAULT_SURVEILLANCE_ZONES, DISPATCH_RULESET, createDispatchResponse, isDispatchTracked,
   resolveSurveillanceZones, updateDispatchEscape,
 } from "./pursuit-dispatch.js";
-import { PLAYER_VEHICLE } from "./vehicle-spec.js";
+import { playerVehicleDimensions } from "./vehicle-spec.js";
 import { followPath, integrateVehicle, vehicleProbe } from "./vehicle.js";
 import {
   WHEEL_SCRUB_MODE,
@@ -173,12 +173,15 @@ export function resolveGtaChaseConfig(options = {}, level = GtaChaseConfig.wante
 
 export function initializeGtaPursuit(state, player, config) {
   const dispatch = config.ruleset === DISPATCH_RULESET;
+  const fairPatrolMaxSpeedMps = config.policeFairness === CITY_FAIR_POLICE
+    ? playerVehicleDimensions(player).chaseMaxSpeedMps : undefined;
   state.wantedLevel = config.wantedLevelStart;
   state.stepEvents = [];
   state.gta = {
     config, normalMaxSpeed: player.maxSpeed, serial: 0, pinnedTicks: 0,
     fadeStars: dispatch ? state.wantedLevel : 0, lostTicks: 0,
     roadblock: null, heat: 0, nextDispatchTick: 0, nextRoadblockTick: 0, nextSquadTick: 0,
+    ...(fairPatrolMaxSpeedMps === undefined ? {} : { fairPatrolMaxSpeedMps }),
   };
   if (dispatch) state.response.dispatch = createDispatchResponse();
 }
@@ -189,7 +192,7 @@ export function initializeGtaDurability(actor, maxHealth, massKg) {
 
 export function initializeGtaPatrol(car, unitType, state) {
   const profile = GTA_PATROL_PROFILES[unitType];
-  const { config } = state.gta;
+  const { config, fairPatrolMaxSpeedMps } = state.gta;
   const tactical = isTacticalPursuit(state);
   const faster = config.ruleset === DISPATCH_RULESET && DISPATCH_LIGHT_PACE[unitType];
   car.unitType = unitType;
@@ -211,8 +214,9 @@ export function initializeGtaPatrol(car, unitType, state) {
       wheelbase: spec.wheelbase,
       reverseSpeed: spec.reverseSpeed,
       realisticDynamics: true,
+      ...(fairPatrolMaxSpeedMps === undefined ? {} : { hardSpeedCap: true }),
     };
-    car.maxSpeed = spec.maxSpeed;
+    car.maxSpeed = Math.min(spec.maxSpeed, fairPatrolMaxSpeedMps ?? Infinity);
   } else {
     car.spec = { acceleration: faster?.acceleration ?? profile.acceleration, steerRate: profile.steerRate,
       wheelbase: unitType === "swat" ? 3.15 : VEHICLE.wheelbase };
@@ -231,7 +235,7 @@ export function refreshTacticalPatrolSpecs(state) {
     const spec = tacticalPatrolSpec(car.unitType, state.wantedLevel, mult, state.gta.config.policeFairness);
     car.spec = { ...car.spec, acceleration: spec.acceleration, braking: spec.braking,
       steerRate: spec.steerRate, reverseSpeed: spec.reverseSpeed };
-    car.maxSpeed = spec.maxSpeed;
+    car.maxSpeed = Math.min(spec.maxSpeed, state.gta.fairPatrolMaxSpeedMps ?? Infinity);
   }
 }
 
@@ -757,7 +761,7 @@ export function applyGtaContact(world, a, b, pa, pb, normal, sweptClosing, fresh
         normalZ: -outNz,
         closingSpeedMps: closingSpeed,
         tangentialSpeedMps,
-        egoMassKg: PLAYER_VEHICLE.massKg,
+        egoMassKg: playerVehicleDimensions(player).massKg,
         tick: world.tick,
       });
       world._activeJoltActors?.add(other);

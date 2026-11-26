@@ -30,9 +30,11 @@ import {
   junctionPressure,
   LANE_OFFSET,
 } from "./navigation.js";
-import { integrateVehicle, followPath, resolveVehicleContact, copyVehicleMotion, clearVehicleMotion } from "./vehicle.js";
+import { integrateVehicle, followPath, resolveVehicleContact, copyVehicleMotion, clearVehicleMotion, vehicleVelocity } from "./vehicle.js";
 import { createVehicleState, advanceVehicleState } from "./vehicle-state.js";
-import { PLAYER_VEHICLE } from "./vehicle-spec.js";
+import {
+  JETOUR_T2_ID, KING_LONG_MICROBUS, KING_LONG_MICROBUS_ID, PLAYER_VEHICLE, playerVehicleDimensions,
+} from "./vehicle-spec.js";
 import { roadLayout } from "./roads.js";
 import { cityFootprints } from "./scenery.js";
 import { SpatialIndex } from "./spatial-index.js";
@@ -82,10 +84,10 @@ import { createCityTerrain, sampleCitySurface, terrainElevationAt } from "./city
 import { canEndSurvival, isCityHunt, isSurvival, survivalGhostPair } from "./pursuit-survival.js";
 import { createPackLearner, starterPackPolicy, validatePackPolicy } from "./pack-driving.js";
 import {
-  NITRO_SPEC,
   PURSUIT_STOP,
   buildNitroBoostPose,
   isNitroEngaged,
+  nitroBoostLimits,
   pursuitCommand,
   stepNitroTank,
   validatePursuitAction,
@@ -171,6 +173,30 @@ const distantStaticClearCache = new WeakMap();
 const distantWorldVehicleCmdCache = new WeakMap();
 const vehicleSingleRoadCache = new WeakMap();
 const worldRoadGridCache = new WeakMap();
+
+const isPlayerVehicleModel = (model) => model === JETOUR_T2_ID || model === KING_LONG_MICROBUS_ID;
+
+function cityPlayerSpec(config, model) {
+  if (model === KING_LONG_MICROBUS_ID) {
+    const van = KING_LONG_MICROBUS;
+    return {
+      wheelbase: van.wheelbaseM, maxSteer: van.maxSteerRad, steerRate: van.steerRateRadS,
+      acceleration: van.accelerationMps2, braking: van.brakingMps2, reverseSpeed: van.reverseSpeedMps,
+      realisticDynamics: true, tireGripMps2: van.tireGripMps2,
+      contactResponse: "inelastic-slide-v1", massKg: van.massKg,
+      ...(config.interactionProfile === WHEEL_SCRUB_MODE ? { wheelInteractionPhysics: WHEEL_SCRUB_MODE } : {}),
+    };
+  }
+  return {
+    wheelbase: PLAYER_VEHICLE.wheelbaseM,
+    maxSteer: PLAYER_VEHICLE.maxSteerRad,
+    ...(config.vehicleDynamics === "city-realism-v1" ? {
+      realisticDynamics: true, tireGripMps2: 8,
+      contactResponse: "inelastic-slide-v1", massKg: PLAYER_VEHICLE.massKg,
+      ...(config.interactionProfile === WHEEL_SCRUB_MODE ? { wheelInteractionPhysics: WHEEL_SCRUB_MODE } : {}),
+    } : {}),
+  };
+}
 
 function localVehicleRoads(roads, body) {
   if (!Array.isArray(roads) || roads.length <= 16) return roads;
@@ -487,20 +513,7 @@ export class World {
       steer: 0,
       length: id === "player" ? PLAYER_VEHICLE.lengthM : tuk ? 2.9 : VEHICLE.length,
       width: id === "player" ? PLAYER_VEHICLE.widthM : tuk ? 1.5 : VEHICLE.width,
-      spec:
-        id === "player"
-          ? {
-              wheelbase: PLAYER_VEHICLE.wheelbaseM,
-              maxSteer: PLAYER_VEHICLE.maxSteerRad,
-              ...(this.config.vehicleDynamics === "city-realism-v1" ? {
-                realisticDynamics: true, tireGripMps2: 8,
-                contactResponse: "inelastic-slide-v1", massKg: PLAYER_VEHICLE.massKg,
-                ...(this.config.interactionProfile === WHEEL_SCRUB_MODE
-                  ? { wheelInteractionPhysics: WHEEL_SCRUB_MODE }
-                  : {}),
-              } : {}),
-            }
-          : tuk ? { wheelbase: 1.9 } : null,
+      spec: id === "player" ? cityPlayerSpec(this.config) : tuk ? { wheelbase: 1.9 } : null,
       maxSpeed: (this.config.speedLimit / 3.6) * (tuk ? 0.7 : 1),
       path: [],
       cursor: 0,
@@ -778,7 +791,75 @@ export class World {
   nextWalk(person) {
     return this.district ? nextDistrictWalk(this, person) : nextWalk(this, person);
   }
+  selectPlayerVehicle(model, record = true) {
+    if (!isPlayerVehicleModel(model)) return { ok: false, error: "Unknown player vehicle." };
+    if (this.environment !== "metro") return { ok: false, error: "Vehicle selection is only available in City." };
+    const { player } = this;
+    if ((player.vehicleModel ?? JETOUR_T2_ID) === model) return { ok: true, changed: false };
+    if (this.pursuit?.phase === "running" || this.pursuit?.reviewUntilTick)
+      return { ok: false, error: "End Chase and finish any impact review before changing vehicles." };
+
+    const velocity = vehicleVelocity(player);
+    const manual = manualControlMap.get(this);
+    const busy = this.mode === "auto" ? player.path.length > 0
+      : manual ? manual.throttle > 0 && manual.brake === 0 : this.input.targetSpeed !== 0;
+    if (busy || Math.hypot(velocity.x, velocity.z, player.gtaSlipMps ?? 0) > 1e-4)
+      return { ok: false, error: "Stop and idle the player vehicle before changing models." };
+
+    const dimensions = playerVehicleDimensions({ vehicleModel: model });
+    const footprint = { ...copyPose(player), length: dimensions.lengthM, width: dimensions.widthM };
+    // At selection time check live bodies directly rather than accepting a stale index
+    // or rejecting merely because the candidate is within the driving safety margin.
+    if (this.statics.some((body) => overlaps(footprint, body)) ||
+        this.actors.some((body) => body !== player && overlaps(footprint, body)))
+      return { ok: false, error: "There is not enough clear space for the selected vehicle." };
+
+    const microbus = model === KING_LONG_MICROBUS_ID;
+    const cityLimit = this.config.speedLimit / 3.6;
+    Object.assign(player, {
+      length: dimensions.lengthM,
+      width: dimensions.widthM,
+      height: dimensions.heightM,
+      spec: cityPlayerSpec(this.config, model),
+      maxSpeed: microbus ? Math.min(cityLimit, dimensions.maxSpeedMps) : cityLimit,
+      speed: 0,
+      steer: 0,
+      blockedBy: null,
+      nitroActive: false,
+      nitroIntensity: 0,
+      nitroSuppressedByPedestrian: false,
+      vehicle: { ...createVehicleState({ vehicleModel: model }), nitroCharge: player.nitroCharge },
+    });
+    if (microbus) player.vehicleModel = model;
+    else delete player.vehicleModel;
+    if (player.spec.realisticDynamics) player.chaseSlipRad = 0;
+    else delete player.chaseSlipRad;
+    clearVehicleMotion(player);
+    player.previous = copyPose(player);
+    vehicleSingleRoadCache.delete(player);
+    distantStaticClearCache.delete(player);
+    manualControlMap.delete(this);
+    driveNitroMap.delete(this);
+    this.input = { targetSpeed: 0, steer: 0 };
+    if (player.path.length || player.parking || this.destination) {
+      player.path = [];
+      player.cursor = 0;
+      player.parking = null;
+      this.destination = null;
+      this.routeRevision++;
+    }
+
+    this.districtSpeedState = createDistrictSpeedState();
+    if (this.visualPredictor.streamId !== null) this.visualPredictor.reset(this.visualPredictor.streamId);
+    this.visualDecision = this.visualState = null;
+    this.sensorProcessor = new RangeSignalProcessor();
+    this.actorIndex = new SpatialIndex(this.actors);
+    this.updateSensors();
+    if (record) this.events.push({ tick: this.tick, command: { type: "player-vehicle", model } });
+    return { ok: true, changed: true };
+  }
   command(command, record = true) {
+    if (command.type === "player-vehicle") return this.selectPlayerVehicle(command.model, record);
     if (command.type === "street-pursuit-start" || command.type === "street-pursuit-stop") {
       if (this.environment !== "metro") throw new Error("Street pursuit is only available in City");
       if (command.type === "street-pursuit-start") {
@@ -1021,7 +1102,8 @@ export class World {
     )
       return false;
     if (this.environment === "metro" && (this.pursuit?.phase === "running" || this.pursuit?.reviewUntilTick) &&
-        command.type === "destination")
+        (command.type === "destination" || (command.type === "mode" && command.mode === "auto" &&
+          this.player.vehicleModel === KING_LONG_MICROBUS_ID)))
       return false;
     if (command.type === "policy" && command.weights)
       validatePolicy(command.weights);
@@ -1030,10 +1112,11 @@ export class World {
     if (command.type === "drive") {
       manualControlMap.delete(this);
       const rawTargetSpeed = Number(command.targetSpeed) || 0;
+      const microbus = this.player.vehicleModel === KING_LONG_MICROBUS_ID;
       const clampedSteer = clamp(
         Number(command.steer) || 0,
-        -VEHICLE.maxSteer,
-        VEHICLE.maxSteer,
+        -(microbus ? this.player.spec.maxSteer : VEHICLE.maxSteer),
+        microbus ? this.player.spec.maxSteer : VEHICLE.maxSteer,
       );
       if (command.nitro !== undefined) {
         const nitro = clamp(Number(command.nitro) || 0, 0, 1);
@@ -1051,7 +1134,7 @@ export class World {
       this.input = {
         targetSpeed: clamp(
           rawTargetSpeed,
-          -2.5,
+          microbus ? -this.player.spec.reverseSpeed : -2.5,
           this.player.maxSpeed,
         ),
         steer: clampedSteer,
@@ -1609,15 +1692,11 @@ export class World {
           } else if (driveNitro) {
             manualActionForNitro = driveNitro;
             if ((driveNitro.nitro ?? 0) >= 0.5 && isNitroEngaged(actor, driveNitro) && this.input.targetSpeed > 0) {
-              const boostedMaxSpeed = Math.min(
-                NITRO_SPEC.maxBoostSpeedMps,
-                actor.maxSpeed * NITRO_SPEC.speedMultiplier,
-              );
+              const boost = nitroBoostLimits(actor);
               command = {
-                targetSpeed: boostedMaxSpeed,
+                targetSpeed: boost.maxSpeed,
                 steer: this.input.steer,
-                maxSpeed: boostedMaxSpeed,
-                accelMultiplier: NITRO_SPEC.accelMultiplier,
+                ...boost,
               };
             } else {
               command = { ...this.input };
@@ -1909,7 +1988,7 @@ export class World {
               sharedImpulse: contact.sharedImpulse ?? null,
               contactX: contact.scraping?.worldX ?? next.x,
               contactZ: contact.scraping?.worldZ ?? next.z,
-              egoMassKg: PLAYER_VEHICLE.massKg,
+              egoMassKg: playerVehicleDimensions(actor).massKg,
               tick: this.tick,
             });
             this._activeJoltActors?.add(liveObstacle);
@@ -2126,7 +2205,7 @@ export class World {
           const suspension = next.vehicle.suspension;
           const { wheelOffsetsM } = suspension;
           suspension.terrainOffsetsM = terrainOffsets;
-          const limit = PLAYER_VEHICLE.suspensionTravelM;
+          const limit = playerVehicleDimensions(actor).suspensionTravelM;
           for (const wheel of Object.keys(terrainOffsets))
             wheelOffsetsM[wheel] = clamp(wheelOffsetsM[wheel] + terrainOffsets[wheel], -limit, limit);
         }
@@ -2270,6 +2349,7 @@ export class World {
       player: {
         id: this.player.id,
         type: this.player.type,
+        ...(this.player.vehicleModel === KING_LONG_MICROBUS_ID ? { vehicleModel: this.player.vehicleModel } : {}),
         x: this.player.x,
         z: this.player.z,
         y: this.player.y ?? 0,
@@ -2323,6 +2403,7 @@ export class World {
       actors: this.actors.map((a) => ({
         id: a.id,
         type: a.type,
+        ...(a.vehicleModel === KING_LONG_MICROBUS_ID ? { vehicleModel: a.vehicleModel } : {}),
         x: a.x,
         z: a.z,
         heading: a.heading,
@@ -2381,6 +2462,7 @@ export class World {
           "visual-mode",
           "vision-run",
           "vehicle-test",
+          "player-vehicle",
           "pedestrian-motion",
           "district-run",
           "pursuit-run",
@@ -2395,7 +2477,9 @@ export class World {
         (event.command.type === "vehicle-test" &&
           (data.environment !== "vehicle" ||
             !["run", "reset"].includes(event.command.operation) ||
-            (event.command.heavy !== undefined && typeof event.command.heavy !== "boolean")))
+            (event.command.heavy !== undefined && typeof event.command.heavy !== "boolean"))) ||
+        (event.command.type === "player-vehicle" &&
+          (data.environment !== "metro" || !isPlayerVehicleModel(event.command.model)))
       )
         throw new Error("Invalid replay event");
       lastTick = event.tick;
@@ -2410,13 +2494,18 @@ export class World {
         }
       : data.config;
     const world = new World(options, data.environment);
+    const applyCommand = ({ command }) => {
+      const result = world.command(command);
+      if (command.type === "player-vehicle" && !result.changed)
+        throw new Error(`Invalid replay vehicle swap: ${result.error ?? "model was already selected"}`);
+    };
     let index = 0;
     while (world.tick < data.totalTicks) {
       while (
         index < data.events.length &&
         data.events[index].tick === world.tick
       )
-        world.command(data.events[index++].command);
+        applyCommand(data.events[index++]);
       const beforeTick = world.tick;
       world.step();
       if (world.tick === beforeTick)
@@ -2424,7 +2513,7 @@ export class World {
       if (world.tick % 120 === 0 || shouldYield?.()) yield world;
     }
     while (index < data.events.length && data.events[index].tick === world.tick)
-      world.command(data.events[index++].command);
+      applyCommand(data.events[index++]);
     return world;
   }
   static fromReplay(data) {
