@@ -1,5 +1,6 @@
 import { PEOPLE_MODELS, STEP, VEHICLE, clamp } from "./config.js";
 import { sampleCitySurface } from "./city-surfaces.js";
+import { recordCityPropImpact } from "./city-props.js";
 import { arcadePatrolLimit, initializeDistrictActor, isPackPursuit, isRushPack, rushRoadLimit, usesRushPace } from "./district-behavior.js";
 import { planDistrictRoute } from "./district-navigation.js";
 import { createPackDrill, PACK_DRILLS } from "./pack-drills.js";
@@ -32,7 +33,7 @@ import {
 } from "./pako-curb.js";
 import { patrolChainYield, patrolLateralYield, PATROL_LATERAL_YIELD } from "./pako-patrol-yield.js";
 import {
-  canDrivePrivilegedDirect, canPatrolUseCurbPrivilege, isTacticalPursuit,
+  canDrivePrivilegedDirect, canPatrolUseCurbPrivilege, isFairCityPolice, isTacticalPursuit,
   resolveTacticalRoadAim, tacticalSquadCap, tacticalTrafficOvertake,
 } from "./pako-tactical-police.js";
 import {
@@ -874,6 +875,29 @@ function openingTravel(speed, acceleration, cap) {
 }
 
 function deployGtaPatrol(world, state, tactic, unitType, forwardOnly = false) {
+  if (isFairCityPolice(state)) {
+    if (world.pursuit === state) return null;
+    const car = newGtaPatrol(world, state, unitType);
+    const lanes = car.gtaAI.lanes.filter(lane => lane.high - lane.low >= 45);
+    const openingBeat = car.gtaAI.order === 1
+      ? lanes.find(lane => lane.road.id === "tahrir-boulevard" && lane.sign === 1) : null;
+    for (let n = 0; n < lanes.length; n++) {
+      const lane = n === 0 && openingBeat ? openingBeat : lanes[(car.gtaAI.order * 17 + n) % lanes.length];
+      for (const fraction of lane === openingBeat ? [.23, .35, .65] : [.35, .65, .5]) {
+        const position = lanePoint(lane, lane.low + (lane.high - lane.low) * fraction);
+        Object.assign(car, position);
+        if (!isFree(world, car, 1) || !bodyOnRoad(car, world.drivingRoads) ||
+            [...state.patrols].some(other => distance(other, car) < 22)) continue;
+        const a = lanePoint(lane, lane.low + 8);
+        const b = lanePoint(lane, lane.high - 8);
+        car.gtaAI.beat = { roadId: lane.road.id, a, b, target: lane.sign > 0 ? b : a };
+        car.aiState = "PATROL";
+        car.speed = 0;
+        return registerGtaPatrol(world, state, car);
+      }
+    }
+    return null;
+  }
   const initialAmbientBeatUnit =
     world.pursuit !== state &&
     state.patrols.size === 0 &&
@@ -1092,6 +1116,13 @@ function placeGtaRoadblock(world) {
 
 function maintainGtaSquad(world) {
   const { pursuit: s, tick, player } = world, { gta } = s;
+  if (isFairCityPolice(s)) {
+    if (tick >= gta.nextSquadTick && s.response.lastSeen) {
+      assignGtaSquad(s.patrols, s.response.lastSeen);
+      gta.nextSquadTick = tick + ticks(.5);
+    }
+    return;
+  }
   const coordinated = gta.config.ruleset === "dispatch-v1";
   for (const car of s.patrols) if (car.wreckUntilTick <= tick) removeGtaPatrol(world, s, car);
   if (gta.roadblock?.expires <= tick) {
@@ -1215,7 +1246,7 @@ export function beginStreetPursuit(world, level = 1, variant = "legacy", config)
       if (curb) state.gta.curb = curb;
       state.gta.fadeStars = level;
       const count = gtaPatrolTarget(state);
-      const initialCap = isTacticalPursuit(state)
+      const initialCap = isFairCityPolice(state) ? count : isTacticalPursuit(state)
         ? Math.min(1, count)
         : Math.max(0, count - (!isAggressiveChase(state) && gtaRoadblocksEnabled(state) ? 2 : 0));
       fillGtaPatrols(world, state, initialCap);
@@ -2549,6 +2580,9 @@ function resolveContacts(world, moving, solid, staticGrid, freshImpacts) {
       const impact = contactImpact(ego, other, time, overlapAt, world.tick + 1);
       const egoPoseAt = poseAt(ego, time), otherPoseAt = poseAt(other, time);
       const hitGeom = { otherX: otherPoseAt.x, otherZ: otherPoseAt.z, normal: normalAt(egoPoseAt, otherPoseAt) };
+      if (fresh) recordCityPropImpact(world, other.a, {
+        closingSpeedMps: hitClosingMps, normal: hitGeom.normal,
+      });
       if (!playerHit || impact.severity > playerHit.severity) {
         playerHit = impact;
         playerHitGeometry = hitGeom;
@@ -2635,6 +2669,33 @@ function resolveContacts(world, moving, solid, staticGrid, freshImpacts) {
   }
   if (playerHit && playerHitGeometry) impactGeometryMap.set(playerHit, playerHitGeometry);
   return playerHit;
+}
+
+function slideAlongFixedProp(world, plans) {
+  const ego = plans.find(p => p.a === world.player);
+  if (!ego?.impulse || !world.statics.some(s => s.id === ego.hit && s.propImpact)) return;
+  const contact = poseAt(ego, 1);
+  const sin = Math.sin(contact.heading), cos = Math.cos(contact.heading);
+  const vx = sin * ego.impulse.speed + cos * ego.impulse.gtaSlipMps;
+  const vz = cos * ego.impulse.speed - sin * ego.impulse.gtaSlipMps;
+  const duration = (1 - ego.stop) * STEP;
+  if (Math.hypot(vx, vz) * duration < 1e-5) return;
+  const end = { ...contact, x: contact.x + vx * duration, z: contact.z + vz * duration };
+  const supported = world.pursuit.gta.curb
+    ? sweepSafeWithCurbs(contact, end, [], world.roads, world.pursuit.gta.curb).safe
+    : sweepSafe(contact, end, [], world.roads).safe;
+  if (!supported) return;
+  const steps = Math.max(1, Math.ceil(distance(contact, end) / .025));
+  for (let i = 1; i <= steps; i++) {
+    const t = i / steps;
+    const probe = interpolate(contact, end, t);
+    if (world.statics.some(s => overlaps(probe, s)) ||
+        plans.some(p => p !== ego && overlaps(probe, poseAt(p, ego.stop + (1 - ego.stop) * t))))
+      return;
+  }
+  ego.next = end;
+  ego.stop = 1;
+  ego.travel = travel(ego.a, end, ego.radius);
 }
 
 function updateClearance(world, playerMotion, plans, solids = []) {
@@ -2789,6 +2850,22 @@ function motionPlan(world, actor, action, streetHooks) {
         command = longitudinal === command && world.pursuit.gta.config.patrolChainYield === PATROL_LATERAL_YIELD
           ? patrolLateralYield(world, actor, command, lead, relative, projectGtaVehicle, previewLateralPush)
           : longitudinal;
+      }
+      if (gta && isFairCityPolice(world.pursuit) && world.pursuit.response.sightedBy.has(actor)) {
+        const report = world.pursuit.response.lastSeen;
+        if (report) {
+          const relative = gtaLocal(actor, report);
+          if (relative.forward > 0 && Math.abs(relative.right) < (actor.width + PLAYER_VEHICLE.widthM) / 2 + .5) {
+            const braking = actor.spec?.braking ?? VEHICLE.braking;
+            const leadSpeed = Math.max(0, (report.vx ?? 0) * Math.sin(actor.heading) +
+              (report.vz ?? 0) * Math.cos(actor.heading));
+            const gap = relative.forward - (actor.length + PLAYER_VEHICLE.lengthM) / 2;
+            const room = Math.max(0, gap - 4 - Math.max(0, actor.speed) * .4);
+            const pace = Math.sqrt(leadSpeed * leadSpeed + 2 * braking * room);
+            if (pace < command.targetSpeed) command = { ...command, targetSpeed: pace,
+              decelerationMps2: braking, reason: "fair-follow" };
+          }
+        }
       }
     }
     // The swept solver uses the body shape, not its path, profile and history.
@@ -3057,7 +3134,7 @@ export function stepPursuit(world, action, streetHooks = null) {
     s.gta.eventTick = world.tick + 1;
     if (!s.gta.curbExitPhase) {
       maintainGtaSquad(world);
-      if (s.gta.escapeGoal) advanceEscapeGoalIfReached(world);
+      if (s.gta.escapeGoal && !s.gta.escapeGoal.sensorPlanned) advanceEscapeGoalIfReached(world);
     }
   }
   if (s.survival) updateSurvivalBeforeMotion(world);
@@ -3140,7 +3217,24 @@ export function stepPursuit(world, action, streetHooks = null) {
   });
   const ego = plans.find((p) => p.a === player);
   if (ego.curb) {
-    const rejected = curbClearance(world, ego.curb, ego, plans, projectGtaVehicle);
+    // Reactive props are physical solids handled by the swept contact solver.
+    // Keep predictive curb/pedestrian support checks, without a zero-speed
+    // teleport in front of the prop that would swallow its actual impact.
+    const clearanceWorld = world.statics.some(body => body.propImpact)
+      ? { ...world, statics: world.statics.filter(body => !body.propImpact) } : world;
+    const nearReactiveProp = world.statics.some(body => {
+      if (!body.propImpact) return false;
+      const { forward, right } = gtaLocal(player, body);
+      return forward > -player.length / 2 && forward < 8 + Math.abs(player.speed) * .3 &&
+        Math.abs(right) < player.width / 2 + Math.hypot(body.width, body.length) / 2 + .3;
+    });
+    const clearanceCurb = nearReactiveProp
+      ? { ...ego.curb, maxPace: Math.max(ego.curb.maxPace,
+        Math.hypot(player.speed, player.gtaSlipMps ?? 0),
+        Math.hypot(ego.next.speed, ego.next.gtaSlipMps ?? 0)) + .001 }
+      : ego.curb;
+    const immediateContactWorld = nearReactiveProp ? { ...clearanceWorld, statics: [] } : clearanceWorld;
+    const rejected = curbClearance(immediateContactWorld, clearanceCurb, ego, plans, projectGtaVehicle);
     if (rejected) {
       const { reason, blockedBy = null } = rejected;
       ego.guard = reason;
@@ -3149,7 +3243,7 @@ export function stepPursuit(world, action, streetHooks = null) {
       const brakingPose = projectGtaVehicle(player, ego.command);
       const braking = { ...ego, next: brakingPose, travel: travel(player, brakingPose, ego.radius) };
       if ((reason === "curb-pedestrian" || reason === "curb-solid") &&
-          !curbClearance(world, ego.curb, braking, plans, projectGtaVehicle)) {
+          !curbClearance(immediateContactWorld, clearanceCurb, braking, plans, projectGtaVehicle)) {
         ego.next = { ...brakingPose, reason, blockedBy };
         ego.travel = braking.travel;
       } else {
@@ -3163,6 +3257,7 @@ export function stepPursuit(world, action, streetHooks = null) {
   const solids = staticGrid?.plans ?? world.statics.map(staticContactPlan);
   const freshImpacts = s.gta?.config.damageFeedback === DISPATCH_DAMAGE_FEEDBACK ? [] : null;
   const impact = resolveContacts(world, plans, solids, staticGrid, freshImpacts);
+  if (s.gta) slideAlongFixedProp(world, plans);
   updateClearance(world, ego, plans, solids);
   const m = s.metrics;
   if (isPackPursuit(s.variant) && m.pedestrianStatus !== "impact") {
@@ -3295,6 +3390,10 @@ export function stepPursuit(world, action, streetHooks = null) {
           curbScrub,
           scraping: gtaPlayerScrape,
         });
+      if (impact && next.vehicle.contact) {
+        const geometry = impactGeometryMap.get(impact);
+        if (geometry?.normal) next.vehicle.contact.normal = { ...geometry.normal };
+      }
       if (terrainOffsets) {
         const suspension = next.vehicle.suspension;
         const { wheelOffsetsM } = suspension;
@@ -3439,7 +3538,10 @@ export function scanPursuitWorld(world) {
   return scan;
 }
 
-export function spawnCrowdAhead(world, rawCount = 20) {
+export const DISPERSED_CROWD_LAYOUT = "dispersed-cohorts-v1";
+
+export function spawnCrowdAhead(world, rawCount = 20, options = {}) {
+  const dispersed = options.layout === DISPERSED_CROWD_LAYOUT || isFairCityPolice(world.pursuit);
   const targetCount = clamp(
     Math.round(Number.isFinite(Number(rawCount)) ? Number(rawCount) : 20),
     1,
@@ -3457,8 +3559,8 @@ export function spawnCrowdAhead(world, rawCount = 20) {
   const rng = new Random(
     `${world.config?.seed ?? "city"}:crowd-ahead:${world.tick}:${wave}:${Math.round(player.x * 100)}:${Math.round(player.z * 100)}`,
   );
-  const fx = Math.sin(player.heading ?? 0);
-  const fz = Math.cos(player.heading ?? 0);
+  let fx = Math.sin(player.heading ?? 0);
+  let fz = Math.cos(player.heading ?? 0);
   const drivableRoads = (world.drivingRoads ?? world.roads ?? []).filter(
     (r) => r && !r.parkingBay && !r.supportApron,
   );
@@ -3485,6 +3587,10 @@ export function spawnCrowdAhead(world, rawCount = 20) {
   const baseSign = baseFrame
     ? (fx * baseFrame.ux + fz * baseFrame.uz >= 0 ? 1 : -1)
     : 1;
+  if (dispersed && baseFrame) {
+    fx = baseFrame.ux * baseSign;
+    fz = baseFrame.uz * baseSign;
+  }
   const startAlong = baseFrame
     ? clamp(baseProj.along, baseFrame.minAlong, baseFrame.maxAlong)
     : 0;
@@ -3524,7 +3630,7 @@ export function spawnCrowdAhead(world, rawCount = 20) {
   for (let i = 0; i < world.actors.length; i++) {
     const a = world.actors[i];
     if (a.type === "vehicle") vehicleObstacles.push(a);
-    else if (a.type === "pedestrian" && !prevActiveIds.has(a.id)) existingPedestrians.push(a);
+    else if (a.type === "pedestrian" && (dispersed || !prevActiveIds.has(a.id))) existingPedestrians.push(a);
   }
   const solidBuildings = [];
   for (let i = 0; i < world.statics.length; i++) {
@@ -3567,8 +3673,7 @@ export function spawnCrowdAhead(world, rawCount = 20) {
     return true;
   };
 
-  // Choose the bypass side in baseRoad's own leftOffset coordinate that isn't already blocked
-  // by curbside parked cars or traffic ahead, while placing the 20-pedestrian crowd across the player's lane!
+  // Longitudinal cohorts alternate sidewalks while retaining a vehicle-width centre gap.
   let negOffsetBlockers = 0;
   let posOffsetBlockers = 0;
   for (const obs of [...vehicleObstacles, ...solidBuildings]) {
@@ -3595,15 +3700,19 @@ export function spawnCrowdAhead(world, rawCount = 20) {
       : rng.next() < 0.5
         ? 1
         : -1;
-  const playerBaseLat = baseRoad ? roadProject(baseRoad, player).leftOffset : 0;
   const sampleCrowdLat = (halfW, walkerIdx = 99, attempt = 0) => {
+    if (dispersed) {
+      const side = openBypassOffsetSign * (Math.floor(walkerIdx / 5) % 2 ? -1 : 1);
+      return side * rng.range(2.35, Math.max(2.35, halfW - 1.65));
+    }
     const outerCrowdLim = halfW + 1.15;
     const innerBypassEdge = Math.max(-1.2, Math.min(2.4, halfW - 3.6));
     const crowdMin = openBypassOffsetSign > 0 ? -outerCrowdLim : -innerBypassEdge;
     const crowdMax = openBypassOffsetSign > 0 ? innerBypassEdge : outerCrowdLim;
     if (walkerIdx < 3 && attempt < 16) {
-      const anchor = clamp(playerBaseLat, crowdMin + 0.25, crowdMax - 0.25);
-      return clamp(anchor + rng.range(-0.45, 0.45), crowdMin, crowdMax);
+      const playerBaseLat = baseRoad ? roadProject(baseRoad, player).leftOffset : 0;
+      const anchor = clamp(playerBaseLat, crowdMin + .25, crowdMax - .25);
+      return clamp(anchor + rng.range(-.45, .45), crowdMin, crowdMax);
     }
     return rng.range(crowdMin, crowdMax);
   };
@@ -3636,7 +3745,7 @@ export function spawnCrowdAhead(world, rawCount = 20) {
         branch.frame.maxAlong - 1.2,
       );
       const halfW = (branch.road.width ?? 10) * 0.5;
-      const lat = sampleCrowdLat(halfW);
+      const lat = dispersed ? sampleCrowdLat(halfW, walkerIdx, attempt) : sampleCrowdLat(halfW);
       const pt = roadPointAt(branch.road, along, lat);
       return {
         x: pt.x,
@@ -3651,8 +3760,8 @@ export function spawnCrowdAhead(world, rawCount = 20) {
         corridorDistM,
       };
     }
-    const rx = Math.cos(player.heading ?? 0);
-    const rz = -Math.sin(player.heading ?? 0);
+    const rx = dispersed ? fz : Math.cos(player.heading ?? 0);
+    const rz = dispersed ? -fx : -Math.sin(player.heading ?? 0);
     const halfW = (baseRoad?.width ?? 10) * 0.5;
     const lat = rng.range(-halfW - 1.0, halfW + 1.0);
     return {
@@ -3676,18 +3785,23 @@ export function spawnCrowdAhead(world, rawCount = 20) {
     const halfW = (segRoad?.width ?? 10) * 0.5;
     const isCrossing = index >= 3 && index % 2 === 0;
 
+    const cohortSide = cand.lat >= 0 ? 1 : -1;
     const innerEdge = Math.max(-1.2, Math.min(2.4, halfW - 3.6));
-    const minCrowdLat = openBypassOffsetSign > 0 ? -halfW - 1.2 : -innerEdge;
-    const maxCrowdLat = openBypassOffsetSign > 0 ? innerEdge : halfW + 1.2;
+    const minCrowdLat = dispersed ? (cohortSide > 0 ? 2.35 : -halfW + 1.65)
+      : openBypassOffsetSign > 0 ? -halfW - 1.2 : -innerEdge;
+    const maxCrowdLat = dispersed ? (cohortSide > 0 ? halfW - 1.65 : -2.35)
+      : openBypassOffsetSign > 0 ? innerEdge : halfW + 1.2;
     const tryAddPoint = (dAlong, targetLat, crossingFlag) => {
       const clampedLat = clamp(targetLat, minCrowdLat, maxCrowdLat);
+      if (minCrowdLat > maxCrowdLat) return false;
+      if (dispersed) dAlong = clamp(dAlong, -4, 4);
       let pt;
       if (segRoad && segFrame) {
         const a = clamp(cand.along + dAlong, segFrame.minAlong + 1.4, segFrame.maxAlong - 1.4);
         pt = roadPointAt(segRoad, a, clampedLat);
       } else {
-        const rx = Math.cos(player.heading ?? 0);
-        const rz = -Math.sin(player.heading ?? 0);
+        const rx = dispersed ? fz : Math.cos(player.heading ?? 0);
+        const rz = dispersed ? -fx : -Math.sin(player.heading ?? 0);
         pt = {
           x: cand.x + fx * dAlong + rx * (clampedLat - cand.lat),
           z: cand.z + fz * dAlong + rz * (clampedLat - cand.lat),
@@ -3734,10 +3848,10 @@ export function spawnCrowdAhead(world, rawCount = 20) {
   let maxForwardM = -Infinity;
   let maxAbsLateralM = 0;
   const MAX_CROWD_LATERAL_M = 16.0;
-  const rxPlayer = Math.cos(player.heading ?? 0);
-  const rzPlayer = -Math.sin(player.heading ?? 0);
+  const rxPlayer = dispersed ? fz : Math.cos(player.heading ?? 0);
+  const rzPlayer = dispersed ? -fx : -Math.sin(player.heading ?? 0);
 
-  // Pre-collect drivable roads that intersect the strict [22..42 m] forward-projection band within +-16 m lateral reach!
+  const maxForwardMForWave = dispersed ? 32 + 20 * (Math.ceil(targetCount / 5) - 1) : 41.8;
   const forwardBandSegs = [];
   for (let rIdx = 0; rIdx < drivableRoads.length; rIdx++) {
     const r = drivableRoads[rIdx];
@@ -3748,29 +3862,26 @@ export function spawnCrowdAhead(world, rawCount = 20) {
       const pt = roadPointAt(r, a, 0);
       const fwd = (pt.x - player.x) * fx + (pt.z - player.z) * fz;
       const lat = Math.abs((pt.x - player.x) * rxPlayer + (pt.z - player.z) * rzPlayer);
-      if (fwd >= 22.2 && fwd <= 41.8 && lat <= MAX_CROWD_LATERAL_M + 4.0) {
+      if (fwd >= 22.2 && fwd <= maxForwardMForWave && lat <= MAX_CROWD_LATERAL_M + 4.0) {
         forwardBandSegs.push({ road: r, frame: rf, along: a });
       }
     }
   }
 
   for (let i = 0; i < targetCount; i++) {
-    const bandLo = 22.2 + (16.2 * i) / targetCount;
-    const bandHi = 22.2 + (16.2 * (i + 1)) / targetCount;
+    const bandLo = dispersed ? 22.2 + 20 * Math.floor(i / 5) : 22.2 + (16.2 * i) / targetCount;
+    const bandHi = dispersed ? bandLo + 9.2 : 22.2 + (16.2 * (i + 1)) / targetCount;
     let chosen = null;
     let chosenWaypoints = null;
     let chosenForwardM = 0;
     let chosenAbsLateralM = 0;
 
     for (let attempt = 0; attempt < 360; attempt++) {
-      const corridorDistM = attempt < 32
-        ? rng.range(bandLo, bandHi)
-        : rng.range(22.2, 41.6);
+      const corridorDistM = dispersed || attempt < 32 ? rng.range(bandLo, bandHi) : rng.range(22.2, 41.6);
       let cand;
       if (attempt < 64) {
         cand = sampleCorridorPose(corridorDistM, i + attempt, i, attempt);
       } else if (attempt < 190 || forwardBandSegs.length === 0) {
-        // Sample strictly inside [22.2..41.6 m] forward and [-16..+16 m] lateral on the upcoming street!
         const latSpan = attempt < 130 ? 10.5 : MAX_CROWD_LATERAL_M;
         const lat = rng.range(-latSpan, latSpan);
         const tx = player.x + fx * corridorDistM + rxPlayer * lat;
@@ -3825,11 +3936,13 @@ export function spawnCrowdAhead(world, rawCount = 20) {
       const rawAbsLat = Math.abs((cand.x - player.x) * rxPlayer + (cand.z - player.z) * rzPlayer);
       const euclidM = Math.hypot(cand.x - player.x, cand.z - player.z);
       if (
-        rawFwd < 22.0 ||
-        rawFwd > 42.0 ||
+        rawFwd < (dispersed ? bandLo - .2 : 22) ||
+        rawFwd > (dispersed ? bandHi + .2 : 42) ||
         rawAbsLat > MAX_CROWD_LATERAL_M ||
         euclidM < 22.0 ||
-        euclidM > 46.0
+        euclidM > (dispersed ? maxForwardMForWave + 5 : 46) ||
+        (dispersed && (!cand.road || Math.abs(cand.lat) < 2.35 ||
+          Math.abs(cand.lat) > (cand.road.width ?? 10) / 2 - 1.55))
       )
         continue;
       if (!isSpawnClear(cand.x, cand.z)) continue;
@@ -3915,15 +4028,12 @@ export function spawnCrowdAhead(world, rawCount = 20) {
   }
 
   entry.waveSerial = wave;
-  if (prevActiveIds.size > 0) {
+  if (!dispersed && prevActiveIds.size > 0) {
     for (let i = world.actors.length - 1; i >= 0; i--) {
-      if (prevActiveIds.has(world.actors[i].id)) {
-        world.actors.splice(i, 1);
-      }
+      if (prevActiveIds.has(world.actors[i].id)) world.actors.splice(i, 1);
     }
-    if (world.pursuit?.yieldingFor && prevActiveIds.has(world.pursuit.yieldingFor.id)) {
+    if (world.pursuit?.yieldingFor && prevActiveIds.has(world.pursuit.yieldingFor.id))
       world.pursuit.yieldingFor = null;
-    }
     entry.activeIds.clear();
   }
   for (let i = 0; i < stagedPeople.length; i++) {
@@ -3963,6 +4073,8 @@ export function spawnCrowdAhead(world, rawCount = 20) {
 
   const summary = {
     ok: true,
+    ...(dispersed ? { layout: DISPERSED_CROWD_LAYOUT, retainedPreviousCount: prevActiveIds.size,
+      clearCentreWidthM: 3.94, cohortSpacingM: 20 } : {}),
     tick: world.tick,
     spawned: ids.length,
     nearestForwardM: ids.length > 0 ? minForwardM : null,

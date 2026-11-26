@@ -15,6 +15,7 @@ export function resetPursuitEpisode(stage, seed) {
       ...(stage.curbSupport === undefined ? {} : { curbSupport: stage.curbSupport }),
       ...(stage.chasePresence === undefined ? {} : { chasePresence: stage.chasePresence }),
       ...(stage.tacticalPursuit === undefined ? {} : { tacticalPursuit: stage.tacticalPursuit }),
+      ...(stage.policeFairness === undefined ? {} : { policeFairness: stage.policeFairness }),
       ...(stage.civilianCrossingPreview === undefined ? {} : { civilianCrossingPreview: stage.civilianCrossingPreview }),
       ...(stage.patrolTrafficPreview === undefined ? {} : { patrolTrafficPreview: stage.patrolTrafficPreview }),
       ...(stage.patrolChainYield === undefined ? {} : { patrolChainYield: stage.patrolChainYield }),

@@ -4,6 +4,7 @@ import { getDispatchObservation } from "./gta-pursuit-env.js";
 import { selectDispatchMovement, requireDispatchScan } from "./pursuit-shield.js";
 import { planDispatchEvasion } from "./pursuit-evasion.js";
 import { PAKO_EVASIVE_CONTROL, planPakoEvasiveAction } from "./pako-evasive-control.js";
+import { SMART_ESCAPE_CONTROL, planSmartEscapeAction } from "./pako-smart-escape.js";
 
 function stripNitro(action) {
   if (!action || !Object.prototype.hasOwnProperty.call(action, "nitro")) return action;
@@ -79,7 +80,8 @@ export function applyFrozenDispatchAction(world, driver, cameraStream = null) {
         }
       : world;
     action = driver.policy.action(getDispatchObservation(obsWorld, driver.policy.observation));
-    const alternate = driver.evasiveControl === PAKO_EVASIVE_CONTROL ? planPakoEvasiveAction
+    const alternate = driver.evasiveControl === SMART_ESCAPE_CONTROL ? planSmartEscapeAction
+      : driver.evasiveControl === PAKO_EVASIVE_CONTROL ? planPakoEvasiveAction
       : driver.evasion ? planDispatchEvasion : null;
     const guarded = selectDispatchMovement(world, action, alternate);
     const cameraBrake = ignorePedCol ? null : visualCrossingBrake(world.visualState, cameraStream, guarded);

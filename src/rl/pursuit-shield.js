@@ -480,6 +480,10 @@ export function selectDispatchMovement(world, requested, alternate = null) {
   if (!alternate || world.pursuit.gta.scan.tick !== world.tick) return guarded;
   const scan = world.pursuit.gta.scan;
   const planner = alternate(world, requested);
+  if (planner.controller === "pako-smart-escape-v3") {
+    const checked = guardDispatchAction(world, planner.action);
+    return { ...checked, planner: checked.reason ? { ...planner, guardReason: checked.reason } : planner };
+  }
   if (planner.reason === "PREDICTIVE_QUEUE") {
     const checked = guardDispatchAction(world, planner.action);
     return { ...checked, planner: checked.reason ? { ...planner, guardReason: checked.reason } : planner };

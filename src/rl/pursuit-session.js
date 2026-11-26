@@ -213,7 +213,7 @@ export function createPursuitSession(options, { manifest, stage, curriculumSha25
       }
       current.due = normal ? start + (pose[0] - fromTick) * STEP * 1000 : 0;
       active.push(current);
-      if (now() - progressAt >= PROGRESS_INTERVAL_MS) {
+      if (fromTick === 0 || now() - progressAt >= PROGRESS_INTERVAL_MS) {
         progressAt = now();
         report();
       }

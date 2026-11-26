@@ -264,9 +264,9 @@ export function createSuvModel(body = {}) {
     tread: material("SUV tire tread", 0x303831),
     spring: material("SUV spring ochre", 0xaaa075),
     lens: material("SUV sensor glass", 0x6aaca8, { roughness: 0.5, emissive: 0x173b38, emissiveIntensity: 0.25 }),
-    glass: material("SUV upright glazing", 0x7a9aa6, {
-      transparent: true, opacity: 0.32, depthWrite: false, side: THREE.DoubleSide,
-    }),
+    glass: ownMaterial(new THREE.MeshBasicMaterial({
+      name: "SUV upright glazing", color: 0x050709, side: THREE.FrontSide,
+    })),
     lampLeft: material("SUV left headlamp", 0xf6fbff, {
       roughness: 0.16, emissive: 0xe8f4ff, emissiveIntensity: 1.65,
     }),
@@ -421,11 +421,13 @@ export function createSuvModel(body = {}) {
     for (const [z0, z1, name] of [
       [-1.89, -1.66, "quarter"], [-1.54, -0.37, "rear"], [-0.25, 0.66, "front"],
     ]) {
-      const glass = quad(chassis, `suv-${label}-${name}-window`, [
+      const points = [
         [side * 0.824, 1.13, z0], [side * 0.824, 1.13, z1],
         [side * 0.763, 1.68, z1 > 0 ? 0.52 : z1],
         [side * 0.763, 1.68, z0],
-      ], palette.glass);
+      ];
+      const glass = quad(chassis, `suv-${label}-${name}-window`,
+        side > 0 ? points.reverse() : points, palette.glass);
       section(glass);
     }
     const beltline = beam(chassis, `suv-${label}-beltline`, 0.025,

@@ -36,6 +36,7 @@ import { PLAYER_VEHICLE } from "./vehicle-spec.js";
 import { roadLayout } from "./roads.js";
 import { cityFootprints } from "./scenery.js";
 import { SpatialIndex } from "./spatial-index.js";
+import { CITY_PROP_PROFILE, registerCityProps, recordCityPropImpact } from "./city-props.js";
 import { triggerScenario, updateScenarios } from "./scenarios.js";
 import { parkingBays, planArrival } from "./arrival.js";
 import { policySpeed, validatePolicy } from "./policy.js";
@@ -285,6 +286,9 @@ export class World {
       popLimits,
     );
     if (grand) {
+      if (options.cityPropProfile !== undefined && !["none", CITY_PROP_PROFILE].includes(options.cityPropProfile))
+        throw new Error("Unsupported City prop profile");
+      this.config.cityPropProfile = options.cityPropProfile ?? CITY_PROP_PROFILE;
       if (options.vehicleDynamics !== undefined &&
           !["legacy", "city-realism-v1"].includes(options.vehicleDynamics))
         throw new Error("Unsupported City vehicle dynamics profile");
@@ -310,8 +314,11 @@ export class World {
       ...(this.pursuit.packLab ? { pursuitVariant: this.pursuit.variant } : {}),
     });
     if (environment === "egypt") Object.assign(this.config, districtOptions(options));
-    this.district = environment === "metro" ? { ...createUnifiedCity({ dense: cityVersion >= 3, rush, grand }), metro: true } :
+    const metroCity = environment === "metro" ? createUnifiedCity({ dense: cityVersion >= 3, rush, grand }) : null;
+    this.district = metroCity ? { ...metroCity, metro: true } :
       environment === "egypt" ? createEgyptDistrict() : null;
+    if (metroCity?.pedestrianSpawnPool)
+      Object.defineProperty(this.district, "pedestrianSpawnPool", { value: metroCity.pedestrianSpawnPool });
     this.districtCase = environment === "egypt"
       ? createDistrictCase(this.district, this.config.districtCase, this.config.seed) : null;
     if (this.district) {
@@ -386,13 +393,14 @@ export class World {
         : environment === "vehicle"
           ? [{ ...VEHICLE_TEST_BARRIER }]
           : []);
-    this.staticIndex = new SpatialIndex(this.statics);
     this.terrain = grand && this.config.terrainProfile === "cairo-surfaces-v1"
       ? createCityTerrain(this.roads, { seed: this.config.seed })
       : null;
     this.terrainElevationAt = this.terrain
       ? (x, z) => terrainElevationAt(this.terrain, x, z)
       : null;
+    registerCityProps(this);
+    this.staticIndex = new SpatialIndex(this.statics);
     this.curbs = grand && this.config.interactionProfile === WHEEL_SCRUB_MODE
       ? surveyMetroCurb(this, METRO_CITY_CURBS)
       : null;
@@ -675,6 +683,7 @@ export class World {
     }
     for (const car of this.actors.filter((actor) => actor !== this.player))
       if (!this.assignTrafficRoute(car)) throw new Error(`No district continuation for ${car.id}.`);
+    let sparePedestrianSpawn = district.pedestrianSpawns.length;
     for (let i = 0; i < this.config.pedestrians; i++) {
       const spawn = district.pedestrianSpawns[i];
       const road = district.drivingRoads.find((item) => item.id === spawn.roadId);
@@ -687,6 +696,18 @@ export class World {
       };
       person.body = createPedestrianBody(person);
       person.radius = person.body.radiusM;
+      if (!this.free(person, 0.12) && this.config.cityPropProfile === CITY_PROP_PROFILE) {
+        const pool = district.pedestrianSpawnPool ?? [];
+        while (sparePedestrianSpawn < pool.length) {
+          const replacement = pool[sparePedestrianSpawn++];
+          const replacementRoad = district.drivingRoads.find(item => item.id === replacement.roadId);
+          if (!replacementRoad) continue;
+          const candidate = { ...person, ...replacement, road: replacementRoad };
+          if (!this.free(candidate, .12)) continue;
+          Object.assign(person, replacement, { road: replacementRoad });
+          break;
+        }
+      }
       if (!this.free(person, 0.12)) throw new Error(`District person spawn ${i} is not clear.`);
       initializeDistrictActor(this, person);
       this.nextWalk(person);
@@ -971,15 +992,18 @@ export class World {
       return true;
     }
     if (command.type === "spawn-crowd-ahead") {
+      if (command.layout !== undefined && command.layout !== "dispersed-cohorts-v1")
+        throw new Error("Unsupported crowd layout");
       if (["vision", "vehicle"].includes(this.environment)) return false;
       const count = clamp(
         Math.round(Number.isFinite(Number(command.count)) ? Number(command.count) : 20),
         1,
         40,
       );
-      spawnCrowdAhead(this, count);
+      spawnCrowdAhead(this, count, { layout: command.layout });
       if (record) {
-        this.events.push({ tick: this.tick, command: { type: "spawn-crowd-ahead", count } });
+        this.events.push({ tick: this.tick, command: { type: "spawn-crowd-ahead", count,
+          ...(command.layout === undefined ? {} : { layout: command.layout }) } });
       }
       return true;
     }
@@ -1115,7 +1139,10 @@ export class World {
       dt: STEP, previousState,
     }) : behavior;
     if (predictive) this.districtSpeedState = composed.nextState;
-    const safe = this.safeSpeed(actor, composed, usePlannedPath);
+    let safe = this.safeSpeed(actor, composed, usePlannedPath);
+    if (actor === this.player && this.mode === "manual" &&
+        this.statics.some(site => site.propImpact && site.id === safe.blockedBy))
+      safe = composed;
     const command = attributeDistrictApplied({ requested, behavior, composed, safe });
     actor.districtSources = command.districtSources;
     if (actor === this.player && this.districtCase && this.districtCase.id !== "ambient") {
@@ -1863,6 +1890,7 @@ export class World {
             hitObstacle && hitObstacle.type !== "static"
               ? this.actors.find((a) => a.id === hitObstacle.id) ?? hitObstacle
               : hitObstacle;
+          recordCityPropImpact(this, liveObstacle, contact);
           if (
             liveObstacle &&
             (liveObstacle.type === "vehicle" || liveObstacle.kind === "parked-vehicle")
@@ -2378,6 +2406,7 @@ export class World {
           ...(data.config.vehicleDynamics === undefined ? { vehicleDynamics: "legacy" } : {}),
           ...(data.config.terrainProfile === undefined ? { terrainProfile: "flat" } : {}),
           ...(data.config.interactionProfile === undefined ? { interactionProfile: "none" } : {}),
+          ...(data.config.cityPropProfile === undefined ? { cityPropProfile: "none" } : {}),
         }
       : data.config;
     const world = new World(options, data.environment);

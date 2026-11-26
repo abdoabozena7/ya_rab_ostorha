@@ -10,6 +10,7 @@ import { PURSUIT_STOP, validatePursuitAction } from "../core/pursuit-controls.js
 import { selectDispatchMovement, requireDispatchScan } from "./pursuit-shield.js";
 import { planDispatchEvasion } from "./pursuit-evasion.js";
 import { PAKO_EVASIVE_CONTROL, planPakoEvasiveAction } from "./pako-evasive-control.js";
+import { SMART_ESCAPE_CONTROL, planSmartEscapeAction } from "./pako-smart-escape.js";
 import { MEASURED_QUEUE_CORRIDOR, MEASURED_QUEUE_DETOUR, planMeasuredQueueCorridor, planMeasuredQueueDetour }
   from "./pako-measured-detour.js";
 import { finishPursuitDecision, observePursuitDecision, startPursuitDecision } from "./pursuit-diagnostics.js";
@@ -253,7 +254,7 @@ export class GtaPursuitEnv {
       throw new TypeError("Brake shield is only available for dispatch-v1");
     if (typeof evasion !== "boolean" || (evasion && !shield))
       throw new TypeError("Predictive recovery requires the independent Dispatch brake shield");
-    if (evasiveControl !== undefined && (evasiveControl !== PAKO_EVASIVE_CONTROL || !shield))
+    if (evasiveControl !== undefined && (![PAKO_EVASIVE_CONTROL, SMART_ESCAPE_CONTROL].includes(evasiveControl) || !shield))
       throw new TypeError("PAKO evasive control requires the independent Dispatch brake shield");
     if (queueDetour !== undefined && (![MEASURED_QUEUE_DETOUR, MEASURED_QUEUE_CORRIDOR].includes(queueDetour) || !shield))
       throw new TypeError("Measured queue detour requires the independent Dispatch brake shield");
@@ -337,7 +338,8 @@ export class GtaPursuitEnv {
     const dispatch = this.observationSchema !== GTA_OBSERVATION_SCHEMA;
     const rewardComponents = dispatch ? { progress: 0, time: 0, instability: 0, safety: 0, capture: 0, outcome: 0 } : null;
     const trace = this.decisionTrace;
-    const alternate = this.evasiveControl === PAKO_EVASIVE_CONTROL ? planPakoEvasiveAction
+    const alternate = this.evasiveControl === SMART_ESCAPE_CONTROL ? planSmartEscapeAction
+      : this.evasiveControl === PAKO_EVASIVE_CONTROL ? planPakoEvasiveAction
       : this.queueDetour === MEASURED_QUEUE_CORRIDOR ? planMeasuredQueueCorridor
       : this.queueDetour ? planMeasuredQueueDetour : this.evasion ? planDispatchEvasion : null;
     let shieldTick = null, shieldReason = null, interventions = 0, pending = null, beforeRewards = null, planner = null;

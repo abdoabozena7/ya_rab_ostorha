@@ -10,6 +10,8 @@ import { avenueCrossings } from "../core/district-behavior.js";
 import { addPlaceSigns } from "./place-signs.js";
 import { createPlayerVehicle } from "./player-vehicle.js";
 import { createEgyptStreetLayer, usesCityV4StreetFinish } from "./egypt-streets.js";
+import { createCityPropsView } from "./city-props-view.js";
+import { CITY_PROP_PROFILE } from "../core/city-props.js";
 import { createPedestrianRig } from "./pedestrian-rig.js";
 import { createDistrictProps } from "./district-props.js";
 import { createPursuitView } from "./pursuit-view.js";
@@ -945,6 +947,13 @@ export class WorldView {
     this.buildRoads();
     if (this.cinematicRoadTextures) this.applyCinematicRoadSurfaces();
     this.streetSurfaces = this.metro && world.terrain ? createStreetSurfacesView(scene, world) : null;
+    this.cityProps = world.config?.cityPropProfile === CITY_PROP_PROFILE ? createCityPropsView(scene, world) : null;
+    if (this.cityProps) {
+      for (const name of ["street-trees-trunks-instanced", "street-trees-canopies-instanced"]) {
+        const mesh = scene.getObjectByName(name);
+        if (mesh) mesh.removeFromParent();
+      }
+    }
     if (!grandCity && (world.environment === "city" || world.environment === "egypt" || world.pursuit || this.metro))
       this.loadSurfaces();
     if (world.environment === "city") addPlaceSigns(THREE, scene, world);
@@ -1170,6 +1179,7 @@ export class WorldView {
       "building-skyscraper-a",
     ];
     this.world.statics.forEach((site, i) => {
+      if (this.cityProps && site.propImpact) return;
       const parked = this.pursuitView && site.kind === "parked-vehicle";
       if (site.kind === "place-sign" || site.kind === "barrier" || (!parked && site.kind === "parked-vehicle")
           || (site.kind === "building" && ["city", "vision", "egypt", "metro"].includes(this.world.environment))) return;
@@ -1785,6 +1795,7 @@ export class WorldView {
     for (const [id, record] of this.roots)
       if (id !== player.id && record.frame !== frame) this.removeMetroActor(id, record);
     this.prepareMetroProps(anchors);
+    this.cityProps?.update(anchors);
     this.metroSilhouettes.end();
     this.pursuitView?.update(world, alpha);
     this.stepCrashEffects(alpha, cameras?.[0] ?? null);
@@ -2186,6 +2197,7 @@ export class WorldView {
     this.pursuitView?.dispose();
     this.crashEffects?.dispose();
     this.streetSurfaces?.dispose();
+    this.cityProps?.dispose();
     this.cinematicRoadTextures?.dispose();
     if (this.skyDome) {
       this.skyDome.geometry?.dispose();

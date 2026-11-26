@@ -6,7 +6,7 @@ import {
 import { METRO_CITY_CURBS, METRO_CURB_SUPPORT, sweepSafeWithCurbs } from "./pako-curb.js";
 import { PATROL_CHAIN_YIELD, PATROL_LATERAL_YIELD } from "./pako-patrol-yield.js";
 import {
-  TACTICAL_PURSUIT_MODE, canPatrolUseCurbPrivilege, isTacticalPursuit,
+  CITY_FAIR_POLICE, TACTICAL_PURSUIT_MODE, canPatrolUseCurbPrivilege, isFairCityPolice, isTacticalPursuit,
   planTacticalInterceptAim, selectTacticalSearchTarget, tacticalPatrolSpec, tacticalSurgePace,
 } from "./pako-tactical-police.js";
 import {
@@ -117,7 +117,7 @@ export function resolveGtaChaseConfig(options = {}, level = GtaChaseConfig.wante
   for (const key of Object.keys(options))
     if (!Object.hasOwn(GtaChaseConfig, key) &&
         !["ruleset", "surveillanceZones", "civilianCrossingPreview", "patrolTrafficPreview", "damageFeedback", "curbSupport",
-          "patrolChainYield", "chasePresence", "tacticalPursuit"].includes(key))
+          "patrolChainYield", "chasePresence", "tacticalPursuit", "policeFairness"].includes(key))
       throw new TypeError(`Unknown GTA chase config field: ${key}`);
   const config = { ...GtaChaseConfig, wantedLevelStart: level, ...options };
   if (Object.hasOwn(config, "ruleset") && config.ruleset !== "legacy" && config.ruleset !== DISPATCH_RULESET)
@@ -146,6 +146,10 @@ export function resolveGtaChaseConfig(options = {}, level = GtaChaseConfig.wante
   if (Object.hasOwn(config, "tacticalPursuit") &&
       (config.ruleset !== DISPATCH_RULESET || config.tacticalPursuit !== TACTICAL_PURSUIT_MODE))
     throw new TypeError(`tacticalPursuit requires "${TACTICAL_PURSUIT_MODE}" and ruleset "${DISPATCH_RULESET}"`);
+  if (Object.hasOwn(config, "policeFairness") &&
+      (config.ruleset !== DISPATCH_RULESET || config.tacticalPursuit !== TACTICAL_PURSUIT_MODE ||
+        config.policeFairness !== CITY_FAIR_POLICE))
+    throw new TypeError(`policeFairness requires "${CITY_FAIR_POLICE}" with Dispatch tactical pursuit`);
   if (Object.hasOwn(config, "patrolChainYield") &&
       (config.ruleset !== DISPATCH_RULESET || ![PATROL_CHAIN_YIELD, PATROL_LATERAL_YIELD].includes(config.patrolChainYield)))
     throw new TypeError(`patrolChainYield requires "${PATROL_CHAIN_YIELD}" or "${PATROL_LATERAL_YIELD}" and ruleset "${DISPATCH_RULESET}"`);
@@ -199,7 +203,7 @@ export function initializeGtaPatrol(car, unitType, state) {
     car.width = 2.1;
   }
   if (tactical) {
-    const spec = tacticalPatrolSpec(unitType, state.wantedLevel, config.npcSpeedMultiplier);
+    const spec = tacticalPatrolSpec(unitType, state.wantedLevel, config.npcSpeedMultiplier, config.policeFairness);
     car.spec = {
       acceleration: spec.acceleration,
       braking: spec.braking,
@@ -224,7 +228,7 @@ export function refreshTacticalPatrolSpecs(state) {
   const mult = state.gta.config.npcSpeedMultiplier;
   for (const car of state.patrols) {
     if (car.aiState === "WRECKED") continue;
-    const spec = tacticalPatrolSpec(car.unitType, state.wantedLevel, mult);
+    const spec = tacticalPatrolSpec(car.unitType, state.wantedLevel, mult, state.gta.config.policeFairness);
     car.spec = { ...car.spec, acceleration: spec.acceleration, braking: spec.braking,
       steerRate: spec.steerRate, reverseSpeed: spec.reverseSpeed };
     car.maxSpeed = spec.maxSpeed;
@@ -442,7 +446,19 @@ export function gtaPatrolCommand(world, car, planRoute, canDriveDirect, steerBia
   }
   const seen = s.response.sightedBy.has(car);
   const dispatch = Boolean(s.response.dispatch);
-  const tracked = dispatch ? isDispatchTracked(s.response) : seen;
+  const fair = isFairCityPolice(s);
+  const tracked = fair ? seen : dispatch ? isDispatchTracked(s.response) : seen;
+  if (fair && !seen && car.gtaAI.beat &&
+      (!s.response.lastSeen || tick - s.response.lastSeen.tick > Math.round(12 / STEP))) {
+    const beat = car.gtaAI.beat;
+    if (distance(car, beat.target) < 8) {
+      beat.target = beat.target === beat.a ? beat.b : beat.a;
+      ai.nextPlan = 0;
+    }
+    car.aiState = "PATROL";
+    return { ...routeCommand(world, car, beat.target, Math.min(11, car.maxSpeed),
+      planRoute, steerBias, 0, false), reason: "PATROL" };
+  }
   if (dispatch && !s.response.lastSeen) {
     ai.commitUntil = null;
     car.aiState = "SEARCH";
@@ -828,7 +844,18 @@ export function applyGtaContact(world, a, b, pa, pb, normal, sweptClosing, fresh
   const shareA = Number.isFinite(mb) ? mb / (ma + mb) : 1;
   const shareB = Number.isFinite(ma) ? ma / (ma + mb) : 1;
   const invA = isGtaStationary(a.a) ? 0 : 1 / ma, invB = isGtaStationary(b.a) ? 0 : 1 / mb;
-  if (closingSpeed > 0 && invA + invB > 0) {
+  const fixedProp = a.a.type === "static" && a.a.propImpact ? a :
+    b.a.type === "static" && b.a.propImpact ? b : null;
+  if (fixedProp && closingSpeed > 0) {
+    const moving = fixedProp === a ? b : a;
+    const pose = fixedProp === a ? pb : pa;
+    const velocity = fixedProp === a ? vb : va;
+    const normalSpeed = velocity.x * x + velocity.z * z;
+    const tx = velocity.x - normalSpeed * x, tz = velocity.z - normalSpeed * z;
+    const sin = Math.sin(pose.heading), cos = Math.cos(pose.heading);
+    moving.impulse = { speed: tx * sin + tz * cos,
+      gtaSlipMps: tx * cos - tz * sin, gtaYawRate: 0 };
+  } else if (closingSpeed > 0 && invA + invB > 0) {
     const impulse = Math.min(42, closingSpeed) * (isPit ? 1.38 : 1.17) / (invA + invB);
     if (ownedA || (scrubTwoBody && a.a?.type === "vehicle")) {
       shove(a, pa, va, leverArm(pa, pb), x, z, -impulse * invA, isPit && a.a === player);

@@ -3651,6 +3651,11 @@
 
   // src/core/pako-tactical-police.js
   var TACTICAL_PURSUIT_MODE = "gta-tactical-v1";
+  var CITY_FAIR_POLICE = "city-fair-v1";
+  var CITY_FAIR_POLICE_SPEED_MPS = 28;
+  function isFairCityPolice(state) {
+    return (state?.gta?.config ?? state)?.policeFairness === CITY_FAIR_POLICE;
+  }
   var SQUAD_BY_STAR = Object.freeze([0, 4, 6, 8, 11, 14]);
   var SEARCH_FAN_ANGLES = Object.freeze([0, 0.58, -0.58, 1.15, -1.15, 1.75, -1.75, Math.PI]);
   var OVERTAKE_STEER_OFFSETS = Object.freeze([0.08, -0.08, 0.15, -0.15, 0.24, -0.24, 0.38, -0.38, 0.54, -0.54, 0.68, -0.68]);
@@ -3869,12 +3874,12 @@
     const cap = Number.isFinite(maxActivePatrols) ? Math.max(0, maxActivePatrols) : 14;
     return Math.min(cap, SQUAD_BY_STAR[star]);
   }
-  function tacticalPatrolSpec(unitType, wantedLevel = 3, npcSpeedMultiplier = 1) {
+  function tacticalPatrolSpec(unitType, wantedLevel = 3, npcSpeedMultiplier = 1, fairness) {
     const level = clamp(Math.round(wantedLevel || 1), 1, 5);
     const mult = Number.isFinite(npcSpeedMultiplier) && npcSpeedMultiplier > 0 ? npcSpeedMultiplier : 1;
     if (unitType === "interceptor") {
       return {
-        maxSpeed: (35.5 + 0.5 * level) * mult,
+        maxSpeed: Math.min((35.5 + 0.5 * level) * mult, fairness === CITY_FAIR_POLICE ? CITY_FAIR_POLICE_SPEED_MPS : Infinity),
         acceleration: 8.8,
         braking: 11.4,
         steerRate: 2.75,
@@ -3884,7 +3889,7 @@
     }
     if (unitType === "swat") {
       return {
-        maxSpeed: (28.8 + 0.4 * level) * mult,
+        maxSpeed: Math.min((28.8 + 0.4 * level) * mult, fairness === CITY_FAIR_POLICE ? CITY_FAIR_POLICE_SPEED_MPS : Infinity),
         acceleration: 6.4,
         braking: 10,
         steerRate: 1.95,
@@ -3893,7 +3898,7 @@
       };
     }
     return {
-      maxSpeed: (33.1 + 0.45 * level) * mult,
+      maxSpeed: Math.min((33.1 + 0.45 * level) * mult, fairness === CITY_FAIR_POLICE ? CITY_FAIR_POLICE_SPEED_MPS : Infinity),
       acceleration: 7.6,
       braking: 10.6,
       steerRate: 2.45,
@@ -5161,6 +5166,22 @@
   function updateDispatchTracking(world, initial) {
     const { player, pursuit, tick } = world, { response, gta } = pursuit;
     if (isTacticalGta(pursuit)) {
+      const fair = gta.config.policeFairness === "city-fair-v1";
+      if (fair) {
+        for (const unit2 of response.sightedBy) {
+          const dx = player.x - unit2.x, dz = player.z - unit2.z;
+          const range = Math.hypot(dx, dz);
+          const forward2 = dx * Math.sin(unit2.heading) + dz * Math.cos(unit2.heading);
+          const right = dx * Math.cos(unit2.heading) - dz * Math.sin(unit2.heading);
+          const touching = overlaps(unit2, player, 0.05);
+          const visible2 = range <= 105 && forward2 > 0 && Math.abs(Math.atan2(right, forward2)) <= 1.15;
+          if (!(touching || visible2) || !gtaLineClear(world, unit2, dx, dz, range)) {
+            response.sightedBy.delete(unit2);
+            response.closePatrols.delete(unit2);
+          }
+        }
+        response.unitsInContact = response.sightedBy.size;
+      }
       const d2 = response.dispatch ??= createDispatchResponse();
       const wasInSight = d2.state === "VISUALLY_SPOTTED" || !d2.tactical && isDispatchTracked(response);
       const { x: x2, z: z2, heading: heading3, speed: speed2 } = player;
@@ -5179,7 +5200,7 @@
       const patrolCount = pursuit.patrols?.size ?? pursuit.patrols?.length ?? 0;
       if (!d2.escapeEligible && (initial || d2.lastSampleTick !== tick)) {
         const consecutiveStep = !initial && (d2.lastSampleTick === null || d2.lastSampleTick === tick - 1);
-        const qualifyingStep = consecutiveStep && (inSight || mobileNearbyTactical(pursuit.patrols, player) || Boolean(d2.everSpotted && patrolCount === 0));
+        const qualifyingStep = consecutiveStep && (inSight || !fair && mobileNearbyTactical(pursuit.patrols, player) || Boolean(d2.everSpotted && patrolCount === 0));
         d2.mobileTrackTicks = qualifyingStep ? (d2.mobileTrackTicks ?? 0) + 1 : 0;
         d2.escapeEligible = d2.mobileTrackTicks >= ELIGIBLE_TICKS || Boolean(d2.everSpotted && patrolCount === 0);
       }
@@ -5277,6 +5298,12 @@
     if (isTacticalGta(pursuit)) {
       const dispatch = response.dispatch ??= createDispatchResponse();
       dispatch.tactical = true;
+      if (gta.config.policeFairness === "city-fair-v1" && !dispatch.everSpotted) {
+        dispatch.coolingDown = false;
+        dispatch.starDecayTicks = 0;
+        response.clearProgress = 0;
+        return false;
+      }
       if ((response.unitsInContact ?? 0) > 0) return false;
       const nearestPatrolM = nearestActivePatrolM(player, pursuit.patrols);
       response.nearestPatrolM = Number.isFinite(nearestPatrolM) ? nearestPatrolM : null;
@@ -5475,6 +5502,7 @@
   }
   function recycleTrailingChasePatrols(world, deployPatrol, removePatrol) {
     const pursuit = world?.pursuit;
+    if (pursuit?.gta?.config?.policeFairness === "city-fair-v1") return 0;
     if (!isAggressiveChase(pursuit)) return 0;
     if (pursuit.phase && pursuit.phase !== "running") return 0;
     const tactical = isTacticalPursuit(pursuit);
@@ -5734,7 +5762,8 @@
         "curbSupport",
         "patrolChainYield",
         "chasePresence",
-        "tacticalPursuit"
+        "tacticalPursuit",
+        "policeFairness"
       ].includes(key3))
         throw new TypeError(`Unknown GTA chase config field: ${key3}`);
     const config = { ...GtaChaseConfig, wantedLevelStart: level, ...options2 };
@@ -5756,6 +5785,8 @@
       throw new TypeError(`chasePresence requires "${AGGRESSIVE_CHASE_PRESENCE}" and ruleset "${DISPATCH_RULESET}"`);
     if (Object.hasOwn(config, "tacticalPursuit") && (config.ruleset !== DISPATCH_RULESET || config.tacticalPursuit !== TACTICAL_PURSUIT_MODE))
       throw new TypeError(`tacticalPursuit requires "${TACTICAL_PURSUIT_MODE}" and ruleset "${DISPATCH_RULESET}"`);
+    if (Object.hasOwn(config, "policeFairness") && (config.ruleset !== DISPATCH_RULESET || config.tacticalPursuit !== TACTICAL_PURSUIT_MODE || config.policeFairness !== CITY_FAIR_POLICE))
+      throw new TypeError(`policeFairness requires "${CITY_FAIR_POLICE}" with Dispatch tactical pursuit`);
     if (Object.hasOwn(config, "patrolChainYield") && (config.ruleset !== DISPATCH_RULESET || ![PATROL_CHAIN_YIELD, PATROL_LATERAL_YIELD].includes(config.patrolChainYield)))
       throw new TypeError(`patrolChainYield requires "${PATROL_CHAIN_YIELD}" or "${PATROL_LATERAL_YIELD}" and ruleset "${DISPATCH_RULESET}"`);
     for (const key3 of ["wantedLevelStart", "wantedLevelMax", "maxActivePatrols"]) {
@@ -5816,7 +5847,7 @@
       car.width = 2.1;
     }
     if (tactical) {
-      const spec = tacticalPatrolSpec(unitType, state.wantedLevel, config.npcSpeedMultiplier);
+      const spec = tacticalPatrolSpec(unitType, state.wantedLevel, config.npcSpeedMultiplier, config.policeFairness);
       car.spec = {
         acceleration: spec.acceleration,
         braking: spec.braking,
@@ -5842,7 +5873,7 @@
     const mult = state.gta.config.npcSpeedMultiplier;
     for (const car of state.patrols) {
       if (car.aiState === "WRECKED") continue;
-      const spec = tacticalPatrolSpec(car.unitType, state.wantedLevel, mult);
+      const spec = tacticalPatrolSpec(car.unitType, state.wantedLevel, mult, state.gta.config.policeFairness);
       car.spec = {
         ...car.spec,
         acceleration: spec.acceleration,
@@ -6037,7 +6068,26 @@
     }
     const seen = s.response.sightedBy.has(car);
     const dispatch = Boolean(s.response.dispatch);
-    const tracked = dispatch ? isDispatchTracked(s.response) : seen;
+    const fair = isFairCityPolice(s);
+    const tracked = fair ? seen : dispatch ? isDispatchTracked(s.response) : seen;
+    if (fair && !seen && car.gtaAI.beat && (!s.response.lastSeen || tick - s.response.lastSeen.tick > Math.round(12 / STEP))) {
+      const beat = car.gtaAI.beat;
+      if (distance(car, beat.target) < 8) {
+        beat.target = beat.target === beat.a ? beat.b : beat.a;
+        ai.nextPlan = 0;
+      }
+      car.aiState = "PATROL";
+      return { ...routeCommand(
+        world,
+        car,
+        beat.target,
+        Math.min(11, car.maxSpeed),
+        planRoute,
+        steerBias,
+        0,
+        false
+      ), reason: "PATROL" };
+    }
     if (dispatch && !s.response.lastSeen) {
       ai.commitUntil = null;
       car.aiState = "SEARCH";
@@ -6374,7 +6424,20 @@
     const shareA = Number.isFinite(mb) ? mb / (ma + mb) : 1;
     const shareB = Number.isFinite(ma) ? ma / (ma + mb) : 1;
     const invA = isGtaStationary(a.a) ? 0 : 1 / ma, invB = isGtaStationary(b.a) ? 0 : 1 / mb;
-    if (closingSpeed2 > 0 && invA + invB > 0) {
+    const fixedProp = a.a.type === "static" && a.a.propImpact ? a : b.a.type === "static" && b.a.propImpact ? b : null;
+    if (fixedProp && closingSpeed2 > 0) {
+      const moving = fixedProp === a ? b : a;
+      const pose5 = fixedProp === a ? pb : pa;
+      const velocity = fixedProp === a ? vb : va;
+      const normalSpeed = velocity.x * x + velocity.z * z;
+      const tx = velocity.x - normalSpeed * x, tz = velocity.z - normalSpeed * z;
+      const sin = Math.sin(pose5.heading), cos = Math.cos(pose5.heading);
+      moving.impulse = {
+        speed: tx * sin + tz * cos,
+        gtaSlipMps: tx * cos - tz * sin,
+        gtaYawRate: 0
+      };
+    } else if (closingSpeed2 > 0 && invA + invB > 0) {
       const impulse = Math.min(42, closingSpeed2) * (isPit ? 1.38 : 1.17) / (invA + invB);
       if (ownedA || scrubTwoBody && a.a?.type === "vehicle") {
         shove(a, pa, va, leverArm(pa, pb), x, z, -impulse * invA, isPit && a.a === player);
@@ -8477,6 +8540,150 @@
       return result;
     }
   };
+
+  // src/core/city-props.js
+  var CITY_PROP_PROFILE = "solid-city-props-v1";
+  function hash2D(x, y, seed = 0) {
+    let h = Math.imul(x ^ Math.imul(seed, 2654435769), 2246822507);
+    h = Math.imul(h ^ Math.imul(y, 3266489909), 668265263);
+    h ^= h >>> 15;
+    h = Math.imul(h, 739982445);
+    h ^= h >>> 12;
+    return (h >>> 0) / 4294967295;
+  }
+  function roadEnvelope(road4) {
+    if (isDiagonalRoad(road4)) {
+      const f = roadFrame(road4);
+      return {
+        x: (f.x1 + f.x2) / 2,
+        z: (f.z1 + f.z2) / 2,
+        width: road4.width,
+        length: f.length + road4.width,
+        heading: f.heading,
+        roadRef: road4
+      };
+    }
+    const r = roadRect(road4, 0);
+    return {
+      x: (r.minX + r.maxX) / 2,
+      z: (r.minZ + r.maxZ) / 2,
+      width: r.maxX - r.minX,
+      length: r.maxZ - r.minZ,
+      heading: 0,
+      roadRef: road4
+    };
+  }
+  function withinRoad(x, z, road4, width = 0, end = 0) {
+    const half = road4.width / 2 + width, allowance = road4.width / 2 + end;
+    if (isDiagonalRoad(road4)) {
+      const f = roadFrame(road4), dx = x - f.x1, dz = z - f.z1;
+      const along3 = dx * f.ux + dz * f.uz;
+      return along3 >= -allowance && along3 <= f.length + allowance && Math.abs(-dx * f.uz + dz * f.ux) <= half;
+    }
+    const fixed = road4.axis === "z" ? x : z, along2 = road4.axis === "z" ? z : x;
+    return Math.abs(fixed - road4.fixed) <= half && along2 >= road4.min - allowance && along2 <= road4.max + allowance;
+  }
+  function collectCityStreetProps(world) {
+    const roads = world.roads ?? world.drivingRoads ?? [];
+    const statics = (world.statics ?? []).filter((s) => s.kind !== "city-tree");
+    const staticIndex = new SpatialIndex(statics, 40);
+    const staticReach = statics.reduce((m, s) => Math.max(m, Math.hypot(s.width, s.length) / 2), 24);
+    const envelopes2 = roads.map(roadEnvelope), roadIndex = new SpatialIndex(envelopes2, 64);
+    const roadReach = envelopes2.reduce((m, s) => Math.max(m, Math.hypot(s.width, s.length) / 2), 60);
+    const crossings2 = [];
+    for (const w of world.walkways ?? []) {
+      if (!w.crosswalk && !w.doorway) continue;
+      if (isDiagonalRoad(w)) {
+        const f = roadFrame(w);
+        crossings2.push(
+          { x: f.x1, z: f.z1 },
+          { x: (f.x1 + f.x2) / 2, z: (f.z1 + f.z2) / 2 },
+          { x: f.x2, z: f.z2 }
+        );
+      } else for (const along2 of [w.min, (w.min + w.max) / 2, w.max])
+        crossings2.push(w.axis === "z" ? { x: w.fixed, z: along2 } : { x: along2, z: w.fixed });
+    }
+    const placed = new SpatialIndex([], 16), result = { lamps: [], trees: [], furniture: [] };
+    const candidates2 = roads.filter((r) => r && !r.parkingBay && !r.supportApron && r.width >= 6);
+    const clear = (road4, p, heading2, ground, radial, roadClear, gap) => {
+      const reach = Math.max(ground * Math.SQRT2, radial);
+      const probe = { ...p, width: reach * 2, length: reach * 2, heading: heading2 };
+      for (const env of roadIndex.near(probe, roadReach + reach + 8)) {
+        const r = env.roadRef;
+        if (overlaps(probe, env, 0.12)) return false;
+        if (r === road4) {
+          if (withinRoad(p.x, p.z, r, reach + 0.08)) return false;
+        } else {
+          const extra = r.parkingBay || r.supportApron ? Math.max(3.2, reach + 0.5) : Math.max(roadClear, reach + 0.5);
+          if (withinRoad(p.x, p.z, r, extra, extra)) return false;
+        }
+      }
+      if (staticIndex.near(probe, staticReach + reach + 2).some((s) => overlaps(probe, s, 0.25))) return false;
+      if (crossings2.some((c) => Math.hypot(p.x - c.x, p.z - c.z) < 3.4)) return false;
+      return !placed.near(probe, gap + 1).some((s) => Math.hypot(p.x - s.x, p.z - s.z) < gap);
+    };
+    for (const kind of ["lamps", "trees", "furniture"]) {
+      candidates2.forEach((road4, roadIndex2) => {
+        if (kind === "lamps" && !(road4.zone === "avenue" || !road4.sideStreet && road4.width >= 9.5)) return;
+        const f = roadFrame(road4);
+        if (f.length < (kind === "lamps" ? 28 : kind === "trees" ? 30 : 32)) return;
+        for (const side of [-1, 1]) {
+          const start = kind === "lamps" ? side > 0 ? 16 : 38 : kind === "trees" ? side > 0 ? 27 : 20 : side > 0 ? 21 : 33;
+          const spacing = kind === "lamps" ? 44 : kind === "trees" ? 38 : 46;
+          const end = kind === "lamps" ? 14 : kind === "trees" ? 15 : 16;
+          let slot = 0;
+          for (let along2 = f.minAlong + start; along2 <= f.maxAlong - end; along2 += spacing) {
+            const p = roadPointAt(road4, along2, side * (road4.width / 2 + (kind === "furniture" ? 2.65 : 1.55)));
+            const heading2 = f.heading + (side < 0 ? Math.PI : 0);
+            const scale = kind === "trees" ? 0.88 + 0.16 * hash2D(slot++, roadIndex2, 33059) : 1;
+            const args = kind === "lamps" ? [0.25, 0.35, 4.2, 4.2] : kind === "trees" ? [0.46 * scale, 1.24 * scale, 4.5, 4.8] : [0.5, 0.58, 4.5, 4.4];
+            if (!clear(road4, p, heading2, ...args)) continue;
+            const entry = {
+              x: p.x,
+              y: 0.07 + (world.terrainElevationAt?.(p.x, p.z) ?? 0),
+              z: p.z,
+              heading: heading2,
+              scale
+            };
+            result[kind].push(entry);
+            placed.add(entry);
+          }
+        }
+      });
+    }
+    return result;
+  }
+  var freshImpact = () => ({ hits: 0, damage: 0, lastTick: -1, directionX: 0, directionZ: 1 });
+  function registerCityProps(world) {
+    if (world.config.cityPropProfile !== CITY_PROP_PROFILE) return [];
+    const placements = collectCityStreetProps(world);
+    const trees = placements.trees.map((p, index) => ({
+      ...p,
+      id: `city-tree-${index}`,
+      type: "static",
+      kind: "city-tree",
+      width: 0.41 * p.scale,
+      length: 0.41 * p.scale,
+      height: 5.52 * p.scale,
+      propImpact: freshImpact()
+    }));
+    for (const site of world.statics)
+      if (site.kind === "market-stall") site.propImpact = freshImpact();
+    world.statics.push(...trees);
+    world.cityStreetProps = placements;
+    return trees;
+  }
+  function recordCityPropImpact(world, obstacle, contact) {
+    if (!obstacle?.propImpact || !contact || contact.closingSpeedMps < 0.35) return false;
+    const state = obstacle.propImpact;
+    if (state.hits > 0 && state.lastTick >= world.tick - 8) return false;
+    state.hits++;
+    state.damage = Math.min(1, state.damage + Math.min(0.65, contact.closingSpeedMps / 22));
+    state.lastTick = world.tick;
+    state.directionX = contact.normal.x;
+    state.directionZ = contact.normal.z;
+    return true;
+  }
 
   // src/core/scenarios.js
   var SCENARIOS = Object.freeze(["crossing", "side-traffic", "barrier"]);
@@ -18336,6 +18543,27 @@
     return limitedSpeed * accelerating + acceleration * accelerating ** 2 / 2 + cap * (seconds2 - accelerating);
   }
   function deployGtaPatrol(world, state, tactic, unitType, forwardOnly = false) {
+    if (isFairCityPolice(state)) {
+      if (world.pursuit === state) return null;
+      const car2 = newGtaPatrol(world, state, unitType);
+      const lanes = car2.gtaAI.lanes.filter((lane2) => lane2.high - lane2.low >= 45);
+      const openingBeat = car2.gtaAI.order === 1 ? lanes.find((lane2) => lane2.road.id === "tahrir-boulevard" && lane2.sign === 1) : null;
+      for (let n = 0; n < lanes.length; n++) {
+        const lane2 = n === 0 && openingBeat ? openingBeat : lanes[(car2.gtaAI.order * 17 + n) % lanes.length];
+        for (const fraction of lane2 === openingBeat ? [0.23, 0.35, 0.65] : [0.35, 0.65, 0.5]) {
+          const position2 = lanePoint(lane2, lane2.low + (lane2.high - lane2.low) * fraction);
+          Object.assign(car2, position2);
+          if (!isFree(world, car2, 1) || !bodyOnRoad(car2, world.drivingRoads) || [...state.patrols].some((other) => distance(other, car2) < 22)) continue;
+          const a = lanePoint(lane2, lane2.low + 8);
+          const b = lanePoint(lane2, lane2.high - 8);
+          car2.gtaAI.beat = { roadId: lane2.road.id, a, b, target: lane2.sign > 0 ? b : a };
+          car2.aiState = "PATROL";
+          car2.speed = 0;
+          return registerGtaPatrol(world, state, car2);
+        }
+      }
+      return null;
+    }
     const initialAmbientBeatUnit = world.pursuit !== state && state.patrols.size === 0 && (state.response?.unitsInContact ?? 0) === 0;
     if (isTacticalPursuit(state) && !initialAmbientBeatUnit && (!isDispatchTracked(state.response) || (state.response?.unitsInContact ?? 0) === 0))
       return null;
@@ -18522,6 +18750,13 @@
   }
   function maintainGtaSquad(world) {
     const { pursuit: s, tick, player } = world, { gta } = s;
+    if (isFairCityPolice(s)) {
+      if (tick >= gta.nextSquadTick && s.response.lastSeen) {
+        assignGtaSquad(s.patrols, s.response.lastSeen);
+        gta.nextSquadTick = tick + ticks3(0.5);
+      }
+      return;
+    }
     const coordinated = gta.config.ruleset === "dispatch-v1";
     for (const car of s.patrols) if (car.wreckUntilTick <= tick) removeGtaPatrol(world, s, car);
     if (gta.roadblock?.expires <= tick) {
@@ -18647,7 +18882,7 @@
         if (curb) state.gta.curb = curb;
         state.gta.fadeStars = level;
         const count = gtaPatrolTarget(state);
-        const initialCap = isTacticalPursuit(state) ? Math.min(1, count) : Math.max(0, count - (!isAggressiveChase(state) && gtaRoadblocksEnabled(state) ? 2 : 0));
+        const initialCap = isFairCityPolice(state) ? count : isTacticalPursuit(state) ? Math.min(1, count) : Math.max(0, count - (!isAggressiveChase(state) && gtaRoadblocksEnabled(state) ? 2 : 0));
         fillGtaPatrols(world, state, initialCap);
         if (count && !state.patrols.size) throw new Error("No safe GTA patrol deployment");
         initializeGtaDurability(player, isAggressiveChase(state) ? Math.max(gtaConfig.playerMaxHealth, 180) : gtaConfig.playerMaxHealth, PLAYER_VEHICLE.massKg);
@@ -19873,6 +20108,10 @@
         const impact = contactImpact(ego, other, time, overlapAt, world.tick + 1);
         const egoPoseAt = poseAt(ego, time), otherPoseAt = poseAt(other, time);
         const hitGeom = { otherX: otherPoseAt.x, otherZ: otherPoseAt.z, normal: normalAt(egoPoseAt, otherPoseAt) };
+        if (fresh) recordCityPropImpact(world, other.a, {
+          closingSpeedMps: hitClosingMps,
+          normal: hitGeom.normal
+        });
         if (!playerHit || impact.severity > playerHit.severity) {
           playerHit = impact;
           playerHitGeometry = hitGeom;
@@ -19957,6 +20196,29 @@
     }
     if (playerHit && playerHitGeometry) impactGeometryMap.set(playerHit, playerHitGeometry);
     return playerHit;
+  }
+  function slideAlongFixedProp(world, plans) {
+    const ego = plans.find((p) => p.a === world.player);
+    if (!ego?.impulse || !world.statics.some((s) => s.id === ego.hit && s.propImpact)) return;
+    const contact = poseAt(ego, 1);
+    const sin = Math.sin(contact.heading), cos = Math.cos(contact.heading);
+    const vx = sin * ego.impulse.speed + cos * ego.impulse.gtaSlipMps;
+    const vz = cos * ego.impulse.speed - sin * ego.impulse.gtaSlipMps;
+    const duration = (1 - ego.stop) * STEP;
+    if (Math.hypot(vx, vz) * duration < 1e-5) return;
+    const end = { ...contact, x: contact.x + vx * duration, z: contact.z + vz * duration };
+    const supported = world.pursuit.gta.curb ? sweepSafeWithCurbs(contact, end, [], world.roads, world.pursuit.gta.curb).safe : sweepSafe(contact, end, [], world.roads).safe;
+    if (!supported) return;
+    const steps = Math.max(1, Math.ceil(distance(contact, end) / 0.025));
+    for (let i = 1; i <= steps; i++) {
+      const t = i / steps;
+      const probe = interpolate(contact, end, t);
+      if (world.statics.some((s) => overlaps(probe, s)) || plans.some((p) => p !== ego && overlaps(probe, poseAt(p, ego.stop + (1 - ego.stop) * t))))
+        return;
+    }
+    ego.next = end;
+    ego.stop = 1;
+    ego.travel = travel(ego.a, end, ego.radius);
   }
   function updateClearance(world, playerMotion, plans, solids = []) {
     const s = world.pursuit, near = /* @__PURE__ */ new Set(), touching = /* @__PURE__ */ new Set();
@@ -20095,6 +20357,25 @@
           const lead = world.player, relative = gtaLocal2(actor, lead);
           const longitudinal2 = patrolChainYield(world, actor, command, lead, relative, gtaRearPushSpeed);
           command = longitudinal2 === command && world.pursuit.gta.config.patrolChainYield === PATROL_LATERAL_YIELD ? patrolLateralYield(world, actor, command, lead, relative, projectGtaVehicle, previewLateralPush) : longitudinal2;
+        }
+        if (gta && isFairCityPolice(world.pursuit) && world.pursuit.response.sightedBy.has(actor)) {
+          const report = world.pursuit.response.lastSeen;
+          if (report) {
+            const relative = gtaLocal2(actor, report);
+            if (relative.forward > 0 && Math.abs(relative.right) < (actor.width + PLAYER_VEHICLE.widthM) / 2 + 0.5) {
+              const braking = actor.spec?.braking ?? VEHICLE.braking;
+              const leadSpeed = Math.max(0, (report.vx ?? 0) * Math.sin(actor.heading) + (report.vz ?? 0) * Math.cos(actor.heading));
+              const gap = relative.forward - (actor.length + PLAYER_VEHICLE.lengthM) / 2;
+              const room = Math.max(0, gap - 4 - Math.max(0, actor.speed) * 0.4);
+              const pace = Math.sqrt(leadSpeed * leadSpeed + 2 * braking * room);
+              if (pace < command.targetSpeed) command = {
+                ...command,
+                targetSpeed: pace,
+                decelerationMps2: braking,
+                reason: "fair-follow"
+              };
+            }
+          }
         }
       }
       const pose5 = usesRushPace(world.pursuit.variant) ? Object.assign(vehicleProbe(actor, actor.speed), {
@@ -20360,7 +20641,7 @@
       s.gta.eventTick = world.tick + 1;
       if (!s.gta.curbExitPhase) {
         maintainGtaSquad(world);
-        if (s.gta.escapeGoal) advanceEscapeGoalIfReached(world);
+        if (s.gta.escapeGoal && !s.gta.escapeGoal.sensorPlanned) advanceEscapeGoalIfReached(world);
       }
     }
     if (s.survival) updateSurvivalBeforeMotion(world);
@@ -20442,7 +20723,19 @@
     });
     const ego = plans.find((p) => p.a === player);
     if (ego.curb) {
-      const rejected = curbClearance(world, ego.curb, ego, plans, projectGtaVehicle);
+      const clearanceWorld = world.statics.some((body) => body.propImpact) ? { ...world, statics: world.statics.filter((body) => !body.propImpact) } : world;
+      const nearReactiveProp = world.statics.some((body) => {
+        if (!body.propImpact) return false;
+        const { forward: forward2, right } = gtaLocal2(player, body);
+        return forward2 > -player.length / 2 && forward2 < 8 + Math.abs(player.speed) * 0.3 && Math.abs(right) < player.width / 2 + Math.hypot(body.width, body.length) / 2 + 0.3;
+      });
+      const clearanceCurb = nearReactiveProp ? { ...ego.curb, maxPace: Math.max(
+        ego.curb.maxPace,
+        Math.hypot(player.speed, player.gtaSlipMps ?? 0),
+        Math.hypot(ego.next.speed, ego.next.gtaSlipMps ?? 0)
+      ) + 1e-3 } : ego.curb;
+      const immediateContactWorld = nearReactiveProp ? { ...clearanceWorld, statics: [] } : clearanceWorld;
+      const rejected = curbClearance(immediateContactWorld, clearanceCurb, ego, plans, projectGtaVehicle);
       if (rejected) {
         const { reason, blockedBy = null } = rejected;
         ego.guard = reason;
@@ -20455,7 +20748,7 @@
         };
         const brakingPose = projectGtaVehicle(player, ego.command);
         const braking = { ...ego, next: brakingPose, travel: travel(player, brakingPose, ego.radius) };
-        if ((reason === "curb-pedestrian" || reason === "curb-solid") && !curbClearance(world, ego.curb, braking, plans, projectGtaVehicle)) {
+        if ((reason === "curb-pedestrian" || reason === "curb-solid") && !curbClearance(immediateContactWorld, clearanceCurb, braking, plans, projectGtaVehicle)) {
           ego.next = { ...brakingPose, reason, blockedBy };
           ego.travel = braking.travel;
         } else {
@@ -20476,6 +20769,7 @@
     const solids = staticGrid?.plans ?? world.statics.map(staticContactPlan);
     const freshImpacts = s.gta?.config.damageFeedback === DISPATCH_DAMAGE_FEEDBACK ? [] : null;
     const impact = resolveContacts(world, plans, solids, staticGrid, freshImpacts);
+    if (s.gta) slideAlongFixedProp(world, plans);
     updateClearance(world, ego, plans, solids);
     const m = s.metrics;
     if (isPackPursuit(s.variant) && m.pedestrianStatus !== "impact") {
@@ -20603,6 +20897,10 @@
           curbScrub,
           scraping: gtaPlayerScrape
         });
+        if (impact && next.vehicle.contact) {
+          const geometry = impactGeometryMap.get(impact);
+          if (geometry?.normal) next.vehicle.contact.normal = { ...geometry.normal };
+        }
         if (terrainOffsets) {
           const suspension = next.vehicle.suspension;
           const { wheelOffsetsM } = suspension;
@@ -20757,7 +21055,9 @@
     s.gta.scan = scan;
     return scan;
   }
-  function spawnCrowdAhead(world, rawCount = 20) {
+  var DISPERSED_CROWD_LAYOUT = "dispersed-cohorts-v1";
+  function spawnCrowdAhead(world, rawCount = 20, options2 = {}) {
+    const dispersed = options2.layout === DISPERSED_CROWD_LAYOUT || isFairCityPolice(world.pursuit);
     const targetCount = clamp(
       Math.round(Number.isFinite(Number(rawCount)) ? Number(rawCount) : 20),
       1,
@@ -20774,8 +21074,8 @@
     const rng = new Random(
       `${world.config?.seed ?? "city"}:crowd-ahead:${world.tick}:${wave}:${Math.round(player.x * 100)}:${Math.round(player.z * 100)}`
     );
-    const fx = Math.sin(player.heading ?? 0);
-    const fz = Math.cos(player.heading ?? 0);
+    let fx = Math.sin(player.heading ?? 0);
+    let fz = Math.cos(player.heading ?? 0);
     const drivableRoads = (world.drivingRoads ?? world.roads ?? []).filter(
       (r) => r && !r.parkingBay && !r.supportApron
     );
@@ -20798,6 +21098,10 @@
     const baseFrame = baseRoad ? roadFrame(baseRoad) : null;
     const baseProj = baseRoad ? roadProject(baseRoad, player) : null;
     const baseSign = baseFrame ? fx * baseFrame.ux + fz * baseFrame.uz >= 0 ? 1 : -1 : 1;
+    if (dispersed && baseFrame) {
+      fx = baseFrame.ux * baseSign;
+      fz = baseFrame.uz * baseSign;
+    }
     const startAlong = baseFrame ? clamp(baseProj.along, baseFrame.minAlong, baseFrame.maxAlong) : 0;
     const availAhead = baseFrame ? baseSign > 0 ? baseFrame.maxAlong - startAlong : startAlong - baseFrame.minAlong : 0;
     const turnBranches = [];
@@ -20831,7 +21135,7 @@
     for (let i = 0; i < world.actors.length; i++) {
       const a = world.actors[i];
       if (a.type === "vehicle") vehicleObstacles.push(a);
-      else if (a.type === "pedestrian" && !prevActiveIds.has(a.id)) existingPedestrians.push(a);
+      else if (a.type === "pedestrian" && (dispersed || !prevActiveIds.has(a.id))) existingPedestrians.push(a);
     }
     const solidBuildings = [];
     for (let i = 0; i < world.statics.length; i++) {
@@ -20888,13 +21192,17 @@
       }
     }
     const openBypassOffsetSign = negOffsetBlockers !== posOffsetBlockers ? negOffsetBlockers < posOffsetBlockers ? -1 : 1 : rng.next() < 0.5 ? 1 : -1;
-    const playerBaseLat = baseRoad ? roadProject(baseRoad, player).leftOffset : 0;
     const sampleCrowdLat = (halfW, walkerIdx = 99, attempt = 0) => {
+      if (dispersed) {
+        const side = openBypassOffsetSign * (Math.floor(walkerIdx / 5) % 2 ? -1 : 1);
+        return side * rng.range(2.35, Math.max(2.35, halfW - 1.65));
+      }
       const outerCrowdLim = halfW + 1.15;
       const innerBypassEdge = Math.max(-1.2, Math.min(2.4, halfW - 3.6));
       const crowdMin = openBypassOffsetSign > 0 ? -outerCrowdLim : -innerBypassEdge;
       const crowdMax = openBypassOffsetSign > 0 ? innerBypassEdge : outerCrowdLim;
       if (walkerIdx < 3 && attempt < 16) {
+        const playerBaseLat = baseRoad ? roadProject(baseRoad, player).leftOffset : 0;
         const anchor = clamp(playerBaseLat, crowdMin + 0.25, crowdMax - 0.25);
         return clamp(anchor + rng.range(-0.45, 0.45), crowdMin, crowdMax);
       }
@@ -20928,7 +21236,7 @@
           branch.frame.maxAlong - 1.2
         );
         const halfW2 = (branch.road.width ?? 10) * 0.5;
-        const lat2 = sampleCrowdLat(halfW2);
+        const lat2 = dispersed ? sampleCrowdLat(halfW2, walkerIdx, attempt) : sampleCrowdLat(halfW2);
         const pt = roadPointAt(branch.road, along2, lat2);
         return {
           x: pt.x,
@@ -20943,8 +21251,8 @@
           corridorDistM
         };
       }
-      const rx = Math.cos(player.heading ?? 0);
-      const rz = -Math.sin(player.heading ?? 0);
+      const rx = dispersed ? fz : Math.cos(player.heading ?? 0);
+      const rz = dispersed ? -fx : -Math.sin(player.heading ?? 0);
       const halfW = (baseRoad?.width ?? 10) * 0.5;
       const lat = rng.range(-halfW - 1, halfW + 1);
       return {
@@ -20966,18 +21274,21 @@
       const segFrame = cand.frame;
       const halfW = (segRoad?.width ?? 10) * 0.5;
       const isCrossing = index >= 3 && index % 2 === 0;
+      const cohortSide = cand.lat >= 0 ? 1 : -1;
       const innerEdge = Math.max(-1.2, Math.min(2.4, halfW - 3.6));
-      const minCrowdLat = openBypassOffsetSign > 0 ? -halfW - 1.2 : -innerEdge;
-      const maxCrowdLat = openBypassOffsetSign > 0 ? innerEdge : halfW + 1.2;
+      const minCrowdLat = dispersed ? cohortSide > 0 ? 2.35 : -halfW + 1.65 : openBypassOffsetSign > 0 ? -halfW - 1.2 : -innerEdge;
+      const maxCrowdLat = dispersed ? cohortSide > 0 ? halfW - 1.65 : -2.35 : openBypassOffsetSign > 0 ? innerEdge : halfW + 1.2;
       const tryAddPoint = (dAlong, targetLat, crossingFlag) => {
         const clampedLat = clamp(targetLat, minCrowdLat, maxCrowdLat);
+        if (minCrowdLat > maxCrowdLat) return false;
+        if (dispersed) dAlong = clamp(dAlong, -4, 4);
         let pt;
         if (segRoad && segFrame) {
           const a = clamp(cand.along + dAlong, segFrame.minAlong + 1.4, segFrame.maxAlong - 1.4);
           pt = roadPointAt(segRoad, a, clampedLat);
         } else {
-          const rx = Math.cos(player.heading ?? 0);
-          const rz = -Math.sin(player.heading ?? 0);
+          const rx = dispersed ? fz : Math.cos(player.heading ?? 0);
+          const rz = dispersed ? -fx : -Math.sin(player.heading ?? 0);
           pt = {
             x: cand.x + fx * dAlong + rx * (clampedLat - cand.lat),
             z: cand.z + fz * dAlong + rz * (clampedLat - cand.lat)
@@ -21021,8 +21332,9 @@
     let maxForwardM = -Infinity;
     let maxAbsLateralM = 0;
     const MAX_CROWD_LATERAL_M = 16;
-    const rxPlayer = Math.cos(player.heading ?? 0);
-    const rzPlayer = -Math.sin(player.heading ?? 0);
+    const rxPlayer = dispersed ? fz : Math.cos(player.heading ?? 0);
+    const rzPlayer = dispersed ? -fx : -Math.sin(player.heading ?? 0);
+    const maxForwardMForWave = dispersed ? 32 + 20 * (Math.ceil(targetCount / 5) - 1) : 41.8;
     const forwardBandSegs = [];
     for (let rIdx = 0; rIdx < drivableRoads.length; rIdx++) {
       const r = drivableRoads[rIdx];
@@ -21033,20 +21345,20 @@
         const pt = roadPointAt(r, a, 0);
         const fwd = (pt.x - player.x) * fx + (pt.z - player.z) * fz;
         const lat = Math.abs((pt.x - player.x) * rxPlayer + (pt.z - player.z) * rzPlayer);
-        if (fwd >= 22.2 && fwd <= 41.8 && lat <= MAX_CROWD_LATERAL_M + 4) {
+        if (fwd >= 22.2 && fwd <= maxForwardMForWave && lat <= MAX_CROWD_LATERAL_M + 4) {
           forwardBandSegs.push({ road: r, frame: rf, along: a });
         }
       }
     }
     for (let i = 0; i < targetCount; i++) {
-      const bandLo = 22.2 + 16.2 * i / targetCount;
-      const bandHi = 22.2 + 16.2 * (i + 1) / targetCount;
+      const bandLo = dispersed ? 22.2 + 20 * Math.floor(i / 5) : 22.2 + 16.2 * i / targetCount;
+      const bandHi = dispersed ? bandLo + 9.2 : 22.2 + 16.2 * (i + 1) / targetCount;
       let chosen = null;
       let chosenWaypoints = null;
       let chosenForwardM = 0;
       let chosenAbsLateralM = 0;
       for (let attempt = 0; attempt < 360; attempt++) {
-        const corridorDistM = attempt < 32 ? rng.range(bandLo, bandHi) : rng.range(22.2, 41.6);
+        const corridorDistM = dispersed || attempt < 32 ? rng.range(bandLo, bandHi) : rng.range(22.2, 41.6);
         let cand;
         if (attempt < 64) {
           cand = sampleCorridorPose(corridorDistM, i + attempt, i, attempt);
@@ -21104,7 +21416,7 @@
         const rawFwd = (cand.x - player.x) * fx + (cand.z - player.z) * fz;
         const rawAbsLat = Math.abs((cand.x - player.x) * rxPlayer + (cand.z - player.z) * rzPlayer);
         const euclidM = Math.hypot(cand.x - player.x, cand.z - player.z);
-        if (rawFwd < 22 || rawFwd > 42 || rawAbsLat > MAX_CROWD_LATERAL_M || euclidM < 22 || euclidM > 46)
+        if (rawFwd < (dispersed ? bandLo - 0.2 : 22) || rawFwd > (dispersed ? bandHi + 0.2 : 42) || rawAbsLat > MAX_CROWD_LATERAL_M || euclidM < 22 || euclidM > (dispersed ? maxForwardMForWave + 5 : 46) || dispersed && (!cand.road || Math.abs(cand.lat) < 2.35 || Math.abs(cand.lat) > (cand.road.width ?? 10) / 2 - 1.55))
           continue;
         if (!isSpawnClear(cand.x, cand.z)) continue;
         const wps = buildWaypointsFor(cand, i);
@@ -21182,15 +21494,12 @@
       return failedSummary;
     }
     entry.waveSerial = wave;
-    if (prevActiveIds.size > 0) {
+    if (!dispersed && prevActiveIds.size > 0) {
       for (let i = world.actors.length - 1; i >= 0; i--) {
-        if (prevActiveIds.has(world.actors[i].id)) {
-          world.actors.splice(i, 1);
-        }
+        if (prevActiveIds.has(world.actors[i].id)) world.actors.splice(i, 1);
       }
-      if (world.pursuit?.yieldingFor && prevActiveIds.has(world.pursuit.yieldingFor.id)) {
+      if (world.pursuit?.yieldingFor && prevActiveIds.has(world.pursuit.yieldingFor.id))
         world.pursuit.yieldingFor = null;
-      }
       entry.activeIds.clear();
     }
     for (let i = 0; i < stagedPeople.length; i++) {
@@ -21222,6 +21531,12 @@
     }
     const summary = {
       ok: true,
+      ...dispersed ? {
+        layout: DISPERSED_CROWD_LAYOUT,
+        retainedPreviousCount: prevActiveIds.size,
+        clearCentreWidthM: 3.94,
+        cohortSpacingM: 20
+      } : {},
       tick: world.tick,
       spawned: ids.length,
       nearestForwardM: ids.length > 0 ? minForwardM : null,
@@ -23156,6 +23471,9 @@
         popLimits
       );
       if (grand) {
+        if (options2.cityPropProfile !== void 0 && !["none", CITY_PROP_PROFILE].includes(options2.cityPropProfile))
+          throw new Error("Unsupported City prop profile");
+        this.config.cityPropProfile = options2.cityPropProfile ?? CITY_PROP_PROFILE;
         if (options2.vehicleDynamics !== void 0 && !["legacy", "city-realism-v1"].includes(options2.vehicleDynamics))
           throw new Error("Unsupported City vehicle dynamics profile");
         if (options2.terrainProfile !== void 0 && !["flat", "cairo-surfaces-v1"].includes(options2.terrainProfile))
@@ -23177,7 +23495,10 @@
         ...this.pursuit.packLab ? { pursuitVariant: this.pursuit.variant } : {}
       });
       if (environment === "egypt") Object.assign(this.config, districtOptions(options2));
-      this.district = environment === "metro" ? { ...createUnifiedCity({ dense: cityVersion >= 3, rush, grand }), metro: true } : environment === "egypt" ? createEgyptDistrict() : null;
+      const metroCity = environment === "metro" ? createUnifiedCity({ dense: cityVersion >= 3, rush, grand }) : null;
+      this.district = metroCity ? { ...metroCity, metro: true } : environment === "egypt" ? createEgyptDistrict() : null;
+      if (metroCity?.pedestrianSpawnPool)
+        Object.defineProperty(this.district, "pedestrianSpawnPool", { value: metroCity.pedestrianSpawnPool });
       this.districtCase = environment === "egypt" ? createDistrictCase(this.district, this.config.districtCase, this.config.seed) : null;
       if (this.district) {
         if (environment === "metro") {
@@ -23235,9 +23556,10 @@
       this.actors = [];
       this.junctionOwners = /* @__PURE__ */ new Map();
       this.statics = this.pursuit?.statics ?? this.district?.statics ?? visualScene?.statics ?? (environment === "city" ? cityFootprints(this.roads) : environment === "vehicle" ? [{ ...VEHICLE_TEST_BARRIER }] : []);
-      this.staticIndex = new SpatialIndex(this.statics);
       this.terrain = grand && this.config.terrainProfile === "cairo-surfaces-v1" ? createCityTerrain(this.roads, { seed: this.config.seed }) : null;
       this.terrainElevationAt = this.terrain ? (x, z) => terrainElevationAt(this.terrain, x, z) : null;
+      registerCityProps(this);
+      this.staticIndex = new SpatialIndex(this.statics);
       this.curbs = grand && this.config.interactionProfile === WHEEL_SCRUB_MODE ? surveyMetroCurb(this, METRO_CITY_CURBS) : null;
       this._activeJoltActors = /* @__PURE__ */ new Set();
       this._surfaceScratch = {};
@@ -23474,6 +23796,7 @@
       }
       for (const car of this.actors.filter((actor) => actor !== this.player))
         if (!this.assignTrafficRoute(car)) throw new Error(`No district continuation for ${car.id}.`);
+      let sparePedestrianSpawn = district.pedestrianSpawns.length;
       for (let i = 0; i < this.config.pedestrians; i++) {
         const spawn = district.pedestrianSpawns[i];
         const road4 = district.drivingRoads.find((item) => item.id === spawn.roadId);
@@ -23497,6 +23820,18 @@
         };
         person.body = createPedestrianBody(person);
         person.radius = person.body.radiusM;
+        if (!this.free(person, 0.12) && this.config.cityPropProfile === CITY_PROP_PROFILE) {
+          const pool = district.pedestrianSpawnPool ?? [];
+          while (sparePedestrianSpawn < pool.length) {
+            const replacement = pool[sparePedestrianSpawn++];
+            const replacementRoad = district.drivingRoads.find((item) => item.id === replacement.roadId);
+            if (!replacementRoad) continue;
+            const candidate = { ...person, ...replacement, road: replacementRoad };
+            if (!this.free(candidate, 0.12)) continue;
+            Object.assign(person, replacement, { road: replacementRoad });
+            break;
+          }
+        }
         if (!this.free(person, 0.12)) throw new Error(`District person spawn ${i} is not clear.`);
         initializeDistrictActor(this, person);
         this.nextWalk(person);
@@ -23761,15 +24096,21 @@
         return true;
       }
       if (command.type === "spawn-crowd-ahead") {
+        if (command.layout !== void 0 && command.layout !== "dispersed-cohorts-v1")
+          throw new Error("Unsupported crowd layout");
         if (["vision", "vehicle"].includes(this.environment)) return false;
         const count = clamp(
           Math.round(Number.isFinite(Number(command.count)) ? Number(command.count) : 20),
           1,
           40
         );
-        spawnCrowdAhead(this, count);
+        spawnCrowdAhead(this, count, { layout: command.layout });
         if (record) {
-          this.events.push({ tick: this.tick, command: { type: "spawn-crowd-ahead", count } });
+          this.events.push({ tick: this.tick, command: {
+            type: "spawn-crowd-ahead",
+            count,
+            ...command.layout === void 0 ? {} : { layout: command.layout }
+          } });
         }
         return true;
       }
@@ -23895,7 +24236,9 @@
         previousState
       }) : behavior;
       if (predictive) this.districtSpeedState = composed.nextState;
-      const safe = this.safeSpeed(actor, composed, usePlannedPath);
+      let safe = this.safeSpeed(actor, composed, usePlannedPath);
+      if (actor === this.player && this.mode === "manual" && this.statics.some((site) => site.propImpact && site.id === safe.blockedBy))
+        safe = composed;
       const command = attributeDistrictApplied({ requested, behavior, composed, safe });
       actor.districtSources = command.districtSources;
       if (actor === this.player && this.districtCase && this.districtCase.id !== "ambient") {
@@ -24531,6 +24874,7 @@
           if (contact) {
             next = contact.body;
             const liveObstacle = hitObstacle && hitObstacle.type !== "static" ? this.actors.find((a) => a.id === hitObstacle.id) ?? hitObstacle : hitObstacle;
+            recordCityPropImpact(this, liveObstacle, contact);
             if (liveObstacle && (liveObstacle.type === "vehicle" || liveObstacle.kind === "parked-vehicle")) {
               const tSlipSign = Math.sign(contact.scraping?.tangentialSlipSignedMps ?? 1) || 1;
               const tx = contact.normal.z * tSlipSign;
@@ -24957,7 +25301,8 @@
         ...data.config,
         ...data.config.vehicleDynamics === void 0 ? { vehicleDynamics: "legacy" } : {},
         ...data.config.terrainProfile === void 0 ? { terrainProfile: "flat" } : {},
-        ...data.config.interactionProfile === void 0 ? { interactionProfile: "none" } : {}
+        ...data.config.interactionProfile === void 0 ? { interactionProfile: "none" } : {},
+        ...data.config.cityPropProfile === void 0 ? { cityPropProfile: "none" } : {}
       } : data.config;
       const world = new _World(options2, data.environment);
       let index = 0;
@@ -25393,6 +25738,10 @@
     if (!alternate || world.pursuit.gta.scan.tick !== world.tick) return guarded;
     const scan = world.pursuit.gta.scan;
     const planner = alternate(world, requested);
+    if (planner.controller === "pako-smart-escape-v3") {
+      const checked = guardDispatchAction(world, planner.action);
+      return { ...checked, planner: checked.reason ? { ...planner, guardReason: checked.reason } : planner };
+    }
     if (planner.reason === "PREDICTIVE_QUEUE") {
       const checked = guardDispatchAction(world, planner.action);
       return { ...checked, planner: checked.reason ? { ...planner, guardReason: checked.reason } : planner };
@@ -31598,6 +31947,251 @@
     });
   }
 
+  // src/rl/pako-smart-escape.js
+  var SMART_ESCAPE_CONTROL = "pako-smart-escape-v3";
+  var memories = /* @__PURE__ */ new WeakMap();
+  function measuredThreats(scan, ego) {
+    const sin = Math.sin(ego.heading), cos = Math.cos(ego.heading);
+    return scan.tracks.filter((t) => t.kind === "police" && t.ageS <= 0.3).map((t) => ({
+      x: ego.x + t.rightM * cos + t.forwardM * sin,
+      z: ego.z - t.rightM * sin + t.forwardM * cos
+    }));
+  }
+  function selectSensorEscapeGoal(world, scan, previous = null) {
+    const { player, district } = world;
+    if (!district) return null;
+    const threats = measuredThreats(scan, player);
+    let awayX = 0, awayZ = 0;
+    for (const threat of threats) {
+      const d = Math.max(5, distance(player, threat));
+      awayX += (player.x - threat.x) / (d * d);
+      awayZ += (player.z - threat.z) / (d * d);
+    }
+    const norm = Math.hypot(awayX, awayZ);
+    const hx = norm > 1e-3 ? awayX / norm : Math.sin(player.heading);
+    const hz = norm > 1e-3 ? awayZ / norm : Math.cos(player.heading);
+    const candidates2 = [];
+    for (const road4 of world.drivingRoads ?? district.drivingRoads ?? []) {
+      if (road4.parkingBay || road4.supportApron) continue;
+      const frame = roadFrame(road4);
+      for (const fraction of [0.2, 0.5, 0.8]) for (const sign of road4.flow ? [road4.flow] : [1, -1]) {
+        const pose5 = roadPoseAt(road4, frame.minAlong + frame.length * fraction, sign);
+        const d = distance(player, pose5);
+        if (d < 80 || d > 480 || previous && distance(previous, pose5) < 35) continue;
+        const body = { ...player, ...pose5 };
+        if (!bodyOnRoad(body, district.roads) || (district.statics ?? []).some((s) => overlaps(body, s, 0.4))) continue;
+        const advance = (pose5.x - player.x) * hx + (pose5.z - player.z) * hz;
+        const headingCost = Math.abs(angleDelta(pose5.heading, player.heading)) * 8;
+        candidates2.push({
+          ...pose5,
+          roadId: road4.id,
+          score: advance * 1.6 - Math.abs(d - 190) * 1.9 - headingCost
+        });
+      }
+    }
+    candidates2.sort((a, b) => b.score - a.score);
+    for (const candidate of candidates2.slice(0, 24)) {
+      const path = planDistrictRoute(district, player, candidate);
+      if (path.length < 2 || distance(path.at(-1), candidate) > 8) continue;
+      const lengthM = path.reduce((s, p, i) => s + (i ? distance(path[i - 1], p) : 0), 0);
+      if (lengthM > distance(player, candidate) * 3 + 50) continue;
+      return Object.freeze({
+        x: candidate.x,
+        z: candidate.z,
+        heading: candidate.heading,
+        roadId: candidate.roadId,
+        id: `sensor-escape:${world.tick}:${candidate.roadId}`,
+        sensorPlanned: true,
+        selectedTick: world.tick,
+        routeLengthM: lengthM,
+        observedThreats: threats.length
+      });
+    }
+    return null;
+  }
+  function observedMotion(track2, ego) {
+    if (!track2.motionKnown) return { x: 0, z: 0 };
+    const forecast2 = forecastPursuitSurface(track2);
+    if (forecast2.status === "constant-velocity" && forecast2.points.length) {
+      const p = forecast2.points[0];
+      return {
+        x: (p.xM - track2.observedXM) / p.secondsAhead,
+        z: (p.zM - track2.observedZM) / p.secondsAhead
+      };
+    }
+    const right = track2.rightMps + (ego.gtaSlipMps ?? 0);
+    const forward2 = track2.forwardMps + ego.speed;
+    const sin = Math.sin(ego.heading), cos = Math.cos(ego.heading);
+    const motion2 = { x: right * cos + forward2 * sin, z: -right * sin + forward2 * cos };
+    return Math.hypot(motion2.x, motion2.z) > (track2.kind === "pedestrian" ? 4.5 : 45) ? { x: 0, z: 0 } : motion2;
+  }
+  function predictEscapeConflict(player, scan, action) {
+    if (action.gear !== 1 || player.speed < 0.4) return null;
+    const speed = Math.abs(player.speed);
+    const braking = player.spec?.braking ?? VEHICLE.braking;
+    const horizon = clamp(speed / braking + 1.4, 1.5, 4.5);
+    const sin = Math.sin(player.heading), cos = Math.cos(player.heading);
+    const points = scan.tracks.filter((t) => t.ageS <= 0.3 && t.forwardM > -3).map((t) => ({
+      track: t,
+      motion: observedMotion(t, player),
+      x: player.x + t.rightM * cos + t.forwardM * sin,
+      z: player.z - t.rightM * sin + t.forwardM * cos
+    }));
+    let pose5 = { ...vehicleProbe(player, player.speed), spec: player.spec, maxSpeed: player.maxSpeed };
+    for (let t = 0.1; t <= horizon; t += 0.1) {
+      pose5 = { ...pose5, ...integrateVehicle(pose5, pursuitCommand(pose5, action, 0.1), 0.1) };
+      const c = Math.cos(pose5.heading), s = Math.sin(pose5.heading);
+      for (const point2 of points) {
+        const { track: track2, motion: motion2 } = point2;
+        const dx = point2.x + motion2.x * t - pose5.x;
+        const dz = point2.z + motion2.z * t - pose5.z;
+        const right = Math.abs(dx * c - dz * s) - player.width / 2;
+        const forward2 = Math.abs(dx * s + dz * c) - player.length / 2;
+        const gap = Math.hypot(Math.max(0, right), Math.max(0, forward2));
+        const margin = (track2.kind === "pedestrian" ? 0.85 : 0.55) + Math.min(0.65, track2.positionAllowanceM ?? 0.15);
+        if (gap < margin) return {
+          seconds: Number(t.toFixed(2)),
+          kind: track2.kind,
+          trackId: track2.trackId,
+          motionKnown: track2.motionKnown
+        };
+      }
+    }
+    return null;
+  }
+  function smartRouteAction(world) {
+    const { player } = world;
+    const path = dispatchRouteGuide(world, CLEARANCE_ROUTE_CONTEXT)?.path;
+    if (!path || path.length < 3) return null;
+    let nearest2 = 0, nearestM = Infinity;
+    for (let i = 0; i < path.length; i++) {
+      const d = distance(player, path[i]);
+      if (d < nearestM) {
+        nearest2 = i;
+        nearestM = d;
+      }
+    }
+    if (nearestM > 3 || player.speed < -0.1) return null;
+    const speed = Math.max(0, player.speed);
+    const lookahead = clamp(5 + speed * 0.5, 5, 17);
+    let target = nearest2, along2 = 0;
+    let targetSpeed = player.maxSpeed ?? 28;
+    const braking = player.spec?.braking ?? VEHICLE.braking;
+    for (let i = nearest2 + 1; i < path.length && along2 < 70; i++) {
+      along2 += distance(path[i - 1], path[i]);
+      if (along2 < 70) {
+        const pose5 = {
+          ...player,
+          x: path[i].x,
+          z: path[i].z,
+          heading: Math.atan2(path[i].x - path[i - 1].x, path[i].z - path[i - 1].z)
+        };
+        if ((world.statics ?? []).some((body) => overlaps(pose5, body, 0.3))) return null;
+      }
+      if (along2 < lookahead) target = i;
+      const before = path[Math.max(nearest2, i - 4)], after = path[Math.min(path.length - 1, i + 4)];
+      const left = distance(before, path[i]), right = distance(path[i], after);
+      if (left < 1 || right < 1) continue;
+      const first = Math.atan2(path[i].x - before.x, path[i].z - before.z);
+      const second = Math.atan2(after.x - path[i].x, after.z - path[i].z);
+      const curvature = Math.abs(angleDelta(second, first)) / ((left + right) / 2);
+      const curveSpeed = Math.sqrt(4.5 / Math.max(1e-3, curvature));
+      targetSpeed = Math.min(targetSpeed, Math.sqrt(curveSpeed ** 2 + 2 * braking * Math.max(0, along2 - 9)));
+    }
+    target = Math.min(path.length - 1, Math.max(nearest2 + 1, target));
+    const targetM = Math.max(2, distance(player, path[target]));
+    const error = angleDelta(Math.atan2(path[target].x - player.x, path[target].z - player.z), player.heading);
+    if (Math.abs(error) > 1.15) return null;
+    const steering = Math.atan2(2 * (player.spec?.wheelbase ?? VEHICLE.wheelbase) * Math.sin(error), targetM);
+    const steer = clamp(steering / (player.spec?.maxSteer ?? VEHICLE.maxSteer), -1, 1);
+    const brake2 = speed > targetSpeed + 0.6 ? clamp((speed - targetSpeed) / 3, 0.15, 1) : 0;
+    return {
+      action: { steer, gear: 1, throttle: brake2 ? 0 : clamp((targetSpeed - speed) / 3, 0.25, 1), brake: brake2 },
+      targetSpeedMps: targetSpeed,
+      remainingPathPoints: path.length - nearest2,
+      routeErrorM: nearestM
+    };
+  }
+  function planSmartEscapeAction(world, requestedAction) {
+    const scan = requireDispatchScan(world);
+    const key3 = world.pursuit ?? world.player;
+    let memory = memories.get(key3);
+    if (!memory || world.tick < memory.tick) {
+      memory = {
+        tick: world.tick,
+        goal: null,
+        bestDistanceM: Infinity,
+        progressTick: world.tick,
+        lastAction: null,
+        brakeUntil: -1,
+        brakeConflict: null
+      };
+      memories.set(key3, memory);
+    }
+    const remaining = memory.goal ? distance(world.player, memory.goal) : Infinity;
+    if (remaining < memory.bestDistanceM - 4) {
+      memory.bestDistanceM = remaining;
+      memory.progressTick = world.tick;
+    }
+    if (!memory.goal || remaining < 18 || world.tick - memory.progressTick > Math.round(14 / STEP)) {
+      const goal = selectSensorEscapeGoal(world, scan, memory.goal);
+      if (goal) {
+        memory.goal = goal;
+        memory.bestDistanceM = distance(world.player, goal);
+        memory.progressTick = world.tick;
+      }
+    }
+    if (memory.goal && world.pursuit?.gta) world.pursuit.gta.escapeGoal = memory.goal;
+    const planned = planPakoEvasiveAction(world, requestedAction);
+    let action = planned.action;
+    const route = smartRouteAction(world);
+    if (route && planned.action.gear === 1 && planned.action.brake === 0 && planned.reason !== "SAFETY_INTERVENTION" && !guardDispatchAction(world, route.action).reason && !predictEscapeConflict(world.player, scan, route.action)) {
+      action = { ...route.action };
+      if (planned.action.nitro && route.targetSpeedMps >= (world.player.maxSpeed ?? 28) - 0.5 && Math.abs(action.steer) < 0.15 && !planned.nitroSuppressedByPedestrian)
+        action.nitro = planned.action.nitro;
+    }
+    const conflict = predictEscapeConflict(world.player, scan, action);
+    if (conflict) {
+      memory.brakeUntil = world.tick + Math.round(0.9 / STEP);
+      memory.brakeConflict = conflict;
+    }
+    const yielding = conflict || (world.tick < memory.brakeUntil && world.player.speed > 0.2 ? memory.brakeConflict : null);
+    if (yielding) {
+      const braking = world.player.spec?.braking ?? VEHICLE.braking;
+      const needed = world.player.speed / Math.max(0.25, yielding.seconds - 0.45);
+      action = {
+        steer: action.steer,
+        gear: 1,
+        throttle: 0,
+        brake: clamp(needed / braking, 0.25, 1)
+      };
+    } else if (memory.lastAction && action.gear === memory.lastAction.gear && action.brake === 0) {
+      const elapsed = Math.max(STEP, (world.tick - memory.tick) * STEP);
+      const steer = clamp(
+        action.steer,
+        memory.lastAction.steer - elapsed * 1.8,
+        memory.lastAction.steer + elapsed * 1.8
+      );
+      const smooth = { ...action, steer };
+      if (!predictEscapeConflict(world.player, scan, smooth) && !guardDispatchAction(world, smooth).reason)
+        action = smooth;
+    }
+    const checked = guardDispatchAction(world, action);
+    memory.lastAction = checked.action;
+    memory.tick = world.tick;
+    return {
+      ...planned,
+      controller: SMART_ESCAPE_CONTROL,
+      action: checked.action,
+      reason: yielding ? "PREDICTIVE_TRAFFIC_BRAKE" : checked.reason ?? planned.reason,
+      maneuver: yielding ? "anticipatory-yield" : planned.maneuver,
+      nitroSuppressedByPedestrian: planned.nitroSuppressedByPedestrian || yielding?.kind === "pedestrian",
+      escapeDestination: memory.goal,
+      predictedConflict: conflict,
+      routeTracking: route
+    };
+  }
+
   // src/rl/pako-measured-detour.js
   var MEASURED_QUEUE_DETOUR = "measured-queue-detour-v1";
   var MEASURED_QUEUE_CORRIDOR = "measured-queue-corridor-v1";
@@ -32096,6 +32690,50 @@
     });
   }
 
+  // src/rl/smart-escape-scenarios.js
+  function stageSmartEscapeScenario(world, id) {
+    const road4 = world.drivingRoads.find((r) => r.id === "tahrir-boulevard");
+    if (!road4) throw new Error("Smart escape practice requires the existing City boulevard");
+    const pose5 = { ...roadPoseAt(road4, id === "smart-crossing-traffic" ? -220 : -300, 1), speed: 10 };
+    const playerBody = { ...world.player, ...pose5 };
+    if (!bodyOnRoad(playerBody, [road4]) || world.statics.concat(world.actors).some((a) => a !== world.player && overlaps(playerBody, a, 0.15)))
+      throw new Error("Smart escape practice has no clear player berth");
+    Object.assign(world.player, pose5);
+    if (id === "smart-gap-crowd") {
+      const result = spawnCrowdAhead(world, 20, { layout: DISPERSED_CROWD_LAYOUT });
+      if (!result.ok) throw new Error("Smart escape crowd placement is blocked");
+      return Object.freeze({ id, roadId: road4.id, crowdIds: Object.freeze(result.ids) });
+    }
+    if (id === "smart-static-hazard") {
+      const barrier2 = {
+        id: "smart-practice-barrier",
+        type: "static",
+        kind: "barrier",
+        x: pose5.x + 33,
+        z: pose5.z,
+        heading: pose5.heading,
+        width: 1.8,
+        length: 1,
+        height: 1.2
+      };
+      if (!world.free(barrier2, 0.2)) throw new Error("Smart escape static hazard placement is blocked");
+      world.statics = world.statics.concat(barrier2);
+      return Object.freeze({ id, roadId: road4.id, barrierId: barrier2.id });
+    }
+    if (id !== "smart-crossing-traffic") throw new RangeError("Unknown smart escape scenario");
+    const cross2 = world.drivingRoads.find((r) => r.id === "civic-avenue");
+    const car = world.makeVehicle("smart-practice-crossing-car", "sedan", roadPoseAt(cross2, pose5.z - 17, 1));
+    const target = { ...roadPoseAt(cross2, pose5.z + 60, 1), roadId: cross2.id };
+    if (!world.free(car, 0.2)) throw new Error("Smart escape crossing traffic placement is blocked");
+    initializeDistrictActor(world, car);
+    car.path = planDistrictRoute(world.district, car, target);
+    if (car.path.length < 2) throw new Error("Smart escape crossing traffic has no reachable route");
+    Object.assign(car, { speed: 7, maxSpeed: 7, cursor: 0 });
+    Object.assign(car.district, { caseId: id, holdAtTarget: true, nextLoadingDistanceM: Infinity });
+    world.actors.push(car);
+    return Object.freeze({ id, roadId: road4.id, crossingCarId: car.id });
+  }
+
   // src/rl/pursuit-lab-scenarios.js
   var crossingCases = Object.freeze({ L09: 1, L10: -1, L12: 1, "L12-control": 1 });
   var turnCases = Object.freeze({ "tail-civic-eastbound": 1, "tail-civic-westbound": -1 });
@@ -32211,6 +32849,7 @@
     if (world.tick !== 0 || world.environment !== "metro" || world.pursuit)
       throw new RangeError("Unknown or late Metro pursuit Lab scenario");
     if (typeof id === "string" && id.startsWith("pako-junction-")) return stagePakoJunction(world, id);
+    if (typeof id === "string" && id.startsWith("smart-")) return stageSmartEscapeScenario(world, id);
     if (typeof id === "string" && id.startsWith("pocket-")) return stagePocketCourse(world, id);
     if (Object.hasOwn(approachCases, id)) return approachCourse(world, id);
     if (id === "L07" || id === "L07-blocked") return stageReverseCourse(world, id);
@@ -32554,7 +33193,7 @@
         throw new TypeError("Brake shield is only available for dispatch-v1");
       if (typeof evasion !== "boolean" || evasion && !shield)
         throw new TypeError("Predictive recovery requires the independent Dispatch brake shield");
-      if (evasiveControl !== void 0 && (evasiveControl !== PAKO_EVASIVE_CONTROL || !shield))
+      if (evasiveControl !== void 0 && (![PAKO_EVASIVE_CONTROL, SMART_ESCAPE_CONTROL].includes(evasiveControl) || !shield))
         throw new TypeError("PAKO evasive control requires the independent Dispatch brake shield");
       if (queueDetour !== void 0 && (![MEASURED_QUEUE_DETOUR, MEASURED_QUEUE_CORRIDOR].includes(queueDetour) || !shield))
         throw new TypeError("Measured queue detour requires the independent Dispatch brake shield");
@@ -32633,7 +33272,7 @@
       const dispatch = this.observationSchema !== GTA_OBSERVATION_SCHEMA;
       const rewardComponents = dispatch ? { progress: 0, time: 0, instability: 0, safety: 0, capture: 0, outcome: 0 } : null;
       const trace = this.decisionTrace;
-      const alternate = this.evasiveControl === PAKO_EVASIVE_CONTROL ? planPakoEvasiveAction : this.queueDetour === MEASURED_QUEUE_CORRIDOR ? planMeasuredQueueCorridor : this.queueDetour ? planMeasuredQueueDetour : this.evasion ? planDispatchEvasion : null;
+      const alternate = this.evasiveControl === SMART_ESCAPE_CONTROL ? planSmartEscapeAction : this.evasiveControl === PAKO_EVASIVE_CONTROL ? planPakoEvasiveAction : this.queueDetour === MEASURED_QUEUE_CORRIDOR ? planMeasuredQueueCorridor : this.queueDetour ? planMeasuredQueueDetour : this.evasion ? planDispatchEvasion : null;
       let shieldTick = null, shieldReason = null, interventions = 0, pending = null, beforeRewards = null, planner = null;
       const record = () => {
         const rewards = beforeRewards && Object.fromEntries(Object.entries(rewardComponents).map(([key3, value]) => [key3, value - beforeRewards[key3]]));
@@ -33211,6 +33850,7 @@
         ...stage.curbSupport === void 0 ? {} : { curbSupport: stage.curbSupport },
         ...stage.chasePresence === void 0 ? {} : { chasePresence: stage.chasePresence },
         ...stage.tacticalPursuit === void 0 ? {} : { tacticalPursuit: stage.tacticalPursuit },
+        ...stage.policeFairness === void 0 ? {} : { policeFairness: stage.policeFairness },
         ...stage.civilianCrossingPreview === void 0 ? {} : { civilianCrossingPreview: stage.civilianCrossingPreview },
         ...stage.patrolTrafficPreview === void 0 ? {} : { patrolTrafficPreview: stage.patrolTrafficPreview },
         ...stage.patrolChainYield === void 0 ? {} : { patrolChainYield: stage.patrolChainYield },
@@ -33595,7 +34235,7 @@
         }
         current.due = normal2 ? start + (pose5[0] - fromTick) * STEP * 1e3 : 0;
         active3.push(current);
-        if (now2() - progressAt >= PROGRESS_INTERVAL_MS) {
+        if (fromTick === 0 || now2() - progressAt >= PROGRESS_INTERVAL_MS) {
           progressAt = now2();
           report();
         }
@@ -33632,14 +34272,45 @@
     };
   }
 
+  // src/rl/smart-escape-curriculum.js
+  var SMART_ESCAPE_SCENARIOS = Object.freeze([
+    "smart-gap-crowd",
+    "smart-crossing-traffic",
+    "smart-static-hazard"
+  ]);
+  function smartEscapeCurriculum(base) {
+    return {
+      ...base,
+      description: `${base.description} Sensor-only smart escape shield; gap, crossing and static-hazard practice. No pretrained policy claim.`,
+      stages: base.stages.map((stage) => ({
+        ...stage,
+        policeFairness: CITY_FAIR_POLICE,
+        evasiveControl: SMART_ESCAPE_CONTROL,
+        scenarios: [...SMART_ESCAPE_SCENARIOS]
+      }))
+    };
+  }
+
   // src/rl/pursuit-lab-worker.js
+  var smartChaseCurriculum = smartEscapeCurriculum(pursuit_rl_city_escape_focus_default);
   var commissioned = false;
   var active2 = null;
   async function workloadFor(stageId, checkpoint) {
-    const manifest = [pursuit_rl_development_default, pursuit_rl_route_development_default, pursuit_rl_city_route_development_default, pursuit_rl_city_escape_focus_default].find((group) => group.stages.some((row) => row.id === stageId));
+    const matches = [pursuit_rl_development_default, pursuit_rl_route_development_default, pursuit_rl_city_route_development_default, smartChaseCurriculum, pursuit_rl_city_escape_focus_default].filter((group) => group.stages.some((row) => row.id === stageId));
+    const hashes = await Promise.all(matches.map(async (manifest2) => {
+      const hash2 = new Uint8Array(await crypto.subtle.digest(
+        "SHA-256",
+        new TextEncoder().encode(JSON.stringify(manifest2))
+      ));
+      return [...hash2].map((n) => n.toString(16).padStart(2, "0")).join("");
+    }));
+    const index = checkpoint?.development?.curriculumSha256 ? hashes.indexOf(checkpoint.development.curriculumSha256) : 0;
+    if (matches.length && index < 0)
+      throw new Error("Resume or evaluate with a checkpoint from the same Lab workload and curriculum.");
+    const manifest = matches[index];
     const stage = manifest?.stages.find((row) => row.id === stageId);
     if (!stage) throw new RangeError("Choose a Lab workload.");
-    const focused = manifest === pursuit_rl_city_escape_focus_default;
+    const focused = manifest === pursuit_rl_city_escape_focus_default || manifest === smartChaseCurriculum;
     const rewardProfile = checkpoint == null && focused ? CLEAN_ESCAPE_REWARD : checkpoint?.development?.rewardProfile;
     if (rewardProfile !== void 0 && (!focused || rewardProfile !== CLEAN_ESCAPE_REWARD))
       throw new RangeError("Checkpoint reward profile is not supported for this Lab workload.");

@@ -6,17 +6,30 @@ import { CLEAN_ESCAPE_REWARD } from "./gta-pursuit-env.js";
 import { PursuitPpo } from "./pursuit-ppo.js";
 import { collectPursuitRollout } from "./pursuit-rollouts.js";
 import { createPursuitSession } from "./pursuit-session.js";
+import { smartEscapeCurriculum } from "./smart-escape-curriculum.js";
+
+const smartChaseCurriculum = smartEscapeCurriculum(chaseCurriculum);
 
 let commissioned = false;
 let active = null;
 
 async function workloadFor(stageId, checkpoint) {
-  const manifest = [curriculum, routeCurriculum, cityRouteCurriculum, chaseCurriculum]
-    .find(group => group.stages.some(row => row.id === stageId));
+  const matches = [curriculum, routeCurriculum, cityRouteCurriculum, smartChaseCurriculum, chaseCurriculum]
+    .filter(group => group.stages.some(row => row.id === stageId));
+  const hashes = await Promise.all(matches.map(async manifest => {
+    const hash = new Uint8Array(await crypto.subtle.digest("SHA-256",
+      new TextEncoder().encode(JSON.stringify(manifest))));
+    return [...hash].map(n => n.toString(16).padStart(2, "0")).join("");
+  }));
+  const index = checkpoint?.development?.curriculumSha256
+    ? hashes.indexOf(checkpoint.development.curriculumSha256) : 0;
+  if (matches.length && index < 0)
+    throw new Error("Resume or evaluate with a checkpoint from the same Lab workload and curriculum.");
+  const manifest = matches[index];
   const stage = manifest?.stages.find(row => row.id === stageId);
   if (!stage) throw new RangeError("Choose a Lab workload.");
   // Absence on a saved checkpoint means the original scoring, not the new default.
-  const focused = manifest === chaseCurriculum;
+  const focused = manifest === chaseCurriculum || manifest === smartChaseCurriculum;
   const rewardProfile = checkpoint == null && focused ? CLEAN_ESCAPE_REWARD : checkpoint?.development?.rewardProfile;
   if (rewardProfile !== undefined && (!focused || rewardProfile !== CLEAN_ESCAPE_REWARD))
     throw new RangeError("Checkpoint reward profile is not supported for this Lab workload.");

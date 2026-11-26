@@ -1,5 +1,5 @@
 import { STEP, clamp } from "./config.js";
-import { distance } from "./geometry.js";
+import { distance, overlaps } from "./geometry.js";
 import { gtaLineClear } from "./pursuit-response.js";
 
 export const DISPATCH_RULESET = "dispatch-v1";
@@ -110,6 +110,23 @@ function mobileNearbyTactical(patrols, player) {
 export function updateDispatchTracking(world, initial) {
   const { player, pursuit, tick } = world, { response, gta } = pursuit;
   if (isTacticalGta(pursuit)) {
+    const fair = gta.config.policeFairness === "city-fair-v1";
+    if (fair) {
+      for (const unit of response.sightedBy) {
+        const dx = player.x - unit.x, dz = player.z - unit.z;
+        const range = Math.hypot(dx, dz);
+        const forward = dx * Math.sin(unit.heading) + dz * Math.cos(unit.heading);
+        const right = dx * Math.cos(unit.heading) - dz * Math.sin(unit.heading);
+        const touching = overlaps(unit, player, .05);
+        const visible = range <= 105 && forward > 0 &&
+          Math.abs(Math.atan2(right, forward)) <= 1.15;
+        if (!(touching || visible) || !gtaLineClear(world, unit, dx, dz, range)) {
+          response.sightedBy.delete(unit);
+          response.closePatrols.delete(unit);
+        }
+      }
+      response.unitsInContact = response.sightedBy.size;
+    }
     const d = (response.dispatch ??= createDispatchResponse());
     const wasInSight = d.state === "VISUALLY_SPOTTED" || (!d.tactical && isDispatchTracked(response));
     const { x, z, heading, speed } = player;
@@ -129,7 +146,7 @@ export function updateDispatchTracking(world, initial) {
     if (!d.escapeEligible && (initial || d.lastSampleTick !== tick)) {
       const consecutiveStep = !initial && (d.lastSampleTick === null || d.lastSampleTick === tick - 1);
       const qualifyingStep = consecutiveStep &&
-        (inSight || mobileNearbyTactical(pursuit.patrols, player) || Boolean(d.everSpotted && patrolCount === 0));
+        (inSight || (!fair && mobileNearbyTactical(pursuit.patrols, player)) || Boolean(d.everSpotted && patrolCount === 0));
       d.mobileTrackTicks = qualifyingStep ? (d.mobileTrackTicks ?? 0) + 1 : 0;
       d.escapeEligible = d.mobileTrackTicks >= ELIGIBLE_TICKS || Boolean(d.everSpotted && patrolCount === 0);
     }
@@ -223,6 +240,12 @@ export function updateDispatchEscape(world, tracked) {
   if (isTacticalGta(pursuit)) {
     const dispatch = (response.dispatch ??= createDispatchResponse());
     dispatch.tactical = true;
+    if (gta.config.policeFairness === "city-fair-v1" && !dispatch.everSpotted) {
+      dispatch.coolingDown = false;
+      dispatch.starDecayTicks = 0;
+      response.clearProgress = 0;
+      return false;
+    }
     if ((response.unitsInContact ?? 0) > 0) return false;
     const nearestPatrolM = nearestActivePatrolM(player, pursuit.patrols);
     response.nearestPatrolM = Number.isFinite(nearestPatrolM) ? nearestPatrolM : null;

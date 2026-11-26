@@ -22,6 +22,33 @@ import {
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
+test("privacy glazing blocks exterior rays on every side without blocking cockpit rays", () => {
+  const model = createSuvModel();
+  model.root.updateMatrixWorld(true);
+  const cases = [
+    ["suv-windshield", [0, 1.4, 3], [0, 1.4, 0]],
+    ["suv-rear-window", [0, 1.4, -3], [0, 1.4, -1]],
+    ["suv-left-front-window", [-3, 1.4, 0], [0, 1.4, 0]],
+    ["suv-right-front-window", [3, 1.4, 0], [0, 1.4, 0]],
+  ];
+  try {
+    for (const [name, outside, inside] of cases) {
+      const pane = model.root.getObjectByName(name);
+      const start = new THREE.Vector3(...outside), end = new THREE.Vector3(...inside);
+      const ray = new THREE.Raycaster(start, end.clone().sub(start).normalize());
+      assert.equal(ray.intersectObject(pane).length > 0, true, `${name} conceals cabin`);
+      assert.equal(pane.material.transparent, false);
+      assert.equal(pane.material.opacity, 1);
+      assert.ok(Math.max(...pane.material.color.toArray()) < 0.01, `${name} is black`);
+      ray.set(end, start.clone().sub(end).normalize());
+      assert.equal(ray.intersectObject(pane).length, 0, `${name} leaves outward view clear`);
+    }
+  } finally {
+    for (const resources of Object.values(model.resources))
+      for (const resource of resources) resource.dispose();
+  }
+});
+
 function luma([r, g, b]) {
   return 0.2126 * r + 0.7152 * g + 0.0722 * b;
 }

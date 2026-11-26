@@ -41,7 +41,7 @@ import { PursuitAudio } from "./ui/pursuit-audio.js";
 import { isPackPursuit, onRoadLimit, rushRoadLimit, usesRushPace } from "./core/district-behavior.js";
 import { validatePackPolicy } from "./core/pack-driving.js";
 import { freezePursuitPolicy, PursuitPpo } from "./rl/pursuit-ppo.js";
-import { PAKO_EVASIVE_CONTROL } from "./rl/pako-evasive-control.js";
+import { SMART_ESCAPE_CONTROL } from "./rl/pako-smart-escape.js";
 import { applyFrozenDispatchAction } from "./rl/pursuit-controller.js";
 import { PursuitDecisionTrace, finishPursuitDecision, observePursuitDecision,
   startPursuitDecision } from "./rl/pursuit-diagnostics.js";
@@ -834,7 +834,7 @@ cityPerception = mountCityPerception($, {
 let touchNitroActive = false;
 function spawnChaseCrowdAhead(count = 20) {
   if (environment !== "metro") return null;
-  world.command({ type: "spawn-crowd-ahead", count });
+  world.command({ type: "spawn-crowd-ahead", count, layout: "dispersed-cohorts-v1" });
   updateUI();
   return world.lastCrowdSpawn ?? null;
 }
@@ -881,7 +881,10 @@ addEventListener("keydown", (event) => {
   if (event.repeat) return;
   if (event.code === "KeyP") $("phoneToggleBtn").click();
   if (event.code === "KeyC") {
-    setCarView(cameraMode === "cockpit" ? "chase" : "cockpit");
+    if (cameraMode === "cockpit") setChaseCameraStyle("chasing");
+    else if (cameraMode === "chase" && chaseCameraStyle === "chasing")
+      setChaseCameraStyle("follow");
+    else setCarView("cockpit");
   }
   if (event.code === "KeyV") {
     setChaseCameraStyle(chaseCameraStyle === "chasing" ? "follow" : "chasing");
@@ -889,8 +892,8 @@ addEventListener("keydown", (event) => {
   if (event.code === "KeyI") autoToggle();
   if (event.code === "KeyE") usePursuitPower();
   if (event.code === "KeyG" && environment === "metro") {
-    spawnChaseCrowdAhead(20);
-    pursuitPanel.flashCrowdSpawned?.(20);
+    if (isPursuing()) pursuitPanel.triggerSpawnCrowdAhead({ count: 20 });
+    else spawnChaseCrowdAhead(20);
   }
   if (event.code === "KeyR" && world.pursuit?.survival && !isPursuing() && streetPursuitOpen &&
       streetPursuitStyle === "survival") $("pursuitRunBtn").click();
@@ -1504,6 +1507,7 @@ const pursuitPanel = mountPursuitPanel({
               curbSupport: METRO_CITY_CURBS,
               chasePresence: AGGRESSIVE_CHASE_PRESENCE,
               tacticalPursuit: TACTICAL_PURSUIT_MODE,
+              policeFairness: "city-fair-v1",
               patrolTrafficPreview: PATROL_TRAFFIC_PREVIEW,
               patrolChainYield: PATROL_LATERAL_YIELD,
             } : {}),
@@ -1520,7 +1524,7 @@ const pursuitPanel = mountPursuitPanel({
       if (frozen) active.pursuit.frozenDriver = { ...dispatchCheckpoint, status: "active",
         lastTick: -1, decisions: 0, recoverStale: simple || useEvasionPreview,
         evasion: pako ? release.evasionProfile === "bounded-recovery-v1" : useEvasionPreview,
-        ...(simple ? { evasiveControl: PAKO_EVASIVE_CONTROL } : {}) };
+        ...(simple ? { evasiveControl: SMART_ESCAPE_CONTROL } : {}) };
       if (isDispatchStyle(style)) active.pursuit.trace =
         new PursuitDecisionTrace(`city-${Date.now()}-${++cityTraceSequence}`);
       if (arcade || simple) void pursuitAudio.unlock();
@@ -1963,8 +1967,8 @@ function updateUI() {
     : frozen?.status === "fault" ? "PPO stopped" : frozen?.status === "waiting-for-scan" ? "PPO waiting for scan"
     : world.mode === "auto" ? "Autonomous drive" : "Manual drive";
   $("drivingHelp").textContent = frozen
-    ? "W A S D drive · Shift nitro · G +20 people · V cam · C cockpit · I takes over"
-    : "W A S D drive · Shift nitro · Space brake · G +20 people · V cam · C cockpit · I auto";
+    ? "W A S D drive · Shift nitro · G +20 people · V exterior cam · C cycle cams · I takes over"
+    : "W A S D drive · Shift nitro · Space brake · G +20 people · V exterior cam · C cycle cams · I auto";
   if ($("chaseCamBtn")) {
     $("chaseCamBtn").textContent = chaseCameraStyle === "chasing" ? "Chasing cam" : "Behind car";
     $("chaseCamBtn").setAttribute("aria-pressed", String(chaseCameraStyle === "chasing"));
@@ -2437,7 +2441,7 @@ function frame(time) {
       lastFrameWorkMs > 11.0);
   if (environment !== "metro" || world !== lastShadowWorld ||
       (!wantVisionSample && !deferShadowOnHeavyTick && renderedFrames - lastShadowFrame >= shadowFrames) ||
-      isInspection() || cameraSnap || Boolean(freeCameraShotOverride) || appliedCutaway !== cutaway) {
+      isInspection() || cameraSnap || appliedCutaway !== cutaway) {
     renderer.shadowMap.needsUpdate = true;
     lastShadowWorld = world;
     lastShadowFrame = renderedFrames;
@@ -2829,7 +2833,7 @@ window.sim = {
   setSensorCamera: (dir) => carAction("sensor-camera", dir),
   setFreeCameraShot: (shot) => {
     freeCameraShotOverride = shot && shot.pos && shot.lookAt ? shot : null;
-    if (!freeCameraShotOverride) cameraSnap = true;
+    cameraSnap = true;
   },
   nitroStatus: () => ({
     charge: world?.player?.nitroCharge ?? 1,
@@ -2925,7 +2929,7 @@ window.sim = {
     updateUI();
   },
   step(count = 1) {
-    for (let i = 0; i < count; i++) world.step();
+    for (let i = 0; i < count; i++) stepWorld();
     updateUI();
   },
   snapshot: () => world.snapshot(),

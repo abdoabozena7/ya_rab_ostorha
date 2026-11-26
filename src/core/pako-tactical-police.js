@@ -16,6 +16,12 @@ import { isPoseSupportedWithCurbs } from "./pako-curb.js";
 import { integrateVehicle, vehicleProbe } from "./vehicle.js";
 
 export const TACTICAL_PURSUIT_MODE = "gta-tactical-v1";
+export const CITY_FAIR_POLICE = "city-fair-v1";
+export const CITY_FAIR_POLICE_SPEED_MPS = 28;
+
+export function isFairCityPolice(state) {
+  return (state?.gta?.config ?? state)?.policeFairness === CITY_FAIR_POLICE;
+}
 
 const SQUAD_BY_STAR = Object.freeze([0, 4, 6, 8, 11, 14]);
 const SEARCH_FAN_ANGLES = Object.freeze([0, 0.58, -0.58, 1.15, -1.15, 1.75, -1.75, Math.PI]);
@@ -272,13 +278,13 @@ export function tacticalSquadCap(wantedLevel, maxActivePatrols = 14) {
   return Math.min(cap, SQUAD_BY_STAR[star]);
 }
 
-export function tacticalPatrolSpec(unitType, wantedLevel = 3, npcSpeedMultiplier = 1) {
+export function tacticalPatrolSpec(unitType, wantedLevel = 3, npcSpeedMultiplier = 1, fairness) {
   const level = clamp(Math.round(wantedLevel || 1), 1, 5);
   const mult = Number.isFinite(npcSpeedMultiplier) && npcSpeedMultiplier > 0 ? npcSpeedMultiplier : 1;
 
   if (unitType === "interceptor") {
     return {
-      maxSpeed: (35.5 + 0.5 * level) * mult,
+      maxSpeed: Math.min((35.5 + 0.5 * level) * mult, fairness === CITY_FAIR_POLICE ? CITY_FAIR_POLICE_SPEED_MPS : Infinity),
       acceleration: 8.8,
       braking: 11.4,
       steerRate: 2.75,
@@ -288,7 +294,7 @@ export function tacticalPatrolSpec(unitType, wantedLevel = 3, npcSpeedMultiplier
   }
   if (unitType === "swat") {
     return {
-      maxSpeed: (28.8 + 0.4 * level) * mult,
+      maxSpeed: Math.min((28.8 + 0.4 * level) * mult, fairness === CITY_FAIR_POLICE ? CITY_FAIR_POLICE_SPEED_MPS : Infinity),
       acceleration: 6.4,
       braking: 10.0,
       steerRate: 1.95,
@@ -297,7 +303,7 @@ export function tacticalPatrolSpec(unitType, wantedLevel = 3, npcSpeedMultiplier
     };
   }
   return {
-    maxSpeed: (33.1 + 0.45 * level) * mult,
+    maxSpeed: Math.min((33.1 + 0.45 * level) * mult, fairness === CITY_FAIR_POLICE ? CITY_FAIR_POLICE_SPEED_MPS : Infinity),
     acceleration: 7.6,
     braking: 10.6,
     steerRate: 2.45,

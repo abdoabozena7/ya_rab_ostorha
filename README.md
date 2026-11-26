@@ -45,7 +45,7 @@ fails visibly; the launcher never reuses or stops somebody else's server.
 | Space | Brake and take manual control |
 | I / Manual drive button | Toggle autonomous driving |
 | P / Phone | Choose an Arabic destination from the place buttons |
-| C | Switch chase / in-cabin driver camera |
+| C | Cycle behind car / in-cabin driver / elevated chasing camera |
 | Car | Inspect the player car, running gear, cabin and mounted virtual sensors |
 | Camera | Inspect the actual vehicle-front pixels, exact-frame recognition and observed-motion forecast |
 | People | Inspect real human bodies and explicit world-reference walk/jog/stop controls |
@@ -77,6 +77,11 @@ mouse orbit/zoom; returning to a driving view restores the previous pause state.
 Cutaway exposes the cabin and mechanical structure. The steering wheel, front
 wheel angles, signed tire rolling and bounded suspension/load response follow
 the fixed-step vehicle state, not independent decorative animations.
+
+The SUV has opaque black exterior privacy glazing: cabin details are hidden
+from outside, while outward-facing panes leave the cockpit and mounted camera
+views unobstructed. **C** cycles behind car, cockpit, elevated chasing camera,
+then behind car again; **V** still toggles the two exterior driving cameras.
 
 The SUV now has staggered tread and shoulder lugs, open split-spoke wheels with
 visible brake discs and lug hardware, shaped hood creases, recessed grille and
@@ -208,16 +213,43 @@ retained or reused from the earlier work and what remains engine-specific.
 
 ## One connected city
 
-The game opens directly in **Grand Metro City (`cityVersion: 5`)** (`~960 × 800 m`, `> 765,000 m²`, preserving `cityVersion: 1..4` for deterministic legacy tests and replays). Broad boulevards, **5 diagonal radial avenues & market slash streets** (`qasr-diagonal`, `talaat-diagonal`, `ramses-diagonal`, `bazaar-slash`, `citadel-diagonal`), monumental multi-story Egyptian buildings (`28–56 m` tall), **66 curbside parked vehicles**, **190 default street pedestrians** (configurable up to **280** with 3-tier CPU & skeletal render LOD for 60+ FPS), traffic convergence hubs, warm golden streetlamp pools, and a player-following street key light illuminating the Pearl-Silver Clearcoat SUV (`CITY_CLEAR_CINEMATIC_GRADE`) share one road graph, traffic population, and set of Phone destinations. Switch live between the grounded **Behind car** camera and the dynamic speed-reactive **Chasing cam** using the HUD camera button (`Behind car` / `Chasing cam`), the Chase card toggle, or **V** (**C** switches to cockpit).
+The game opens directly in **Grand Metro City (`cityVersion: 5`)** (`~960 × 800 m`, `> 765,000 m²`, preserving `cityVersion: 1..4` for deterministic legacy tests and replays). Broad boulevards, **5 diagonal radial avenues & market slash streets** (`qasr-diagonal`, `talaat-diagonal`, `ramses-diagonal`, `bazaar-slash`, `citadel-diagonal`), monumental multi-story Egyptian buildings (`28–56 m` tall), **66 curbside parked vehicles**, **190 default street pedestrians** (configurable up to **280** with 3-tier CPU & skeletal render LOD for 60+ FPS), traffic convergence hubs, warm golden streetlamp pools, and a player-following street key light illuminating the Pearl-Silver Clearcoat SUV (`CITY_CLEAR_CINEMATIC_GRADE`) share one road graph, traffic population, and set of Phone destinations. Switch live between the grounded **Behind car** camera and the dynamic speed-reactive **Chasing cam** using the HUD camera button (`Behind car` / `Chasing cam`), the Chase card toggle, or **V**. **C** cycles behind car, cockpit and elevated chasing views.
 
 Use **Chase** on the main toolbar to pick a pursuit level (`Level 1` up to `5 · Max`) and press **Start chase** on the same City streets:
-- A smoother, low-collision **RL PPO checkpoint** (`public/threejs/pako-chase-ppo.json`) is preloaded by default (`RL AI` vs `Manual` toggle, or press **I** / **WASD** to take over).
-- An initial beat unit spots the car from a genuine line-of-sight berth (`66.5–109.5 m`) before vanguard cruisers coordinate multi-unit tactical lead pressure, intersection flank cutoffs, straightaway interceptors, SWAT units, and subtle outer-bezel police strobe lighting scaling up to Level 5 Max (strictly never spawning or teleporting near an out-of-contact player).
+- The existing **RL PPO checkpoint** (`public/threejs/pako-chase-ppo.json`) proposes actions, while the default **`pako-smart-escape-v3`** sensor-only planner adds a persistent reachable escape destination, observed-velocity traffic forecasting, committed crossing yields and bounded steering changes (`RL AI` vs `Manual`, or **I** / **WASD** to take over). These deterministic planning changes are not a claim that the shipped neural checkpoint was retrained.
+- Default **`city-fair-v1`** police occupy stable City road beats, acquire through actual visibility and share last-known reports. They do not recycle or continuously spawn ahead of the moving SUV. Every difficulty caps patrol speed at the SUV's **unboosted** maximum, including NPC speed multipliers; Nitro gives the player a speed advantage. Unversioned replays and experimental legacy pursuit settings retain their original rules.
 - **Ultra-smooth zero-hitch simulation & rendering**: spatial-indexed `PursuitScanner` ray prefilters (`~0.22 ms`/scan), `WeakMap`-cached tactical road & scene-node lookups, `32 m` spatial surface cells with zero-allocation wheel scratch buffers, dirty-tracked bounded GPU instanced uploads (`0` idle buffer uploads on dry/calm frames), single-pass volumetric smoke billboarding, and pooled traffic crash-deformation VBOs sustain **73–86+ FPS** across 210-pedestrian 5-star Chases, standing water puddle splashes, sandy street drifts, and multi-car part-detaching pileups.
 - **Rechargeable Nitro Boost (`NITRO_SPEC`, up to `38.5 m/s`)**: faster than 5-star police interceptors, complete with twin 3D rear afterburner flames and a live `#chaseNitroMeter` HUD bar (**Shift** / **N** or touch **NITRO** in manual mode). In autonomous RL Chase, the sensor-only controller engages Nitro on clear straightaways (`>= 30 m` clear scan) to break police containment and **unconditionally inhibits Nitro (`PED SAFE`)** the instant any 360° range ray, tracked motion vector, or camera forecast detects a pedestrian in the forward safety corridor.
-- **Live `+20 Pedestrians Ahead` Test Button (`#spawnCrowdAheadBtn` or `G`)**: available right inside the active `#chaseBar` HUD to drop 20 random walking pedestrians `22–42 m` ahead of the SUV on the street (`spawn-crowd-ahead`) so you can immediately watch the car's scan/camera forecast ghosts, `PED SAFE` Nitro hold, and zero-collision evasive weaving in real time.
+- **Live `+20 Pedestrians Ahead` Test Button (`#spawnCrowdAheadBtn` or `G`)**: adds all 20 walking pedestrians without removing the ambient population or previous waves. The new **`dispersed-cohorts-v1`** layout staggers groups over a longer road corridor with a connected passing gap instead of forming a solid wall. A genuinely blocked corridor reports failure atomically, retaining everybody already present. The scan/camera forecast ghosts and `PED SAFE` Nitro hold remain active.
 - **City-wide curb & courtyard support** (`metro-city-curbs-v2`, 316 surveyed orthogonal + diagonal sidewalk spans and interior courtyard blocks) and **sensor-only path-changing evasion** (`pako-evasive-v2`) let the SUV anticipate closing vehicles `24–40 m` ahead, weave smoothly through curbside parked-car chicanes, yield or steer around dense walking crowds, hop clear sidewalks, cut through open alleys between buildings, or execute fast 2-phase reverse pivots from 360° range rays, surface tracks, and front-camera forecasts.
 - Use **Train & test** inside Chase to run multi-episode PPO updates in the background Worker, watch full actor replays, and apply updated checkpoints directly back into City Chase.
+
+New City v5 runs also enable **`solid-city-props-v1`**: all 523 authored street
+trees and the existing market kiosk have shared physical/render descriptors.
+Normal and Chase impacts use real swept contact, damage and tangential sliding.
+Trees bend above a rigid lower trunk; kiosk upper structures crumple above a
+solid counter. Their fixed lower collision hulls remain valid after impact.
+Streaming a mesh out never removes its collider. Old replays explicitly retain
+their previous decorative-only prop profile.
+
+Fresh Chase training includes `smart-gap-crowd`, `smart-crossing-traffic` and
+`smart-static-hazard` scenarios on these same City roads; compatible saved
+checkpoints retain their original curriculum identity. Controlled two-seed
+crossing/static/crowd comparisons reduced six old-controller contacts to zero,
+with slower crowd throughput rather than a universal speed or zero-crash claim.
+The shipped PPO still did **not** achieve a qualified escape in three dense
+120-second evaluations: two timed out and one was captured, with 0/0/2 contacts.
+Traversing the entire newly spawned crowd is also **not verified**. A bounded
+240-transition PPO update exercised the new training scenarios, but did not
+establish a learned improvement; its development checkpoint is not shipped.
+`node tools/verify-smart-city-escape.mjs` deliberately keeps these unmet escape
+criteria failing instead of treating survival or stopping as success.
+
+The full JavaScript suite also has pre-existing Windows-native harness failures
+on Linux (`python.exe` and Windows-only process-tree cleanup); it is not a
+green cross-platform acceptance result. The standalone game does not require
+that native harness.
+See the [25-frame live City gallery](docs/screenshots/smart-city-escape/README.md).
 
 Use **Tools → Experiments → Arcade chase → Start pursuit** to start the original arcade variant on the
 street you are already on. The same city, original SUV and civilian actors

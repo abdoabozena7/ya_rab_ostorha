@@ -205,6 +205,7 @@ export function aggressivePatrolPace(pursuit, car, reportSpeed, range) {
 
 export function recycleTrailingChasePatrols(world, deployPatrol, removePatrol) {
   const pursuit = world?.pursuit;
+  if (pursuit?.gta?.config?.policeFairness === "city-fair-v1") return 0;
   if (!isAggressiveChase(pursuit)) return 0;
   if (pursuit.phase && pursuit.phase !== "running") return 0;
 
