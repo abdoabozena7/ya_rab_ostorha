@@ -1238,7 +1238,7 @@ const streetCitySpecs = new WeakMap();
 
 export function beginStreetPursuit(world, level = 1, variant = "legacy", config) {
   if (variant !== "gta" && config)
-    for (const name of ["curbSupport", "patrolChainYield", "chasePresence", "tacticalPursuit", "cityPackPressure"])
+    for (const name of ["curbSupport", "patrolChainYield", "chasePresence", "tacticalPursuit", "cityPackPressure", "routeMemory"])
       if (Object.hasOwn(config, name)) throw new TypeError(`${name} is only available in Metro Dispatch`);
   const rawGtaConfig = variant === "gta"
     ? (config?.ruleset === "dispatch-v1" &&

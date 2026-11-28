@@ -5,6 +5,7 @@ import {
 } from "./pako-aggressive-police.js";
 import { METRO_CITY_CURBS, METRO_CURB_SUPPORT, sweepSafeWithCurbs } from "./pako-curb.js";
 import { PATROL_CHAIN_YIELD, PATROL_LATERAL_YIELD } from "./pako-patrol-yield.js";
+import { OBSERVED_CORRIDOR_MEMORY } from "./pursuit-controls.js";
 import {
   CITY_FAIR_POLICE, CITY_PACK_PRESSURE, TACTICAL_PURSUIT_MODE, canPatrolUseCurbPrivilege, isFairCityPolice, isTacticalPursuit,
   planTacticalInterceptAim, selectTacticalSearchTarget, tacticalPatrolSpec, tacticalSurgePace,
@@ -117,7 +118,7 @@ export function resolveGtaChaseConfig(options = {}, level = GtaChaseConfig.wante
   for (const key of Object.keys(options))
     if (!Object.hasOwn(GtaChaseConfig, key) &&
         !["ruleset", "surveillanceZones", "civilianCrossingPreview", "patrolTrafficPreview", "damageFeedback", "curbSupport",
-          "patrolChainYield", "chasePresence", "tacticalPursuit", "policeFairness", "cityPackPressure"].includes(key))
+          "patrolChainYield", "chasePresence", "tacticalPursuit", "policeFairness", "cityPackPressure", "routeMemory"].includes(key))
       throw new TypeError(`Unknown GTA chase config field: ${key}`);
   const config = { ...GtaChaseConfig, wantedLevelStart: level, ...options };
   if (Object.hasOwn(config, "ruleset") && config.ruleset !== "legacy" && config.ruleset !== DISPATCH_RULESET)
@@ -154,6 +155,9 @@ export function resolveGtaChaseConfig(options = {}, level = GtaChaseConfig.wante
       (config.cityPackPressure !== CITY_PACK_PRESSURE || !isFairCityPolice(config) ||
         config.wantedLevelStart < 4))
     throw new TypeError(`cityPackPressure requires "${CITY_PACK_PRESSURE}" with fair tactical Dispatch at Level 4 or 5`);
+  if (Object.hasOwn(config, "routeMemory") &&
+      (config.routeMemory !== OBSERVED_CORRIDOR_MEMORY || config.cityPackPressure !== CITY_PACK_PRESSURE))
+    throw new TypeError(`routeMemory requires "${OBSERVED_CORRIDOR_MEMORY}" with Metro Pack Pressure`);
   if (Object.hasOwn(config, "patrolChainYield") &&
       (config.ruleset !== DISPATCH_RULESET || ![PATROL_CHAIN_YIELD, PATROL_LATERAL_YIELD].includes(config.patrolChainYield)))
     throw new TypeError(`patrolChainYield requires "${PATROL_CHAIN_YIELD}" or "${PATROL_LATERAL_YIELD}" and ruleset "${DISPATCH_RULESET}"`);

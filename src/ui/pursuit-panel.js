@@ -244,6 +244,8 @@ function pakoActiveLearningText(state, driver, terrain, escapeGuidance = "") {
   const submitted = driver.lastDecision?.submitted;
   const detail = driver.cameraBrake
     ? "Camera forecast: braking for person"
+    : maneuver === "observed-corridor-backtrack" && submitted?.gear === -1
+      ? "Backtracking along a checked route"
     : reason === "PREDICTIVE_REVERSE_ESCAPE" || submitted?.gear === -1
       ? "Reversing & turning out"
       : driver.shieldReason && submitted?.brake === 1

@@ -5831,6 +5831,113 @@
     return command;
   }
 
+  // src/core/pursuit-controls.js
+  var PURSUIT_STOP = Object.freeze({ steer: 0, throttle: 0, brake: 1, gear: 1 });
+  var OBSERVED_CORRIDOR_MEMORY = "observed-corridor-memory-v1";
+  var NITRO_SPEC = Object.freeze({
+    durationS: 4.6,
+    rechargePerS: 0.16,
+    minEngageCharge: 0.18,
+    speedMultiplier: 1.34,
+    accelMultiplier: 1.72,
+    maxBoostSpeedMps: 38.5
+  });
+  function nitroBoostLimits(body) {
+    const baseMaxSpeed = body.maxSpeed ?? 9.72;
+    return body.vehicleModel === KING_LONG_MICROBUS_ID ? { maxSpeed: baseMaxSpeed, accelMultiplier: KING_LONG_MICROBUS.nitroAccelerationMultiplier } : {
+      maxSpeed: Math.min(NITRO_SPEC.maxBoostSpeedMps, baseMaxSpeed * NITRO_SPEC.speedMultiplier),
+      accelMultiplier: NITRO_SPEC.accelMultiplier
+    };
+  }
+  function validatePursuitAction(action) {
+    if (!action || Object.getPrototypeOf(action) !== Object.prototype)
+      throw new RangeError("Pursuit action needs normalized steering, throttle and brake, and gear 1 or -1");
+    const keys = Object.keys(action);
+    const hasNitro = Object.prototype.hasOwnProperty.call(action, "nitro");
+    if (keys.length !== (hasNitro ? 5 : 4) || ![action.steer, action.throttle, action.brake].every(Number.isFinite) || Math.abs(action.steer) > 1 || action.throttle < 0 || action.throttle > 1 || action.brake < 0 || action.brake > 1 || ![1, -1].includes(action.gear) || hasNitro && (typeof action.nitro !== "number" || !Number.isFinite(action.nitro) || action.nitro < 0 || action.nitro > 1))
+      throw new RangeError("Pursuit action needs normalized steering, throttle and brake, and gear 1 or -1");
+    return action;
+  }
+  function isNitroEngaged(pose5, action) {
+    const charge = Number.isFinite(pose5?.nitroCharge) ? pose5.nitroCharge : 1;
+    const canEngage = pose5?.nitroActive ? charge > 0.01 : charge >= NITRO_SPEC.minEngageCharge;
+    return Boolean(
+      canEngage && charge > 0.01 && (action?.nitro ?? 0) >= 0.5 && (action?.gear ?? 1) === 1 && (action?.throttle ?? 0) > 0.2 && (action?.brake ?? 0) === 0 && (pose5?.speed ?? 0) >= -0.5 && !pose5?.nitroSuppressedByPedestrian
+    );
+  }
+  function stepNitroTank(player, action, dt = STEP) {
+    if (!player || typeof player !== "object") return false;
+    const prevCharge = Number.isFinite(player.nitroCharge) ? player.nitroCharge : 1;
+    const prevActive = Boolean(player.nitroActive);
+    const prevIntensity = Number.isFinite(player.nitroIntensity) ? player.nitroIntensity : 0;
+    const suppressed = Boolean(player.nitroSuppressedByPedestrian);
+    const canEngage = prevActive ? prevCharge > 0.01 : prevCharge >= NITRO_SPEC.minEngageCharge;
+    const engaged = Boolean(
+      canEngage && prevCharge > 0.01 && (action?.nitro ?? 0) >= 0.5 && (action?.gear ?? 1) === 1 && (action?.throttle ?? 0) > 0.2 && (action?.brake ?? 0) === 0 && (player.speed ?? 0) >= -0.5 && !suppressed
+    );
+    if (engaged) {
+      player.nitroCharge = Math.max(0, prevCharge - dt / NITRO_SPEC.durationS);
+      player.nitroActive = player.nitroCharge > 0;
+      player.nitroIntensity = Math.min(1, prevIntensity + dt * 9);
+    } else {
+      player.nitroCharge = Math.min(1, prevCharge + dt * NITRO_SPEC.rechargePerS);
+      player.nitroActive = false;
+      player.nitroIntensity = Math.max(0, prevIntensity - dt * 6.5);
+    }
+    player.nitroSuppressedByPedestrian = suppressed;
+    return player.nitroActive;
+  }
+  function buildNitroBoostPose(actor, command, copyMotion = null) {
+    if (!command || !(command.accelMultiplier > 1) || !Number.isFinite(command.maxSpeed)) {
+      return null;
+    }
+    const baseSpec = actor.spec ?? null;
+    const baseAccel = baseSpec?.acceleration ?? VEHICLE.acceleration;
+    const boostedAccel = baseAccel * command.accelMultiplier;
+    const rawGrip = baseSpec?.tireGripMps2;
+    const boostedSpec = {
+      ...baseSpec ?? {},
+      acceleration: boostedAccel,
+      ...actor.vehicleModel !== KING_LONG_MICROBUS_ID && Number.isFinite(rawGrip) ? { tireGripMps2: Math.max(rawGrip, boostedAccel) } : {}
+    };
+    const boosted = {
+      ...actor,
+      maxSpeed: command.maxSpeed,
+      spec: boostedSpec
+    };
+    if (typeof copyMotion === "function") copyMotion(actor, boosted);
+    return boosted;
+  }
+  function pursuitCommand(body, action, dt = STEP) {
+    const maxSteer = body.spec?.maxSteer ?? VEHICLE.maxSteer;
+    const steer = action.steer * maxSteer;
+    if (action.brake > 0) return {
+      steer,
+      targetSpeed: 0,
+      decelerationMps2: (body.spec?.braking ?? VEHICLE.braking) * action.brake
+    };
+    const speed = body.speed ?? 0;
+    if ((action?.nitro ?? 0) >= 0.5 && isNitroEngaged(body, action)) {
+      const boost = nitroBoostLimits(body);
+      const baseAccel = body.spec?.acceleration ?? VEHICLE.acceleration;
+      const acceleration2 = baseAccel * boost.accelMultiplier * action.throttle;
+      const targetSpeed2 = action.gear * clamp(
+        speed * action.gear + acceleration2 * dt,
+        acceleration2 * dt,
+        boost.maxSpeed
+      );
+      return {
+        steer,
+        targetSpeed: targetSpeed2,
+        ...boost
+      };
+    }
+    const limit = action.gear > 0 ? body.maxSpeed ?? 9.72 : body.spec?.reverseSpeed ?? VEHICLE.reverseSpeed;
+    const acceleration = (body.spec?.acceleration ?? VEHICLE.acceleration) * action.throttle;
+    const targetSpeed = action.throttle === 0 ? Math.sign(speed) * Math.max(0, Math.abs(speed) - 0.18 * dt) : action.gear * clamp(speed * action.gear + acceleration * dt, acceleration * dt, limit);
+    return { steer, targetSpeed };
+  }
+
   // src/core/pursuit-gta.js
   var gtaScrapeState = /* @__PURE__ */ new WeakMap();
   var civilianGtaSlip = /* @__PURE__ */ new WeakMap();
@@ -5943,7 +6050,8 @@
         "chasePresence",
         "tacticalPursuit",
         "policeFairness",
-        "cityPackPressure"
+        "cityPackPressure",
+        "routeMemory"
       ].includes(key3))
         throw new TypeError(`Unknown GTA chase config field: ${key3}`);
     const config = { ...GtaChaseConfig, wantedLevelStart: level, ...options2 };
@@ -5969,6 +6077,8 @@
       throw new TypeError(`policeFairness requires "${CITY_FAIR_POLICE}" with Dispatch tactical pursuit`);
     if (Object.hasOwn(config, "cityPackPressure") && (config.cityPackPressure !== CITY_PACK_PRESSURE || !isFairCityPolice(config) || config.wantedLevelStart < 4))
       throw new TypeError(`cityPackPressure requires "${CITY_PACK_PRESSURE}" with fair tactical Dispatch at Level 4 or 5`);
+    if (Object.hasOwn(config, "routeMemory") && (config.routeMemory !== OBSERVED_CORRIDOR_MEMORY || config.cityPackPressure !== CITY_PACK_PRESSURE))
+      throw new TypeError(`routeMemory requires "${OBSERVED_CORRIDOR_MEMORY}" with Metro Pack Pressure`);
     if (Object.hasOwn(config, "patrolChainYield") && (config.ruleset !== DISPATCH_RULESET || ![PATROL_CHAIN_YIELD, PATROL_LATERAL_YIELD].includes(config.patrolChainYield)))
       throw new TypeError(`patrolChainYield requires "${PATROL_CHAIN_YIELD}" or "${PATROL_LATERAL_YIELD}" and ruleset "${DISPATCH_RULESET}"`);
     for (const key3 of ["wantedLevelStart", "wantedLevelMax", "maxActivePatrols"]) {
@@ -16372,112 +16482,6 @@
     return clamp(bias, -0.19, 0.19);
   }
 
-  // src/core/pursuit-controls.js
-  var PURSUIT_STOP = Object.freeze({ steer: 0, throttle: 0, brake: 1, gear: 1 });
-  var NITRO_SPEC = Object.freeze({
-    durationS: 4.6,
-    rechargePerS: 0.16,
-    minEngageCharge: 0.18,
-    speedMultiplier: 1.34,
-    accelMultiplier: 1.72,
-    maxBoostSpeedMps: 38.5
-  });
-  function nitroBoostLimits(body) {
-    const baseMaxSpeed = body.maxSpeed ?? 9.72;
-    return body.vehicleModel === KING_LONG_MICROBUS_ID ? { maxSpeed: baseMaxSpeed, accelMultiplier: KING_LONG_MICROBUS.nitroAccelerationMultiplier } : {
-      maxSpeed: Math.min(NITRO_SPEC.maxBoostSpeedMps, baseMaxSpeed * NITRO_SPEC.speedMultiplier),
-      accelMultiplier: NITRO_SPEC.accelMultiplier
-    };
-  }
-  function validatePursuitAction(action) {
-    if (!action || Object.getPrototypeOf(action) !== Object.prototype)
-      throw new RangeError("Pursuit action needs normalized steering, throttle and brake, and gear 1 or -1");
-    const keys = Object.keys(action);
-    const hasNitro = Object.prototype.hasOwnProperty.call(action, "nitro");
-    if (keys.length !== (hasNitro ? 5 : 4) || ![action.steer, action.throttle, action.brake].every(Number.isFinite) || Math.abs(action.steer) > 1 || action.throttle < 0 || action.throttle > 1 || action.brake < 0 || action.brake > 1 || ![1, -1].includes(action.gear) || hasNitro && (typeof action.nitro !== "number" || !Number.isFinite(action.nitro) || action.nitro < 0 || action.nitro > 1))
-      throw new RangeError("Pursuit action needs normalized steering, throttle and brake, and gear 1 or -1");
-    return action;
-  }
-  function isNitroEngaged(pose5, action) {
-    const charge = Number.isFinite(pose5?.nitroCharge) ? pose5.nitroCharge : 1;
-    const canEngage = pose5?.nitroActive ? charge > 0.01 : charge >= NITRO_SPEC.minEngageCharge;
-    return Boolean(
-      canEngage && charge > 0.01 && (action?.nitro ?? 0) >= 0.5 && (action?.gear ?? 1) === 1 && (action?.throttle ?? 0) > 0.2 && (action?.brake ?? 0) === 0 && (pose5?.speed ?? 0) >= -0.5 && !pose5?.nitroSuppressedByPedestrian
-    );
-  }
-  function stepNitroTank(player, action, dt = STEP) {
-    if (!player || typeof player !== "object") return false;
-    const prevCharge = Number.isFinite(player.nitroCharge) ? player.nitroCharge : 1;
-    const prevActive = Boolean(player.nitroActive);
-    const prevIntensity = Number.isFinite(player.nitroIntensity) ? player.nitroIntensity : 0;
-    const suppressed = Boolean(player.nitroSuppressedByPedestrian);
-    const canEngage = prevActive ? prevCharge > 0.01 : prevCharge >= NITRO_SPEC.minEngageCharge;
-    const engaged = Boolean(
-      canEngage && prevCharge > 0.01 && (action?.nitro ?? 0) >= 0.5 && (action?.gear ?? 1) === 1 && (action?.throttle ?? 0) > 0.2 && (action?.brake ?? 0) === 0 && (player.speed ?? 0) >= -0.5 && !suppressed
-    );
-    if (engaged) {
-      player.nitroCharge = Math.max(0, prevCharge - dt / NITRO_SPEC.durationS);
-      player.nitroActive = player.nitroCharge > 0;
-      player.nitroIntensity = Math.min(1, prevIntensity + dt * 9);
-    } else {
-      player.nitroCharge = Math.min(1, prevCharge + dt * NITRO_SPEC.rechargePerS);
-      player.nitroActive = false;
-      player.nitroIntensity = Math.max(0, prevIntensity - dt * 6.5);
-    }
-    player.nitroSuppressedByPedestrian = suppressed;
-    return player.nitroActive;
-  }
-  function buildNitroBoostPose(actor, command, copyMotion = null) {
-    if (!command || !(command.accelMultiplier > 1) || !Number.isFinite(command.maxSpeed)) {
-      return null;
-    }
-    const baseSpec = actor.spec ?? null;
-    const baseAccel = baseSpec?.acceleration ?? VEHICLE.acceleration;
-    const boostedAccel = baseAccel * command.accelMultiplier;
-    const rawGrip = baseSpec?.tireGripMps2;
-    const boostedSpec = {
-      ...baseSpec ?? {},
-      acceleration: boostedAccel,
-      ...actor.vehicleModel !== KING_LONG_MICROBUS_ID && Number.isFinite(rawGrip) ? { tireGripMps2: Math.max(rawGrip, boostedAccel) } : {}
-    };
-    const boosted = {
-      ...actor,
-      maxSpeed: command.maxSpeed,
-      spec: boostedSpec
-    };
-    if (typeof copyMotion === "function") copyMotion(actor, boosted);
-    return boosted;
-  }
-  function pursuitCommand(body, action, dt = STEP) {
-    const maxSteer = body.spec?.maxSteer ?? VEHICLE.maxSteer;
-    const steer = action.steer * maxSteer;
-    if (action.brake > 0) return {
-      steer,
-      targetSpeed: 0,
-      decelerationMps2: (body.spec?.braking ?? VEHICLE.braking) * action.brake
-    };
-    const speed = body.speed ?? 0;
-    if ((action?.nitro ?? 0) >= 0.5 && isNitroEngaged(body, action)) {
-      const boost = nitroBoostLimits(body);
-      const baseAccel = body.spec?.acceleration ?? VEHICLE.acceleration;
-      const acceleration2 = baseAccel * boost.accelMultiplier * action.throttle;
-      const targetSpeed2 = action.gear * clamp(
-        speed * action.gear + acceleration2 * dt,
-        acceleration2 * dt,
-        boost.maxSpeed
-      );
-      return {
-        steer,
-        targetSpeed: targetSpeed2,
-        ...boost
-      };
-    }
-    const limit = action.gear > 0 ? body.maxSpeed ?? 9.72 : body.spec?.reverseSpeed ?? VEHICLE.reverseSpeed;
-    const acceleration = (body.spec?.acceleration ?? VEHICLE.acceleration) * action.throttle;
-    const targetSpeed = action.throttle === 0 ? Math.sign(speed) * Math.max(0, Math.abs(speed) - 0.18 * dt) : action.gear * clamp(speed * action.gear + acceleration * dt, acceleration * dt, limit);
-    return { steer, targetSpeed };
-  }
-
   // src/core/pack-driving.js
   var PACK_ACTIONS = Object.freeze([
     "follow",
@@ -19103,7 +19107,7 @@
   var streetCitySpecs = /* @__PURE__ */ new WeakMap();
   function beginStreetPursuit(world, level = 1, variant = "legacy", config) {
     if (variant !== "gta" && config) {
-      for (const name of ["curbSupport", "patrolChainYield", "chasePresence", "tacticalPursuit", "cityPackPressure"])
+      for (const name of ["curbSupport", "patrolChainYield", "chasePresence", "tacticalPursuit", "cityPackPressure", "routeMemory"])
         if (Object.hasOwn(config, name)) throw new TypeError(`${name} is only available in Metro Dispatch`);
     }
     const rawGtaConfig = variant === "gta" ? config?.ruleset === "dispatch-v1" && !Object.hasOwn(config, "surveillanceZones") && Array.isArray(world.district?.surveillanceZones) ? { ...config, surveillanceZones: world.district.surveillanceZones } : config : null;
@@ -35742,6 +35746,82 @@
     });
   }
 
+  // src/rl/observed-corridor-memory.js
+  var ticks4 = (seconds2) => Math.round(seconds2 / STEP);
+  var HISTORY_TICKS = ticks4(20);
+  var REVISIT_TICKS = ticks4(7);
+  var RETREAT_TICKS = ticks4(8);
+  var EXIT_DISTANCE_M = 17;
+  function observedBlocker(scan, player) {
+    return scan.tracks.some((track2) => track2.ageS === 0 && track2.kind !== "pedestrian" && track2.forwardM > 0 && track2.forwardM <= 13 && Math.abs(track2.rightM) <= player.width / 2 + 2.8);
+  }
+  function returnPrefix(frames, player, entryTick) {
+    const path = [{ x: player.x, z: player.z }];
+    const sin = Math.sin(player.heading), cos = Math.cos(player.heading);
+    let radius = 0;
+    for (let i = frames.length - 1; i >= 0; i--) {
+      const point2 = frames[i];
+      if (point2.tick > entryTick) continue;
+      const d = distance(point2, player);
+      if (d < radius + 0.8) continue;
+      if (path.length === 1 && (point2.x - player.x) * sin + (point2.z - player.z) * cos > -0.6 * d) continue;
+      if (distance(point2, path.at(-1)) > 4) continue;
+      path.push(point2);
+      radius = d;
+      if (radius >= EXIT_DISTANCE_M) return path;
+    }
+    return null;
+  }
+  var ObservedCorridorMemory = class {
+    frames = [];
+    recovery = null;
+    retreat = null;
+    pocket = null;
+    observe(player, scan, tick, goalId, recoveryTick) {
+      const previous = this.frames.at(-1);
+      if (scan.tick !== tick || previous?.tick >= tick) return;
+      const frame = {
+        x: player.x,
+        z: player.z,
+        tick,
+        travel: previous ? previous.travel + distance(player, previous) : 0
+      };
+      if (previous && (tick - previous.tick > 2 * PURSUIT_SCAN_TICKS || frame.travel - previous.travel > 5)) {
+        this.frames = [];
+        this.recovery = this.retreat = this.pocket = null;
+        frame.travel = 0;
+      }
+      this.frames.push(frame);
+      while (this.frames[0].tick < tick - HISTORY_TICKS) this.frames.shift();
+      if (this.pocket && tick >= this.pocket.expires) this.pocket = null;
+      if (this.retreat && (tick >= this.retreat.expires || distance(player, this.retreat.path.at(-1)) < 1.3)) {
+        if (this.pocket) this.pocket.left = distance(player, this.pocket) >= 8;
+        this.retreat = null;
+      }
+      if (!goalId || !Number.isSafeInteger(recoveryTick) || recoveryTick === this.recovery?.start) return;
+      const prior = this.recovery;
+      this.recovery = { ...frame, goalId, start: recoveryTick };
+      if (this.retreat || this.pocket || !prior || prior.goalId !== goalId || tick - prior.tick > REVISIT_TICKS || distance(player, prior) > 2.2 || frame.travel - prior.travel < 0.6 || !observedBlocker(scan, player)) return;
+      const path = returnPrefix(this.frames, player, prior.tick);
+      if (!path) return;
+      this.retreat = { path, cursor: 0, startedTick: tick, expires: tick + RETREAT_TICKS };
+      this.pocket = { x: player.x, z: player.z, goalId, expires: tick + RETREAT_TICKS + REVISIT_TICKS, left: false };
+    }
+    target(player) {
+      if (!this.retreat) return null;
+      const { path } = this.retreat;
+      let i = this.retreat.cursor;
+      while (i + 1 < path.length && distance(player, path[i + 1]) < distance(player, path[i])) i++;
+      this.retreat.cursor = i;
+      let ahead = 0;
+      for (let j = i + 1; j < path.length; j++) {
+        ahead += distance(path[j - 1], path[j]);
+        if (ahead >= 3.6) return path[j];
+      }
+      return path.at(-1);
+    }
+  };
+
   // src/rl/pako-smart-escape.js
   var SMART_ESCAPE_CONTROL = "pako-smart-escape-v3";
   var memories = /* @__PURE__ */ new WeakMap();
@@ -35801,7 +35881,7 @@
   function forwardPoliceBlocker(scan) {
     return scan?.tracks?.filter((t) => t.kind === "police" && t.ageS <= 0.3 && t.forwardM > 8 && t.forwardM < 65 && Math.abs(t.rightM) < 6).sort((a, b) => a.forwardM - b.forwardM)[0] ?? null;
   }
-  function selectSensorEscapeGoal(world, scan, previous = null) {
+  function selectSensorEscapeGoal(world, scan, previous = null, pocket = null) {
     const { player, district } = world;
     if (!district) return null;
     const threats = measuredThreats(scan, player);
@@ -35852,7 +35932,7 @@
       if (path.length < 2 || distance(path.at(-1), candidate) > 8) continue;
       const lengthM = path.reduce((s, p, i) => s + (i ? distance(path[i - 1], p) : 0), 0);
       if (lengthM > distance(player, candidate) * 3 + 50) continue;
-      const cost = observed ? observedRouteCost(player, path, observed) : 0;
+      const cost = (observed ? observedRouteCost(player, path, observed) : 0) + (pocket ? failedPrefixCost(path, pocket) : 0);
       routesCompared++;
       const score = candidate.score - cost;
       if (score <= bestScore) continue;
@@ -35871,6 +35951,14 @@
       if (!cost) break;
     }
     return best && Object.freeze(best);
+  }
+  function failedPrefixCost(path, pocket) {
+    let traveled = 0, nearest2 = Infinity;
+    for (let i = 1; i < path.length && traveled < 35; i++) {
+      traveled += distance(path[i - 1], path[i]);
+      nearest2 = Math.min(nearest2, distance(path[i], pocket));
+    }
+    return Math.max(0, 7 - nearest2) * 18;
   }
   function observedMotion(track2, ego) {
     if (!track2.motionKnown) return { x: 0, z: 0 };
@@ -36498,7 +36586,32 @@
       }
     }
     const travelM = distance(player, pose5);
-    return { action: cand, minRear, minPed, travelM };
+    return { action: cand, minRear, minPed, travelM, end: pose5 };
+  }
+  function searchObservedBacktrack(world, model, target) {
+    const { player } = world;
+    const toTarget = Math.atan2(target.x - player.x, target.z - player.z);
+    const error = angleDelta(toTarget, player.heading + Math.PI);
+    if (Math.abs(error) > 1.1) return null;
+    const targetM = distance(player, target);
+    const steering = -Math.atan2(
+      2 * (player.spec?.wheelbase ?? VEHICLE.wheelbase) * Math.sin(error),
+      Math.max(2, targetM)
+    ) / (player.spec?.maxSteer ?? VEHICLE.maxSteer);
+    let best = null;
+    for (const offset2 of [0, -0.24, 0.24]) {
+      const steer = clamp(steering + offset2, -1, 1);
+      for (const throttle of [0.78, 0.5]) {
+        const evaluated = evaluateReverseCandidate(world, model, { steer, gear: -1, throttle, brake: 0 });
+        if (!evaluated) continue;
+        const progress = targetM - distance(evaluated.end, target);
+        if (progress < 0.08) continue;
+        const score = progress * 5 + Math.min(evaluated.minRear, 3) * 0.6 - Math.abs(offset2);
+        if (!best || score > best.score) best = { action: evaluated.action, score };
+        break;
+      }
+    }
+    return best?.action;
   }
   function searchReversePivot(world, model) {
     const openLeft = model.frontLeftClear >= model.frontRightClear;
@@ -36603,6 +36716,13 @@
     } else if (Math.abs(player.speed) >= 2.2) {
       memory.lowSpeedTicks = 0;
     }
+    let corridorMemory = null;
+    if (world.pursuit?.gta?.config?.routeMemory === OBSERVED_CORRIDOR_MEMORY) {
+      corridorMemory = memory.corridorMemory ??= new ObservedCorridorMemory();
+      corridorMemory.observe(player, scan, world.tick, memory.goal?.id, memory.reverseRecovery?.startedTick);
+    }
+    const pocket = corridorMemory?.pocket;
+    const leftFailedPrefix = pocket?.left && memory.goal?.id === pocket.goalId;
     const remaining = memory.goal ? distance(player, memory.goal) : Infinity;
     if (remaining < memory.bestDistanceM - 4) {
       memory.bestDistanceM = remaining;
@@ -36611,8 +36731,9 @@
     const corridorBlocker = player.vehicleModel === "king-long-microbus" ? null : forwardPoliceBlocker(scan);
     const newlyBlockedCorridor = Boolean(corridorBlocker) && !memory.corridorBlocked;
     memory.corridorBlocked = Boolean(corridorBlocker);
-    if (!memory.goal || remaining < 18 || newlyBlockedCorridor || world.tick - memory.progressTick > Math.round(14 / STEP)) {
-      const goal = selectSensorEscapeGoal(world, scan, memory.goal);
+    if (!memory.goal || remaining < 18 || newlyBlockedCorridor || leftFailedPrefix || world.tick - memory.progressTick > Math.round(14 / STEP)) {
+      if (leftFailedPrefix) pocket.left = false;
+      const goal = selectSensorEscapeGoal(world, scan, memory.goal, pocket);
       if (goal) {
         memory.goal = goal;
         memory.bestDistanceM = distance(player, goal);
@@ -36647,6 +36768,28 @@
       startSupported: poseSupported(world, player).supported,
       nearStatics
     };
+    const retreat = corridorMemory?.retreat;
+    if (retreat && scan.tick === world.tick && !pedSuppressed && player.speed < 2.2) {
+      const action2 = searchObservedBacktrack(world, model, corridorMemory.target(player));
+      if (action2) {
+        const checked2 = guardDispatchAction(world, action2);
+        memory.reverseRecovery = null;
+        memory.lastAction = checked2.action;
+        memory.tick = world.tick;
+        return {
+          ...planned,
+          controller: SMART_ESCAPE_CONTROL,
+          action: checked2.action,
+          reason: checked2.reason ?? "PREDICTIVE_REVERSE_ESCAPE",
+          maneuver: "observed-corridor-backtrack",
+          nitroSuppressedByPedestrian: pedSuppressed,
+          escapeDestination: memory.goal,
+          predictedConflict: null,
+          routeTracking: route,
+          recoveryStartedTick: retreat.startedTick
+        };
+      }
+    }
     if (memory.reverseRecovery) {
       const rev = memory.reverseRecovery;
       const revAge = world.tick - rev.startedTick;
@@ -38917,7 +39060,7 @@
         if (result || current.tick % current.sampleTicks === 0 && current.trajectory.length < MAX_PATH_SAMPLES - 1)
           current.trajectory.push(pose5);
         if (result) {
-          const { phase, ticks: ticks4, reward, rewardProfile, collisions, distanceM } = result.metrics;
+          const { phase, ticks: ticks5, reward, rewardProfile, collisions, distanceM } = result.metrics;
           const { pursuitQualified, pedestrianImpacts, ambientPedestrianImpacts } = result.metrics;
           if (phase === "escaped" && pursuitQualified) outcomes[collisions ? "escapedWithContact" : "cleanEscapes"]++;
           if (phase === "busted") outcomes.captured++;
@@ -38929,7 +39072,7 @@
           lastEpisode = {
             ...current.label,
             phase,
-            ticks: ticks4,
+            ticks: ticks5,
             reward,
             rewardProfile,
             collisions,

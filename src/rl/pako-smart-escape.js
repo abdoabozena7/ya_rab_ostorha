@@ -4,13 +4,14 @@ import { SOLID_PROP_KINDS } from "../core/driver/perception.js";
 import { angleDelta, bodyOnRoad, distance, overlaps, roadFrame, roadPoseAt } from "../core/geometry.js";
 import { METRO_CITY_CURBS, isPoseSupportedWithCurbs } from "../core/pako-curb.js";
 import { CITY_PACK_PRESSURE } from "../core/pako-tactical-police.js";
-import { pursuitCommand } from "../core/pursuit-controls.js";
+import { OBSERVED_CORRIDOR_MEMORY, pursuitCommand } from "../core/pursuit-controls.js";
 import { integrateVehicle, vehicleProbe } from "../core/vehicle.js";
 import { CLEARANCE_ROUTE_CONTEXT, dispatchRouteGuide } from "./pursuit-route-context.js";
 import { forecastPursuitSurface, PURSUIT_SCAN_RAYS, PURSUIT_SCAN_TICKS }
   from "../signal_processing/pursuit-scanner.js";
 import { planPakoEvasiveAction } from "./pako-evasive-control.js";
 import { guardDispatchAction, requireDispatchScan } from "./pursuit-shield.js";
+import { ObservedCorridorMemory } from "./observed-corridor-memory.js";
 
 export const SMART_ESCAPE_CONTROL = "pako-smart-escape-v3";
 const memories = new WeakMap();
@@ -82,7 +83,7 @@ function forwardPoliceBlocker(scan) {
     .sort((a, b) => a.forwardM - b.forwardM)[0] ?? null;
 }
 
-export function selectSensorEscapeGoal(world, scan, previous = null) {
+export function selectSensorEscapeGoal(world, scan, previous = null, pocket = null) {
   const { player, district } = world;
   if (!district) return null;
   const threats = measuredThreats(scan, player);
@@ -134,7 +135,8 @@ export function selectSensorEscapeGoal(world, scan, previous = null) {
     if (path.length < 2 || distance(path.at(-1), candidate) > 8) continue;
     const lengthM = path.reduce((s, p, i) => s + (i ? distance(path[i - 1], p) : 0), 0);
     if (lengthM > distance(player, candidate) * 3 + 50) continue;
-    const cost = observed ? observedRouteCost(player, path, observed) : 0;
+    const cost = (observed ? observedRouteCost(player, path, observed) : 0) +
+      (pocket ? failedPrefixCost(path, pocket) : 0);
     routesCompared++;
     const score = candidate.score - cost;
     if (score <= bestScore) continue;
@@ -146,6 +148,15 @@ export function selectSensorEscapeGoal(world, scan, previous = null) {
     if (!cost) break;
   }
   return best && Object.freeze(best);
+}
+
+function failedPrefixCost(path, pocket) {
+  let traveled = 0, nearest = Infinity;
+  for (let i = 1; i < path.length && traveled < 35; i++) {
+    traveled += distance(path[i - 1], path[i]);
+    nearest = Math.min(nearest, distance(path[i], pocket));
+  }
+  return Math.max(0, 7 - nearest) * 18;
 }
 
 function observedMotion(track, ego) {
@@ -796,7 +807,31 @@ function evaluateReverseCandidate(world, model, cand) {
     }
   }
   const travelM = distance(player, pose);
-  return { action: cand, minRear, minPed, travelM };
+  return { action: cand, minRear, minPed, travelM, end: pose };
+}
+
+function searchObservedBacktrack(world, model, target) {
+  const { player } = world;
+  const toTarget = Math.atan2(target.x - player.x, target.z - player.z);
+  const error = angleDelta(toTarget, player.heading + Math.PI);
+  if (Math.abs(error) > 1.1) return null;
+  const targetM = distance(player, target);
+  const steering = -Math.atan2(2 * (player.spec?.wheelbase ?? VEHICLE.wheelbase) * Math.sin(error),
+    Math.max(2, targetM)) / (player.spec?.maxSteer ?? VEHICLE.maxSteer);
+  let best = null;
+  for (const offset of [0, -0.24, 0.24]) {
+    const steer = clamp(steering + offset, -1, 1);
+    for (const throttle of [0.78, 0.50]) {
+      const evaluated = evaluateReverseCandidate(world, model, { steer, gear: -1, throttle, brake: 0 });
+      if (!evaluated) continue;
+      const progress = targetM - distance(evaluated.end, target);
+      if (progress < 0.08) continue;
+      const score = progress * 5 + Math.min(evaluated.minRear, 3) * 0.6 - Math.abs(offset);
+      if (!best || score > best.score) best = { action: evaluated.action, score };
+      break;
+    }
+  }
+  return best?.action;
 }
 
 function searchReversePivot(world, model) {
@@ -908,6 +943,13 @@ export function planSmartEscapeAction(world, requestedAction) {
     memory.lowSpeedTicks = 0;
   }
 
+  let corridorMemory = null;
+  if (world.pursuit?.gta?.config?.routeMemory === OBSERVED_CORRIDOR_MEMORY) {
+    corridorMemory = memory.corridorMemory ??= new ObservedCorridorMemory();
+    corridorMemory.observe(player, scan, world.tick, memory.goal?.id, memory.reverseRecovery?.startedTick);
+  }
+  const pocket = corridorMemory?.pocket;
+  const leftFailedPrefix = pocket?.left && memory.goal?.id === pocket.goalId;
   const remaining = memory.goal ? distance(player, memory.goal) : Infinity;
   if (remaining < memory.bestDistanceM - 4) {
     memory.bestDistanceM = remaining;
@@ -916,9 +958,10 @@ export function planSmartEscapeAction(world, requestedAction) {
   const corridorBlocker = player.vehicleModel === "king-long-microbus" ? null : forwardPoliceBlocker(scan);
   const newlyBlockedCorridor = Boolean(corridorBlocker) && !memory.corridorBlocked;
   memory.corridorBlocked = Boolean(corridorBlocker);
-  if (!memory.goal || remaining < 18 || newlyBlockedCorridor ||
+  if (!memory.goal || remaining < 18 || newlyBlockedCorridor || leftFailedPrefix ||
       world.tick - memory.progressTick > Math.round(14 / STEP)) {
-    const goal = selectSensorEscapeGoal(world, scan, memory.goal);
+    if (leftFailedPrefix) pocket.left = false;
+    const goal = selectSensorEscapeGoal(world, scan, memory.goal, pocket);
     if (goal) {
       memory.goal = goal;
       memory.bestDistanceM = distance(player, goal);
@@ -958,6 +1001,29 @@ export function planSmartEscapeAction(world, requestedAction) {
     startSupported: poseSupported(world, player).supported,
     nearStatics,
   };
+
+  const retreat = corridorMemory?.retreat;
+  if (retreat && scan.tick === world.tick && !pedSuppressed && player.speed < 2.2) {
+    const action = searchObservedBacktrack(world, model, corridorMemory.target(player));
+    if (action) {
+      const checked = guardDispatchAction(world, action);
+      memory.reverseRecovery = null;
+      memory.lastAction = checked.action;
+      memory.tick = world.tick;
+      return {
+        ...planned,
+        controller: SMART_ESCAPE_CONTROL,
+        action: checked.action,
+        reason: checked.reason ?? "PREDICTIVE_REVERSE_ESCAPE",
+        maneuver: "observed-corridor-backtrack",
+        nitroSuppressedByPedestrian: pedSuppressed,
+        escapeDestination: memory.goal,
+        predictedConflict: null,
+        routeTracking: route,
+        recoveryStartedTick: retreat.startedTick,
+      };
+    }
+  }
 
   // 1. Continue an active reverse-pivot recovery unless a clean forward exit has opened.
   if (memory.reverseRecovery) {

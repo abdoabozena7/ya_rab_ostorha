@@ -7,6 +7,7 @@ import { AGGRESSIVE_CHASE_PRESENCE } from "../src/core/pako-aggressive-police.js
 import { METRO_CITY_CURBS } from "../src/core/pako-curb.js";
 import { CITY_FAIR_POLICE, CITY_PACK_PRESSURE, TACTICAL_PURSUIT_MODE } from "../src/core/pako-tactical-police.js";
 import { gtaPatrolCommand } from "../src/core/pursuit-gta.js";
+import { OBSERVED_CORRIDOR_MEMORY } from "../src/core/pursuit-controls.js";
 import { KING_LONG_MICROBUS_ID } from "../src/core/vehicle-spec.js";
 import { World } from "../src/core/world.js";
 import { selectSensorEscapeGoal } from "../src/rl/pako-smart-escape.js";
@@ -106,7 +107,20 @@ test("old Max and lower difficulties do not silently acquire a new pressure prof
   assert.equal(world.pursuit, null);
   start(world, legacy);
   assert.equal(world.pursuit.gta.pressure, undefined);
+  assert.equal(world.pursuit.gta.config.routeMemory, undefined);
   assert.equal(world.snapshot().pursuit.gta.packPressure, undefined);
   const replay = World.fromReplay(world.replay());
   assert.deepEqual(replay.snapshot(), world.snapshot());
+});
+
+test("the observed route-memory flag is explicitly scoped to versioned Metro Pack Pressure", () => {
+  const { cityPackPressure, ...legacy } = config;
+  const world = new World({ cityVersion: 5, traffic: 0, pedestrians: 0 }, "metro");
+  assert.throws(() => start(world, { ...legacy, routeMemory: OBSERVED_CORRIDOR_MEMORY }), /with Metro Pack Pressure/);
+  assert.throws(() => start(world, { ...config, routeMemory: "unknown" }), /routeMemory requires/);
+  assert.equal(world.pursuit, null);
+  start(world, { ...config, routeMemory: OBSERVED_CORRIDOR_MEMORY });
+  const recording = world.replay();
+  assert.equal(recording.events[0].command.config.routeMemory, OBSERVED_CORRIDOR_MEMORY);
+  assert.equal(World.fromReplay(recording).pursuit.gta.config.routeMemory, OBSERVED_CORRIDOR_MEMORY);
 });

@@ -36,7 +36,7 @@ import { CITY_PACK_PRESSURE, TACTICAL_PURSUIT_MODE } from "./core/pako-tactical-
 import { METRO_CITY_CURBS, METRO_CURB_SUPPORT } from "./core/pako-curb.js";
 import { PATROL_LATERAL_YIELD } from "./core/pako-patrol-yield.js";
 import { SURVIVAL_GIANT_PHYSICS } from "./core/pursuit-survival.js";
-import { PURSUIT_STOP } from "./core/pursuit-controls.js";
+import { OBSERVED_CORRIDOR_MEMORY, PURSUIT_STOP } from "./core/pursuit-controls.js";
 import { PACK_DRILLS } from "./core/pack-drills.js";
 import { mountPursuitPanel } from "./ui/pursuit-panel.js";
 import { mountPursuitStrobe } from "./ui/pursuit-strobe.js";
@@ -1691,7 +1691,10 @@ const pursuitPanel = mountPursuitPanel({
               chasePresence: AGGRESSIVE_CHASE_PRESENCE,
               tacticalPursuit: TACTICAL_PURSUIT_MODE,
               policeFairness: "city-fair-v1",
-              ...(active.config.cityVersion >= 5 && streetPursuitLevel >= 4 ? { cityPackPressure: CITY_PACK_PRESSURE } : {}),
+              ...(active.config.cityVersion >= 5 && streetPursuitLevel >= 4 ? {
+                cityPackPressure: CITY_PACK_PRESSURE,
+                ...(release ? { routeMemory: OBSERVED_CORRIDOR_MEMORY } : {}),
+              } : {}),
               patrolTrafficPreview: PATROL_TRAFFIC_PREVIEW,
               patrolChainYield: PATROL_LATERAL_YIELD,
             } : {}),

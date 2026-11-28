@@ -13,6 +13,7 @@ const expectedPolicy = createHash("sha256").update(await readFile(
   new URL("../public/threejs/pako-chase-ppo.json", import.meta.url))).digest("hex");
 const { chromium } = createRequire(import.meta.url)(process.env.PLAYWRIGHT_MODULE || "playwright");
 const negative = argument === "--unprofiled";
+const routeMemory = argument === "--route-memory";
 const report = { engine: "live standalone Metro; browser loop with explicit fixed-step sampling", negative, errors: [] };
 const browser = await chromium.launch({ headless: false });
 
@@ -48,7 +49,7 @@ try {
       const command = world.command;
       world.command = function (event, ...rest) {
         if (event.type === "street-pursuit-start") {
-          const { cityPackPressure, ...config } = event.config;
+          const { cityPackPressure, routeMemory, ...config } = event.config;
           return command.call(this, { ...event, config }, ...rest);
         }
         return command.call(this, event, ...rest);
@@ -78,6 +79,7 @@ try {
     return {
       environment: world.environment, tick: world.tick, startedTick: pursuit.startedTick,
       profile: pursuit.gta.config.cityPackPressure ?? null, vehicle: player.vehicleModel,
+      routeMemory: pursuit.gta.config.routeMemory ?? null,
       driver: pursuit.frozenDriver?.sha256, activePatrols: patrols.length,
       nearbyPatrols: near.length, approachSectors: sectors.size,
       traffic: world.capacity.traffic, people: world.capacity.pedestrians,
@@ -87,6 +89,7 @@ try {
     };
   });
   assert.equal(report.opening.environment, "metro");
+  if (routeMemory) assert.equal(report.opening.routeMemory, "observed-corridor-memory-v1");
   assert.equal(report.opening.driver, expectedPolicy);
   assert.ok(report.opening.sameCity && report.opening.keepsCivilians && report.opening.patrolSpeedCapped);
   assert.ok(report.opening.traffic >= 68 && report.opening.people >= 190);

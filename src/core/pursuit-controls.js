@@ -2,6 +2,7 @@ import { STEP, VEHICLE, clamp } from "./config.js";
 import { KING_LONG_MICROBUS, KING_LONG_MICROBUS_ID } from "./vehicle-spec.js";
 
 export const PURSUIT_STOP = Object.freeze({ steer: 0, throttle: 0, brake: 1, gear: 1 });
+export const OBSERVED_CORRIDOR_MEMORY = "observed-corridor-memory-v1";
 
 export const NITRO_SPEC = Object.freeze({
   durationS: 4.6,
