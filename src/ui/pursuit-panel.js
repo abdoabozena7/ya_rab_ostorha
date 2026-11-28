@@ -237,7 +237,8 @@ function packDriverText(state, running, paused) {
 }
 
 function pakoActiveLearningText(state, driver, terrain, escapeGuidance = "") {
-  const prefix = state.pakoAvailable ? "Verified PPO" : state.customCheckpoint ? "PPO test" : "RL PPO";
+  const prefix = state.gta?.packPressure ? "Frozen PPO" :
+    state.pakoAvailable ? "Verified PPO" : state.customCheckpoint ? "PPO test" : "RL PPO";
   const reason = driver.lastDecision?.planner?.reason;
   const maneuver = driver.lastDecision?.planner?.maneuver;
   const submitted = driver.lastDecision?.submitted;
@@ -282,7 +283,8 @@ function buildChaseBarStatusText(status) {
         finite(patrol.nearestM) && patrol.nearestM >= 0 ? ` · ${Math.round(patrol.nearestM)} m` : ""
       }`
     : "";
-  return [stageLabel, patrolPart].filter(Boolean).join(" · ") || "In pursuit";
+  const radioUnits = status.gta?.packPressure?.radioUnits ?? 0;
+  return [stageLabel, patrolPart, radioUnits ? `${radioUnits} on radio` : ""].filter(Boolean).join(" · ") || "In pursuit";
 }
 
 function findElementById(id, doc, ...roots) {
@@ -1069,6 +1071,9 @@ export function mountPursuitPanel({ container, onRun, onRestart, onLevel, onCase
           : DISPATCH_STAGES.COOLING_DOWN
         : DISPATCH_STAGES[state.response?.dispatch?.state] ?? ""
       : "";
+    const civilianContacts = state.gta?.packPressure
+      ? `Contacts: ${state.metrics.pedestrianCollisions} people · ${state.metrics.civilianVehicleContacts} civilian vehicles`
+      : "";
     if (compact !== collapsed) {
       compact = collapsed;
       panel.classList.toggle("pursuit-panel--cinematic", compact);
@@ -1092,11 +1097,11 @@ export function mountPursuitPanel({ container, onRun, onRestart, onLevel, onCase
     text(scene, packLab
       ? running ? cases.find(({ id }) => id === state.caseId)?.label ?? "" : ""
       : pako
-      ? running ? [escapeGuidance, escapeGoalText].filter(Boolean).join(" · ")
+      ? running ? [escapeGuidance, escapeGoalText, civilianContacts].filter(Boolean).join(" · ")
         : rlMode && state.checkpointReady
           ? state.customCheckpoint === true && !state.pakoAvailable
             ? `PPO test · Development checkpoint (${state.ppoSummary || "custom weights"}), not release-verified.`
-            : `RL PPO drives (${state.ppoSummary || "ε = 0.20 · Curb & path evasion"}).`
+            : `RL PPO drives (${state.ppoSummary || "ε = 0.20 · Curb & path evasion"}).${state.cityPackPressureAvailable ? " Coordinated patrol pack." : ""}`
           : "You drive · Switch to RL AI or load a PPO checkpoint."
       : frozenSelected && !running && ["ready", "stopped"].includes(state.phase)
         ? "Experimental. Runs a frozen model; escape and civilian safety are not validated."

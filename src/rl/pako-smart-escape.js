@@ -3,6 +3,7 @@ import { planDistrictRoute } from "../core/district-navigation.js";
 import { SOLID_PROP_KINDS } from "../core/driver/perception.js";
 import { angleDelta, bodyOnRoad, distance, overlaps, roadFrame, roadPoseAt } from "../core/geometry.js";
 import { METRO_CITY_CURBS, isPoseSupportedWithCurbs } from "../core/pako-curb.js";
+import { CITY_PACK_PRESSURE } from "../core/pako-tactical-police.js";
 import { pursuitCommand } from "../core/pursuit-controls.js";
 import { integrateVehicle, vehicleProbe } from "../core/vehicle.js";
 import { CLEARANCE_ROUTE_CONTEXT, dispatchRouteGuide } from "./pursuit-route-context.js";
@@ -124,17 +125,27 @@ export function selectSensorEscapeGoal(world, scan, previous = null) {
     }
   }
   candidates.sort((a, b) => b.score - a.score);
+  const observed = world.pursuit?.gta?.config?.cityPackPressure === CITY_PACK_PRESSURE
+    ? collectObstacleModel(player, scan) : null;
+  let best = null, bestScore = -Infinity, routesCompared = 0;
   for (const candidate of candidates.slice(0, 24)) {
+    if (candidate.score <= bestScore || routesCompared >= 6) break;
     const path = planDistrictRoute(district, player, candidate);
     if (path.length < 2 || distance(path.at(-1), candidate) > 8) continue;
     const lengthM = path.reduce((s, p, i) => s + (i ? distance(path[i - 1], p) : 0), 0);
     if (lengthM > distance(player, candidate) * 3 + 50) continue;
-    return Object.freeze({ x: candidate.x, z: candidate.z, heading: candidate.heading,
+    const cost = observed ? observedRouteCost(player, path, observed) : 0;
+    routesCompared++;
+    const score = candidate.score - cost;
+    if (score <= bestScore) continue;
+    bestScore = score;
+    best = { x: candidate.x, z: candidate.z, heading: candidate.heading,
       roadId: candidate.roadId, id: `sensor-escape:${world.tick}:${candidate.roadId}`,
       sensorPlanned: true, selectedTick: world.tick, routeLengthM: lengthM,
-      observedThreats: threats.length });
+      observedThreats: threats.length };
+    if (!cost) break;
   }
-  return null;
+  return best && Object.freeze(best);
 }
 
 function observedMotion(track, ego) {
@@ -306,6 +317,36 @@ function trackGapAtTime(pose, tr, t, halfW, halfL) {
     }
   }
   return gap;
+}
+
+function observedRouteCost(player, path, model) {
+  const tracks = model.tracks.filter(t => t.kind !== "static" && t.forwardM > -3);
+  if (!tracks.length) return 0;
+  const pace = clamp(Math.abs(player.speed) + 3, 8, 17);
+  const costs = new Float64Array(tracks.length);
+  let walked = 0, sample = 4;
+  for (let i = 1; i < path.length && sample <= 36; i++) {
+    const a = path[i - 1], b = path[i], length = distance(a, b);
+    if (length < 1e-6) continue;
+    const heading = Math.atan2(b.x - a.x, b.z - a.z);
+    for (; sample <= Math.min(36, walked + length); sample += 2) {
+      const u = (sample - walked) / length;
+      const pose = { x: a.x + u * (b.x - a.x), z: a.z + u * (b.z - a.z), heading };
+      // Route ranking uses only short extrapolation of observed surfaces. The
+      // local committed brake and swept contact solver still own safety.
+      const time = Math.min(1.6, sample / pace);
+      for (let j = 0; j < tracks.length; j++) {
+        const track = tracks[j], kind = track.kind;
+        const margin = (kind === "pedestrian" ? 1.65 : kind === "police" ? 3.2 : 1.35) + track.allowance;
+        const gap = trackGapAtTime(pose, track, time, model.halfW, model.halfL);
+        const penalty = clamp(margin - gap, 0, margin + 1) *
+          (kind === "pedestrian" ? 44 : kind === "police" ? 18 : 32);
+        costs[j] = Math.max(costs[j], penalty);
+      }
+    }
+    walked += length;
+  }
+  return costs.reduce((total, cost) => total + cost, 0);
 }
 
 // Scanner returns are surfaces, not privileged actor centres or scripted paths.

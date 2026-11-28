@@ -17,6 +17,7 @@ import { integrateVehicle, vehicleProbe } from "./vehicle.js";
 
 export const TACTICAL_PURSUIT_MODE = "gta-tactical-v1";
 export const CITY_FAIR_POLICE = "city-fair-v1";
+export const CITY_PACK_PRESSURE = "metro-pack-pressure-v1";
 export const CITY_FAIR_POLICE_SPEED_MPS = 28;
 
 export function isFairCityPolice(state) {

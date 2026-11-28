@@ -32,7 +32,7 @@ import { pursuitSnapshot } from "./core/pursuit-world.js";
 import { streetChaosSnapshot } from "./core/street-chaos.js";
 import { DISPATCH_DAMAGE_FEEDBACK, PATROL_TRAFFIC_PREVIEW } from "./core/pursuit-gta.js";
 import { AGGRESSIVE_CHASE_PRESENCE } from "./core/pako-aggressive-police.js";
-import { TACTICAL_PURSUIT_MODE } from "./core/pako-tactical-police.js";
+import { CITY_PACK_PRESSURE, TACTICAL_PURSUIT_MODE } from "./core/pako-tactical-police.js";
 import { METRO_CITY_CURBS, METRO_CURB_SUPPORT } from "./core/pako-curb.js";
 import { PATROL_LATERAL_YIELD } from "./core/pako-patrol-yield.js";
 import { SURVIVAL_GIANT_PHYSICS } from "./core/pursuit-survival.js";
@@ -1691,6 +1691,7 @@ const pursuitPanel = mountPursuitPanel({
               chasePresence: AGGRESSIVE_CHASE_PRESENCE,
               tacticalPursuit: TACTICAL_PURSUIT_MODE,
               policeFairness: "city-fair-v1",
+              ...(active.config.cityVersion >= 5 && streetPursuitLevel >= 4 ? { cityPackPressure: CITY_PACK_PRESSURE } : {}),
               patrolTrafficPreview: PATROL_TRAFFIC_PREVIEW,
               patrolChainYield: PATROL_LATERAL_YIELD,
             } : {}),
@@ -2306,6 +2307,7 @@ function updateUI() {
       cityPursuitStyle: rushCity ? streetPursuitStyle : null,
       pako, pakoAvailable: Boolean(approvedPakoPolicy()), pakoBestS,
       pakoDriverMode, chaseCameraStyle, customCheckpoint, ppoSummary: formatPpoSummary(dispatchCheckpoint?.policy),
+      cityPackPressureAvailable: world.config.cityVersion >= 5 && streetPursuitLevel >= 4,
       microbus: world.player.vehicleModel === KING_LONG_MICROBUS_ID,
       checkpointStatus, checkpointReady: dispatchCheckpoint !== null,
       surface: world.player?.vehicle?.surface ?? null,

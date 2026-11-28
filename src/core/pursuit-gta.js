@@ -6,7 +6,7 @@ import {
 import { METRO_CITY_CURBS, METRO_CURB_SUPPORT, sweepSafeWithCurbs } from "./pako-curb.js";
 import { PATROL_CHAIN_YIELD, PATROL_LATERAL_YIELD } from "./pako-patrol-yield.js";
 import {
-  CITY_FAIR_POLICE, TACTICAL_PURSUIT_MODE, canPatrolUseCurbPrivilege, isFairCityPolice, isTacticalPursuit,
+  CITY_FAIR_POLICE, CITY_PACK_PRESSURE, TACTICAL_PURSUIT_MODE, canPatrolUseCurbPrivilege, isFairCityPolice, isTacticalPursuit,
   planTacticalInterceptAim, selectTacticalSearchTarget, tacticalPatrolSpec, tacticalSurgePace,
 } from "./pako-tactical-police.js";
 import {
@@ -90,7 +90,7 @@ export const DISPATCH_DAMAGE_FEEDBACK = "accepted-contact-v1";
 export const GTA_UNIT_TYPES = Object.freeze(["patrol", "interceptor", "swat"]);
 export const GTA_AI_STATES = Object.freeze([
   "APPROACH", "PURSUIT", "FLANK", "PIT_MANEUVER", "RAM", "BLOCK_INTERCEPT",
-  "ROADBLOCK", "SEARCH", "RECOVER", "WRECKED",
+  "ROADBLOCK", "SEARCH", "RECOVER", "WRECKED", "RADIO_SUPPORT",
 ]);
 export const GTA_PATROL_PROFILES = Object.freeze({
   patrol: Object.freeze({ kind: "sedan", mass: 1750, health: 85, speed: 20, acceleration: 3.1, steerRate: .95 }),
@@ -117,7 +117,7 @@ export function resolveGtaChaseConfig(options = {}, level = GtaChaseConfig.wante
   for (const key of Object.keys(options))
     if (!Object.hasOwn(GtaChaseConfig, key) &&
         !["ruleset", "surveillanceZones", "civilianCrossingPreview", "patrolTrafficPreview", "damageFeedback", "curbSupport",
-          "patrolChainYield", "chasePresence", "tacticalPursuit", "policeFairness"].includes(key))
+          "patrolChainYield", "chasePresence", "tacticalPursuit", "policeFairness", "cityPackPressure"].includes(key))
       throw new TypeError(`Unknown GTA chase config field: ${key}`);
   const config = { ...GtaChaseConfig, wantedLevelStart: level, ...options };
   if (Object.hasOwn(config, "ruleset") && config.ruleset !== "legacy" && config.ruleset !== DISPATCH_RULESET)
@@ -150,6 +150,10 @@ export function resolveGtaChaseConfig(options = {}, level = GtaChaseConfig.wante
       (config.ruleset !== DISPATCH_RULESET || config.tacticalPursuit !== TACTICAL_PURSUIT_MODE ||
         config.policeFairness !== CITY_FAIR_POLICE))
     throw new TypeError(`policeFairness requires "${CITY_FAIR_POLICE}" with Dispatch tactical pursuit`);
+  if (Object.hasOwn(config, "cityPackPressure") &&
+      (config.cityPackPressure !== CITY_PACK_PRESSURE || !isFairCityPolice(config) ||
+        config.wantedLevelStart < 4))
+    throw new TypeError(`cityPackPressure requires "${CITY_PACK_PRESSURE}" with fair tactical Dispatch at Level 4 or 5`);
   if (Object.hasOwn(config, "patrolChainYield") &&
       (config.ruleset !== DISPATCH_RULESET || ![PATROL_CHAIN_YIELD, PATROL_LATERAL_YIELD].includes(config.patrolChainYield)))
     throw new TypeError(`patrolChainYield requires "${PATROL_CHAIN_YIELD}" or "${PATROL_LATERAL_YIELD}" and ruleset "${DISPATCH_RULESET}"`);
@@ -182,7 +186,9 @@ export function initializeGtaPursuit(state, player, config) {
     fadeStars: dispatch ? state.wantedLevel : 0, lostTicks: 0,
     roadblock: null, heat: 0, nextDispatchTick: 0, nextRoadblockTick: 0, nextSquadTick: 0,
     ...(fairPatrolMaxSpeedMps === undefined ? {} : { fairPatrolMaxSpeedMps }),
+    ...(config.cityPackPressure ? { pressure: { contactTicks: 0, stage: 0, relays: new Map() } } : {}),
   };
+  if (state.gta.pressure) state.metrics.civilianVehicleContacts = 0;
   if (dispatch) state.response.dispatch = createDispatchResponse();
 }
 
@@ -383,7 +389,8 @@ function dispatchPathCommand(car, pace, steerBias, arrivalSpeed, lateralAccel = 
   return { cursor: follow.cursor, remaining, steer, targetSpeed };
 }
 
-function routeCommand(world, car, aim, pace, planRoute, steerBias, dispatchArrivalSpeed = null, tracked = false) {
+function routeCommand(world, car, aim, pace, planRoute, steerBias, dispatchArrivalSpeed = null, tracked = false,
+  allowDirectFallback = true) {
   const ai = car.gtaAI;
   const tactical = isTacticalPursuit(world.pursuit);
   const lateralAccel = tactical ? 8.8 : PURSUIT_LATERAL_ACCEL;
@@ -427,7 +434,7 @@ function routeCommand(world, car, aim, pace, planRoute, steerBias, dispatchArriv
   }
   const next = gtaOffset(car, 3);
   const aligned = Math.abs(angleDelta(headingTo(car, aim), car.heading)) < 1;
-  return pointOnRoad(next, world.drivingRoads) && aligned
+  return allowDirectFallback && pointOnRoad(next, world.drivingRoads) && aligned
     ? directCommand(car, aim, Math.min(tactical ? 12 : 3.2, pace), steerBias, dispatchArrivalSpeed !== null, lateralAccel)
     : { steer: 0, targetSpeed: 0, ...(dispatchArrivalSpeed !== null && tracked ? { needsTrackedRecovery: true } : {}) };
 }
@@ -452,6 +459,25 @@ export function gtaPatrolCommand(world, car, planRoute, canDriveDirect, steerBia
   const dispatch = Boolean(s.response.dispatch);
   const fair = isFairCityPolice(s);
   const tracked = fair ? seen : dispatch ? isDispatchTracked(s.response) : seen;
+  const pressure = s.gta.pressure;
+  const radioAim = !seen && s.response.unitsInContact > 0 && s.response.lastSeen?.tick === tick
+    ? pressure?.relays.get(car) : null;
+  if (radioAim) {
+    if (car.aiState !== "RADIO_SUPPORT") {
+      car.path = [];
+      car.cursor = 0;
+      ai.nextPlan = tick;
+    }
+    ai.commitUntil = null;
+    car.aiState = "RADIO_SUPPORT";
+    return { ...routeCommand(world, car, radioAim, Math.min(car.maxSpeed, 14),
+      planRoute, steerBias, 0, false, false), reason: "RADIO_SUPPORT" };
+  }
+  if (pressure && car.aiState === "RADIO_SUPPORT") {
+    car.path = [];
+    car.cursor = 0;
+    ai.nextPlan = tick;
+  }
   if (fair && !seen && car.gtaAI.beat &&
       (!s.response.lastSeen || tick - s.response.lastSeen.tick > Math.round(12 / STEP))) {
     const beat = car.gtaAI.beat;
@@ -501,7 +527,9 @@ export function gtaPatrolCommand(world, car, planRoute, canDriveDirect, steerBia
           ? 2
           : 3 + (ai.order % 3);
     const effectiveSlot = s.wantedLevel >= 2 ? roleSlot : (ai.order === 0 || car.squadRole === "PRIMARY_CHASER" ? 0 : 1 + (ai.order % 2));
-    const tacticalAim = planTacticalInterceptAim(world, car, report, effectiveSlot);
+    const aimSlot = pressure && (roleSlot === 1 || roleSlot === 2)
+      ? car.squadSide < 0 ? 1 : 2 : effectiveSlot;
+    const tacticalAim = planTacticalInterceptAim(world, car, report, aimSlot);
     aim = tacticalAim;
     if (effectiveSlot === 1) {
       state = "FLANK";
@@ -514,12 +542,12 @@ export function gtaPatrolCommand(world, car, planRoute, canDriveDirect, steerBia
     } else {
       state = "PURSUIT";
     }
-    const pit = seen && config.enablePitManeuver && s.wantedLevel >= 2 && car.unitType !== "swat" &&
+    const pit = !pressure && seen && config.enablePitManeuver && s.wantedLevel >= 2 && car.unitType !== "swat" &&
       car.squadRole === "PRIMARY_CHASER" && report.speed > 2.8 &&
       rel.forward >= -4.5 && rel.forward < -.5 && Math.abs(rel.right) > 1.2 && Math.abs(rel.right) < 4.8 &&
       Math.abs(car.speed - report.speed) < 6.5 && Math.abs(angleDelta(report.heading, car.heading)) < .57;
     const ramAim = gtaOffset(report, clamp(report.speed * .28, -3, 5));
-    const ram = seen && config.enableRamming && s.wantedLevel >= 3 &&
+    const ram = !pressure && seen && config.enableRamming && s.wantedLevel >= 3 &&
       (car.unitType === "swat" || (s.wantedLevel >= 4 && car.squadRole !== "PRIMARY_CHASER")) &&
       car.speed >= 5 && range <= 19 && rel.forward < 3 &&
       Math.abs(angleDelta(headingTo(car, ramAim), car.heading)) < .48 && canDriveDirect(world, car, ramAim, true);
