@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { World } from "./core/world.js";
-import { KING_LONG_MICROBUS_ID } from "./core/vehicle-spec.js";
+import { JETOUR_T2_ID, KING_LONG_MICROBUS_ID } from "./core/vehicle-spec.js";
 import {
   GRAND_CITY_POPULATION_LIMITS,
   METRO_POPULATION_LIMITS,
@@ -27,6 +27,7 @@ import { mountCityPerception, pedestrianForecasts } from "./ui/city-perception.j
 import { createReplayBlob, readReplayFile } from "./ui/replay-file.js";
 import { DISTRICT_CASES } from "./core/district-scenarios.js";
 import { pursuitSnapshot } from "./core/pursuit-world.js";
+import { streetChaosSnapshot } from "./core/street-chaos.js";
 import { DISPATCH_DAMAGE_FEEDBACK, PATROL_TRAFFIC_PREVIEW } from "./core/pursuit-gta.js";
 import { AGGRESSIVE_CHASE_PRESENCE } from "./core/pako-aggressive-police.js";
 import { TACTICAL_PURSUIT_MODE } from "./core/pako-tactical-police.js";
@@ -37,6 +38,7 @@ import { PURSUIT_STOP } from "./core/pursuit-controls.js";
 import { PACK_DRILLS } from "./core/pack-drills.js";
 import { mountPursuitPanel } from "./ui/pursuit-panel.js";
 import { mountPursuitStrobe } from "./ui/pursuit-strobe.js";
+import { mountStreetChaosHud } from "./ui/street-chaos-hud.js";
 import { mountForecastComparison, mountRolloutPlayback } from "./ui/pako-rollouts.js";
 import { PursuitAudio } from "./ui/pursuit-audio.js";
 import { isPackPursuit, onRoadLimit, rushRoadLimit, usesRushPace } from "./core/district-behavior.js";
@@ -113,6 +115,7 @@ const cinematicPost = createCinematicPost(renderer, {
 });
 let lastImpactWorld = null, lastImpactCount = 0, cameraImpactPulse = 0;
 const worlds = { metro: new World({ cityVersion: 5 }, "metro") };
+worlds.metro.command({ type: "player-vehicle", model: KING_LONG_MICROBUS_ID });
 const views = new Map();
 const scenePauses = new WeakMap();
 let environment = "metro", cityResumeEnvironment = "metro",
@@ -140,7 +143,7 @@ orbit.minDistance = 1.2;
 orbit.maxDistance = 12;
 let cameraSnap = true;
 let lastPursuitShot = null;
-let phone, vehiclePanel, visionPanel, visualClient, cameraScreen, peoplePanel, cityPerception;
+let phone, vehiclePanel, visionPanel, visualClient, cameraScreen, peoplePanel, cityPerception, cairoChaosHud;
 const senseScanner = new PursuitScanner();
 const pedestrianForecastView = createPedestrianForecastView();
 let senseScan = null, senseWorld = null, senseForecasts = [];
@@ -265,6 +268,7 @@ function carAction(action, value) {
     phone.reset();
     view.crashEffects?.clearPlayerDebris();
     view.sync(1);
+    updateUI();
     return result;
   } else if (action === "cutaway") cutaway = Boolean(value);
   else if (action === "sensors") sensorView = Boolean(value);
@@ -488,7 +492,7 @@ function activate(next) {
   else $("cityTools").before(labButton);
   $("mapLabel").textContent = isCity(next) ? "City" : next === "vehicle" ? "Vehicle bay" : "Lab";
   $("streetPursuitBtn").hidden = next !== "metro" && next !== "lab" && !world.pursuit?.packLab;
-  $("selfDrivingBtn").hidden = $("pakoBtn").hidden = next !== "metro";
+  $("selfDrivingBtn").hidden = $("pakoBtn").hidden = $("cairoChaosBtn").hidden = next !== "metro";
   $("streetPursuitBtn").textContent = next === "lab" ? "Pursuit drills"
     : world.pursuit?.packLab ? "Back to Lab" : "Experiments";
   updatePursuitNavigation();
@@ -552,8 +556,14 @@ function activate(next) {
 }
 function reset(options) {
   rememberPackPractice(world);
+  const preservedVehicle = environment === "metro"
+    ? (world.player.vehicleModel ?? JETOUR_T2_ID)
+    : null;
   const replacement = new World(environment === "metro"
     ? { cityVersion: world.config.cityVersion, ...options } : options, environment);
+  if (environment === "metro" && preservedVehicle === KING_LONG_MICROBUS_ID) {
+    replacement.command({ type: "player-vehicle", model: KING_LONG_MICROBUS_ID });
+  }
   if (replacement.pursuit?.packLab) packDrillWorld = replacement;
   view.dispose();
   views.delete(world);
@@ -781,6 +791,48 @@ function positionCameraPreview() {
 addEventListener("resize", resize);
 resize();
 new ResizeObserver(positionCameraPreview).observe(drivingHud);
+function currentCairoChaosState() {
+  return environment === "metro" && world?.streetChaos ? streetChaosSnapshot(world) : null;
+}
+function stopCairoChaos() {
+  if (environment !== "metro" || !world.streetChaos?.active) return currentCairoChaosState();
+  world.command({ type: "street-chaos-stop" });
+  lastInput = "";
+  updateUI();
+  return currentCairoChaosState();
+}
+function setCairoChaosDriver(driverMode) {
+  if (environment !== "metro" || !world.streetChaos?.active) return currentCairoChaosState();
+  world.command({ type: "street-chaos-driver", driverMode: driverMode === "manual" ? "manual" : "auto" });
+  lastInput = "";
+  updateUI();
+  return currentCairoChaosState();
+}
+function startCairoChaos(options = {}) {
+  if (environment !== "metro") activate("metro");
+  endCityPursuit();
+  streetPursuitOpen = pakoPanelOpen = false;
+  updatePursuitNavigation();
+  $("pursuitPanelHost").hidden = true;
+  settingsOpen(false);
+  vehiclePanel?.close();
+  const intensity = ["normal", "rush", "max"].includes(options.intensity)
+    ? options.intensity : $("chaosIntensitySelect").value;
+  const driverMode = options.driverMode === "manual" ? "manual" : "auto";
+  $("chaosIntensitySelect").value = intensity;
+  if (world.streetChaos?.active) world.command({ type: "street-chaos-stop" });
+  world.command({ type: "street-chaos-start", intensity, driverMode });
+  paused = false;
+  lastInput = "";
+  updateUI();
+  return currentCairoChaosState();
+}
+function triggerCairoChaosEvent(kind) {
+  if (environment !== "metro" || !world.streetChaos?.active || !["ghorz", "lane-change", "accident"].includes(kind)) return false;
+  const result = world.command({ type: "street-chaos-event", kind });
+  updateUI();
+  return result ?? true;
+}
 function autoToggle() {
   if (environment === "vehicle" || environment === "vision") return;
   if (isPursuing() && world.pursuit.frozenDriver) {
@@ -850,6 +902,20 @@ cityPerception = mountCityPerception($, {
   },
   onDetector: () => cameraAction(visualClient.enabled ? "stop" : "start"),
 });
+cairoChaosHud = mountStreetChaosHud({
+  button: $("cairoChaosBtn"), bar: $("chaosBar"), intensity: $("chaosIntensitySelect"),
+  driver: $("chaosDriverBtn"), hazard: $("chaosHazardStatus"), reaction: $("chaosReactionStatus"),
+  stats: $("chaosStatsText"), notice: $("chaosNotice"), ghorz: $("chaosTriggerGhorzBtn"), lane: $("chaosTriggerLaneBtn"),
+  accident: $("chaosTriggerAccidentBtn"), stop: $("stopChaosBtn"),
+}, {
+  onIntensity: intensity => {
+    const state = currentCairoChaosState();
+    if (state?.active) startCairoChaos({ intensity, driverMode: state.driverMode });
+  },
+  onDriverMode: setCairoChaosDriver,
+  onEvent: triggerCairoChaosEvent,
+  onStop: stopCairoChaos,
+});
 let touchNitroActive = false;
 function spawnChaseCrowdAhead(count = 20) {
   if (environment !== "metro") return null;
@@ -908,7 +974,13 @@ addEventListener("keydown", (event) => {
   if (event.code === "KeyV") {
     setChaseCameraStyle(chaseCameraStyle === "chasing" ? "follow" : "chasing");
   }
-  if (event.code === "KeyI") autoToggle();
+  const chaosManualKeys = ["KeyW", "KeyA", "KeyS", "KeyD", "ArrowUp", "ArrowLeft", "ArrowDown", "ArrowRight", "Space"];
+  if (world.streetChaos?.active && chaosManualKeys.includes(event.code)) setCairoChaosDriver("manual");
+  if (event.code === "KeyI") {
+    if (world.streetChaos?.active)
+      setCairoChaosDriver(world.streetChaos.driverMode === "manual" ? "auto" : "manual");
+    else autoToggle();
+  }
   if (event.code === "KeyE") usePursuitPower();
   if (event.code === "KeyG" && environment === "metro") {
     if (isPursuing()) pursuitPanel.triggerSpawnCrowdAhead({ count: 20 });
@@ -930,6 +1002,36 @@ document.addEventListener("visibilitychange", () => {
   lastTime = null;
   clock = new FixedClock();
 });
+let vehicleSwitchNotice = null;
+function showVehicleSwitchNotice(text, durationMs = 3500) {
+  vehicleSwitchNotice = text ? { text, until: performance.now() + durationMs } : null;
+}
+if ($("switchCarBtn")) {
+  $("switchCarBtn").onclick = () => {
+    if (environment !== "metro") activate("metro");
+    if (world.pursuit?.phase === "running" || world.pursuit?.reviewUntilTick) {
+      showVehicleSwitchNotice("End Chase before switching vehicle.");
+      updateUI();
+      return;
+    }
+    const isMicrobus = world.player.vehicleModel === KING_LONG_MICROBUS_ID;
+    const nextModel = isMicrobus ? JETOUR_T2_ID : KING_LONG_MICROBUS_ID;
+    if (Math.abs(world.player.speed) < 0.05 &&
+        (world.player.path.length > 0 || world.destination || world.input.targetSpeed !== 0)) {
+      world.command({ type: "stop" });
+    }
+    const result = carAction("player-vehicle", nextModel);
+    if (result?.ok && result?.changed) {
+      showVehicleSwitchNotice(nextModel === KING_LONG_MICROBUS_ID
+        ? "Switched to King Long · Microbus"
+        : "Switched to Jetour T2 · SUV");
+      updateUI();
+    } else if (result?.ok === false) {
+      showVehicleSwitchNotice(result.error || "Stop the car first to switch vehicle.");
+      updateUI();
+    }
+  };
+}
 $("aiToggleBtn").onclick = autoToggle;
 $("labBtn").onclick = () => activate(isCity(environment) ? "lab" : cityResumeEnvironment);
 function updatePursuitNavigation() {
@@ -938,6 +1040,7 @@ function updatePursuitNavigation() {
 }
 $("pakoBtn").onclick = () => {
   if (environment !== "metro") return;
+  stopCairoChaos();
   streetPursuitOpen = !streetPursuitOpen || !pakoPanelOpen;
   pakoPanelOpen = true;
   updatePursuitNavigation();
@@ -948,12 +1051,21 @@ $("pakoBtn").onclick = () => {
 };
 $("selfDrivingBtn").onclick = () => {
   if (environment !== "metro" || world.player.curbSupportId) return;
+  stopCairoChaos();
   endCityPursuit();
   cancelReplayLoad();
   streetPursuitOpen = pakoPanelOpen = false;
   updatePursuitNavigation();
   if (world.mode !== "auto") autoToggle();
   updateUI();
+};
+$("cairoChaosBtn").onclick = () => {
+  if (environment !== "metro") return;
+  if (world.streetChaos?.active) stopCairoChaos();
+  else startCairoChaos({
+    intensity: $("chaosIntensitySelect").value,
+    driverMode: "auto",
+  });
 };
 $("streetPursuitBtn").onclick = () => {
   if (environment === "lab") {
@@ -1482,7 +1594,6 @@ const pursuitPanel = mountPursuitPanel({
   container: $("pursuitPanelHost"),
   onCheckpoint: file => loadDispatchCheckpoint(file, file?.name, true),
   onDriverMode: mode => {
-    if (world.player.vehicleModel === KING_LONG_MICROBUS_ID) return;
     pakoDriverMode = mode === "manual" ? "manual" : "rl";
     updateUI();
   },
@@ -1505,10 +1616,11 @@ const pursuitPanel = mountPursuitPanel({
   onRun: async (learn, useLabPolicy) => {
     const active = world;
     if (active.environment === "metro") {
+      stopCairoChaos();
       const simple = pakoPanelOpen;
       const microbus = active.player.vehicleModel === KING_LONG_MICROBUS_ID;
       if (microbus && !simple) throw new Error("Use Chase for the microbus. Experimental pursuit modes require the SUV.");
-      const simpleRl = simple && !microbus && pakoDriverMode !== "manual" && Boolean(dispatchCheckpoint);
+      const simpleRl = simple && pakoDriverMode !== "manual" && Boolean(dispatchCheckpoint);
       const release = simpleRl ? approvedPakoPolicy() : null;
       const style = simple ? release ? "pako" : simpleRl ? "dispatch-ppo" : "dispatch" : streetPursuitStyle;
       rememberPackPractice(active);
@@ -1555,7 +1667,6 @@ const pursuitPanel = mountPursuitPanel({
       lastInput = "";
       clock = new FixedClock();
       lastTime = null;
-      if (simple) cityPerception.show(true);
       updateUI();
       return true;
     }
@@ -1883,6 +1994,11 @@ function input() {
   const cameraSteer = Number(pressed("KeyA") || pressed("ArrowLeft")) -
     Number(pressed("KeyD") || pressed("ArrowRight"));
   const nitroHeld = touchNitroActive || pressed("ShiftLeft") || pressed("ShiftRight") || pressed("KeyN");
+  const chaosManualPressed = ["KeyW", "KeyA", "KeyS", "KeyD", "ArrowUp", "ArrowLeft", "ArrowDown", "ArrowRight", "Space"].some(pressed);
+  if (world.streetChaos?.active) {
+    if (chaosManualPressed && world.streetChaos.driverMode !== "manual") setCairoChaosDriver("manual");
+    else if (!chaosManualPressed && world.streetChaos.driverMode !== "manual") return;
+  }
   if (world.pursuit?.reviewUntilTick) return;
   if (isPursuing()) {
     if (paused) return;
@@ -1983,6 +2099,11 @@ function updateUI() {
   if (pursuitPreview && pursuitPreview.run !== activeCinematic()) pursuitPreview = null;
   updatePreview();
   $("pauseBtn").textContent = paused ? "Resume" : "Pause";
+  const cairoState = currentCairoChaosState();
+  cairoChaosHud?.update(cairoState);
+  document.body.classList.toggle("cairo-active", Boolean(cairoState?.active));
+  document.body.classList.toggle("chase-active", isPursuing());
+  $("cairoChaosBtn").hidden = environment !== "metro";
   $("speedVal").textContent = Math.round(Math.abs(world.player.speed) * 3.6);
   const frozen = drivingPursuit?.frozenDriver;
   $("selfDrivingBtn").disabled = Boolean(world.player.curbSupportId);
@@ -2041,6 +2162,22 @@ function updateUI() {
     world, actor: world.player, rig: view.playerRig,
     mode: cameraMode, cutaway, sensors: sensorView, sensorCamera,
   });
+  const switchCarBtn = $("switchCarBtn");
+  if (switchCarBtn) {
+    const inMetro = environment === "metro";
+    const targetWorld = inMetro ? world : worlds.metro;
+    const isMicrobus = targetWorld?.player?.vehicleModel === KING_LONG_MICROBUS_ID;
+    const chaseActive = inMetro && (world.pursuit?.phase === "running" || Boolean(world.pursuit?.reviewUntilTick));
+    switchCarBtn.textContent = isMicrobus ? "Switch car · SUV" : "Switch car · Microbus";
+    switchCarBtn.disabled = chaseActive;
+    switchCarBtn.title = chaseActive
+      ? "End Chase before switching vehicle"
+      : !inMetro
+        ? "Return to City and switch vehicle"
+        : isMicrobus
+          ? "Switch from King Long microbus to Jetour T2 SUV"
+          : "Switch from Jetour T2 SUV to King Long microbus";
+  }
   visionPanel?.update({
     world, vision: world.visualState,
     availability: visualClient?.status ?? { available: false, status: "disabled" },
@@ -2175,6 +2312,13 @@ function updateUI() {
     pursuitStrobe.update(null);
     pursuitPanel.update(null);
   }
+  if (vehicleSwitchNotice) {
+    if (performance.now() < vehicleSwitchNotice.until && !isPursuing()) {
+      $("tripLabel").textContent = vehicleSwitchNotice.text;
+    } else {
+      vehicleSwitchNotice = null;
+    }
+  }
   const nowMapMs = performance.now();
   if (!isPursuing() || nowMapMs - lastMapDrawMs >= 360) {
     lastMapDrawMs = nowMapMs;
@@ -2260,21 +2404,28 @@ function drawMap() {
       map.fillRect(sx - 1.2, sz - 1.2, 2.4, 2.4);
     }
   }
+  const accidentIds = world.streetChaos?.accidentActorIds;
+  const pulse = .5 + .5 * Math.sin(performance.now() * .009);
   for (const actor of world.actors) {
-    map.fillStyle =
-      actor === world.player
-        ? "#f6efd8"
+    const wreck = Boolean(world.streetChaos?.active &&
+      (actor.chaosAccident || accidentIds?.has?.(actor.id) || accidentIds?.includes?.(actor.id)));
+    const mx = cx + actor.x * scale, mz = cz + actor.z * scale;
+    if (actor.kind === "truck" && !wreck) {
+      map.save();
+      map.translate(mx, mz);
+      map.rotate(-(actor.heading ?? 0));
+      map.fillStyle = "#c38a43";
+      map.fillRect(-2.15, -3.9, 4.3, 7.8);
+      map.restore();
+      continue;
+    }
+    map.fillStyle = wreck ? (pulse > .5 ? "#ff553d" : "#ff9b37")
+      : actor === world.player ? "#f6efd8"
         : actor.pursuitRole === "police" ? "#ff887a" : actor.type === "pedestrian"
-          ? "#dac29c"
-          : "#a5b6b0";
+          ? "#dac29c" : "#a5b6b0";
     map.beginPath();
-    map.arc(
-      cx + actor.x * scale,
-      cz + actor.z * scale,
-      actor === world.player ? 3.5 : actor.type === "pedestrian" ? 1 : 1.7,
-      0,
-      Math.PI * 2,
-    );
+    map.arc(mx, mz, wreck ? 2.3 + pulse * 1.2
+      : actor === world.player ? 3.5 : actor.type === "pedestrian" ? 1 : 1.7, 0, Math.PI * 2);
     map.fill();
   }
 }
@@ -2697,11 +2848,10 @@ function frame(time) {
   renderer.setViewport(0, 0, viewportWidth, viewportHeight);
   const routeVisible = view.route.visible;
   if (cinematic && $("inspectorPanel").hidden) view.route.visible = false;
-  const showForecastGhosts =
-    environment === "metro" &&
-    (cityPerception.open || (world.pursuit?.phase === "running" && Boolean(world.pursuit.cityChase)));
+  const activePursuit = world.pursuit?.phase === "running" ? world.pursuit : null;
+  const showForecastGhosts = environment === "metro" && (cityPerception.open || activePursuit?.cityChase);
   if (showForecastGhosts) {
-    const pursuitScan = world.pursuit?.phase === "running" && world.pursuit.gta?.scan;
+    const pursuitScan = activePursuit?.gta?.scan;
     if (!pursuitScan && (senseWorld !== world || !senseScan)) {
       senseWorld = world;
       senseScan = senseScanner.sample(world);
@@ -2854,6 +3004,10 @@ window.sim = {
   crashDiagnostics: () => view?.crashDiagnostics?.() ?? null,
   streetSurfaceDiagnostics: () => view?.streetSurfaceDiagnostics?.() ?? null,
   spawnCrowdAhead: (count = 20) => spawnChaseCrowdAhead(count),
+  startCairoChaos: (options = {}) => startCairoChaos(options),
+  stopCairoChaos: () => stopCairoChaos(),
+  triggerCairoChaosEvent: (kind) => triggerCairoChaosEvent(kind),
+  cairoChaosState: () => currentCairoChaosState(),
   setSensorCamera: (dir) => carAction("sensor-camera", dir),
   setFreeCameraShot: (shot) => {
     freeCameraShotOverride = shot && shot.pos && shot.lookAt ? shot : null;

@@ -4018,103 +4018,196 @@
     return junctions;
   }
   function planTacticalInterceptAim(world, car, report, slotIndex = 0) {
-    if (!report) return { x: 0, z: 0, heading: 0, role: "LEAD", horizonS: 0, junctionIntercept: false };
-    const unitsInContact = world?.pursuit?.response?.unitsInContact;
-    if (unitsInContact !== void 0 && unitsInContact <= 0) {
-      const order = car?.gtaAI?.order ?? slotIndex;
-      return { ...selectTacticalSearchTarget(world, car, report, order), role: "SEARCH", horizonS: 0, junctionIntercept: false };
+    const unitsInContact = world?.pursuit?.response?.unitsInContact ?? 0;
+    const slot = Math.max(0, Math.trunc(slotIndex || 0));
+    if (!report || !Number.isFinite(report.x) || !Number.isFinite(report.z)) {
+      return {
+        x: Number.isFinite(car?.x) ? car.x : 0,
+        z: Number.isFinite(car?.z) ? car.z : 0,
+        heading: Number.isFinite(car?.heading) ? car.heading : 0,
+        roadId: car?.gtaAI?.beat?.roadId ?? null,
+        role: "HOLD",
+        horizonS: 0,
+        junctionIntercept: false
+      };
+    }
+    if (unitsInContact <= 0) {
+      const order = car?.gtaAI?.order ?? slot;
+      return {
+        ...selectTacticalSearchTarget(world, car, report, order),
+        role: "SEARCH",
+        horizonS: 0,
+        junctionIntercept: false
+      };
     }
     const rawSpeed = Number.isFinite(report.speed) ? report.speed : 0;
     const vx = Number.isFinite(report.vx) ? report.vx : Math.sin(report.heading ?? 0) * rawSpeed;
     const vz = Number.isFinite(report.vz) ? report.vz : Math.cos(report.heading ?? 0) * rawSpeed;
     const velMag = Math.hypot(vx, vz);
     const heading2 = velMag > 0.8 ? Math.atan2(vx, vz) : report.heading ?? 0;
-    const fx = Math.sin(heading2);
-    const fz = Math.cos(heading2);
-    const rx = Math.cos(heading2);
-    const rz = -Math.sin(heading2);
+    const fx = Math.sin(heading2), fz = Math.cos(heading2);
+    const rx = Math.cos(heading2), rz = -Math.sin(heading2);
+    const reportSpeed = Math.max(velMag, Math.abs(rawSpeed), 9.5);
     const range = car && Number.isFinite(car.x) && Number.isFinite(car.z) ? distance(car, report) : 24;
-    const slot = Math.max(0, Math.trunc(slotIndex || 0));
-    if (slot === 0) {
-      const leadHorizonS = clamp(0.34 + range * 0.015, 0.3, 1.08);
-      const leadDist = clamp((velMag > 0.2 ? velMag : rawSpeed) * leadHorizonS, -10, 19);
-      const rawAim2 = {
-        x: report.x + fx * leadDist,
-        z: report.z + fz * leadDist,
-        heading: heading2
-      };
-      const resolved2 = resolveTacticalRoadAim(world, car, rawAim2, { vx: fx * Math.max(velMag, 10), vz: fz * Math.max(velMag, 10) });
-      return {
-        x: resolved2.x,
-        z: resolved2.z,
-        heading: resolved2.heading ?? heading2,
-        role: "LEAD",
-        horizonS: leadHorizonS,
-        junctionIntercept: false
-      };
-    }
-    const horizonS = slot === 1 ? clamp(1.65 + range * 6e-3, 1.6, 2.15) : slot === 2 ? clamp(2.15 + range * 8e-3, 2.05, 2.6) : clamp(1.75 + slot % 3 * 0.35, 1.6, 2.6);
-    const projSpeed = Math.max(velMag, Math.abs(rawSpeed), 9.5);
-    const projDist = clamp(projSpeed * horizonS, 15, 86);
-    const projPoint = {
-      x: report.x + fx * projDist,
-      z: report.z + fz * projDist
-    };
-    const side = car?.squadSide || (slot % 2 === 1 ? 1 : -1);
-    const junctions = getWorldJunctions(world);
-    let bestJunction = null;
-    let bestJScore = Infinity;
-    const minFwd = Math.max(11, projSpeed * 0.85);
-    const maxFwd = Math.max(30, projDist + 22);
-    for (let i = 0; i < junctions.length; i++) {
-      const j = junctions[i];
-      const jx = j.x - report.x;
-      const jz = j.z - report.z;
-      const fwd = jx * fx + jz * fz;
-      if (fwd < minFwd || fwd > maxFwd) continue;
-      const lat = Math.abs(jx * rx + jz * rz);
-      if (lat > 16.5) continue;
-      const dProj = Math.hypot(j.x - projPoint.x, j.z - projPoint.z) + lat * 0.65;
-      if (dProj < bestJScore) {
-        bestJScore = dProj;
-        bestJunction = j;
+    if ((world?.pursuit?.wantedLevel ?? 1) < 3) {
+      if (slot === 0) {
+        const horizonS3 = clamp(0.34 + range * 0.015, 0.3, 1.08);
+        const forwardM = clamp((velMag > 0.2 ? velMag : rawSpeed) * horizonS3, -10, 19);
+        const resolved2 = resolveTacticalRoadAim(world, car, {
+          x: report.x + fx * forwardM,
+          z: report.z + fz * forwardM,
+          heading: heading2
+        }, { vx: fx * Math.max(velMag, 10), vz: fz * Math.max(velMag, 10) });
+        return {
+          x: resolved2.x,
+          z: resolved2.z,
+          heading: resolved2.heading ?? heading2,
+          role: "LEAD",
+          horizonS: horizonS3,
+          junctionIntercept: false
+        };
       }
-    }
-    let rawAim;
-    if (bestJunction) {
-      if (slot === 2 || car?.squadRole === "INTERCEPTOR") {
-        rawAim = {
-          x: bestJunction.x + fx * 3.8 + rx * (side * 2.8),
-          z: bestJunction.z + fz * 3.8 + rz * (side * 2.8),
+      const horizonS2 = slot === 1 ? clamp(1.65 + range * 6e-3, 1.6, 2.15) : slot === 2 ? clamp(2.15 + range * 8e-3, 2.05, 2.6) : clamp(1.75 + slot % 3 * 0.35, 1.6, 2.6);
+      const projectedM2 = clamp(reportSpeed * horizonS2, 15, 86);
+      const projected = { x: report.x + fx * projectedM2, z: report.z + fz * projectedM2 };
+      const side2 = car?.squadSide || (slot % 2 === 1 ? 1 : -1);
+      let junction2 = null, junctionScore = Infinity;
+      const minForwardM = Math.max(11, reportSpeed * 0.85);
+      const maxForwardM = Math.max(30, projectedM2 + 22);
+      for (const candidate of getWorldJunctions(world)) {
+        const dx = candidate.x - report.x, dz = candidate.z - report.z;
+        const forwardM = dx * fx + dz * fz;
+        if (forwardM < minForwardM || forwardM > maxForwardM) continue;
+        const lateralM2 = Math.abs(dx * rx + dz * rz);
+        if (lateralM2 > 16.5) continue;
+        const score = Math.hypot(candidate.x - projected.x, candidate.z - projected.z) + lateralM2 * 0.65;
+        if (score < junctionScore) {
+          junctionScore = score;
+          junction2 = candidate;
+        }
+      }
+      let rawAim2;
+      if (junction2) {
+        rawAim2 = slot === 2 || car?.squadRole === "INTERCEPTOR" ? {
+          x: junction2.x + fx * 3.8 + rx * side2 * 2.8,
+          z: junction2.z + fz * 3.8 + rz * side2 * 2.8,
+          heading: heading2
+        } : {
+          x: junction2.x - fx * 2.6 + rx * side2 * 4.5,
+          z: junction2.z - fz * 2.6 + rz * side2 * 4.5,
           heading: heading2
         };
       } else {
-        rawAim = {
-          x: bestJunction.x - fx * 2.6 + rx * (side * 4.5),
-          z: bestJunction.z - fz * 2.6 + rz * (side * 4.5),
-          heading: heading2
-        };
+        const lateralM2 = slot === 1 ? side2 * 4.3 : slot === 2 ? side2 * 3.4 : side2 * 4.8;
+        rawAim2 = { x: projected.x + rx * lateralM2, z: projected.z + rz * lateralM2, heading: heading2 };
       }
-    } else {
-      const lateralOffsetM = slot === 1 ? side * 4.3 : slot === 2 ? side * 3.4 : side * 4.8;
-      rawAim = {
-        x: projPoint.x + rx * lateralOffsetM,
-        z: projPoint.z + rz * lateralOffsetM,
-        heading: heading2
+      const resolved = resolveTacticalRoadAim(world, car, rawAim2, {
+        vx: fx * reportSpeed,
+        vz: fz * reportSpeed
+      });
+      return {
+        x: resolved.x,
+        z: resolved.z,
+        heading: resolved.heading ?? heading2,
+        role: slot === 1 ? "FLANK" : slot === 2 ? "CUTOFF" : "CONTAIN",
+        horizonS: horizonS2,
+        junctionIntercept: Boolean(junction2)
       };
     }
-    const resolved = resolveTacticalRoadAim(world, car, rawAim, {
-      vx: fx * projSpeed,
-      vz: fz * projSpeed
-    });
-    return {
-      x: resolved.x,
-      z: resolved.z,
-      heading: resolved.heading ?? heading2,
-      role: slot === 1 ? "FLANK" : slot === 2 ? "CUTOFF" : "CONTAIN",
-      horizonS,
-      junctionIntercept: Boolean(bestJunction)
+    const resolve = (rawAim2, role, horizonS2, junctionIntercept = false) => {
+      const resolved = resolveTacticalRoadAim(world, car, rawAim2, {
+        vx: fx * reportSpeed,
+        vz: fz * reportSpeed
+      });
+      return {
+        x: resolved.x,
+        z: resolved.z,
+        heading: resolved.heading ?? heading2,
+        role,
+        horizonS: horizonS2,
+        junctionIntercept
+      };
     };
+    if (slot === 0) {
+      const horizonS2 = clamp(0.34 + range * 0.012, 0.3, 0.92);
+      const forwardM = clamp(reportSpeed * horizonS2, 6, 18);
+      return resolve({
+        x: report.x + fx * forwardM,
+        z: report.z + fz * forwardM,
+        heading: heading2
+      }, "LEAD", horizonS2);
+    }
+    if (slot === 1 || slot === 2) {
+      const side2 = slot === 1 ? -1 : 1;
+      const forwardM = clamp(18 + range * 0.16 + (slot - 1) * 6, 18, 38);
+      const lateralM2 = side2 * clamp(3.6 + range * 0.025, 3.8, 6.2);
+      const fairCity = isFairCityPolice(world?.pursuit);
+      const horizonS2 = fairCity ? clamp(forwardM / reportSpeed, 0.8, 2.1) : slot === 1 ? clamp(1.65 + range * 6e-3, 1.6, 2.15) : clamp(2.15 + range * 8e-3, 2.05, 2.6);
+      const rawAim2 = {
+        x: report.x + fx * forwardM + rx * lateralM2,
+        z: report.z + fz * forwardM + rz * lateralM2,
+        heading: heading2 - side2 * 0.18,
+        width: car?.width,
+        length: car?.length
+      };
+      const role = fairCity ? slot === 1 ? "PINCER_LEFT" : "PINCER_RIGHT" : slot === 1 ? "FLANK" : "CUTOFF";
+      if (isTacticalPatrolPoseSupported(world, rawAim2)) {
+        return {
+          x: rawAim2.x,
+          z: rawAim2.z,
+          heading: rawAim2.heading,
+          role,
+          horizonS: horizonS2,
+          junctionIntercept: false
+        };
+      }
+      return resolve(rawAim2, role, horizonS2);
+    }
+    const junctions = getWorldJunctions(world);
+    const chooseJunction = (targetForwardM, minForwardM, maxForwardM, lateralCapM) => {
+      let best = null, bestScore = Infinity;
+      for (const junction2 of junctions) {
+        const dx = junction2.x - report.x, dz = junction2.z - report.z;
+        const forwardM = dx * fx + dz * fz;
+        if (forwardM < minForwardM || forwardM > maxForwardM) continue;
+        const lateralM2 = Math.abs(dx * rx + dz * rz);
+        if (lateralM2 > lateralCapM) continue;
+        const score = Math.abs(forwardM - targetForwardM) + lateralM2 * 0.7;
+        if (score < bestScore) {
+          bestScore = score;
+          best = { ...junction2, forwardM, lateralM: lateralM2 };
+        }
+      }
+      return best;
+    };
+    if (slot <= 5) {
+      const horizonS2 = [0, 0, 0, 1.8, 2.45, 3.2][slot];
+      const projectedM2 = clamp(reportSpeed * horizonS2, 35, 95);
+      const junction2 = chooseJunction(projectedM2, 24, 105, 18);
+      const side2 = slot === 3 ? 0 : slot === 4 ? -1 : 1;
+      const rawAim2 = junction2 ? {
+        x: junction2.x + rx * side2 * 2.4,
+        z: junction2.z + rz * side2 * 2.4,
+        heading: heading2
+      } : {
+        x: report.x + fx * projectedM2 + rx * side2 * 4.5,
+        z: report.z + fz * projectedM2 + rz * side2 * 4.5,
+        heading: heading2
+      };
+      const role = slot === 3 ? "CUTOFF_INTERCEPT" : slot === 4 ? "CROSS_AMBUSH_LEFT" : "CROSS_AMBUSH_RIGHT";
+      return resolve(rawAim2, role, horizonS2, Boolean(junction2));
+    }
+    const horizonS = clamp(2.2 + slot % 4 * 0.24, 2.2, 3);
+    const projectedM = clamp(reportSpeed * horizonS + 14, 40, 100);
+    const side = slot % 2 ? -1 : 1;
+    const lateralM = side * (7 + slot % 3 * 2.5);
+    const junction = chooseJunction(projectedM, 34, 112, 28);
+    const rawAim = junction ? { x: junction.x + rx * lateralM * 0.35, z: junction.z + rz * lateralM * 0.35, heading: heading2 } : {
+      x: report.x + fx * projectedM + rx * lateralM,
+      z: report.z + fz * projectedM + rz * lateralM,
+      heading: heading2
+    };
+    return resolve(rawAim, "FORWARD_CONTAIN", horizonS, Boolean(junction));
   }
   function canPatrolUseCurbPrivilege(world, car) {
     return Boolean(
@@ -5487,7 +5580,11 @@
     const minSpawn = state?.gta?.config?.minSpawnRadius ?? 16;
     const count = state?.patrols?.size ?? 0;
     if (opening) {
-      return count < 2 ? { minRange: Math.max(17.5, minSpawn), maxRange: 33 } : { minRange: 36, maxRange: 66 };
+      if (count < 2) return { minRange: Math.max(17.5, minSpawn), maxRange: 33 };
+      if (isTacticalPursuit(state)) {
+        return count < 5 ? { minRange: Math.max(28, minSpawn), maxRange: 68 } : { minRange: Math.max(35, minSpawn), maxRange: 95 };
+      }
+      return { minRange: 36, maxRange: 66 };
     }
     return { minRange: 26, maxRange: 58 };
   }
@@ -5504,6 +5601,11 @@
       const alignment = Math.cos(angleDelta(slot.position.heading, player.heading));
       const absRight = Math.abs(right);
       if (forwardOnly && forward2 <= 2) {
+        slot.score = Infinity;
+        continue;
+      }
+      const tacticalOpening = opening && isTacticalPursuit(state);
+      if (tacticalOpening && forward2 > 0 && forward2 < 34) {
         slot.score = Infinity;
         continue;
       }
@@ -5528,6 +5630,16 @@
           score += Math.min(rearBerthScore, crossBerthScore + 4);
         } else {
           score += Math.min(crossBerthScore, rearBerthScore + 6);
+        }
+      } else if (opening && isTacticalPursuit(state)) {
+        const towardPlayer = ((player.x - slot.position.x) * Math.sin(slot.position.heading) + (player.z - slot.position.z) * Math.cos(slot.position.heading)) / Math.max(1, range);
+        const opposingLane = alignment < -0.65 && absRight >= 2.4 && absRight <= 8.5;
+        const forwardCrossApproach = crossStreet && towardPlayer > 0.15;
+        if (count < 5) {
+          score += bandPenalty(forward2, 34, 72, 1.9) + bandPenalty(range, 28, 68, 1.35) + Math.abs(range - (38 + (count - 2) * 8)) * 0.32 + (forwardCrossApproach ? -22 : crossStreet ? -10 : opposingLane ? -16 : 18) + (sameForwardCorridor && !opposingLane ? 16 : 0) + (tactic === "intercept" && forwardCrossApproach ? -8 : 0) + (tactic === "flank" && right * side < 0 ? 5 : 0);
+        } else {
+          const parallelFlank = absRight >= 8 || crossStreet;
+          score += bandPenalty(forward2, 35, 95, 1.35) + bandPenalty(range, 35, 95, 1.1) + Math.abs(range - Math.min(88, 58 + (count - 5) * 5)) * 0.28 + (parallelFlank ? -8 : opposingLane ? -6 : 12) + (tactic === "intercept" && forwardCrossApproach ? -7 : 0) + (tactic === "flank" && right * side < 0 ? 4 : 0);
         }
       } else if (opening) {
         if (sameForwardCorridor) score += 65;
@@ -6389,15 +6501,15 @@
     const closingSpeed2 = Math.max(0, sweptClosing, (va.x - vb.x) * x + (va.z - vb.z) * z);
     const other = a.a === player ? b.a : b.a === player ? a.a : null;
     if (!other && dispatch && fresh) {
-      const describe = (body) => ({
+      const describe2 = (body) => ({
         id: body.id,
         type: body.type,
         kind: body.unitType ?? body.kind ?? body.type,
         patrol: pursuit.patrols.has(body)
       });
       emitGtaEvent(world, "ambient_collision", {
-        first: describe(a.a),
-        second: describe(b.a),
+        first: describe2(a.a),
+        second: describe2(b.a),
         closingSpeed: closingSpeed2,
         ...contactEvidence(a.a, b.a, closingSpeed2)
       });
@@ -8741,11 +8853,31 @@
       height: 5.52 * p.scale,
       propImpact: freshImpact()
     }));
+    const lamps = placements.lamps.map((p, index) => ({
+      ...p,
+      id: `city-lamp-${index}`,
+      type: "static",
+      kind: "city-lamp",
+      width: 0.36,
+      length: 0.36,
+      height: 6.2,
+      propImpact: freshImpact()
+    }));
+    const furniture = placements.furniture.map((p, index) => ({
+      ...p,
+      id: `city-furniture-${index}`,
+      type: "static",
+      kind: "city-furniture",
+      width: 0.54,
+      length: 0.54,
+      height: 1,
+      propImpact: freshImpact()
+    }));
     for (const site of world.statics)
       if (site.kind === "market-stall") site.propImpact = freshImpact();
-    world.statics.push(...trees);
+    world.statics.push(...trees, ...lamps, ...furniture);
     world.cityStreetProps = placements;
-    return trees;
+    return [...trees, ...lamps, ...furniture];
   }
   function recordCityPropImpact(world, obstacle, contact) {
     if (!obstacle?.propImpact || !contact || contact.closingSpeedMps < 0.35) return false;
@@ -13862,8 +13994,10 @@
           });
         state.metrics.peakWaitS = Math.max(state.metrics.peakWaitS, entry.waitS);
       }
+      const egoBonusTicks = world.streetChaos?.active && world.mode === "auto" ? Math.ceil(60 / STEP) : 0;
+      const queuedAt = (entry) => entry.arrivedTick - (egoBonusTicks && entry.actorId === world.player.id ? egoBonusTicks : 0);
       queue.sort((a, b) => {
-        const arrival = a.arrivedTick - b.arrivedTick;
+        const arrival = queuedAt(a) - queuedAt(b);
         if (arrival || zone.kind !== "single-lane") return arrival || a.ticket - b.ticket;
         const aExit = routes.get(`${zone.id}:${a.actorId}`).exitDistanceM;
         const bExit = routes.get(`${zone.id}:${b.actorId}`).exitDistanceM;
@@ -18627,19 +18761,34 @@
       if (world.pursuit === state) return null;
       const car2 = newGtaPatrol(world, state, unitType);
       const lanes = car2.gtaAI.lanes.filter((lane2) => lane2.high - lane2.low >= 45);
+      const player2 = world.player;
+      const setOpeningBeat = (lane2) => {
+        const a = lanePoint(lane2, lane2.low + 8);
+        const b = lanePoint(lane2, lane2.high - 8);
+        car2.gtaAI.beat = { roadId: lane2.road.id, a, b, target: lane2.sign > 0 ? b : a };
+        car2.aiState = "PATROL";
+        car2.speed = aggressiveInitialSpeed(car2, true, state.wantedLevel);
+        return registerGtaPatrol(world, state, car2);
+      };
+      if (isAggressiveChase(state) && state.wantedLevel >= 3 && playerVehicleDimensions(player2) !== KING_LONG_MICROBUS) {
+        const bounds = aggressiveDeploymentBounds(state, true);
+        const slots2 = deploymentSlots({ lanes }, player2, tactic, bounds.minRange, bounds.maxRange);
+        scoreAggressiveDeploymentSlots(world, state, car2, player2, slots2, tactic, true, forwardOnly);
+        for (const { lane: lane2, position: position2, score } of slots2) {
+          if (!Number.isFinite(score)) break;
+          Object.assign(car2, position2);
+          if (!isFree(world, car2, 0.65) || !bodyOnRoad(car2, world.drivingRoads) || [...state.patrols].some((other) => distance(other, car2) < 17.5) || state.patrols.size < 2 && !gtaInSight({ ...world, pursuit: state }, car2, player2)) continue;
+          return setOpeningBeat(lane2);
+        }
+      }
       const openingBeat = car2.gtaAI.order === 1 ? lanes.find((lane2) => lane2.road.id === "tahrir-boulevard" && lane2.sign === 1) : null;
       for (let n = 0; n < lanes.length; n++) {
         const lane2 = n === 0 && openingBeat ? openingBeat : lanes[(car2.gtaAI.order * 17 + n) % lanes.length];
         for (const fraction of lane2 === openingBeat ? [0.23, 0.35, 0.65] : [0.35, 0.65, 0.5]) {
           const position2 = lanePoint(lane2, lane2.low + (lane2.high - lane2.low) * fraction);
           Object.assign(car2, position2);
-          if (!isFree(world, car2, 1) || !bodyOnRoad(car2, world.drivingRoads) || [...state.patrols].some((other) => distance(other, car2) < 22)) continue;
-          const a = lanePoint(lane2, lane2.low + 8);
-          const b = lanePoint(lane2, lane2.high - 8);
-          car2.gtaAI.beat = { roadId: lane2.road.id, a, b, target: lane2.sign > 0 ? b : a };
-          car2.aiState = "PATROL";
-          car2.speed = 0;
-          return registerGtaPatrol(world, state, car2);
+          if (!isFree(world, car2, 1) || !bodyOnRoad(car2, world.drivingRoads) || [...state.patrols].some((other) => distance(other, car2) < 17.5)) continue;
+          return setOpeningBeat(lane2);
         }
       }
       return null;
@@ -19901,6 +20050,9 @@
   var distantActorCmdCache = /* @__PURE__ */ new WeakMap();
   var patrolVisualCrashMap = /* @__PURE__ */ new WeakMap();
   var impactGeometryMap = /* @__PURE__ */ new WeakMap();
+  function getPatrolVisualDamage(actor) {
+    return actor ? patrolVisualCrashMap.get(actor) ?? null : null;
+  }
   function recordActorVisualCrash(actor, actorPose, otherPose, closingSpeedMps) {
     if (!actor || !(closingSpeedMps >= 1.2)) return;
     const delta = clamp((closingSpeedMps - 0.8) / 14, 0.08, 0.92);
@@ -20460,12 +20612,16 @@
           if (report) {
             const egoDimensions = playerVehicleDimensions(world.player);
             const relative = gtaLocal2(actor, report);
-            if (relative.forward > 0 && Math.abs(relative.right) < (actor.width + egoDimensions.widthM) / 2 + 0.5) {
+            const fairApproachWidth = (actor.width + egoDimensions.widthM) / 2 + 4.5 + Math.max(0, actor.speed) * 0.08;
+            if (relative.forward > 0 && Math.abs(relative.right) < fairApproachWidth) {
               const braking = actor.spec?.braking ?? VEHICLE.braking;
               const leadSpeed = Math.max(0, (report.vx ?? 0) * Math.sin(actor.heading) + (report.vz ?? 0) * Math.cos(actor.heading));
               const gap = relative.forward - (actor.length + egoDimensions.lengthM) / 2;
-              const room = Math.max(0, gap - 4 - Math.max(0, actor.speed) * 0.4);
-              const pace = Math.sqrt(leadSpeed * leadSpeed + 2 * braking * room);
+              const desiredGap = 5.5 + Math.max(0, actor.speed) * 0.42;
+              const room = Math.max(0, gap - desiredGap);
+              const compressed = Math.max(0, desiredGap - gap);
+              const safeLeadSpeed = Math.max(0, leadSpeed - compressed * 1.35);
+              const pace = Math.sqrt(safeLeadSpeed * safeLeadSpeed + 2 * braking * room);
               if (pace < command.targetSpeed) command = {
                 ...command,
                 targetSpeed: pace,
@@ -21648,6 +21804,3282 @@
     syncPursuitStatus(world);
     return summary;
   }
+
+  // src/core/lane-geometry.js
+  var roadListCache = /* @__PURE__ */ new WeakMap();
+  function idealPathSpeed(player, path, cursor) {
+    if (!path || path.length < 2) return 0;
+    const nearest2 = nearestPathPoint(path, player.x, player.z, cursor);
+    const ahead = path[Math.min(path.length - 1, nearest2 + 3)];
+    const here = path[nearest2];
+    const heading2 = Math.hypot(ahead.x - here.x, ahead.z - here.z) > 0.2 ? Math.atan2(ahead.x - here.x, ahead.z - here.z) : player.heading;
+    const wheelbase = player.spec?.wheelbase ?? VEHICLE.wheelbase;
+    const axleCenterZ = player.vehicleModel === KING_LONG_MICROBUS_ID ? KING_LONG_MICROBUS.axleCenterZM : 0;
+    const rear = wheelbase / 2 - axleCenterZ;
+    const ideal = {
+      x: here.x + Math.sin(heading2) * rear,
+      z: here.z + Math.cos(heading2) * rear,
+      heading: heading2,
+      speed: player.speed,
+      spec: player.spec,
+      vehicleModel: player.vehicleModel,
+      maxSpeed: player.maxSpeed
+    };
+    return followPath(ideal, path, nearest2).targetSpeed;
+  }
+  var normalizeAngle2 = (a) => Math.atan2(Math.sin(a), Math.cos(a));
+  function roadList(world) {
+    const source = world.district?.drivingRoads ?? world.drivingRoads ?? [];
+    let list = roadListCache.get(source);
+    if (!list) {
+      list = source.filter((road4) => !road4.parkingBay && !road4.supportApron);
+      roadListCache.set(source, list);
+    }
+    return list;
+  }
+  function laneFrame(world, body, { minWidth = 0, maxPsi = 0.8 } = {}) {
+    let best = null;
+    let bestScore = Infinity;
+    const roads = roadList(world);
+    for (let i = 0; i < roads.length; i++) {
+      const road4 = roads[i];
+      if (road4.width < minWidth) continue;
+      const proj = roadProject(road4, body);
+      if (proj.along < road4.min - 0.2 || proj.along > road4.max + 0.2 || proj.absLateral > road4.width / 2) continue;
+      const frame = roadFrame(road4);
+      const forward2 = angleDelta(body.heading ?? 0, frame.heading);
+      const d = Math.abs(forward2) <= Math.PI / 2 ? 1 : -1;
+      const psi = d > 0 ? forward2 : angleDelta(body.heading ?? 0, frame.heading + Math.PI);
+      if (Math.abs(psi) > maxPsi) continue;
+      const score = Math.abs(psi);
+      if (score >= bestScore) continue;
+      bestScore = score;
+      best = {
+        road: road4,
+        d,
+        psi,
+        along: proj.along,
+        s: d * proj.along,
+        lat: -d * proj.leftOffset,
+        halfW: road4.width / 2,
+        laneOffset: road4.laneOffsetM ?? 2.6,
+        laneHeading: d > 0 ? frame.heading : normalizeAngle2(frame.heading + Math.PI)
+      };
+    }
+    return best;
+  }
+  function coordsOn(road4, d, point2) {
+    const proj = roadProject(road4, point2);
+    return { s: d * proj.along, lat: -d * proj.leftOffset };
+  }
+  function lanePoint2(road4, d, s, lat) {
+    return roadPointAt(road4, d * s, -d * lat);
+  }
+  function straightLanePath(frame, s0, lat, lengthM, backM = 1) {
+    const road4 = frame.road;
+    const lo = road4.min + 10;
+    const hi = road4.max - 10;
+    const points = [];
+    const total = Math.max(2, lengthM + backM);
+    for (let k = 0; k * 0.5 <= total; k++) {
+      const s = s0 - backM + k * 0.5;
+      const along2 = frame.d * s;
+      if (along2 < lo || along2 > hi) break;
+      const p = lanePoint2(road4, frame.d, s, lat);
+      points.push({ x: p.x, z: p.z });
+    }
+    return points.length > 4 ? markImmutablePath(points) : [];
+  }
+  function zoneAheadM(world, frame, s) {
+    const zones = world.district?.conflictZones;
+    if (!zones) return Infinity;
+    let best = Infinity;
+    for (let i = 0; i < zones.length; i++) {
+      const z = zones[i];
+      let sMin = Infinity;
+      let sMax = -Infinity;
+      let latMin = Infinity;
+      let latMax = -Infinity;
+      for (let k = 0; k < 4; k++) {
+        const c = coordsOn(frame.road, frame.d, { x: k & 1 ? z.maxX : z.minX, z: k & 2 ? z.maxZ : z.minZ });
+        if (c.s < sMin) sMin = c.s;
+        if (c.s > sMax) sMax = c.s;
+        if (c.lat < latMin) latMin = c.lat;
+        if (c.lat > latMax) latMax = c.lat;
+      }
+      if (latMax < -frame.halfW - 1 || latMin > 1 || sMax < s - 1) continue;
+      best = Math.min(best, Math.max(0, sMin - s));
+    }
+    return best;
+  }
+
+  // src/core/street-chaos.js
+  var STREET_CHAOS_VERSION = "cairo-traffic-v1";
+  var CHAOS_INTENSITIES = Object.freeze(["normal", "rush", "max"]);
+  var CHAOS_EVENT_KINDS = Object.freeze(["ghorz", "lane-change", "accident"]);
+  var TRUCK_SPEC = Object.freeze({
+    kind: "truck",
+    lengthM: 8.2,
+    widthM: 2.45,
+    heightM: 3.35,
+    wheelbaseM: 4.9,
+    massKg: 14500,
+    maxSteerRad: 0.4,
+    steerRateRadS: 0.48,
+    accelerationMps2: 1.15,
+    brakingMps2: 4.1,
+    tireGripMps2: 5.2,
+    reverseSpeedMps: 2,
+    maxSpeedFactor: 0.76
+  });
+  var classRow = (row) => Object.freeze(row);
+  var VEHICLE_CLASS_DYNAMICS = Object.freeze({
+    // Light and nimble: darts into gaps and hugs the kerb.
+    tuktuk: classRow({
+      massKg: 420,
+      wheelbase: 1.9,
+      maxSteer: 0.72,
+      steerRate: 2.1,
+      acceleration: 3.1,
+      braking: 6.2,
+      tireGripMps2: 6.4,
+      speedFactor: 1,
+      offLaneTendency: 0.85,
+      cutInAggression: 0.8,
+      lateralAccelMps2: 4.6
+    }),
+    // Agile weavers and late lane cutters.
+    sedan: classRow({
+      massKg: 1350,
+      wheelbase: 2.6,
+      maxSteer: 0.62,
+      steerRate: 1.55,
+      acceleration: 3,
+      braking: 7.4,
+      tireGripMps2: 8,
+      speedFactor: 1.12,
+      offLaneTendency: 0.5,
+      cutInAggression: 0.9,
+      lateralAccelMps2: 5
+    }),
+    taxi: classRow({
+      massKg: 1350,
+      wheelbase: 2.6,
+      maxSteer: 0.62,
+      steerRate: 1.55,
+      acceleration: 3,
+      braking: 7.4,
+      tireGripMps2: 8,
+      speedFactor: 1.12,
+      offLaneTendency: 0.6,
+      cutInAggression: 1,
+      lateralAccelMps2: 5
+    }),
+    // Assertive lane bullies.
+    suv: classRow({
+      massKg: 1950,
+      wheelbase: 2.8,
+      maxSteer: 0.56,
+      steerRate: 1.25,
+      acceleration: 2.6,
+      braking: 6.8,
+      tireGripMps2: 7.6,
+      speedFactor: 1.04,
+      offLaneTendency: 0.4,
+      cutInAggression: 0.75,
+      lateralAccelMps2: 4.2
+    }),
+    // Microbuses sweep wide and straddle lanes.
+    van: classRow({
+      massKg: 2300,
+      wheelbase: 3.2,
+      maxSteer: 0.52,
+      steerRate: 1.05,
+      acceleration: 2,
+      braking: 5.9,
+      tireGripMps2: 6.6,
+      speedFactor: 0.96,
+      offLaneTendency: 0.7,
+      cutInAggression: 0.5,
+      lateralAccelMps2: 3.6
+    }),
+    // Heavy freight: sluggish, wide arcs, long stopping distance.
+    truck: classRow({
+      massKg: TRUCK_SPEC.massKg,
+      wheelbase: TRUCK_SPEC.wheelbaseM,
+      maxSteer: TRUCK_SPEC.maxSteerRad,
+      steerRate: TRUCK_SPEC.steerRateRadS,
+      acceleration: TRUCK_SPEC.accelerationMps2,
+      braking: TRUCK_SPEC.brakingMps2,
+      tireGripMps2: TRUCK_SPEC.tireGripMps2,
+      speedFactor: TRUCK_SPEC.maxSpeedFactor,
+      offLaneTendency: 0.3,
+      cutInAggression: 0.15,
+      lateralAccelMps2: 2.2
+    })
+  });
+  var INTENSITY = Object.freeze({
+    normal: { trucks: 4, nearTrucks: 2, offLane: 0.35, interval: [15, 22], accidentCooldownS: 55, maxActive: 1 },
+    rush: { trucks: 5, nearTrucks: 3, offLane: 0.5, interval: [9, 15], accidentCooldownS: 38, maxActive: 2 },
+    max: { trucks: 6, nearTrucks: 3, offLane: 0.7, interval: [6, 10], accidentCooldownS: 26, maxActive: 3 }
+  });
+  var EVENT_LABEL = Object.freeze({
+    ghorz: "Ghorz cut-in",
+    "lane-change": "Sudden lane change",
+    accident: "Accident ahead"
+  });
+  var TICKS = (seconds2) => Math.round(seconds2 / STEP);
+  var RECENT_LIMIT = 12;
+  var NEAR_COMMAND_M = 115;
+  var originals = /* @__PURE__ */ new WeakMap();
+  var traits = /* @__PURE__ */ new WeakMap();
+  var maneuvers = /* @__PURE__ */ new WeakMap();
+  function classOfVehicle(actor) {
+    return VEHICLE_CLASS_DYNAMICS[actor?.kind] ? actor.kind : "sedan";
+  }
+  var PLANNED_TURN_RADIUS_M = 3.6;
+  function classSpec(kind, realistic = false) {
+    const row = VEHICLE_CLASS_DYNAMICS[kind] ?? VEHICLE_CLASS_DYNAMICS.sedan;
+    const routeLock = kind === "truck" ? 0 : Math.atan(row.wheelbase / PLANNED_TURN_RADIUS_M);
+    return {
+      wheelbase: row.wheelbase,
+      maxSteer: Math.max(row.maxSteer, routeLock),
+      steerRate: row.steerRate,
+      acceleration: row.acceleration,
+      braking: row.braking,
+      reverseSpeed: kind === "truck" ? 2 : 2.5,
+      tireGripMps2: row.tireGripMps2,
+      massKg: row.massKg,
+      realisticDynamics: realistic
+    };
+  }
+  function truckSpec() {
+    return {
+      realisticDynamics: true,
+      wheelbase: TRUCK_SPEC.wheelbaseM,
+      maxSteer: TRUCK_SPEC.maxSteerRad,
+      steerRate: TRUCK_SPEC.steerRateRadS,
+      acceleration: TRUCK_SPEC.accelerationMps2,
+      braking: TRUCK_SPEC.brakingMps2,
+      tireGripMps2: TRUCK_SPEC.tireGripMps2,
+      massKg: TRUCK_SPEC.massKg,
+      reverseSpeed: TRUCK_SPEC.reverseSpeedMps
+    };
+  }
+  function bodyExtentsOnLane(frame, body) {
+    const c = coordsOn(frame.road, frame.d, body);
+    const rel = (body.heading ?? 0) - frame.laneHeading;
+    const sn = Math.abs(Math.sin(rel));
+    const cs = Math.abs(Math.cos(rel));
+    const isPed = body.type === "pedestrian";
+    const length = isPed ? (body.radius ?? 0.4) * 2 : body.length ?? 4.2;
+    const width = isPed ? length : body.width ?? 1.85;
+    const hs = cs * length / 2 + sn * width / 2;
+    const hl = sn * length / 2 + cs * width / 2;
+    return { s: c.s, lat: c.lat, sMin: c.s - hs, sMax: c.s + hs, latMin: c.lat - hl, latMax: c.lat + hl };
+  }
+  function aheadRoomM(frame) {
+    return frame.d > 0 ? frame.road.max - frame.along : frame.along - frame.road.min;
+  }
+  function inJunctionZone(world, body, margin) {
+    const zones = world.district?.conflictZones;
+    if (!zones) return false;
+    const reach = Math.hypot(body.length ?? 4.2, body.width ?? 1.85) / 2 + margin;
+    for (let i = 0; i < zones.length; i++) {
+      const z = zones[i];
+      if (body.x > z.minX - reach && body.x < z.maxX + reach && body.z > z.minZ - reach && body.z < z.maxZ + reach)
+        return true;
+    }
+    return false;
+  }
+  function slotReason(world, body, {
+    actorGap = 2.4,
+    staticGap = 0.5,
+    minPlayerDistance = 16,
+    zoneMargin = 4,
+    roadMargin = 0.3,
+    ignore = null
+  } = {}) {
+    if (!bodyOnRoad(body, world.roads, roadMargin)) return "off-road";
+    if (zoneMargin >= 0 && inJunctionZone(world, body, zoneMargin)) return "junction";
+    const player = world.player;
+    if (Math.hypot(body.x - player.x, body.z - player.z) < minPlayerDistance) return "near-player";
+    if (overlaps(body, player, actorGap)) return "near-player";
+    for (let i = 0; i < world.actors.length; i++) {
+      const other = world.actors[i];
+      if (other === ignore) continue;
+      if (overlaps(body, other, other.type === "pedestrian" ? 0.1 : actorGap)) return other.type === "pedestrian" ? "pedestrian" : "traffic";
+    }
+    const statics = world.staticIndex.near(body, 14);
+    for (let i = 0; i < statics.length; i++) if (overlaps(body, statics[i], staticGap)) return "statics";
+    return null;
+  }
+  var slotFree = (world, body, options2) => slotReason(world, body, options2) === null;
+  function regionClear(world, frame, sMin, sMax, latMin, latMax, ignore = []) {
+    for (const actor of world.actors) {
+      if (actor === world.player || actor.type === "pedestrian" || ignore.includes(actor)) continue;
+      const e = bodyExtentsOnLane(frame, actor);
+      if (e.sMax > sMin && e.sMin < sMax && e.latMax > latMin && e.latMin < latMax) return false;
+    }
+    return true;
+  }
+  function staticsClear(world, frame, sMin, sMax, latMin, latMax) {
+    const mid = lanePoint2(frame.road, frame.d, (sMin + sMax) / 2, (latMin + latMax) / 2);
+    const near = world.staticIndex.near(mid, (sMax - sMin) / 2 + 30);
+    for (let i = 0; i < near.length; i++) {
+      const e = bodyExtentsOnLane(frame, near[i]);
+      if (e.sMax > sMin && e.sMin < sMax && e.latMax > latMin && e.latMin < latMax) return false;
+    }
+    return true;
+  }
+  function setActors(world, actors) {
+    world.actors = actors;
+    world.actorIndex = new SpatialIndex(world.actors);
+    world._queueActorsSourceLen = -1;
+  }
+  function addActor(world, actor) {
+    world.actors.push(actor);
+    world.actorIndex = new SpatialIndex(world.actors);
+    world._queueActorsSourceLen = -1;
+  }
+  function removeActors(world, predicate) {
+    if (!world.actors.some(predicate)) return 0;
+    const before = world.actors.length;
+    setActors(world, world.actors.filter((actor) => !predicate(actor)));
+    return before - world.actors.length;
+  }
+  function activeState(world) {
+    const state = world.streetChaos;
+    return state?.active ? state : null;
+  }
+  function accidentRouteLock(world, ego = world.player) {
+    const state = world.streetChaos?.active ? world.streetChaos : null;
+    if (!state) return null;
+    const acc = state.accident;
+    if (!acc) {
+      if (!state.pending.some((entry) => entry.kind === "accident")) return null;
+      if ((world.districtBehavior?.holds?.[ego.id]?.waitS ?? 0) > 6) return null;
+      const frame = laneFrame(world, ego, { minWidth: 9.5 });
+      if (!frame || aheadRoomM(frame) < 95) return null;
+      return { road: frame.road, d: frame.d, halfW: frame.halfW, laneOffset: frame.laneOffset, laneHeading: frame.laneHeading, sEgo: frame.s, sLimit: frame.s + 140 };
+    }
+    const here = coordsOn(acc.road, acc.d, ego);
+    if (Math.abs(here.lat) > acc.halfW || Math.abs(angleDelta(ego.heading, acc.laneHeading)) > 0.8) return null;
+    if (here.s > acc.sMax + 8) return null;
+    return { road: acc.road, d: acc.d, halfW: acc.halfW, laneOffset: acc.laneOffset, laneHeading: acc.laneHeading, sEgo: here.s, sLimit: acc.sMax + 10 };
+  }
+  function isStreetChaosAccidentActor(world, actor) {
+    const state = world?.streetChaos;
+    return Boolean(state?.active && actor && state.accidentActorIds.includes(actor.id));
+  }
+  var isChaosSpawn = (actor) => typeof actor.id === "string" && (actor.id.startsWith("chaos-truck-") || actor.id.startsWith("chaos-event-"));
+  function streetChaosActorNeedsCommand(world, actor) {
+    const state = activeState(world);
+    if (!state || actor.type !== "vehicle") return false;
+    if (maneuvers.has(actor) || actor.kind === "truck" || isChaosSpawn(actor)) return true;
+    const dx = actor.x - world.player.x;
+    const dz = actor.z - world.player.z;
+    return dx * dx + dz * dz <= 75 * 75;
+  }
+  function applyClassPhysics(actor) {
+    if (originals.has(actor) || actor.type !== "vehicle" || actor.id === "player" || actor.pursuitRole) return;
+    originals.set(actor, { spec: actor.spec, maxSpeed: actor.maxSpeed });
+    if (actor.kind === "truck" && actor.spec?.massKg === TRUCK_SPEC.massKg) return;
+    const cls = classOfVehicle(actor);
+    actor.spec = classSpec(cls, false);
+    actor.maxSpeed = actor.maxSpeed * VEHICLE_CLASS_DYNAMICS[cls].speedFactor;
+  }
+  function traitsOf(world, state, actor) {
+    let t = traits.get(actor);
+    if (t) return t;
+    const rng = new Random(`${state.seed}:${actor.id}`);
+    const cls = classOfVehicle(actor);
+    const row = VEHICLE_CLASS_DYNAMICS[cls];
+    const rate = INTENSITY[state.intensity].offLane * row.offLaneTendency;
+    const offLane = rng.next() < rate;
+    const magnitude = rng.range(0.7, 1.7) * (cls === "van" ? 1.15 : 1);
+    t = {
+      cls,
+      offLaneOffsetM: offLane ? rng.next() < 0.62 ? -magnitude : magnitude * 0.7 : 0,
+      wanderAmpM: offLane ? rng.range(0.25, 0.6) : 0,
+      wanderPeriodS: rng.range(6, 11),
+      wanderPhase: rng.range(0, Math.PI * 2),
+      bypass: null,
+      creepUntil: 0
+    };
+    traits.set(actor, t);
+    return t;
+  }
+  function makeTruck(world, state, id, frame, s, speed, path, lat = -frame.laneOffset) {
+    const pose5 = lanePoint2(frame.road, frame.d, s, lat);
+    const baseSpeed = world.config.speedLimit / 3.6;
+    return {
+      id,
+      type: "vehicle",
+      kind: "truck",
+      x: pose5.x,
+      z: pose5.z,
+      heading: frame.laneHeading,
+      speed,
+      steer: 0,
+      length: TRUCK_SPEC.lengthM,
+      width: TRUCK_SPEC.widthM,
+      spec: truckSpec(),
+      maxSpeed: baseSpeed * TRUCK_SPEC.maxSpeedFactor,
+      path,
+      cursor: 0,
+      distance: 0,
+      wait: 0,
+      reason: "ready",
+      phase: state.rng.next(),
+      reckless: false,
+      height: TRUCK_SPEC.heightM,
+      chaseSlipRad: 0,
+      district: {
+        profile: "cautious",
+        headwayS: 2.6,
+        nextLoadingDistanceM: Infinity,
+        loadingDurationS: 1,
+        loadingUntilTick: null,
+        reroutedTicket: null
+      }
+    };
+  }
+  var truckViewCache = /* @__PURE__ */ new WeakMap();
+  function streetChaosTruckView(world) {
+    const district = world.district;
+    let view = truckViewCache.get(district);
+    if (!view) {
+      view = { ...district, drivingRoads: district.drivingRoads.filter((road4) => road4.width >= 10 && !road4.parkingBay && !road4.supportApron) };
+      truckViewCache.set(district, view);
+    }
+    return view;
+  }
+  function wideAvenues(world) {
+    const all = streetChaosTruckView(world).drivingRoads.filter((road4) => road4.width >= 11);
+    const avenues = all.filter((road4) => road4.zone === "avenue");
+    return avenues.length ? avenues : all;
+  }
+  function trySpawnTruck(world, state, { near, minPlayerDistance = 16, minAheadM = 45 }) {
+    const rng = state.rng;
+    const ego = world.player;
+    const egoFrame = laneFrame(world, ego, { minWidth: 11 });
+    const roads = wideAvenues(world);
+    if (!roads.length) return null;
+    for (let attempt = 0; attempt < 90; attempt++) {
+      let frame;
+      let s;
+      if (near && egoFrame) {
+        frame = egoFrame;
+        s = egoFrame.s + minAheadM + rng.range(0, 40) + attempt * 2.5;
+      } else {
+        const road5 = rng.pick(roads);
+        const d = rng.next() < 0.5 ? 1 : -1;
+        const f = roadFrame(road5);
+        const base = { road: road5, d, laneOffset: road5.laneOffsetM ?? 2.6, laneHeading: d > 0 ? f.heading : normalizeAngle2(f.heading + Math.PI) };
+        const here = coordsOn(road5, d, ego);
+        s = here.s + rng.range(-230, 230);
+        frame = base;
+      }
+      const road4 = frame.road;
+      const along2 = frame.d * s;
+      if (along2 < road4.min + 30 || along2 > road4.max - 30) continue;
+      const room = frame.d > 0 ? road4.max - along2 : along2 - road4.min;
+      if (room < 110) continue;
+      const p = lanePoint2(road4, frame.d, s, -frame.laneOffset);
+      const body = {
+        type: "vehicle",
+        x: p.x,
+        z: p.z,
+        heading: frame.laneHeading,
+        length: TRUCK_SPEC.lengthM,
+        width: TRUCK_SPEC.widthM
+      };
+      if (!slotFree(world, body, { minPlayerDistance, actorGap: 3, zoneMargin: 6 })) continue;
+      const path = straightLanePath(frame, s, -frame.laneOffset, Math.min(380, room - 14));
+      if (!path.length) continue;
+      const truck = makeTruck(world, state, `chaos-truck-${++state.serial.truck}`, frame, s, 5.5, path);
+      originals.set(truck, { spec: truck.spec, maxSpeed: truck.maxSpeed });
+      return truck;
+    }
+    return null;
+  }
+  function trySpawnCloseTruck(world, state) {
+    const ego = world.player;
+    const ef = laneFrame(world, ego, { minWidth: 11 });
+    if (!ef) return null;
+    const f = roadFrame(ef.road);
+    const outerFreightLat = ef.halfW >= 6.6 ? -(ef.halfW - TRUCK_SPEC.widthM / 2 - 0.5) : null;
+    const candidates2 = outerFreightLat !== null ? [[ef.d, outerFreightLat], [-ef.d, -ef.laneOffset]] : [[-ef.d, -ef.laneOffset], [ef.d, -ef.laneOffset]];
+    for (const [d, lat] of candidates2) {
+      for (const ahead of [44, 48, 38, 52, 34, 56, 40, 30, 58, 27, 36, 46, 50, 32, 55]) {
+        const along2 = ef.along + ef.d * ahead;
+        const frame = {
+          road: ef.road,
+          d,
+          laneOffset: ef.laneOffset,
+          laneHeading: d > 0 ? f.heading : normalizeAngle2(f.heading + Math.PI)
+        };
+        const s = d * along2;
+        const room = d > 0 ? ef.road.max - along2 : along2 - ef.road.min;
+        if (along2 < ef.road.min + 20 || along2 > ef.road.max - 20 || room < 60) continue;
+        const p = lanePoint2(ef.road, d, s, lat);
+        const body = { type: "vehicle", x: p.x, z: p.z, heading: frame.laneHeading, length: TRUCK_SPEC.lengthM, width: TRUCK_SPEC.widthM };
+        if (!slotFree(world, body, { minPlayerDistance: 16, actorGap: 2.2, zoneMargin: 4 }) || !bodyOnRoad(body, world.roads, 0.15)) continue;
+        const path = straightLanePath(frame, s, lat, Math.min(380, room - 14));
+        if (!path.length) continue;
+        const truck = makeTruck(world, state, `chaos-truck-${++state.serial.truck}`, frame, s, d === ef.d ? 6.2 : 5.5, path, lat);
+        originals.set(truck, { spec: truck.spec, maxSpeed: truck.maxSpeed });
+        return truck;
+      }
+    }
+    return null;
+  }
+  function spawnChaosTrucks(world, state) {
+    const cfg = INTENSITY[state.intensity];
+    for (let i = 0; i < cfg.trucks; i++) {
+      const truck = (i === cfg.trucks - 1 ? trySpawnCloseTruck(world, state) : null) ?? trySpawnTruck(world, state, { near: i < cfg.nearTrucks, minAheadM: 40 + i * 42 });
+      if (!truck) continue;
+      world.actors.push(truck);
+      world.actorIndex = new SpatialIndex(world.actors);
+      state.trucks.push(truck);
+      traitsOf(world, state, truck);
+    }
+    world._queueActorsSourceLen = -1;
+  }
+  function makeEventVehicle(world, state, kind, frame, s, lat, speed, pathLenM) {
+    const p = lanePoint2(frame.road, frame.d, s, lat);
+    const car = world.makeVehicle(
+      `chaos-event-${++state.serial.temp}`,
+      kind,
+      { x: p.x, z: p.z, heading: frame.laneHeading },
+      state.rng
+    );
+    const cls = classOfVehicle(car);
+    originals.set(car, { spec: car.spec, maxSpeed: car.maxSpeed });
+    car.spec = classSpec(cls, false);
+    car.maxSpeed = world.config.speedLimit / 3.6 * (kind === "tuktuk" ? 0.7 : 1) * VEHICLE_CLASS_DYNAMICS[cls].speedFactor;
+    car.speed = speed;
+    car.reckless = false;
+    car.path = straightLanePath(frame, s, lat, pathLenM);
+    car.cursor = 0;
+    car.district = {
+      profile: "assertive",
+      headwayS: 1,
+      nextLoadingDistanceM: Infinity,
+      loadingDurationS: 1,
+      loadingUntilTick: null,
+      reroutedTicket: null
+    };
+    return car;
+  }
+  function beginStreetChaos(world, options2 = {}) {
+    if (world.environment !== "metro") throw new Error("Cairo Traffic is only available in City");
+    if (world.pursuit?.phase === "running") throw new Error("End Chase before starting Cairo Traffic");
+    const intensity = options2.intensity ?? "rush";
+    if (!CHAOS_INTENSITIES.includes(intensity)) throw new RangeError("Unknown Cairo Traffic intensity");
+    const requestedDriver = options2.driverMode ?? "auto";
+    if (requestedDriver !== "auto" && requestedDriver !== "manual") throw new RangeError("Unknown Cairo Traffic driver mode");
+    const existing = world.streetChaos;
+    if (existing?.active) {
+      existing.intensity = intensity;
+      existing.driverMode = requestedDriver;
+      world.mode = requestedDriver;
+      return existing;
+    }
+    const seed = `${world.config.seed}:street-chaos:${world.tick}:${intensity}`;
+    const cfg = INTENSITY[intensity];
+    const rng = new Random(seed);
+    const impacts = world.player.vehicle?.damage?.impactCount ?? 0;
+    const state = {
+      version: STREET_CHAOS_VERSION,
+      active: true,
+      intensity,
+      driverMode: requestedDriver,
+      disableDefensiveAvoidance: options2.disableDefensiveAvoidance === true,
+      previousMode: world.mode,
+      startedTick: world.tick,
+      seed,
+      rng,
+      nextEventTick: world.tick + TICKS(2.5 + rng.range(0, 1.5)),
+      nextAccidentTick: world.tick + TICKS(42),
+      serial: { event: 0, truck: 0, temp: 0, request: 0 },
+      events: [],
+      recent: [],
+      accident: null,
+      accidentActorIds: [],
+      trucks: [],
+      cleanup: [],
+      pending: [],
+      crashed: /* @__PURE__ */ new Set(),
+      managed: /* @__PURE__ */ new Set(),
+      nearMiss: /* @__PURE__ */ new Map(),
+      metrics: {
+        nearMissesAvoided: 0,
+        collisions: 0,
+        ghorzCount: 0,
+        laneCutCount: 0,
+        accidentCount: 0,
+        offLaneActiveCount: 0,
+        truckCount: 0,
+        distanceM: 0,
+        ticksActive: 0
+      },
+      baseImpacts: impacts,
+      lastImpacts: impacts,
+      startDistance: world.player.distance ?? 0,
+      egoReaction: null,
+      lastFailure: null,
+      nextRecycleTick: world.tick + TICKS(2),
+      request: null,
+      accidentRoles: {},
+      saved: {
+        path: world.player.path,
+        cursor: world.player.cursor,
+        parking: world.player.parking,
+        allowReroute: world.player.district?.allowReroute
+      }
+    };
+    world.streetChaos = state;
+    if (world.player.district) world.player.district.allowReroute = false;
+    world.mode = requestedDriver === "manual" ? "manual" : "auto";
+    for (const actor of world.actors) {
+      if (actor.type !== "vehicle" || actor === world.player) continue;
+      applyClassPhysics(actor);
+      traitsOf(world, state, actor);
+    }
+    spawnChaosTrucks(world, state);
+    state.metrics.truckCount = state.trucks.length;
+    return state;
+  }
+  function clearVisualDamage(actor) {
+    const entry = getPatrolVisualDamage(actor);
+    if (entry) entry.front = entry.rear = entry.left = entry.right = 0;
+  }
+  function endStreetChaos(world) {
+    const state = world.streetChaos;
+    if (!state?.active) return false;
+    for (const actor of state.managed) maneuvers.delete(actor);
+    state.managed.clear();
+    for (const actor of state.crashed) clearVisualDamage(actor);
+    state.crashed.clear();
+    removeActors(world, isChaosSpawn);
+    for (const actor of world.actors) {
+      const saved = originals.get(actor);
+      if (saved) {
+        actor.spec = saved.spec;
+        actor.maxSpeed = saved.maxSpeed;
+        originals.delete(actor);
+      }
+      const t = traits.get(actor);
+      if (t) t.bypass = null;
+      if (actor.type === "vehicle" && actor !== world.player) clearVisualDamage(actor);
+    }
+    state.events = [];
+    state.accident = null;
+    state.accidentActorIds = [];
+    state.trucks = [];
+    state.cleanup = [];
+    state.pending = [];
+    state.egoReaction = null;
+    state.request = null;
+    state.accidentRoles = {};
+    state.metrics.truckCount = 0;
+    state.active = false;
+    world.mode = state.previousMode === "auto" ? "auto" : "manual";
+    const player = world.player;
+    if (player.district) player.district.allowReroute = state.saved.allowReroute ?? true;
+    if (world.mode === "manual") {
+      player.path = [];
+      player.cursor = 0;
+      player.parking = null;
+    } else {
+      player.path = state.saved.path ?? [];
+      player.cursor = state.saved.cursor ?? 0;
+      player.parking = state.saved.parking ?? null;
+    }
+    world.routeRevision++;
+    world.actorIndex = new SpatialIndex(world.actors);
+    world._queueActorsSourceLen = -1;
+    return true;
+  }
+  function setStreetChaosDriver(world, mode) {
+    const state = activeState(world);
+    if (!state) throw new Error("Start Cairo Traffic first");
+    if (mode !== "auto" && mode !== "manual") throw new RangeError("Unknown Cairo Traffic driver mode");
+    state.driverMode = mode;
+    world.mode = mode;
+    if (mode === "manual") state.egoReaction = null;
+    return state;
+  }
+  var describe = (rejected) => Object.entries(rejected).map(([k, v]) => k + ":" + v).join(", ");
+  var fail = (state, reason) => {
+    state.lastFailure = reason;
+    return null;
+  };
+  function egoFrameOf(world, minWidth = 9.5) {
+    return laneFrame(world, world.player, { minWidth });
+  }
+  function registerManeuver(state, actor, man) {
+    maneuvers.set(actor, man);
+    state.managed.add(actor);
+  }
+  function newEvent(world, state, kind, actorIds, extra = {}) {
+    const event2 = {
+      id: `evt-${++state.serial.event}`,
+      kind,
+      label: EVENT_LABEL[kind],
+      phase: "start",
+      startTick: world.tick,
+      endTick: null,
+      outcome: null,
+      actorIds,
+      tempIds: [],
+      ...extra
+    };
+    state.events.push(event2);
+    if (kind === "ghorz") state.metrics.ghorzCount++;
+    else if (kind === "lane-change") state.metrics.laneCutCount++;
+    else state.metrics.accidentCount++;
+    return event2;
+  }
+  function actorById(world, id) {
+    return world.actors.find((actor) => actor.id === id) ?? null;
+  }
+  function rebaseOnLane(world, actor) {
+    if (!actor) return;
+    const frame = laneFrame(world, actor, { maxPsi: 1 });
+    if (!frame) return;
+    const room = frame.d > 0 ? frame.road.max - frame.along : frame.along - frame.road.min;
+    const path = straightLanePath(frame, frame.s + 1, -frame.laneOffset, Math.min(260, room - 24));
+    if (!path.length) return;
+    actor.path = path;
+    actor.cursor = 0;
+  }
+  function finishEvent(world, state, event2, outcome) {
+    if (event2.endTick != null) return;
+    event2.phase = outcome === "completed" || outcome === "aborted" ? outcome : "done";
+    event2.outcome = outcome;
+    event2.endTick = world.tick;
+    const request = event2.request;
+    if (outcome === "aborted" && event2.kind === "ghorz" && request && (request.retries ?? 0) < 2 && state.active) {
+      request.retries = (request.retries ?? 0) + 1;
+      state.pending.push({ kind: "ghorz", request, untilTick: world.tick + PENDING_WINDOW_TICKS, nextTick: world.tick + TICKS(2), reason: "ghorz: retrying" });
+      state.request = { ...state.request, ...state.request?.id === request.id ? { status: "pending", reason: friendlyReason("ghorz: retrying") } : {} };
+    }
+    if (outcome === "no-impact" && event2.kind === "accident" && request && (request.retries ?? 0) < 2 && state.active) {
+      request.retries = (request.retries ?? 0) + 1;
+      state.pending.push({ kind: "accident", request, untilTick: world.tick + PENDING_WINDOW_TICKS, nextTick: world.tick + TICKS(1), reason: "accident: retrying" });
+      state.request = { ...state.request, ...state.request?.id === request.id ? { status: "pending", reason: friendlyReason("accident: retrying") } : {} };
+    }
+    for (const id of event2.actorIds) {
+      const actor = actorById(world, id);
+      if (!actor) continue;
+      maneuvers.delete(actor);
+      state.managed.delete(actor);
+    }
+    for (const id of event2.tempIds) {
+      rebaseOnLane(world, actorById(world, id));
+      state.cleanup.push({ id, afterTick: world.tick + TICKS(5), minDistanceM: 85 });
+    }
+    state.events = state.events.filter((candidate) => candidate !== event2);
+    state.recent.unshift({
+      id: event2.id,
+      kind: event2.kind,
+      label: event2.label,
+      startTick: event2.startTick,
+      endTick: event2.endTick,
+      outcome,
+      actorIds: [...event2.actorIds]
+    });
+    if (state.recent.length > RECENT_LIMIT) state.recent.length = RECENT_LIMIT;
+    if (event2.kind === "accident") {
+      state.accident = null;
+      state.accidentActorIds = [];
+    }
+  }
+  var MIN_PASS_MARGIN_M = 1.25;
+  function passLaneFor(ef, ego, actor, side = "outer") {
+    const half = (actor.width ?? 1.85) / 2;
+    const egoHalf = (ego.width ?? 1.85) / 2;
+    const wanted = egoHalf + half + MIN_PASS_MARGIN_M;
+    if (side === "outer") {
+      const lat2 = Math.max(ef.lat - wanted, -(ef.halfW - half - 0.3));
+      return ef.lat - lat2 >= egoHalf + half + 0.6 ? lat2 : null;
+    }
+    const lat = Math.min(ef.lat + wanted, 1 - half);
+    return lat - ef.lat >= egoHalf + half + 0.6 ? lat : null;
+  }
+  function pedestrianIn(world, frame, sMin, sMax, latMin, latMax) {
+    latMin = Math.max(latMin, -(frame.halfW + 0.2));
+    for (const actor of world.actors) {
+      if (actor.type !== "pedestrian") continue;
+      const e = bodyExtentsOnLane(frame, actor);
+      if (e.sMax > sMin && e.sMin < sMax && e.latMax > latMin && e.latMin < latMax) return true;
+    }
+    return false;
+  }
+  function pickPassSide(world, ef, ego, actor, sStart, ignore = []) {
+    const lookahead = world.mode === "auto" ? 58 : 32;
+    for (const side of ["outer", "inner"]) {
+      const lat = passLaneFor(ef, ego, actor, side);
+      if (lat === null) continue;
+      const reach = side === "outer" ? [lat - 1.2, lat + 1.2] : [lat - 1.2, 3.9];
+      if (!staticsClear(world, ef, sStart - 3, ef.s + (world.mode === "auto" ? 42 : 24), lat - 1.2, lat + 1.2)) continue;
+      if (!regionClear(world, ef, sStart - 3, ef.s + lookahead, reach[0], reach[1], ignore)) continue;
+      return { side, lat };
+    }
+    return null;
+  }
+  function ghorzCandidate(world, ef) {
+    const ego = world.player;
+    let best = null;
+    let bestScore = Infinity;
+    for (const actor of world.actors) {
+      if (actor === ego || actor.type !== "vehicle" || maneuvers.has(actor) || isChaosSpawn(actor)) continue;
+      if (actor.kind !== "sedan" && actor.kind !== "taxi" && actor.kind !== "tuktuk") continue;
+      if (actor.speed < 1) continue;
+      const c = coordsOn(ef.road, ef.d, actor);
+      const back = ef.s - c.s;
+      if (back < 9 || back > 44 || c.lat > -0.4 || c.lat < -ef.halfW) continue;
+      if (Math.abs(angleDelta(actor.heading, ef.laneHeading)) > 0.2) continue;
+      if (!pickPassSide(world, ef, ego, actor, c.s, [actor])) continue;
+      const score = Math.abs(back - 20) + Math.abs(c.lat - ef.lat) * 2;
+      if (score < bestScore) {
+        best = actor;
+        bestScore = score;
+      }
+    }
+    return best;
+  }
+  function startGhorz(world, state) {
+    const ego = world.player;
+    if (world.mode === "auto" && (ego.speed ?? 0) < 1.4) return fail(state, "ghorz: waiting for car to pick up speed");
+    const ef = egoFrameOf(world);
+    if (!ef) return fail(state, "ghorz: player is not on a wide avenue");
+    const runway = clamp((ego.speed ?? 0) * 3.6 + 10, 30, 52);
+    if (zoneAheadM(world, ef, ef.s) < runway) return fail(state, `ghorz: junction too close ahead (${Math.round(zoneAheadM(world, ef, ef.s))} m < ${Math.round(runway)} m)`);
+    let weaver = ghorzCandidate(world, ef);
+    const adopted = Boolean(weaver);
+    let passSide = adopted ? pickPassSide(world, ef, ego, weaver, coordsOn(ef.road, ef.d, weaver).s, [weaver])?.side ?? "outer" : "outer";
+    if (!weaver) {
+      const kinds2 = (ego.speed ?? 0) > 6 ? ["taxi", "sedan"] : ["taxi", "sedan", "tuktuk"];
+      const kind = state.rng.pick(kinds2);
+      const speed = clamp((ego.speed ?? 0) + 3, 4, 12);
+      const width = kind === "tuktuk" ? 1.5 : 1.85;
+      const length = kind === "tuktuk" ? 2.9 : 4.2;
+      const slotNotes = {};
+      for (const [back, zoneMargin] of [[14, 3], [16, 3], [12, 3], [11, 3], [22, 3], [28, 3], [10, 0.5], [9.5, 0.5]]) {
+        const s = ef.s - back;
+        if (aheadRoomM(ef) < Math.max(48, runway) || (ef.d > 0 ? ef.along - ef.road.min : ef.road.max - ef.along) < back + 6) {
+          slotNotes.room = (slotNotes.room ?? 0) + 1;
+          continue;
+        }
+        const pass = pickPassSide(world, ef, ego, { width }, s);
+        if (!pass) {
+          slotNotes.pass = (slotNotes.pass ?? 0) + 1;
+          continue;
+        }
+        if (pedestrianIn(world, ef, s - 3, ef.s + 28, pass.lat - 1.4, pass.lat + 1.4)) {
+          slotNotes.ped = (slotNotes.ped ?? 0) + 1;
+          continue;
+        }
+        const p = lanePoint2(ef.road, ef.d, s, pass.lat);
+        const body = { type: "vehicle", x: p.x, z: p.z, heading: ef.laneHeading, length, width };
+        const why = slotReason(world, body, { minPlayerDistance: 9.4, actorGap: 1.6, zoneMargin });
+        if (why) {
+          slotNotes[why] = (slotNotes[why] ?? 0) + 1;
+          continue;
+        }
+        weaver = makeEventVehicle(world, state, kind, ef, s, pass.lat, speed, 320);
+        passSide = pass.side;
+        break;
+      }
+      if (!weaver) return fail(state, `ghorz: no clear slot behind the player (${describe(slotNotes)})`);
+      addActor(world, weaver);
+    }
+    const aggression = VEHICLE_CLASS_DYNAMICS[classOfVehicle(weaver)].cutInAggression;
+    const event2 = newEvent(world, state, "ghorz", [weaver.id], { adopted, phase: "approach" });
+    if (!adopted) event2.tempIds.push(weaver.id);
+    applyClassPhysics(weaver);
+    registerManeuver(state, weaver, {
+      event: event2,
+      kind: "ghorz",
+      role: "weaver",
+      phase: "approach",
+      startTick: world.tick,
+      phaseTick: world.tick,
+      cutGapM: state.rng.range(3, 5),
+      surgeMps: state.rng.range(4.2, 5),
+      aggression,
+      retried: false,
+      cutCompleted: false,
+      done: false,
+      side: passSide,
+      cutLat: 0,
+      lastPass: null,
+      stallTicks: 0,
+      zoneTick: -99,
+      zoneAheadM: Infinity
+    });
+    return event2;
+  }
+  function laneChangeCandidate(world, ef) {
+    const ego = world.player;
+    let best = null;
+    let bestScore = Infinity;
+    for (const actor of world.actors) {
+      if (actor === ego || actor.type !== "vehicle" || maneuvers.has(actor) || isChaosSpawn(actor)) continue;
+      if (!["taxi", "van", "suv", "sedan"].includes(actor.kind) || actor.speed < 2) continue;
+      const c = coordsOn(ef.road, ef.d, actor);
+      const ahead = c.s - ef.s;
+      const apart = Math.abs(c.lat - ef.lat);
+      if (ahead < 8 || ahead > 28 || apart < 1.9 || apart > 5 || c.lat > -0.4 || c.lat < -ef.halfW) continue;
+      if (zoneAheadM(world, ef, c.s) < 26) continue;
+      if (Math.abs(angleDelta(actor.heading, ef.laneHeading)) > 0.12) continue;
+      const score = Math.abs(ahead - 17) + apart;
+      if (score < bestScore) {
+        best = actor;
+        bestScore = score;
+      }
+    }
+    return best;
+  }
+  function startLaneChange(world, state) {
+    const ego = world.player;
+    const ef = egoFrameOf(world);
+    if (!ef) return fail(state, "lane-change: player is not on a wide avenue");
+    let cutter = laneChangeCandidate(world, ef);
+    const adopted = Boolean(cutter);
+    if (!cutter) {
+      const kind = state.rng.pick(["taxi", "van", "suv", "sedan"]);
+      const width = 1.85;
+      const sep = (ego.width ?? 1.85) / 2 + width / 2 + 0.7;
+      const sides = [ef.lat - sep, ef.lat + sep].filter((lat) => lat - width / 2 - 0.3 >= -ef.halfW && lat + width / 2 <= 1.05);
+      const speed = clamp((ego.speed ?? 0) * 0.96, 4, 11);
+      const rejected = { sides: sides.length };
+      const note = (key3) => {
+        rejected[key3] = (rejected[key3] ?? 0) + 1;
+      };
+      for (const ahead of [21, 16, 26, 12, 19]) {
+        for (const lat of sides) {
+          const s = ef.s + ahead;
+          const p = lanePoint2(ef.road, ef.d, s, lat);
+          const body = { type: "vehicle", x: p.x, z: p.z, heading: ef.laneHeading, length: 4.2, width };
+          const why = slotReason(world, body, { minPlayerDistance: 9, actorGap: 1.6, zoneMargin: 3 });
+          if (why) {
+            note(why);
+            continue;
+          }
+          if (!staticsClear(world, ef, ef.s, s + 16, Math.min(lat, ef.lat) - 1.2, Math.max(lat, ef.lat) + 1.2)) {
+            note("lane-statics");
+            continue;
+          }
+          if (lat > ef.lat && !regionClear(world, ef, s - 6, s + 26, lat - 1.2, 3.9)) {
+            note("oncoming");
+            continue;
+          }
+          if (aheadRoomM(ef) < ahead + 90) {
+            note("road-end");
+            continue;
+          }
+          if (zoneAheadM(world, ef, s) < 26) {
+            note("junction");
+            continue;
+          }
+          cutter = makeEventVehicle(world, state, kind, ef, s, lat, speed, 300);
+          break;
+        }
+        if (cutter) break;
+      }
+      if (!cutter) return fail(state, `lane-change: no clear slot ahead of the player (${describe(rejected)})`);
+      addActor(world, cutter);
+    }
+    const event2 = newEvent(world, state, "lane-change", [cutter.id], { adopted, phase: "hold" });
+    if (!adopted) event2.tempIds.push(cutter.id);
+    applyClassPhysics(cutter);
+    registerManeuver(state, cutter, {
+      event: event2,
+      kind: "lane-change",
+      role: "cutter",
+      phase: "hold",
+      startTick: world.tick,
+      phaseTick: world.tick,
+      holdTicks: TICKS(state.rng.range(0.5, 1.1)),
+      originLat: coordsOn(ef.road, ef.d, cutter).lat,
+      done: false,
+      cutCompleted: false,
+      cutLat: 0,
+      zoneTick: -99,
+      zoneAheadM: Infinity
+    });
+    return event2;
+  }
+  var ACCIDENT_AHEAD_M = Object.freeze(Array.from({ length: 27 }, (_, i) => 28 + i).sort((a, b) => Math.abs(a - 40) - Math.abs(b - 40)));
+  var WRECK_CLEARANCE_M = 3.45;
+  var WRECK_HALF_EXTENT_M = 1.4;
+  function startAccident(world, state) {
+    const ego = world.player;
+    const ef = egoFrameOf(world, 12.4);
+    if (!ef) return fail(state, "accident: player is not on a wide avenue");
+    if (state.accident) return fail(state, "accident: one is already active");
+    const egoZoneAhead = zoneAheadM(world, ef, ef.s);
+    const kinds2 = ["taxi", "sedan", "suv", "van"];
+    const leadKind = state.rng.pick(kinds2);
+    const followKind = state.rng.pick(kinds2);
+    const lead = { length: 4.2, width: 1.85 };
+    const room = aheadRoomM(ef);
+    const speedL = state.rng.range(8.2, 9.2);
+    const speedF = speedL + 1.4;
+    const reactS = state.rng.range(0.34, 0.46);
+    const brakeL = VEHICLE_CLASS_DYNAMICS[leadKind].braking;
+    const brakeF = VEHICLE_CLASS_DYNAMICS[followKind].braking;
+    const needed = speedF * reactS + speedF * speedF / (2 * brakeF) - speedL * speedL / (2 * brakeL);
+    const gapM = Math.max(2, needed - state.rng.range(1.7, 2.3));
+    const wreckLat = {
+      // The wreck sits toward the centre line and the bypass runs along the kerb side, or the reverse.
+      // The skid pulls the lead about 0.35 m toward the centre line, so start that much further out.
+      inner: -(ef.halfW - WRECK_CLEARANCE_M - WRECK_HALF_EXTENT_M) - 0.35,
+      // Outer: near the kerb side (1.0 m skid guard keeps lead strictly on-road) so inner bypass stays >= 3.4 m wide.
+      outer: -(ef.halfW - 2.35)
+    };
+    const levels = [
+      { zoneMargin: 10, approachM: 28 },
+      { zoneMargin: 6, approachM: 28 },
+      { zoneMargin: 3, approachM: 28 },
+      { zoneMargin: 0.5, approachM: 28 }
+    ];
+    let site = null;
+    const rejected = { room: 0 };
+    search: for (const level of levels) {
+      for (const variant of ["inner", "outer"]) {
+        const latW = wreckLat[variant];
+        for (const ahead of ACCIDENT_AHEAD_M) {
+          const sL = ef.s + ahead;
+          const sF = sL - (lead.length / 2 + 2.1 + gapM);
+          if (room < ahead + 34) {
+            rejected.room++;
+            continue;
+          }
+          if (egoZoneAhead < ahead + 9) {
+            rejected.junction_between = (rejected.junction_between ?? 0) + 1;
+            continue;
+          }
+          const pl = lanePoint2(ef.road, ef.d, sL, latW);
+          const pf = lanePoint2(ef.road, ef.d, sF, latW);
+          const bodyL = { type: "vehicle", x: pl.x, z: pl.z, heading: ef.laneHeading, length: 4.2, width: 1.85 };
+          const bodyF = { type: "vehicle", x: pf.x, z: pf.z, heading: ef.laneHeading, length: 4.2, width: 1.85 };
+          const opts = { minPlayerDistance: 22, actorGap: 1.4, zoneMargin: level.zoneMargin, roadMargin: 0.2 };
+          const why = slotReason(world, bodyL, opts) ?? slotReason(world, bodyF, opts);
+          if (why) {
+            rejected[why] = (rejected[why] ?? 0) + 1;
+            continue;
+          }
+          const pr = lanePoint2(ef.road, ef.d, sL + 7, latW);
+          if (inJunctionZone(world, { x: pr.x, z: pr.z, length: 4.2, width: 1.85 }, level.zoneMargin)) {
+            rejected.wreck_junction = (rejected.wreck_junction ?? 0) + 1;
+            continue;
+          }
+          if (pedestrianIn(world, ef, sF - 4, sL + 10, latW - 1.3, latW + 1.3)) {
+            rejected.pedestrian = (rejected.pedestrian ?? 0) + 1;
+            continue;
+          }
+          const truckInCorridor = state.trucks.some((truck) => {
+            const tc = coordsOn(ef.road, ef.d, truck);
+            return tc.s > ef.s - 2 && tc.s < sL + 12 && tc.lat < -0.2 && tc.lat > -ef.halfW - 0.5;
+          });
+          if (truckInCorridor) {
+            rejected.truck = (rejected.truck ?? 0) + 1;
+            continue;
+          }
+          if (!regionClear(world, ef, sF - 4, sL + 7, -ef.halfW, -0.2)) {
+            rejected.region = (rejected.region ?? 0) + 1;
+            continue;
+          }
+          const bypassBand = variant === "inner" ? [-ef.halfW, latW - 1.2] : [latW + 1.2, -0.2];
+          if (!staticsClear(world, ef, sF - 1, sL + 9, latW - 1.6, latW + 1.6) || !staticsClear(world, ef, sF - level.approachM, sL + 12, bypassBand[0], bypassBand[1])) {
+            rejected.wreck_statics = (rejected.wreck_statics ?? 0) + 1;
+            continue;
+          }
+          site = { sL, sF, latW, variant };
+          break search;
+        }
+      }
+    }
+    if (site) {
+      const { sL, sF, latW, variant } = site;
+      const leadCar = makeEventVehicle(world, state, leadKind, ef, sL, latW, speedL, 260);
+      const followCar = makeEventVehicle(world, state, followKind, ef, sF, latW, speedF, 260);
+      addActor(world, leadCar);
+      addActor(world, followCar);
+      const event2 = newEvent(world, state, "accident", [leadCar.id, followCar.id], { phase: "braking", impactTick: null });
+      event2.tempIds.push(leadCar.id, followCar.id);
+      state.accident = {
+        eventId: event2.id,
+        variant,
+        road: ef.road,
+        d: ef.d,
+        latW,
+        halfW: ef.halfW,
+        laneHeading: ef.laneHeading,
+        laneOffset: ef.laneOffset,
+        frame: ef,
+        sMin: sL - 3,
+        sMax: sL + 8,
+        latMin: latW - 1.5,
+        latMax: latW + 1.5,
+        formed: false,
+        clearTick: null,
+        leadId: leadCar.id,
+        followId: followCar.id
+      };
+      registerManeuver(state, leadCar, {
+        event: event2,
+        kind: "accident",
+        role: "lead",
+        phase: "brake",
+        startTick: world.tick,
+        phaseTick: world.tick,
+        latW,
+        skewTarget: state.rng.range(0.31, 0.42),
+        skewSign: variant === "inner" ? 1 : -1,
+        done: false
+      });
+      registerManeuver(state, followCar, {
+        event: event2,
+        kind: "accident",
+        role: "follower",
+        phase: "unaware",
+        startTick: world.tick,
+        phaseTick: world.tick,
+        reactTicks: TICKS(reactS),
+        latW,
+        cruiseSpeed: speedF,
+        done: false
+      });
+      return event2;
+    }
+    return fail(state, `accident: no clear stretch ahead of the player (${Object.entries(rejected).map(([k, v]) => k + ":" + v).join(", ")})`);
+  }
+  var PENDING_WINDOW_TICKS = TICKS(30);
+  function friendlyReason(raw) {
+    if (!raw) return null;
+    if (raw.includes("already active")) return "Accident already active";
+    if (raw.includes("not on a wide avenue")) return "Drive onto a wide avenue first";
+    if (raw.includes("junction too close")) return "Waiting for clear straight road ahead";
+    if (raw.startsWith("ghorz")) return "Waiting for a clear gap beside the car";
+    if (raw.startsWith("lane-change")) return "Waiting for a clear gap ahead";
+    if (raw.startsWith("accident")) return "Waiting for a clear stretch of road ahead";
+    return "Waiting for clear road";
+  }
+  function setRequest(state, request, status, raw, tick, untilTick = null) {
+    state.request = {
+      id: request.id,
+      kind: request.kind,
+      status,
+      reason: friendlyReason(raw),
+      debugReason: raw ?? null,
+      atTick: request.atTick ?? tick,
+      untilTick
+    };
+  }
+  function triggerStreetChaosEvent(world, kind) {
+    const state = activeState(world);
+    if (!state) throw new Error("Start Cairo Traffic first");
+    if (!CHAOS_EVENT_KINDS.includes(kind)) throw new RangeError("Unknown Cairo Traffic event");
+    state.lastFailure = null;
+    const request = { id: `req-${++state.serial.request}`, kind, atTick: world.tick };
+    if (kind === "accident" && (state.accident || state.pending.some((entry2) => entry2.kind === "accident"))) {
+      setRequest(state, request, "rejected", "Accident already active", world.tick);
+      return null;
+    }
+    const event2 = startEvent(world, state, kind);
+    if (event2) {
+      event2.request = request;
+      setRequest(state, request, "started", null, world.tick);
+      return eventSummary(world, event2);
+    }
+    const until = world.tick + PENDING_WINDOW_TICKS;
+    const entry = state.pending.find((candidate) => candidate.kind === kind);
+    if (entry) {
+      Object.assign(entry, { request, untilTick: until, nextTick: world.tick + 6, reason: state.lastFailure });
+    } else state.pending.push({ kind, request, untilTick: until, nextTick: world.tick + 6, reason: state.lastFailure });
+    setRequest(state, request, "pending", state.lastFailure, world.tick, until);
+    return { id: null, kind, label: EVENT_LABEL[kind], phase: "pending", startTick: world.tick, actorIds: [], adopted: false, pending: true };
+  }
+  function startEvent(world, state, kind) {
+    return kind === "ghorz" ? startGhorz(world, state) : kind === "lane-change" ? startLaneChange(world, state) : startAccident(world, state);
+  }
+  function retryPending(world, state) {
+    if (!state.pending.length) return;
+    const ego = world.player;
+    const parked = (ego.speed ?? 0) < 0.5 && Boolean(world.districtBehavior?.holds?.[ego.id]) || (ego.speed ?? 0) < 2.5;
+    state.pending = state.pending.filter((entry) => {
+      if (parked) entry.untilTick++;
+      if (world.tick < entry.nextTick) return true;
+      entry.nextTick = world.tick + 6;
+      state.lastFailure = null;
+      const current = state.request?.id === entry.request.id;
+      const started = startEvent(world, state, entry.kind);
+      if (started) started.request = entry.request;
+      if (started) {
+        if (current) setRequest(state, entry.request, "started", null, world.tick);
+        return false;
+      }
+      entry.reason = state.lastFailure;
+      if (world.tick >= entry.untilTick) {
+        if (current) setRequest(state, entry.request, "expired", entry.reason, world.tick);
+        return false;
+      }
+      if (current) setRequest(state, entry.request, "pending", entry.reason, world.tick, entry.untilTick);
+      return true;
+    });
+  }
+  function eventSummary(world, event2) {
+    const ids = event2.actorIds;
+    return {
+      id: event2.id,
+      kind: event2.kind,
+      label: event2.label,
+      phase: event2.phase,
+      startTick: event2.startTick,
+      actorIds: [...ids],
+      adopted: event2.adopted ?? false
+    };
+  }
+  function latSteer(actor, frame, latTarget, { maxPsi = 0.2, lookahead } = {}) {
+    const wheelbase = actor.spec?.wheelbase ?? VEHICLE.wheelbase;
+    const v = Math.max(actor.speed ?? 0, 0);
+    const L = lookahead ?? clamp(4 + 0.55 * v, 5, 12);
+    const err = latTarget - frame.lat;
+    const psiDes = clamp(Math.atan2(err, L), -maxPsi, maxPsi);
+    const alpha = psiDes - frame.psi;
+    let steer = Math.atan2(2 * wheelbase * Math.sin(alpha), L);
+    const aLat = VEHICLE_CLASS_DYNAMICS[classOfVehicle(actor)].lateralAccelMps2;
+    const limit = Math.atan(aLat * wheelbase / Math.max(v * v, 4));
+    return clamp(steer, -limit, limit);
+  }
+  function chaosCommand(base, steer, targetSpeed, reason, pipeline, usePlannedPath = false) {
+    return {
+      ...base,
+      steer,
+      targetSpeed: Math.max(0, targetSpeed),
+      reason,
+      blockedBy: null,
+      chaosPipeline: pipeline,
+      usePlannedPath
+    };
+  }
+  function egoOn(frame, ego) {
+    const c = coordsOn(frame.road, frame.d, ego);
+    const aligned = Math.abs(angleDelta(ego.heading, frame.laneHeading)) < 0.9;
+    const onRoad2 = Math.abs(c.lat) <= frame.halfW + 0.5;
+    return { ...c, aligned, onRoad: onRoad2, v: Math.max(ego.speed ?? 0, 0) };
+  }
+  function setPhase(man, phase, tick) {
+    man.phase = phase;
+    man.phaseTick = tick;
+    man.event.phase = phase;
+  }
+  function driveWeaver(world, state, actor, man, base) {
+    const ego = world.player;
+    const wf = laneFrame(world, actor, { maxPsi: 1 });
+    if (!wf || world.tick - man.startTick > TICKS(26)) {
+      man.done = true;
+      return null;
+    }
+    const e = egoOn(wf, ego);
+    const tick = world.tick;
+    if ((!e.aligned || !e.onRoad) && man.phase !== "rejoin") setPhase(man, "rejoin", tick);
+    if (tick - man.zoneTick >= 5) {
+      man.zoneTick = tick;
+      man.zoneAheadM = zoneAheadM(world, wf, wf.s);
+    }
+    const passing = man.phase === "approach" || man.phase === "abort";
+    if (man.zoneAheadM < 9 && passing) setPhase(man, "rejoin", tick);
+    man.stallTicks = actor.speed < 0.8 && passing ? man.stallTicks + 1 : 0;
+    if (man.stallTicks > TICKS(2.5)) setPhase(man, "rejoin", tick);
+    const bumperGap = wf.s - (actor.length ?? 4.2) / 2 - (e.s + (ego.length ?? 4.2) / 2);
+    const latPass = passLaneFor({ lat: e.lat, halfW: wf.halfW }, ego, actor, man.side) ?? man.lastPass ?? wf.lat;
+    man.lastPass = latPass;
+    const laneCenter = -wf.laneOffset;
+    const maxSpeed = actor.maxSpeed;
+    let latTarget = latPass;
+    let speed = Math.min(maxSpeed, Math.max(e.v + man.surgeMps, 6));
+    let maxPsi = 0.16;
+    switch (man.phase) {
+      case "approach": {
+        if (bumperGap >= man.cutGapM && man.zoneAheadM >= 14) {
+          man.cutLat = clamp(e.lat, -(wf.halfW - (actor.width ?? 1.85) / 2 - 0.3), -0.3 - (actor.width ?? 1.85) / 2);
+          setPhase(man, "cut", tick);
+        } else if (tick - man.startTick > TICKS(13)) setPhase(man, "rejoin", tick);
+        break;
+      }
+      case "cut":
+      case "settle": {
+        latTarget = man.cutLat;
+        maxPsi = 0.3 * (0.6 + 0.4 * man.aggression);
+        const lateralGap = Math.abs(wf.lat - man.cutLat);
+        const sideBySide = ((actor.width ?? 1.85) + (ego.width ?? 1.85)) / 2 + 0.6;
+        const closeAhead = bumperGap < 2 && Math.abs(wf.lat - e.lat) < sideBySide + 0.3;
+        if (man.phase === "cut" && closeAhead && !man.cutCompleted) {
+          setPhase(man, "abort", tick);
+          latTarget = latPass;
+          break;
+        }
+        speed = Math.max(e.v + 1.2, Math.min(speed, maxSpeed * 0.95));
+        if (man.phase === "cut" && lateralGap < 0.45 && Math.abs(wf.psi) < 0.1) {
+          man.cutCompleted = true;
+          setPhase(man, "settle", tick);
+        }
+        if (man.phase === "settle") {
+          speed = e.v + clamp((bumperGap - 3.5) * 0.7, -2.5, 2.5);
+          if (bumperGap < 3) speed = Math.max(speed, e.v + 1.5);
+          if (tick - man.phaseTick > TICKS(2.6)) setPhase(man, "rejoin", tick);
+        }
+        break;
+      }
+      case "abort": {
+        latTarget = latPass;
+        speed = Math.min(maxSpeed, e.v + 4.5);
+        if (Math.abs(wf.lat - latPass) < 0.8 || bumperGap > 6.5) {
+          if (!man.retried) {
+            man.retried = true;
+            man.cutGapM += 2;
+            setPhase(man, "approach", tick);
+          } else setPhase(man, "rejoin", tick);
+        }
+        break;
+      }
+      default: {
+        latTarget = laneCenter;
+        speed = Math.min(maxSpeed, Math.max(e.v, 5));
+        if (e.aligned && bumperGap < 8 && bumperGap > -6 && Math.abs(wf.lat - e.lat) < 2.8) speed = Math.max(e.v + 0.3, speed * 0.8);
+        if (Math.abs(wf.lat - laneCenter) < 0.45 && Math.abs(wf.psi) < 0.07) man.done = true;
+        maxPsi = 0.14;
+      }
+    }
+    const steer = latSteer(actor, wf, latTarget, { maxPsi });
+    const settled = man.phase === "settle" || man.phase === "rejoin";
+    return chaosCommand(base, steer, speed, `ghorz-${man.phase}`, settled ? "district" : "safe");
+  }
+  function driveCutter(world, state, actor, man, base) {
+    const ego = world.player;
+    const wf = laneFrame(world, actor, { maxPsi: 1 });
+    if (!wf || world.tick - man.startTick > TICKS(22)) {
+      man.done = true;
+      return null;
+    }
+    const e = egoOn(wf, ego);
+    const tick = world.tick;
+    if ((!e.aligned || !e.onRoad) && man.phase !== "rejoin") setPhase(man, "rejoin", tick);
+    const aheadGap = wf.s - e.s - ((actor.length ?? 4.2) + (ego.length ?? 4.2)) / 2;
+    const laneCenter = -wf.laneOffset;
+    let latTarget = wf.lat;
+    let speed = Math.max(Math.min(actor.maxSpeed, Math.max(e.v * 0.97, 4)), 3);
+    let maxPsi = 0.12;
+    switch (man.phase) {
+      case "hold":
+        latTarget = man.originLat;
+        if (tick - man.phaseTick >= man.holdTicks) {
+          man.cutLat = clamp(e.lat, -(wf.halfW - (actor.width ?? 1.85) / 2 - 0.3), -0.3 - (actor.width ?? 1.85) / 2);
+          setPhase(man, "cut", tick);
+        }
+        break;
+      case "cut":
+      case "settle": {
+        latTarget = man.cutLat;
+        maxPsi = 0.26;
+        if (Math.abs(wf.lat - man.cutLat) < 0.55 && Math.abs(wf.psi) < 0.1 && man.phase === "cut") {
+          man.cutCompleted = true;
+          setPhase(man, "settle", tick);
+        }
+        if (man.phase === "settle") {
+          speed = aheadGap > 6 ? Math.max(e.v - 1.8, 3) : e.v;
+          if (tick - man.phaseTick > TICKS(2.4)) setPhase(man, "rejoin", tick);
+        }
+        break;
+      }
+      default:
+        latTarget = laneCenter;
+        speed = Math.max(Math.min(actor.maxSpeed, e.v), 3);
+        if (Math.abs(wf.lat - laneCenter) < 0.45 && Math.abs(wf.psi) < 0.07) man.done = true;
+    }
+    const steer = latSteer(actor, wf, latTarget, { maxPsi });
+    return chaosCommand(base, steer, speed, `lane-change-${man.phase}`, "district");
+  }
+  function driveAccidentLead(world, state, actor, man, base) {
+    const wf = state.accident?.frame ? laneFrame(world, actor, { maxPsi: 1.2 }) : null;
+    if (!wf) return chaosCommand(base, 0, 0, "accident-wreck", "direct");
+    if (man.phase === "wreck") return chaosCommand(base, 0, 0, "accident-wreck", "direct");
+    const v = Math.max(actor.speed, 0);
+    let steer = latSteer(actor, wf, man.latW, { maxPsi: 0.12 });
+    if (v < 7.4) {
+      const psi = wf.psi * man.skewSign;
+      steer = clamp(2.6 * (man.skewTarget - psi), -0.5, 0.5) * man.skewSign;
+      if (psi > man.skewTarget) steer = 0;
+      if (man.skewSign < 0 && bodyExtentsOnLane(wf, actor).latMin < -(wf.halfW - 0.72)) steer = Math.max(steer, 0);
+    }
+    if (v < 0.05 && man.phase === "brake") {
+      man.phase = "wreck";
+      man.phaseTick = world.tick;
+    }
+    return chaosCommand(base, steer, 0, "accident-brake", "direct");
+  }
+  function driveAccidentFollower(world, state, actor, man, base) {
+    const wf = laneFrame(world, actor, { maxPsi: 1.2 });
+    if (!wf) return chaosCommand(base, 0, 0, "accident-wreck", "direct");
+    if (man.phase === "wreck") return chaosCommand(base, 0, 0, "accident-wreck", "direct");
+    const lead = state.accident?.leadId ? actorById(world, state.accident.leadId) : null;
+    const targetLat = lead ? coordsOn(wf.road, wf.d, lead).lat : man.latW;
+    const steer = latSteer(actor, wf, targetLat, { maxPsi: 0.14 });
+    if (man.phase === "unaware") {
+      const gap = lead && state.accident?.frame ? bodyExtentsOnLane(state.accident.frame, lead).sMin - bodyExtentsOnLane(state.accident.frame, actor).sMax : Infinity;
+      if (world.tick - man.startTick >= man.reactTicks || gap < 2.2) {
+        man.phase = "brake";
+        man.phaseTick = world.tick;
+      } else return chaosCommand(base, steer, man.cruiseSpeed, "accident-late", "direct");
+    }
+    return chaosCommand(base, steer, 0, "accident-brake", "direct");
+  }
+  function driveLimp(world, state, actor, man, base) {
+    if (world.tick - man.startTick > TICKS(12)) {
+      man.done = true;
+      return null;
+    }
+    const gap = Math.hypot(actor.x - man.other.x, actor.z - man.other.z) - ((actor.length ?? 4.2) + (man.other.length ?? 4.2)) / 2;
+    const speed = man.leader || gap > 3 ? 3.5 : 0;
+    return chaosCommand(base, base.steer, speed, "accident-clearing", "direct", true);
+  }
+  function runManeuver(world, state, actor, man, base) {
+    if (man.done) {
+      maneuvers.delete(actor);
+      state.managed.delete(actor);
+      return null;
+    }
+    if (man.role === "limp") return driveLimp(world, state, actor, man, base);
+    if (man.role === "weaver") return driveWeaver(world, state, actor, man, base);
+    if (man.role === "cutter") return driveCutter(world, state, actor, man, base);
+    if (man.role === "lead") return driveAccidentLead(world, state, actor, man, base);
+    if (man.role === "follower") return driveAccidentFollower(world, state, actor, man, base);
+    return null;
+  }
+  function pathStraightAhead(actor, frame) {
+    const path = actor.path;
+    if (!path || path.length < 60) return false;
+    const c = actor.cursor ?? 0;
+    const i0 = Math.min(path.length - 1, c);
+    const i1 = Math.min(path.length - 1, c + 36);
+    const i2 = Math.min(path.length - 1, c + 70);
+    if (i2 - i0 < 60) return false;
+    const h1 = Math.atan2(path[i1].x - path[i0].x, path[i1].z - path[i0].z);
+    const h2 = Math.atan2(path[i2].x - path[i1].x, path[i2].z - path[i1].z);
+    return Math.abs(angleDelta(h1, h2)) < 0.035 && Math.abs(angleDelta(h1, frame.laneHeading)) < 0.07;
+  }
+  function accidentBypass(world, state, actor, frame, base) {
+    const acc = state.accident;
+    if (!acc?.formed || frame.road !== acc.road || frame.d !== acc.d) return null;
+    const width = actor.width ?? 1.85;
+    const length = actor.length ?? 4.2;
+    const t = traitsOf(world, state, actor);
+    const gap = acc.sMin - (frame.s + length / 2);
+    const passedBy = frame.s - length / 2 - acc.sMax;
+    const bandMax = frame.lat + width / 2 + 0.2;
+    const bandMin = frame.lat - width / 2 - 0.2;
+    const conflict = bandMax > acc.latMin - 0.9 && bandMin < acc.latMax + 0.9;
+    if (passedBy > 2 && t.bypass) {
+      t.bypass = { phase: "rejoin" };
+    } else if (!t.bypass && gap < 72 && gap > -2 && conflict) {
+      t.bypass = { phase: "pass" };
+    }
+    if (!t.bypass) return null;
+    if (t.bypass.phase === "rejoin") {
+      const center = -frame.laneOffset;
+      if (Math.abs(frame.lat - center) < 0.5 && Math.abs(frame.psi) < 0.08) {
+        t.bypass = null;
+        return null;
+      }
+      return chaosCommand(
+        base,
+        latSteer(actor, frame, center, { maxPsi: 0.14 }),
+        Math.min(idealPathSpeed(actor, actor.path, actor.cursor ?? 0), 8),
+        "accident-rejoin",
+        "district"
+      );
+    }
+    const margin = width > 2.2 ? 0.72 : 0.95;
+    const outer = acc.latMin - margin - width / 2;
+    const inner = acc.latMax + margin + width / 2;
+    const outerOk = outer - width / 2 >= -(frame.halfW - (width > 2.2 ? 0.12 : 0.35));
+    const innerLimit = width > 2.2 && frame.halfW >= 5.5 && regionClear(world, frame, acc.sMin - 12, acc.sMax + 35, 0, 3.6, [actor]) ? 1.95 : -0.3;
+    const innerOk = inner + width / 2 <= innerLimit;
+    let speed = idealPathSpeed(actor, actor.path, actor.cursor ?? 0);
+    let target = null;
+    if (outerOk && innerOk) target = Math.abs(outer - frame.lat) <= Math.abs(inner - frame.lat) ? outer : inner;
+    else if (outerOk) target = outer;
+    else if (innerOk) target = inner;
+    if (target === null) {
+      speed = Math.min(speed, Math.sqrt(2 * 3 * Math.max(0, gap - 6)));
+      return chaosCommand(base, base.steer, speed, "accident-yield", "district", true);
+    }
+    if (gap < 34) speed = Math.min(speed, Math.max(2.6, Math.sqrt(2 * 3 * Math.max(0, gap - 2)) + 1.2));
+    return chaosCommand(base, latSteer(actor, frame, target, { maxPsi: 0.2 }), speed, "accident-bypass", "district");
+  }
+  function offLaneDrive(world, state, actor, frame, base) {
+    const t = traitsOf(world, state, actor);
+    if (!t.offLaneOffsetM) return null;
+    if (Math.abs(base.steer) > 0.07 || Math.abs(frame.psi) > 0.18 || !pathStraightAhead(actor, frame)) return null;
+    const width = actor.width ?? 1.85;
+    const wander = t.wanderAmpM * Math.sin(world.tick * STEP * 2 * Math.PI / t.wanderPeriodS + t.wanderPhase);
+    let target = -frame.laneOffset + t.offLaneOffsetM + wander;
+    target = Math.max(target, -(frame.halfW - width / 2 - 0.4));
+    target = Math.min(target, -(width / 2 + 0.3));
+    return {
+      ...base,
+      steer: latSteer(actor, frame, target, { maxPsi: 0.1 }),
+      targetSpeed: Math.min(idealPathSpeed(actor, actor.path, actor.cursor ?? 0), base.targetSpeed > 0 ? Infinity : 0)
+    };
+  }
+  function breakMutualYield(world, actor, base) {
+    const t = traits.get(actor);
+    if (t?.creepUntil > world.tick) return chaosCommand(base, base.steer, 1.6, "yield-deadlock-creep", "direct", true);
+    if (actor.speed > 0.2 || actor.wait < 5 || actor.reason !== "yielding" || !actor.blockedBy) return null;
+    const other = actorById(world, actor.blockedBy);
+    if (!other || other.type !== "vehicle" || other.blockedBy !== actor.id || other.speed > 0.2 || actor.id > other.id) return null;
+    if (t) t.creepUntil = world.tick + TICKS(2.5);
+    return chaosCommand(base, base.steer, 1.6, "yield-deadlock-creep", "direct", true);
+  }
+  function heavyYield(world, actor, base) {
+    if (inJunctionZone(world, actor, 1.5)) return null;
+    const comfort = 2.6;
+    const s = Math.sin(actor.heading);
+    const c = Math.cos(actor.heading);
+    const others = world.actorIndex.near(actor, 85);
+    let cap = Infinity;
+    for (let i = 0; i < others.length; i++) {
+      const other = others[i];
+      if (other === actor) continue;
+      const dx = other.x - actor.x;
+      const dz = other.z - actor.z;
+      const forward2 = dx * s + dz * c;
+      let lateral2 = Math.abs(dx * c - dz * s);
+      const radius = other.type === "pedestrian" ? other.radius ?? 0.4 : (other.width ?? 1.85) / 2;
+      if (other.type === "pedestrian" && forward2 > 0 && forward2 <= 60) {
+        const walk = Math.max(other.speed ?? 0, 0);
+        const sideVel = walk * (Math.sin(other.heading ?? 0) * c - Math.cos(other.heading ?? 0) * s);
+        const arrivalS = Math.min(2.5, forward2 / Math.max(actor.speed ?? 0, 1.5));
+        lateral2 = Math.min(lateral2, Math.abs(dx * c - dz * s + sideVel * arrivalS));
+      }
+      if (forward2 <= 0 || forward2 > 60 || lateral2 > (actor.width ?? 2.45) / 2 + radius + 0.25) continue;
+      const half = other.type === "pedestrian" ? radius : (other.length ?? 4.2) / 2;
+      const gap = forward2 - (actor.length ?? 8.2) / 2 - half;
+      const vOther = other.type === "pedestrian" ? 0 : Math.max(other.speed ?? 0, 0);
+      const room = Math.sqrt(Math.max(0, vOther * vOther + 2 * comfort * Math.max(0, gap - 3.5)));
+      cap = Math.min(cap, gap > 3.5 ? Math.max(room, 1.2) : room);
+    }
+    if (cap >= base.targetSpeed) return null;
+    return { ...base, targetSpeed: cap, reason: "truck-yield" };
+  }
+  function walkerYield(world, actor, base) {
+    const s = Math.sin(actor.heading);
+    const c = Math.cos(actor.heading);
+    const others = world.actorIndex.near(actor, 22);
+    let cap = Infinity;
+    for (let i = 0; i < others.length; i++) {
+      const other = others[i];
+      if (other.type !== "pedestrian") continue;
+      const dx = other.x - actor.x;
+      const dz = other.z - actor.z;
+      const forward2 = dx * s + dz * c;
+      if (forward2 <= 0 || forward2 > 20) continue;
+      const walk = Math.max(other.speed ?? 0, 0);
+      const sideVel = walk * (Math.sin(other.heading ?? 0) * c - Math.cos(other.heading ?? 0) * s);
+      const arrivalS = Math.min(2.5, forward2 / Math.max(actor.speed ?? 0, 1.5));
+      const lateral2 = Math.min(Math.abs(dx * c - dz * s), Math.abs(dx * c - dz * s + sideVel * arrivalS));
+      if (lateral2 > (actor.width ?? 2.45) / 2 + (other.radius ?? 0.4) + 0.25) continue;
+      const gap = forward2 - (actor.length ?? 8.2) / 2 - (other.radius ?? 0.4);
+      cap = Math.min(cap, Math.sqrt(Math.max(0, 2 * 3 * (gap - 1.2))));
+    }
+    return cap < base.targetSpeed ? { ...base, targetSpeed: cap, reason: "truck-yield" } : null;
+  }
+  function streetChaosTrafficCommand(world, actor, baseCommand) {
+    const state = activeState(world);
+    if (!state || actor === world.player || actor.type !== "vehicle") return baseCommand;
+    const man = maneuvers.get(actor);
+    if (man) {
+      const result = runManeuver(world, state, actor, man, baseCommand);
+      if (result) return result;
+    }
+    const ego = world.player;
+    const dx = actor.x - ego.x;
+    const dz = actor.z - ego.z;
+    if (dx * dx + dz * dz > NEAR_COMMAND_M * NEAR_COMMAND_M)
+      return actor.kind === "truck" && isChaosSpawn(actor) ? walkerYield(world, actor, baseCommand) ?? baseCommand : baseCommand;
+    if (!originals.has(actor)) applyClassPhysics(actor);
+    const frame = laneFrame(world, actor, { maxPsi: 0.5 });
+    let command = baseCommand;
+    let bypassing = false;
+    if (frame) {
+      const bypass = accidentBypass(world, state, actor, frame, command);
+      if (bypass) {
+        command = bypass;
+        bypassing = true;
+      } else {
+        const off = offLaneDrive(world, state, actor, frame, command);
+        if (off) command = off;
+      }
+    }
+    if (actor.kind === "truck" && !bypassing) {
+      const yielded = heavyYield(world, actor, command);
+      if (yielded) command = yielded;
+    }
+    const creep = breakMutualYield(world, actor, baseCommand);
+    return creep ?? command;
+  }
+  function formAccident(world, state, event2, acc, lead, follow, leadMan, followMan, closing) {
+    recordActorVisualCrash(follow, follow, lead, Math.max(closing, 5.5));
+    recordActorVisualCrash(lead, lead, follow, Math.max(closing, 5));
+    state.crashed.add(lead);
+    state.crashed.add(follow);
+    skewWreck(world, acc, follow, lead);
+    state.accidentRoles = {
+      [lead.id]: { role: "lead", skewSign: maneuvers.get(lead).skewSign },
+      [follow.id]: { role: "follower", skewSign: -maneuvers.get(lead).skewSign }
+    };
+    leadMan.phase = "wreck";
+    followMan.phase = "wreck";
+    acc.formed = true;
+    acc.impactTick = world.tick;
+    event2.phase = "wreck";
+    event2.impactTick = world.tick;
+    state.accidentActorIds = [lead.id, follow.id];
+  }
+  function refreshAccident(world, state, event2) {
+    const acc = state.accident;
+    if (!acc) return;
+    const lead = actorById(world, acc.leadId);
+    const follow = actorById(world, acc.followId);
+    if (!lead || !follow) {
+      finishEvent(world, state, event2, "lost-actor");
+      return;
+    }
+    const leadMan = maneuvers.get(lead);
+    const followMan = maneuvers.get(follow);
+    if (!acc.formed) {
+      const blocked = follow.reason === "occupied" && follow.blockedBy === lead.id;
+      if (blocked && followMan && leadMan) {
+        formAccident(world, state, event2, acc, lead, follow, leadMan, followMan, Math.max(follow.previous?.speed ?? 0, 2.6));
+      } else if (follow.speed < 0.05 && lead.speed < 0.05 && world.tick - event2.startTick > TICKS(1)) {
+        const gap = bodyExtentsOnLane(acc.frame, lead).sMin - bodyExtentsOnLane(acc.frame, follow).sMax;
+        if (gap < 2.2 && followMan && leadMan) formAccident(world, state, event2, acc, lead, follow, leadMan, followMan, 2.6);
+        else if (world.tick - event2.startTick > TICKS(6)) finishEvent(world, state, event2, "no-impact");
+      } else if (world.tick - event2.startTick > TICKS(6)) {
+        finishEvent(world, state, event2, "no-impact");
+      }
+      return;
+    }
+    advanceSlew(world, acc);
+    const lf = acc.frame;
+    const a = bodyExtentsOnLane(lf, lead);
+    const b = bodyExtentsOnLane(lf, follow);
+    acc.sMin = Math.min(a.sMin, b.sMin);
+    acc.sMax = Math.max(a.sMax, b.sMax);
+    acc.latMin = Math.min(a.latMin, b.latMin);
+    acc.latMax = Math.max(a.latMax, b.latMax);
+    const e = egoOn(lf, world.player);
+    const rearPastM = e.s - (world.player.length ?? 4.2) / 2 - acc.sMax;
+    if (rearPastM > 1.5) acc.passed = true;
+    const passed = rearPastM > 14;
+    if (world.player.speed >= 0.5 && Math.abs(e.s - (acc.sMin + acc.sMax) / 2) < 40) acc.nearTicks = (acc.nearTicks ?? 0) + 1;
+    const timedOut = (acc.nearTicks ?? 0) > TICKS(25) || world.tick - acc.impactTick > TICKS(90);
+    if (passed || timedOut) {
+      finishEvent(world, state, event2, passed || acc.passed ? "cleared-passed" : "cleared-timeout");
+      for (const actor of [lead, follow]) {
+        actor.speed = 0;
+        actor.reason = "ready";
+      }
+      registerManeuver(state, lead, { event: null, kind: "accident", role: "limp", leader: true, other: follow, startTick: world.tick, done: false });
+      registerManeuver(state, follow, { event: null, kind: "accident", role: "limp", leader: false, other: lead, startTick: world.tick, done: false });
+    }
+  }
+  function skewWreck(world, acc, follow, lead) {
+    const frame = acc.frame;
+    const here = coordsOn(frame.road, frame.d, follow);
+    const slide = acc.variant === "inner" ? 1 : -1;
+    const sign = -slide;
+    const leadExt = bodyExtentsOnLane(frame, lead);
+    const tiers = [WRECK_CLEARANCE_M - 0.35, WRECK_CLEARANCE_M - 0.7];
+    for (const needClear of tiers) for (const [yaw, shift2] of [[0.4, 0.6], [0.34, 0.55], [0.3, 0.5], [0.25, 0.45]]) {
+      const p = lanePoint2(frame.road, frame.d, here.s, here.lat + slide * shift2);
+      const cand = { type: "vehicle", length: follow.length, width: follow.width, heading: normalizeAngle2(frame.laneHeading + sign * yaw), x: p.x, z: p.z };
+      const ext = bodyExtentsOnLane(frame, cand);
+      const clear = acc.variant === "inner" ? Math.min(ext.latMin, leadExt.latMin) + frame.halfW : -0.2 - Math.max(ext.latMax, leadExt.latMax);
+      if (clear < needClear) continue;
+      if (overlaps(cand, lead, 0.05) || !bodyOnRoad(cand, world.roads, 0.12)) continue;
+      if (world.actors.some((other) => other !== follow && other !== lead && overlaps(cand, other, 0.2))) continue;
+      acc.slew = { actor: follow, lead, from: { x: follow.x, z: follow.z, heading: follow.heading }, to: cand, tick: 0 };
+      return;
+    }
+  }
+  var SLEW_TICKS = 9;
+  function advanceSlew(world, acc) {
+    const slew = acc.slew;
+    if (!slew) return;
+    const k = ++slew.tick / SLEW_TICKS;
+    const { actor, lead, from, to } = slew;
+    const cand = {
+      type: "vehicle",
+      length: actor.length,
+      width: actor.width,
+      x: from.x + (to.x - from.x) * k,
+      z: from.z + (to.z - from.z) * k,
+      heading: from.heading + angleDelta(to.heading, from.heading) * k
+    };
+    if (!overlaps(cand, lead, 0.02) && bodyOnRoad(cand, world.roads, 0.1)) {
+      actor.x = cand.x;
+      actor.z = cand.z;
+      actor.heading = cand.heading;
+    }
+    if (slew.tick >= SLEW_TICKS) acc.slew = null;
+  }
+  function updateEvent(world, state, event2) {
+    if (event2.kind === "accident") {
+      refreshAccident(world, state, event2);
+      return;
+    }
+    const actor = actorById(world, event2.actorIds[0]);
+    const man = actor ? maneuvers.get(actor) : null;
+    if (!actor || !man) {
+      finishEvent(world, state, event2, "lost-actor");
+      return;
+    }
+    if (man.done) finishEvent(world, state, event2, man.cutCompleted ? "completed" : "aborted");
+  }
+  function trackEgo(world, state) {
+    const ego = world.player;
+    const impacts = ego.vehicle?.damage?.impactCount ?? 0;
+    if (impacts > state.lastImpacts) {
+      state.metrics.collisions += impacts - state.lastImpacts;
+      state.lastImpacts = impacts;
+    }
+    state.metrics.distanceM = Math.max(0, (ego.distance ?? 0) - state.startDistance);
+    for (const other of world.actors) {
+      if (other === ego || other.type !== "vehicle" || Math.abs(other.x - ego.x) > 14 || Math.abs(other.z - ego.z) > 14) continue;
+      if (!(isChaosSpawn(other) || maneuvers.has(other))) continue;
+      let entry = state.nearMiss.get(other.id);
+      const close = overlaps(ego, other, 1.4);
+      if (close && !entry) state.nearMiss.set(other.id, { impacts, minGap: true });
+      else if (!close && entry && !overlaps(ego, other, 3.2)) {
+        if (impacts === entry.impacts) state.metrics.nearMissesAvoided++;
+        state.nearMiss.delete(other.id);
+      }
+    }
+  }
+  function processCleanup(world, state) {
+    if (!state.cleanup.length) return;
+    const ego = world.player;
+    const remove = /* @__PURE__ */ new Set();
+    state.cleanup = state.cleanup.filter((entry) => {
+      const actor = actorById(world, entry.id);
+      if (!actor) return false;
+      if (world.tick < entry.afterTick) return true;
+      const far = Math.hypot(actor.x - ego.x, actor.z - ego.z) >= entry.minDistanceM;
+      const stuckAway = world.tick > entry.afterTick + TICKS(70);
+      if (far || stuckAway && Math.hypot(actor.x - ego.x, actor.z - ego.z) > 40) {
+        remove.add(actor);
+        return false;
+      }
+      return true;
+    });
+    if (remove.size) {
+      removeActors(world, (actor) => remove.has(actor));
+      for (const actor of remove) {
+        originals.delete(actor);
+        maneuvers.delete(actor);
+        state.managed.delete(actor);
+      }
+    }
+  }
+  function recycleTrucks(world, state) {
+    if (world.tick < state.nextRecycleTick) return;
+    state.nextRecycleTick = world.tick + TICKS(1);
+    const ego = world.player;
+    for (const truck of [...state.trucks]) {
+      const far = Math.hypot(truck.x - ego.x, truck.z - ego.z);
+      const idle = !truck.path.length || truck.wait > 8 && far > 70;
+      const finished = idle || truck.path.length > 1 && (truck.cursor ?? 0) > truck.path.length - 40;
+      if (far < 105 || !finished) continue;
+      const replacement = trySpawnTruck(world, state, { near: far > 160, minPlayerDistance: 95, minAheadM: 110 });
+      if (!replacement) continue;
+      removeActors(world, (actor) => actor === truck);
+      originals.delete(truck);
+      world.actors.push(replacement);
+      world.actorIndex = new SpatialIndex(world.actors);
+      traitsOf(world, state, replacement);
+      state.trucks[state.trucks.indexOf(truck)] = replacement;
+    }
+  }
+  function pathTurnsTooSharply(path, cursor) {
+    let travelled = 0;
+    let spanStart = Math.max(0, cursor - 1);
+    let prevHeading = null;
+    for (let i = spanStart + 1; i < path.length && travelled < 130; i++) {
+      const dx = path[i].x - path[spanStart].x;
+      const dz = path[i].z - path[spanStart].z;
+      const span2 = Math.hypot(dx, dz);
+      if (span2 < 6) continue;
+      travelled += span2;
+      const heading2 = Math.atan2(dx, dz);
+      if (prevHeading !== null && Math.abs(angleDelta(heading2, prevHeading)) > 0.3) return true;
+      prevHeading = heading2;
+      spanStart = i;
+    }
+    return false;
+  }
+  function keepTrucksStraight(world, state) {
+    if (world.tick & 7) return;
+    for (const truck of state.trucks) {
+      const path = truck.path;
+      if (!path || path.length < 12 || !pathTurnsTooSharply(path, truck.cursor ?? 0)) continue;
+      const frame = laneFrame(world, truck, { minWidth: 10, maxPsi: 0.9 });
+      if (!frame || aheadRoomM(frame) < 50) continue;
+      const lat = clamp(coordsOn(frame.road, frame.d, truck).lat, -(frame.halfW - 2), -1.8);
+      const fresh = straightLanePath(frame, frame.s + 3, lat, Math.min(380, aheadRoomM(frame) - 14));
+      if (!fresh.length) continue;
+      truck.path = fresh;
+      truck.cursor = 0;
+      world.routeRevision++;
+    }
+  }
+  function queueAheadOfEgo(world) {
+    const ego = world.player;
+    const s = Math.sin(ego.heading);
+    const c = Math.cos(ego.heading);
+    for (const actor of world.actors) {
+      if (actor === ego || actor.type !== "vehicle" || (actor.speed ?? 0) >= 1.2) continue;
+      const dx = actor.x - ego.x;
+      const dz = actor.z - ego.z;
+      const forward2 = dx * s + dz * c;
+      if (forward2 > 4 && forward2 < 70 && Math.abs(dx * c - dz * s) < 6 && Math.abs(angleDelta(actor.heading, ego.heading)) < 0.6)
+        return true;
+    }
+    return false;
+  }
+  function schedule(world, state) {
+    if (world.tick < state.nextEventTick) return;
+    const cfg = INTENSITY[state.intensity];
+    if (state.events.length >= cfg.maxActive || state.accident) {
+      state.nextEventTick = world.tick + TICKS(1.5);
+      return;
+    }
+    if ((world.player.speed ?? 0) < 1.8 || world.districtBehavior?.holds?.[world.player.id] || queueAheadOfEgo(world)) {
+      state.nextEventTick = world.tick + TICKS(1.5);
+      return;
+    }
+    const ef = egoFrameOf(world, 10);
+    if (!ef) {
+      state.nextEventTick = world.tick + TICKS(1.2);
+      return;
+    }
+    const roll = state.rng.next();
+    let kind = roll < 0.45 ? "ghorz" : roll < 0.8 ? "lane-change" : "accident";
+    if (kind === "accident" && (state.accident || world.tick < state.nextAccidentTick || ef.road.width < 12.4)) {
+      kind = roll < 0.62 ? "ghorz" : "lane-change";
+    }
+    if (state.events.some((event3) => event3.kind === kind)) kind = kind === "ghorz" ? "lane-change" : "ghorz";
+    const event2 = kind === "ghorz" ? startGhorz(world, state) : kind === "lane-change" ? startLaneChange(world, state) : startAccident(world, state);
+    if (event2 && kind === "accident")
+      state.nextAccidentTick = world.tick + TICKS(cfg.accidentCooldownS);
+    const [lo, hi] = cfg.interval;
+    state.nextEventTick = world.tick + TICKS(event2 ? state.rng.range(lo, hi) : 1.5);
+  }
+  function stepStreetChaos(world) {
+    const state = activeState(world);
+    if (!state) return;
+    state.metrics.ticksActive++;
+    if (world.mode === "manual") state.egoReaction = null;
+    trackEgo(world, state);
+    for (const event2 of [...state.events]) updateEvent(world, state, event2);
+    processCleanup(world, state);
+    recycleTrucks(world, state);
+    keepTrucksStraight(world, state);
+    retryPending(world, state);
+    schedule(world, state);
+    if ((world.tick & 15) === 0) {
+      const ego = world.player;
+      let count = 0;
+      for (const actor of world.actors) {
+        if (actor.type !== "vehicle" || actor === ego) continue;
+        const t = traits.get(actor);
+        if (t?.offLaneOffsetM && (actor.x - ego.x) ** 2 + (actor.z - ego.z) ** 2 < 120 * 120) count++;
+      }
+      state.metrics.offLaneActiveCount = count;
+    }
+  }
+  function activeHazardOf(world, state) {
+    const ego = world.player;
+    let best = null;
+    let bestDistance = Infinity;
+    for (const event2 of state.events) {
+      const actors = event2.actorIds.map((id) => actorById(world, id)).filter(Boolean);
+      if (!actors.length) continue;
+      const distanceM = Math.min(...actors.map((a) => Math.hypot(a.x - ego.x, a.z - ego.z)));
+      if (distanceM < bestDistance) {
+        bestDistance = distanceM;
+        best = { kind: event2.kind, label: event2.label, actorIds: [...event2.actorIds], distanceM: Math.round(distanceM * 10) / 10 };
+      }
+    }
+    return best;
+  }
+  function streetChaosSnapshot(world) {
+    const state = world.streetChaos;
+    if (!state) {
+      return {
+        active: false,
+        version: STREET_CHAOS_VERSION,
+        intensity: "rush",
+        driverMode: "auto",
+        truckCount: 0,
+        offLaneCount: 0,
+        accidentActorIds: [],
+        activeHazard: null,
+        egoReaction: null,
+        activeEvents: [],
+        recentEvents: [],
+        request: null,
+        accidentRoles: {},
+        metrics: {
+          nearMissesAvoided: 0,
+          collisions: 0,
+          ghorzCount: 0,
+          laneCutCount: 0,
+          accidentCount: 0,
+          distanceM: 0,
+          ticksActive: 0
+        }
+      };
+    }
+    const active3 = state.active;
+    const m = state.metrics;
+    return {
+      active: active3,
+      version: STREET_CHAOS_VERSION,
+      intensity: state.intensity,
+      driverMode: state.driverMode,
+      truckCount: active3 ? state.trucks.length : 0,
+      offLaneCount: active3 ? m.offLaneActiveCount : 0,
+      accidentActorIds: active3 ? [...state.accidentActorIds] : [],
+      activeHazard: active3 ? activeHazardOf(world, state) : null,
+      egoReaction: active3 && state.egoReaction ? { ...state.egoReaction } : null,
+      activeEvents: active3 ? state.events.map((event2) => ({
+        id: event2.id,
+        kind: event2.kind,
+        label: event2.label,
+        phase: event2.phase,
+        startTick: event2.startTick,
+        actorIds: [...event2.actorIds]
+      })) : [],
+      recentEvents: state.recent.map((event2) => ({ ...event2, actorIds: [...event2.actorIds] })),
+      accidentRoles: active3 ? Object.fromEntries(Object.entries(state.accidentRoles).map(([id, r]) => [id, { ...r }])) : {},
+      request: state.request ? {
+        id: state.request.id,
+        kind: state.request.kind,
+        status: state.request.status,
+        reason: state.request.reason,
+        debugReason: state.request.debugReason,
+        atTick: state.request.atTick,
+        remainingS: state.request.status === "pending" && state.request.untilTick != null ? Math.max(0, Math.round((state.request.untilTick - world.tick) * STEP * 10) / 10) : 0
+      } : null,
+      metrics: {
+        nearMissesAvoided: m.nearMissesAvoided,
+        collisions: m.collisions,
+        ghorzCount: m.ghorzCount,
+        laneCutCount: m.laneCutCount,
+        accidentCount: m.accidentCount,
+        distanceM: Math.round(m.distanceM * 10) / 10,
+        ticksActive: m.ticksActive
+      }
+    };
+  }
+
+  // src/core/driver/perception.js
+  var FINE_DT = 0.1;
+  var FINE_STEPS = 22;
+  var COARSE_DT = 0.25;
+  var COARSE_STEPS = 12;
+  var PEDESTRIAN_HORIZON_S = 2.4;
+  var SIDEWALK_HORIZON_S = 0.7;
+  var ZONE_LOOKAHEAD_M = 75;
+  var ZONE_ENTRY_HORIZON_S = 2.2;
+  var DEFAULT_GAPS = Object.freeze({
+    vehicle: Object.freeze({ hard: 0.3, soft1: 0.8, soft2: 1.6 }),
+    // A walker on the roadway or stepping toward it keeps the full safety margin.
+    pedestrian: Object.freeze({ hard: 1.15, soft1: 1.5, soft2: 2 }),
+    // A walker staying on the pavement only needs tight kerbside clearance.
+    sidewalk: Object.freeze({ hard: 0.55, soft1: 0.85, soft2: 1.1 }),
+    static: Object.freeze({ hard: 0.3, soft1: 0.6, soft2: 1.1 }),
+    // A faster car overtaking alongside is expected to be close; only genuinely tight gaps count.
+    passing: Object.freeze({ hard: 0.3, soft1: 0.45, soft2: 0.9 }),
+    // A wreck leaves a roadway only a little wider than the car; threading it slowly at half a metre is the plan.
+    wreck: Object.freeze({ hard: 0.3, soft1: 0.5, soft2: 1 })
+  });
+  var TIMES = (() => {
+    const times = [];
+    let t = 0;
+    for (let i = 0; i < FINE_STEPS; i++) times.push(t += FINE_DT);
+    for (let i = 0; i < COARSE_STEPS; i++) times.push(t += COARSE_DT);
+    return Object.freeze(times);
+  })();
+  var HORIZON_S2 = TIMES.at(-1);
+  var SOLID_PROP_KINDS = Object.freeze(["city-lamp", "city-furniture", "city-tree"]);
+  function observedKinematics(actor) {
+    const prev = actor.previous;
+    const speed = Math.max(actor.speed ?? 0, 0);
+    let omega = 0;
+    let accel = 0;
+    if (prev && Number.isFinite(prev.heading)) {
+      omega = clamp(angleDelta(actor.heading, prev.heading) / STEP, -0.9, 0.9);
+      accel = clamp((speed - Math.max(prev.speed ?? speed, 0)) / STEP, -8, 4);
+    }
+    return { speed, omega, accel };
+  }
+  function predictVehicle(actor, obstacle) {
+    const { speed, omega, accel } = observedKinematics(actor);
+    const braking = accel < -1.5;
+    let x = actor.x;
+    let z = actor.z;
+    let prevT = 0;
+    for (let k = 0; k < TIMES.length; k++) {
+      const t = TIMES[k];
+      const dt = t - prevT;
+      const v = braking ? Math.max(0, speed + accel * (t - dt / 2)) : speed;
+      const heading2 = actor.heading + omega * 0.8 * (1 - Math.exp(-(t - dt / 2) / 0.8));
+      x += Math.sin(heading2) * v * dt;
+      z += Math.cos(heading2) * v * dt;
+      obstacle.px[k] = x;
+      obstacle.pz[k] = z;
+      obstacle.ph[k] = actor.heading + omega * 0.8 * (1 - Math.exp(-t / 0.8));
+      prevT = t;
+    }
+    return { speed, omega };
+  }
+  function walkerHeadsForRoadway(world, actor, speed) {
+    if (actor.crossing || pointOnRoad(actor, world.roads, 0)) return true;
+    const hx = Math.sin(actor.heading ?? 0);
+    const hz = Math.cos(actor.heading ?? 0);
+    const reach = Math.max(1.8, speed * PEDESTRIAN_HORIZON_S);
+    for (let d = 0.6; d <= reach + 1e-6; d += 0.6)
+      if (pointOnRoad({ x: actor.x + hx * d, z: actor.z + hz * d }, world.roads, 0)) return true;
+    return speed < 0.3 && pointOnRoad(actor, world.roads, -0.4);
+  }
+  function predictPedestrian(world, actor, obstacle, gaps) {
+    const speed = Math.max(actor.speed ?? 0, 0);
+    const sx = Math.sin(actor.heading ?? 0) * speed;
+    const sz = Math.cos(actor.heading ?? 0) * speed;
+    const roadway = walkerHeadsForRoadway(world, actor, speed);
+    const horizon = roadway ? PEDESTRIAN_HORIZON_S : SIDEWALK_HORIZON_S;
+    obstacle.gaps = roadway ? gaps.pedestrian : gaps.sidewalk;
+    obstacle.roadway = roadway;
+    for (let k = 0; k < TIMES.length; k++) {
+      const t = Math.min(TIMES[k], horizon);
+      obstacle.px[k] = TIMES[k] > horizon ? 1e6 : actor.x + sx * t;
+      obstacle.pz[k] = TIMES[k] > horizon ? 1e6 : actor.z + sz * t;
+      obstacle.ph[k] = actor.heading ?? 0;
+    }
+  }
+  function newObstacle(source, kind, gaps) {
+    const isPed = source.type === "pedestrian";
+    return {
+      source,
+      kind,
+      id: source.id,
+      isPed,
+      pose: {
+        type: isPed ? "pedestrian" : source.type === "static" ? "static" : "vehicle",
+        x: source.x,
+        z: source.z,
+        heading: source.heading ?? 0,
+        length: source.length,
+        width: source.width,
+        radius: source.radius
+      },
+      px: new Float64Array(TIMES.length),
+      pz: new Float64Array(TIMES.length),
+      ph: new Float64Array(TIMES.length),
+      gaps: gaps[isPed ? "pedestrian" : source.type === "static" ? "static" : "vehicle"],
+      hard: 0,
+      speed: 0,
+      lateralClosing: 0,
+      forward: 0,
+      lateral: 0,
+      passing: false,
+      cutIn: false,
+      oncoming: false,
+      solid: false
+    };
+  }
+  function gatherObstacles(world, player, gaps = DEFAULT_GAPS, isWreckActor = () => false) {
+    const out = [];
+    const hx = Math.sin(player.heading);
+    const hz = Math.cos(player.heading);
+    const near = world.actorIndex.near(player, 66);
+    for (let i = 0; i < near.length; i++) {
+      const actor = near[i];
+      if (actor === player) continue;
+      const dx = actor.x - player.x;
+      const dz = actor.z - player.z;
+      const forward2 = dx * hx + dz * hz;
+      const lateral2 = dx * hz - dz * hx;
+      if (actor.type === "pedestrian") {
+        if (forward2 < -4 || forward2 > 42 || Math.abs(lateral2) > 12) continue;
+        const o2 = newObstacle(actor, "pedestrian", gaps);
+        predictPedestrian(world, actor, o2, gaps);
+        out.push(o2);
+        continue;
+      }
+      if (actor.type !== "vehicle") continue;
+      if (forward2 < -14 || forward2 > 66) continue;
+      const o = newObstacle(actor, actor.kind === "truck" ? "truck" : "vehicle", gaps);
+      const kin = predictVehicle(actor, o);
+      o.speed = kin.speed;
+      o.wreck = isWreckActor(world, actor);
+      if (o.wreck) {
+        o.kind = "accident";
+        o.gaps = gaps.wreck;
+      }
+      const rel = angleDelta(actor.heading, player.heading);
+      const vLat = kin.speed * Math.sin(rel);
+      o.lateralClosing = lateral2 > 0 ? -vLat : vLat;
+      o.forward = forward2;
+      o.lateral = lateral2;
+      o.oncoming = Math.abs(rel) > 2.2;
+      const length = player.length ?? 4.2;
+      o.cutIn = Math.abs(rel) < 0.6 && forward2 >= -1.5 * length && forward2 <= 5 * length && o.lateralClosing > 0.8;
+      o.passing = !o.wreck && Math.abs(rel) < 0.35 && forward2 < length / 2 && Math.abs(lateral2) < 5;
+      if (o.passing) o.gaps = gaps.passing;
+      const bodyClear = Math.abs(lateral2) - ((actor.width ?? 1.85) + (player.width ?? 1.85)) / 2;
+      o.parallelRear = o.passing && Math.abs(rel) < 0.22 && forward2 < length * 0.5 && bodyClear >= 0.7 && o.lateralClosing <= 0.25;
+      out.push(o);
+    }
+    const statics = world.staticIndex.near(player, 52);
+    for (let i = 0; i < statics.length; i++) {
+      const s = statics[i];
+      const dx = s.x - player.x;
+      const dz = s.z - player.z;
+      const reach = Math.hypot(s.width ?? 0, s.length ?? 0) / 2;
+      if (Math.hypot(dx, dz) - reach > 46) continue;
+      const forward2 = dx * hx + dz * hz;
+      if (forward2 + reach < -10 || Math.abs(dx * hz - dz * hx) - reach > 10) continue;
+      const o = newObstacle(s, "static", gaps);
+      o.solid = SOLID_PROP_KINDS.includes(s.kind);
+      for (let k = 0; k < TIMES.length; k++) {
+        o.px[k] = s.x;
+        o.pz[k] = s.z;
+        o.ph[k] = s.heading ?? 0;
+      }
+      out.push(o);
+    }
+    for (const o of out) {
+      o.hard = o.gaps.hard;
+      if (overlaps(player, o.source, o.gaps.hard) || o.parallelRear) o.hard = 0;
+    }
+    return out;
+  }
+  function claimsZone(player, car, zone, cx, cz) {
+    const dx = Math.max(zone.minX - car.x, 0, car.x - zone.maxX);
+    const dz = Math.max(zone.minZ - car.z, 0, car.z - zone.maxZ);
+    const gap = Math.hypot(dx, dz);
+    const length = player.length ?? 4.2;
+    const rx = car.x - player.x;
+    const rz = car.z - player.z;
+    const forward2 = rx * Math.sin(player.heading) + rz * Math.cos(player.heading);
+    if (forward2 < -length) return false;
+    const lateral2 = Math.abs(rx * Math.cos(player.heading) - rz * Math.sin(player.heading));
+    if (forward2 > 0 && lateral2 < 1.7 && Math.abs(angleDelta(car.heading, player.heading)) < 0.35 && (car.speed ?? 0) > (player.speed ?? 0) - 1) return false;
+    if (gap <= 1) return true;
+    const speed = Math.max(car.speed ?? 0, 0);
+    if (speed < 1.5) return gap <= 2;
+    const toward = (cx - car.x) * Math.sin(car.heading) + (cz - car.z) * Math.cos(car.heading) > 0;
+    return toward && gap <= 2 + speed * ZONE_ENTRY_HORIZON_S;
+  }
+  function contestedZoneAhead(world, player) {
+    const zones = world.district?.conflictZones;
+    const behavior = world.districtBehavior;
+    const path = player.path;
+    if (!zones?.length || !behavior || !path || path.length < 2) return null;
+    const pad = (player.length ?? 4.2) / 2 + 0.3;
+    const owners = /* @__PURE__ */ new Map();
+    for (const [key3, lease] of Object.entries(behavior.reservations ?? {}))
+      for (const id of key3.split("+")) owners.set(id, lease.ownerId);
+    const reach = ZONE_LOOKAHEAD_M + 14;
+    const near = zones.filter((z) => z.maxX > player.x - reach && z.minX < player.x + reach && z.maxZ > player.z - reach && z.minZ < player.z + reach);
+    if (!near.length) return null;
+    const inside = (z, x, z2, margin) => x >= z.minX - margin && x <= z.maxX + margin && z2 >= z.minZ - margin && z2 <= z.maxZ + margin;
+    const seen = /* @__PURE__ */ new Set();
+    for (const z of near) if (inside(z, player.x, player.z, 0)) seen.add(z);
+    let dist = 0;
+    let prevX = player.x;
+    let prevZ = player.z;
+    for (let i = player.cursor ?? 0; i < path.length && dist < ZONE_LOOKAHEAD_M; i++) {
+      const p = path[i];
+      dist += Math.hypot(p.x - prevX, p.z - prevZ);
+      prevX = p.x;
+      prevZ = p.z;
+      for (const z of near) {
+        if (seen.has(z) || !inside(z, p.x, p.z, pad)) continue;
+        seen.add(z);
+        const owner = owners.get(z.id);
+        let busy = owner !== void 0 && owner !== player.id;
+        if (!busy) {
+          const cx = (z.minX + z.maxX) / 2;
+          const cz = (z.minZ + z.maxZ) / 2;
+          const others = world.actorIndex.near({ x: cx, z: cz }, Math.hypot(z.maxX - z.minX, z.maxZ - z.minZ) / 2 + 14 + 2.2 * 16);
+          busy = others.some((a) => a !== player && a.type === "vehicle" && claimsZone(player, a, z, cx, cz));
+        }
+        if (busy) {
+          return {
+            distanceM: dist,
+            zoneId: z.id,
+            stopBeforeM: 0.85 + (z.kind === "junction" ? player.width ?? 1.9 : 0)
+          };
+        }
+      }
+    }
+    return null;
+  }
+  function senseJunction(world, player, strategy, memory) {
+    const behavior = world.districtBehavior;
+    const hold = strategy.obeyJunctionHolds ? behavior?.holds?.[player.id] : void 0;
+    const approach3 = strategy.obeyJunctionHolds ? behavior?.approaches?.[player.id] : void 0;
+    const busyApproach = approach3 && !hold && (behavior.reservations?.[approach3.zoneId]?.ownerId ?? player.id) !== player.id ? approach3 : null;
+    if (strategy.obeyJunctionHolds && world.tick - memory.zoneTick >= strategy.evalEveryTicks) {
+      memory.zoneTick = world.tick;
+      memory.zoneAhead = contestedZoneAhead(world, player);
+      if (memory.zoneAhead) memory.zoneAhead.odometerM = player.distance ?? 0;
+    }
+    const zoneAhead = strategy.obeyJunctionHolds && memory.zoneAhead && !hold && world.tick >= memory.zoneIgnoreUntil ? {
+      distanceM: memory.zoneAhead.distanceM - ((player.distance ?? 0) - memory.zoneAhead.odometerM),
+      stopBeforeM: memory.zoneAhead.stopBeforeM,
+      zoneId: memory.zoneAhead.zoneId
+    } : null;
+    const gate = hold ?? busyApproach ?? (zoneAhead && zoneAhead.distanceM > 0 ? zoneAhead : null);
+    return { hold, busyApproach, gate, gateOnly: Boolean(gate) && gate !== hold && gate !== busyApproach };
+  }
+  function perceiveObstacles(world, player, strategy) {
+    return {
+      obstacles: gatherObstacles(world, player, strategy.gaps ?? DEFAULT_GAPS, strategy.isWreckActor),
+      lane: laneFrame(world, player, { maxPsi: 0.6 })
+    };
+  }
+  function perceiveCorridor(world, player, strategy, memory = { zoneTick: -99, zoneAhead: null, zoneIgnoreUntil: -1 }, { obstacles = true } = {}) {
+    const junction = senseJunction(world, player, strategy, memory);
+    const perception = {
+      ...junction,
+      road: onRoadLimit(world, player),
+      roads: world.roads,
+      obstacles: null,
+      lane: null,
+      // Lets the planner pay for obstacle gathering only on the ticks it actually evaluates.
+      refresh: () => Object.assign(perception, perceiveObstacles(world, player, strategy))
+    };
+    if (obstacles) perception.refresh();
+    return perception;
+  }
+
+  // src/core/driver/strategies.js
+  var CAIRO_OFFSETS_M = Object.freeze([-3.2, -2.2, -1.4, -0.7, 0, 0.7, 1.4, 2.2, 3.2]);
+  var CITY_OFFSETS_M = Object.freeze([-2.8, -2, -1.2, -0.6, 0, 0.6, 1.2, 2, 2.8]);
+  var DEFAULT_SPEED_FACTORS = Object.freeze([1, 0.82, 0.64, 0.45, 0.25, 0]);
+  var CAIRO_WEIGHTS = Object.freeze({
+    soft: 1.15,
+    progress: 5.2,
+    shiftMagnitude: 0.55,
+    shiftChange: 0.45,
+    shiftPositive: 0.6,
+    lowSpeed: 0.6,
+    blocked: 9,
+    cross: 0.9,
+    steer: 0.02,
+    gentleFactor: 0.45,
+    gentleBandM: Object.freeze([0.65, 1.45])
+  });
+  function weightedScorer(weights) {
+    const [gentleLow, gentleHigh] = weights.gentleBandM;
+    return function scoreCandidate(result, ctx, commit) {
+      const lookahead = ctx.blockLookaheadM;
+      const maxTravel = Math.max(1, ctx.vCruise * HORIZON_S2);
+      const progressLoss = (1 - clamp(result.travelled / maxTravel, 0, 1)) * weights.progress;
+      const magnitude = Math.abs(result.offset);
+      const gentle = ctx.proactive && magnitude >= gentleLow && magnitude <= gentleHigh ? weights.gentleFactor : 1;
+      const shift2 = (magnitude * weights.shiftMagnitude + Math.abs(result.offset - commit.offset) * weights.shiftChange + Math.max(0, result.offset) * weights.shiftPositive) * gentle;
+      const lowSpeed = (1 - result.factor) * weights.lowSpeed;
+      const blocked = ctx.blocked.get(result.offset)?.distanceM ?? Infinity;
+      const blockedPenalty = Number.isFinite(blocked) ? (1 - clamp(blocked / lookahead, 0, 1)) * weights.blocked : 0;
+      return result.soft * weights.soft + progressLoss + shift2 + lowSpeed + blockedPenalty + result.cross * weights.cross + result.steerSum * weights.steer;
+    };
+  }
+  function selectReaction({ chosen, clear, threat, hardT, speed, passing, commandOffset }) {
+    const wreck = Boolean(threat?.wreck);
+    if (speed > 1.2 && !threat?.passing && (chosen.boxed || chosen.factor <= 0.25 && hardT < 1.2 && Math.abs(chosen.offset) < 0.6)) return "emergency-brake";
+    if (passing) return "evasive-shift";
+    if (Math.abs(chosen.offset) >= 0.6 && !clear) return wreck ? "accident-bypass" : "evasive-shift";
+    if (chosen.factor < 0.95 && !clear) return "defensive-yield";
+    if (!clear && Math.abs(commandOffset) >= 0.6) return wreck ? "accident-bypass" : "evasive-shift";
+    return "cruising";
+  }
+  var DEFAULTS2 = Object.freeze({
+    id: "custom",
+    maintainContinuousCruise: false,
+    offsetsM: CAIRO_OFFSETS_M,
+    speedFactors: DEFAULT_SPEED_FACTORS,
+    gaps: DEFAULT_GAPS,
+    allowSlowLeaderPass: true,
+    slowLeaderTicks: 100,
+    passMinRoadWidthM: 12,
+    allowCurbClearance: false,
+    obeyJunctionHolds: true,
+    junctionTaperMps2: 1.9,
+    comfortAccelMps2: 2,
+    comfortDecelMps2: 2.2,
+    offsetSlewMps: 2.6,
+    minDwellTicks: 24,
+    switchMargin: 0.75,
+    evalEveryTicks: 3,
+    blockLookaheadM: 42,
+    brakeHoldTicks: 18,
+    // Speed ceilings as a car recovers from an emergency stop: standstill, then 35 %, 65 %, full.
+    releaseStages: Object.freeze([0, 0.35, 0.65, 1]),
+    imminentContactS: 1.1,
+    costWeights: CAIRO_WEIGHTS,
+    proactiveKinds: Object.freeze(["vehicle", "truck", "cut-in", "accident"]),
+    // Within this distance of player.parking the lateral offset tapers back to 0; null disables it.
+    parkingArrivalRadiusM: null,
+    // When set, a pedestrian-only threat limits the sidestep to this many metres below the speed or within the
+    // junction distance given next to it.
+    pedestrianOffsetCapM: null,
+    pedestrianCapSpeedMps: 4.5,
+    pedestrianCapJunctionM: 22,
+    // Respect the speed the base (destination/policy) command already allows instead of re-deriving it.
+    honorBaseSpeed: false,
+    // Hand the untouched base command back whenever the corridor is clear and the car is on its line.
+    transparentWhenClear: false,
+    // Centre-line straddling is only penalised on roads at least this wide (narrow lanes have no oncoming side).
+    laneCrossMinRoadWidthM: 0,
+    // Rollouts slow for the route's own bends and junction turns instead of holding cruise speed through them.
+    followRouteSpeedProfile: false,
+    // Rollouts end where the route ends instead of treating the space beyond it as a hazard.
+    stopRolloutAtRouteEnd: false,
+    // Cap the target speed to what can still stop before a contact the chosen trajectory cannot avoid.
+    enforceStoppingEnvelope: false,
+    selectReaction,
+    // Environment hooks: a mode that knows about wrecks or route locks injects them; the stack itself does not.
+    isWreckActor: () => false,
+    getRouteLock: () => null,
+    allowRerouteAtHold: () => true
+  });
+  function createDriverStrategy(overrides = {}) {
+    const merged = { ...DEFAULTS2, ...overrides };
+    merged.costWeights = Object.freeze({ ...CAIRO_WEIGHTS, ...overrides.costWeights ?? {} });
+    if (!overrides.scoreCandidate) merged.scoreCandidate = weightedScorer(merged.costWeights);
+    return Object.freeze(merged);
+  }
+  var CAIRO_DEFENSIVE_STRATEGY = createDriverStrategy({
+    id: "cairo-defensive",
+    maintainContinuousCruise: true,
+    isWreckActor: isStreetChaosAccidentActor,
+    getRouteLock: accidentRouteLock,
+    // A jam is waited out while an accident is being bypassed, unless only a requested accident is pending.
+    allowRerouteAtHold: (world, player, hold) => !accidentRouteLock(world, player) || !world.streetChaos?.accident && (hold.waitS ?? 0) > 12
+  });
+  var CITY_CRUISE_STRATEGY = createDriverStrategy({
+    id: "city-cruise",
+    maintainContinuousCruise: false,
+    offsetsM: CITY_OFFSETS_M,
+    speedFactors: DEFAULT_SPEED_FACTORS,
+    allowSlowLeaderPass: true,
+    passMinRoadWidthM: 11,
+    allowCurbClearance: false,
+    obeyJunctionHolds: true,
+    junctionTaperMps2: 1.9,
+    comfortAccelMps2: 2,
+    comfortDecelMps2: 2.2,
+    costWeights: {
+      // Stay near the lane centre when clear, but sidestep 0.6-2.0 m early for parked cars, slow or stopped
+      // vehicles, crossing pedestrians and lamp posts.
+      shiftMagnitude: 0.5,
+      shiftPositive: 0.35,
+      gentleFactor: 0.4,
+      gentleBandM: [0.6, 2],
+      cross: 0.25
+    },
+    // The route is already planned around kerbside props, so only real encroachment counts as a squeeze.
+    gaps: {
+      ...DEFAULT_GAPS,
+      static: { hard: 0.3, soft1: 0.4, soft2: 0.6 },
+      vehicle: { hard: 0.3, soft1: 0.6, soft2: 1 }
+    },
+    proactiveKinds: ["vehicle", "truck", "cut-in", "accident", "static", "pedestrian"],
+    parkingArrivalRadiusM: 16,
+    pedestrianOffsetCapM: 1.4,
+    honorBaseSpeed: true,
+    transparentWhenClear: true,
+    laneCrossMinRoadWidthM: 11,
+    followRouteSpeedProfile: true,
+    stopRolloutAtRouteEnd: true,
+    enforceStoppingEnvelope: true
+  });
+  var PURSUIT_ESCAPE_STRATEGY = createDriverStrategy({
+    id: "pursuit-escape",
+    maintainContinuousCruise: false,
+    allowSlowLeaderPass: false,
+    proactiveKinds: ["vehicle", "truck", "cut-in", "accident", "static", "pedestrian"],
+    honorBaseSpeed: true,
+    followRouteSpeedProfile: true,
+    enforceStoppingEnvelope: true
+  });
+  var PURSUIT_ESCAPE_CLEARANCES = Object.freeze({
+    solidKinds: SOLID_PROP_KINDS,
+    pedestrian: DEFAULT_GAPS.pedestrian,
+    sidewalk: DEFAULT_GAPS.sidewalk,
+    solid: DEFAULT_GAPS.static
+  });
+
+  // src/core/driver/trajectory-planner.js
+  var driverStates = /* @__PURE__ */ new WeakMap();
+  function createDriverState() {
+    return {
+      offset: 0,
+      commandOffset: 0,
+      factor: 1,
+      speedTarget: null,
+      lastEvalTick: -99,
+      lastSwitchTick: -99,
+      calm: 0,
+      stallTicks: 0,
+      moveUntilTick: -1,
+      slow: null,
+      pass: null,
+      reaction: "cruising",
+      threat: null,
+      cache: null,
+      emergencyTick: -999,
+      brakeTtcS: Infinity,
+      clear: false,
+      lastResults: null,
+      contactT: Infinity,
+      routeTick: -99,
+      goalCursor: 0,
+      lockTick: -99,
+      jamId: null,
+      jamTick: -Infinity,
+      rerouteTick: -999,
+      zoneTick: -99,
+      zoneAhead: null,
+      zoneIgnoreUntil: -1,
+      gateWaitTicks: 0,
+      lastStepTick: -Infinity
+    };
+  }
+  function driverStateOf(player) {
+    let state = driverStates.get(player);
+    if (!state) {
+      state = createDriverState();
+      driverStates.set(player, state);
+    }
+    return state;
+  }
+  var resetDriverState = (player) => {
+    driverStates.delete(player);
+  };
+  var signed = (v) => `${v > 0 ? "+" : ""}${v.toFixed(1)}`;
+  var aimScratch = { steer: 0, cursor: 0 };
+  function aimSteer(body, path, cursor, offset2, out = aimScratch) {
+    if (!path || path.length < 2) {
+      out.steer = 0;
+      out.cursor = cursor;
+      return out;
+    }
+    const wheelbase = body.spec?.wheelbase ?? VEHICLE.wheelbase;
+    const axleCenterZ = body.vehicleModel === KING_LONG_MICROBUS_ID ? KING_LONG_MICROBUS.axleCenterZM : 0;
+    const rearAxle = wheelbase / 2 - axleCenterZ;
+    const x = body.x - Math.sin(body.heading) * rearAxle;
+    const z = body.z - Math.cos(body.heading) * rearAxle;
+    const nearest2 = nearestPathPoint(path, x, z, cursor);
+    const speed = Math.abs(body.speed ?? 0);
+    const lookahead = offset2 === 0 ? 2 + speed * 0.18 : Math.max(2 + speed * 0.18, 5 + speed * 0.3);
+    let target = nearest2;
+    let length = 0;
+    while (target < path.length - 1 && length < lookahead) {
+      length += Math.hypot(path[target + 1].x - path[target].x, path[target + 1].z - path[target].z);
+      target++;
+    }
+    let ax = path[target].x;
+    let az = path[target].z;
+    if (offset2 !== 0) {
+      const from = path[Math.max(0, target - 3)];
+      const phi = Math.atan2(ax - from.x, az - from.z);
+      ax += offset2 * Math.cos(phi);
+      az -= offset2 * Math.sin(phi);
+    }
+    const alpha = angleDelta(Math.atan2(ax - x, az - z), body.heading);
+    const dist = Math.max(1, Math.hypot(ax - x, az - z));
+    out.steer = Math.atan2(2 * wheelbase * Math.sin(alpha), dist);
+    out.cursor = nearest2;
+    return out;
+  }
+  function routeSpeedProfile(player) {
+    const cache = /* @__PURE__ */ new Map();
+    const path = player.path;
+    return (cursor) => {
+      let v = cache.get(cursor);
+      if (v === void 0) {
+        const at = path[Math.min(cursor, path.length - 1)];
+        v = idealPathSpeed({
+          x: at.x,
+          z: at.z,
+          heading: player.heading,
+          speed: player.speed,
+          spec: player.spec,
+          vehicleModel: player.vehicleModel,
+          maxSpeed: player.maxSpeed
+        }, path, cursor);
+        cache.set(cursor, v);
+      }
+      return v;
+    };
+  }
+  function simulate(ctx, offset2, factor) {
+    const { player, path, cursor0, vCruise, obstacles, roads, lane: lane2, roadMargin } = ctx;
+    const crossLane = Boolean(lane2) && lane2.road.width >= ctx.laneCrossMinWidthM;
+    const probe = vehicleProbe(player, player.speed);
+    const cmd = { steer: 0, targetSpeed: factor * vCruise };
+    const aim = { steer: 0, cursor: cursor0 };
+    let cursor = cursor0;
+    let prevT = 0;
+    let travelled = 0;
+    const result = {
+      offset: offset2,
+      factor,
+      valid: true,
+      hardT: Infinity,
+      offRoadT: Infinity,
+      soft: 0,
+      soft1: 0,
+      cross: 0,
+      travelled: 0,
+      softT: Infinity,
+      softThreat: -1,
+      hardThreat: -1,
+      minGap: 2.6,
+      steerSum: 0,
+      cost: 0,
+      boxed: false
+    };
+    for (let k = 0; k < TIMES.length; k++) {
+      const t = TIMES[k];
+      const dt = t - prevT;
+      prevT = t;
+      aimSteer(probe, path, cursor, offset2, aim);
+      cursor = aim.cursor;
+      if (ctx.stopAtRouteEnd && cursor >= path.length - 1) break;
+      cmd.steer = aim.steer;
+      if (ctx.routeSpeedAt) cmd.targetSpeed = Math.min(factor * vCruise, ctx.routeSpeedAt(cursor));
+      const x0 = probe.x;
+      const z0 = probe.z;
+      integrateVehicle(probe, cmd, dt, probe);
+      travelled += Math.hypot(probe.x - x0, probe.z - z0);
+      result.steerSum += Math.abs(probe.steer);
+      if (!bodyOnRoad(probe, roads, roadMargin)) {
+        result.valid = false;
+        result.offRoadT = t;
+        break;
+      }
+      const weight = (1.35 - 0.7 * (t / HORIZON_S2)) * clamp(0.3 + probe.speed / 8, 0.3, 1.3);
+      if (crossLane && Math.abs(angleDelta(probe.heading, lane2.laneHeading)) < 0.5) {
+        const c = coordsOn(lane2.road, lane2.d, probe);
+        if (c.lat + (probe.width ?? 1.85) / 2 > -0.1 && c.lat < lane2.halfW) result.cross += weight;
+      }
+      for (let i = 0; i < obstacles.length; i++) {
+        const o = obstacles[i];
+        const pose5 = o.pose;
+        pose5.x = o.px[k];
+        pose5.z = o.pz[k];
+        pose5.heading = o.ph[k];
+        if (overlaps(probe, pose5, o.hard)) {
+          if (t < result.hardT) {
+            result.hardT = t;
+            result.hardThreat = i;
+          }
+          result.valid = false;
+          result.minGap = 0;
+          break;
+        }
+        if (overlaps(probe, pose5, o.gaps.soft1)) {
+          result.soft += weight;
+          result.soft1 += weight;
+          result.minGap = Math.min(result.minGap, o.gaps.soft1);
+          if (t < result.softT) {
+            result.softT = t;
+            result.softThreat = i;
+          }
+        } else if (overlaps(probe, pose5, o.gaps.soft2)) {
+          result.soft += 0.12 * weight;
+          result.minGap = Math.min(result.minGap, o.gaps.soft2);
+        }
+      }
+      if (!result.valid) break;
+    }
+    result.travelled = travelled;
+    return result;
+  }
+  function blockedDistance(ctx, offset2) {
+    const { player, path, cursor0, obstacles, roads, roadMargin, blockLookaheadM } = ctx;
+    const holds = obstacles.filter((o) => !o.isPed && (o.kind === "static" || o.speed < 0.6));
+    if (!holds.length) return { distanceM: Infinity, obstacle: null };
+    const probe = vehicleProbe(player, clamp(Math.max(player.speed, 4), 4, 9));
+    const cmd = { steer: 0, targetSpeed: probe.speed };
+    const aim = { steer: 0, cursor: cursor0 };
+    let travelled = 0;
+    for (let k = 0; k < 30 && travelled < blockLookaheadM; k++) {
+      aimSteer(probe, path, aim.cursor, offset2, aim);
+      if (ctx.stopAtRouteEnd && aim.cursor >= path.length - 1) break;
+      cmd.steer = aim.steer;
+      cmd.targetSpeed = ctx.routeSpeedAt ? Math.min(probe.speed, ctx.routeSpeedAt(aim.cursor)) : probe.speed;
+      const x0 = probe.x;
+      const z0 = probe.z;
+      integrateVehicle(probe, cmd, 0.25, probe);
+      travelled += Math.hypot(probe.x - x0, probe.z - z0);
+      if (!bodyOnRoad(probe, roads, roadMargin)) return { distanceM: travelled, obstacle: null };
+      for (let i = 0; i < holds.length; i++) {
+        const o = holds[i];
+        o.pose.x = o.source.x;
+        o.pose.z = o.source.z;
+        o.pose.heading = o.source.heading ?? 0;
+        if (overlaps(probe, o.pose, 0.35)) return { distanceM: travelled, obstacle: o };
+      }
+    }
+    return { distanceM: Infinity, obstacle: null };
+  }
+  function threatInfo(obstacles, baseline) {
+    const idx = baseline.hardThreat >= 0 ? baseline.hardThreat : baseline.softThreat;
+    if (idx < 0) return null;
+    const o = obstacles[idx];
+    let kind = o.kind;
+    if (kind === "vehicle" && o.cutIn) kind = "cut-in";
+    return { id: o.id, kind, ttcS: baseline.hardT, squeezeS: baseline.softT, wreck: Boolean(o.wreck), passing: o.passing };
+  }
+  function holdThreat(block2, strategy) {
+    const o = block2.obstacle;
+    if (!o || !Number.isFinite(block2.distanceM) || block2.distanceM > strategy.blockLookaheadM) return null;
+    return { id: o.id, kind: o.kind, ttcS: Infinity, wreck: Boolean(o.wreck), distanceM: block2.distanceM };
+  }
+  function trackSlowLeader(world, player, strategy, state, obstacles, vNominal, lane2, hold) {
+    if (hold || !lane2 || lane2.road.width < strategy.passMinRoadWidthM || vNominal < 4) {
+      state.slow = null;
+      return null;
+    }
+    const ego = player.length ?? 4.2;
+    let leader = null;
+    for (const o of obstacles) {
+      if (o.isPed || o.kind === "static" || o.wreck || o.oncoming) continue;
+      const gap = o.forward - (ego + (o.source.length ?? 4.2)) / 2;
+      if (o.forward <= 0 || gap > 26 || Math.abs(o.lateral) > 1.6) continue;
+      if (Math.abs(angleDelta(o.source.heading, player.heading)) > 0.15) continue;
+      if (o.speed < 0.8 || o.speed >= 0.65 * vNominal) continue;
+      if (!leader || o.forward < leader.forward) leader = o;
+    }
+    if (!leader) {
+      state.slow = null;
+      return null;
+    }
+    if (state.slow?.id !== leader.id) state.slow = { id: leader.id, since: world.tick };
+    return world.tick - state.slow.since >= strategy.slowLeaderTicks ? leader : null;
+  }
+  function planPass(world, player, leader, ctx, lane2, vNominal) {
+    const width = player.width ?? 1.85;
+    const leaderLat = coordsOn(lane2.road, lane2.d, leader.source).lat;
+    const target = leaderLat + (width + (leader.source.width ?? 1.85)) / 2 + 1.1;
+    if (target + width / 2 > 1.8) return null;
+    const offset2 = target + lane2.laneOffset;
+    const rel = Math.max(0.5, vNominal - leader.speed);
+    const gap = leader.forward - ((player.length ?? 4.2) + (leader.source.length ?? 4.2)) / 2;
+    const passTime = (gap + (leader.source.length ?? 4.2) + (player.length ?? 4.2) + 4) / rel;
+    const passDist = passTime * vNominal;
+    if (passDist + 20 > 62 || zoneAheadM(world, lane2, lane2.s) < passDist + 12) return null;
+    for (const o of ctx.obstacles) {
+      if (!o.oncoming || o.isPed) continue;
+      if (o.forward > 0 && o.forward - o.speed * passTime < passDist + 20) return null;
+    }
+    const trial = simulate(ctx, offset2, 1);
+    if (!trial.valid || trial.soft1 > 0) return null;
+    const block2 = blockedDistance(ctx, offset2);
+    if (block2.distanceM < passDist) return null;
+    return { id: leader.id, offset: offset2, startTick: world.tick, passDist };
+  }
+  function maintainPass(world, player, strategy, state, obstacles, ctx, vNominal, lane2, hold) {
+    const active3 = state.pass;
+    if (active3) {
+      const o = obstacles.find((candidate) => candidate.id === active3.id);
+      const cleared = !o || o.forward < -((player.length ?? 4.2) + (o.source.length ?? 4.2)) / 2 - 1.5;
+      if (cleared || world.tick - active3.startTick > 1500 || hold) {
+        state.pass = null;
+        state.slow = null;
+        return null;
+      }
+      const trial = simulate(ctx, active3.offset, 1);
+      if (!trial.valid) {
+        state.pass = null;
+        state.slow = null;
+        return null;
+      }
+      active3.leaderSpeed = o.speed;
+      active3.gapM = o.forward - ((player.length ?? 4.2) + (o.source.length ?? 4.2)) / 2;
+      return trial;
+    }
+    const leader = trackSlowLeader(world, player, strategy, state, obstacles, vNominal, lane2, hold);
+    if (!leader) return null;
+    const plan = planPass(world, player, leader, ctx, lane2, vNominal);
+    if (!plan) return null;
+    state.pass = plan;
+    return simulate(ctx, plan.offset, 1);
+  }
+  function brakeRate(strategy, speed, ttcS, emergency) {
+    if (emergency && ttcS < 0.5) return Infinity;
+    if (!(ttcS < 2.8)) return strategy.comfortDecelMps2;
+    const need = 1.15 * speed / (2 * Math.max(ttcS, 0.3));
+    if (ttcS < strategy.imminentContactS) return clamp(Math.max(3.4, need), 3.4, 6);
+    return clamp(need, strategy.comfortDecelMps2, 3.4);
+  }
+  function allowedOffsets(player, strategy) {
+    const radius = strategy.parkingArrivalRadiusM;
+    const offsets = strategy.offsetsM;
+    if (!radius || !player.parking) return offsets;
+    const dist = Math.hypot(player.parking.x - player.x, player.parking.z - player.z);
+    if (dist >= radius) return offsets;
+    const reach = Math.max(...offsets.map(Math.abs)) * (dist / radius);
+    return offsets.filter((offset2) => Math.abs(offset2) <= reach);
+  }
+  function pedestrianOnlyThreat(player, threat, obstacles) {
+    if (threat?.kind !== "pedestrian") return false;
+    const hx = Math.sin(player.heading);
+    const hz = Math.cos(player.heading);
+    return !obstacles.some((o) => {
+      if (o.isPed) return false;
+      const dx = o.source.x - player.x;
+      const dz = o.source.z - player.z;
+      const forward2 = dx * hx + dz * hz;
+      return forward2 > -2 && forward2 < 35 && Math.abs(dx * hz - dz * hx) < 4;
+    });
+  }
+  function cappedForPedestrians(world, player, strategy, perception, threat, offsets) {
+    const cap = strategy.pedestrianOffsetCapM;
+    if (!cap || !pedestrianOnlyThreat(player, threat, perception.obstacles)) return offsets;
+    const lane2 = perception.lane;
+    const nearJunction = perception.gate && perception.gate.distanceM < strategy.pedestrianCapJunctionM || lane2 && zoneAheadM(world, lane2, lane2.s) < strategy.pedestrianCapJunctionM;
+    if (!nearJunction && (player.speed ?? 0) >= strategy.pedestrianCapSpeedMps) return offsets;
+    return offsets.filter((offset2) => Math.abs(offset2) <= cap);
+  }
+  function nearParking(player, strategy) {
+    const radius = strategy.parkingArrivalRadiusM;
+    return Boolean(radius) && Boolean(player.parking) && Math.hypot(player.parking.x - player.x, player.parking.z - player.z) < radius;
+  }
+  function cruiseSpeed(player, strategy, perception, baseCommand, state) {
+    const { gate, hold, road: road4 } = perception;
+    let nominal = Math.min(idealPathSpeed(player, player.path, player.cursor ?? 0), road4.limit, player.maxSpeed);
+    if (strategy.honorBaseSpeed && Math.abs(state.commandOffset) < 0.3 && Number.isFinite(baseCommand.targetSpeed)) nominal = Math.min(nominal, Math.max(0, baseCommand.targetSpeed));
+    let raw = nominal;
+    if (gate) {
+      const taper = Math.sqrt(2 * strategy.junctionTaperMps2 * Math.max(0, gate.distanceM - (gate.stopBeforeM ?? 0.55)));
+      raw = Math.min(raw, gate === hold ? taper : Math.max(1.8, taper));
+    }
+    return { nominal, cruise: Number.isFinite(raw) ? Math.max(raw, 0) : player.maxSpeed };
+  }
+  function planHold(world, player, state, hold, hooks) {
+    state.offset = 0;
+    state.factor = 1;
+    state.calm = 0;
+    state.pass = null;
+    state.slow = null;
+    state.clear = false;
+    state.contactT = Infinity;
+    state.reaction = "junction-hold";
+    state.brakeTtcS = Infinity;
+    state.threat = { id: hold.blockedBy, kind: "junction", ttcS: Infinity, wreck: false };
+    state.cache = { candidates: 0, ttc: Infinity, minGap: 2.6, boxed: false };
+    hooks.onHoldWait?.(hold);
+    return {
+      reaction: "junction-hold",
+      threat: state.threat,
+      ttcS: Infinity,
+      offset: 0,
+      minGap: 2.6,
+      factor: 1,
+      extra: { hold }
+    };
+  }
+  function evaluate(world, player, strategy, perception, state, vCruise, vNominal) {
+    const { gate, gateOnly, hold } = perception;
+    state.lastEvalTick = world.tick;
+    const { obstacles, lane: lane2 } = perception.obstacles ? perception : perception.refresh();
+    const ctx = {
+      player,
+      path: player.path,
+      cursor0: player.cursor ?? 0,
+      vCruise: Math.max(vCruise, 2),
+      obstacles,
+      roads: world.roads,
+      lane: lane2,
+      roadMargin: strategy.allowCurbClearance ? -0.2 : 0.1,
+      blockLookaheadM: strategy.blockLookaheadM,
+      stopAtRouteEnd: strategy.stopRolloutAtRouteEnd,
+      laneCrossMinWidthM: strategy.laneCrossMinRoadWidthM,
+      routeSpeedAt: strategy.followRouteSpeedProfile ? routeSpeedProfile(player) : null,
+      proactive: false,
+      blocked: null
+    };
+    const baseline = simulate(ctx, 0, 1);
+    const centreBlock = blockedDistance(ctx, 0);
+    const clear = baseline.valid && baseline.soft1 === 0 && baseline.soft < 0.5 && centreBlock.distanceM > 30;
+    const threat = threatInfo(obstacles, baseline) ?? holdThreat(centreBlock, strategy);
+    ctx.proactive = Boolean(threat) && !threat.passing && strategy.proactiveKinds.includes(threat.kind);
+    const stages = strategy.releaseStages;
+    const sinceBrake = world.tick - state.emergencyTick;
+    const releaseCap = sinceBrake < stages.length * strategy.brakeHoldTicks ? stages[Math.floor(sinceBrake / strategy.brakeHoldTicks)] : 1;
+    const hasParking = nearParking(player, strategy);
+    let boxedTtc = Infinity;
+    let chosen;
+    let candidates2 = 1;
+    let extra = null;
+    const passTrial = strategy.allowSlowLeaderPass && !hasParking ? maintainPass(world, player, strategy, state, obstacles, ctx, vNominal, lane2, hold) : null;
+    if (passTrial) {
+      chosen = passTrial;
+      extra = { detail: `Overtaking slow ${state.slow ? "leader" : "traffic"} ${state.pass.id} via ${signed(passTrial.offset)} m` };
+    } else if (clear) {
+      state.calm++;
+      const relaxed = state.offset === 0 || state.calm >= 6;
+      if (relaxed) {
+        chosen = releaseCap < 1 ? { ...baseline, factor: releaseCap } : baseline;
+        if (state.offset !== 0) state.lastSwitchTick = world.tick;
+      }
+    } else state.calm = 0;
+    if (!chosen) {
+      const offsets = cappedForPedestrians(world, player, strategy, perception, threat, allowedOffsets(player, strategy));
+      const results = [];
+      for (const factor of strategy.speedFactors) {
+        for (const offset2 of offsets) {
+          results.push(offset2 === 0 && factor === 1 ? baseline : simulate(ctx, offset2, factor));
+        }
+      }
+      candidates2 = results.length;
+      ctx.blocked = new Map(offsets.map((offset2) => [offset2, offset2 === 0 ? centreBlock : blockedDistance(ctx, offset2)]));
+      state.lastResults = results;
+      const commit = { offset: state.offset, factor: state.factor };
+      let valid = results.filter((r) => r.valid);
+      if (state.stallTicks > 90) state.moveUntilTick = world.tick + 300;
+      if (world.tick < state.moveUntilTick && valid.some((r) => r.factor > 0)) valid = valid.filter((r) => r.factor > 0);
+      if (threat?.passing && baseline.hardT === Infinity && valid.some((r) => r.factor > 0.2))
+        valid = valid.filter((r) => r.factor > 0.2);
+      if (releaseCap < 1 && valid.some((r) => r.factor <= releaseCap)) valid = valid.filter((r) => r.factor <= releaseCap);
+      let best = null;
+      if (valid.length) {
+        let bestCost = Infinity;
+        for (const r of valid) {
+          const c = strategy.scoreCandidate(r, ctx, commit);
+          r.cost = c;
+          if (c < bestCost) {
+            bestCost = c;
+            best = r;
+          }
+        }
+        const current = valid.find((r) => r.offset === commit.offset && r.factor === commit.factor);
+        const dwellOver = world.tick - state.lastSwitchTick >= strategy.minDwellTicks;
+        if (current && best !== current && (!dwellOver || best.cost > current.cost - strategy.switchMargin)) best = current;
+      } else {
+        const timeOf = (r) => Math.min(r.hardT, r.offRoadT);
+        best = results.reduce((a, b) => {
+          const ta = timeOf(a);
+          const tb = timeOf(b);
+          if (tb > ta + 1e-6) return b;
+          if (ta > tb + 1e-6) return a;
+          return Math.abs(b.offset) < Math.abs(a.offset) ? b : a;
+        });
+        const held = state.offset !== 0 ? results.filter((r) => r.offset === state.offset) : [];
+        if (held.length) {
+          const keep = held.reduce((a, b) => timeOf(b) > timeOf(a) ? b : a);
+          if (timeOf(keep) >= timeOf(best) - 0.2) best = keep;
+        }
+        boxedTtc = timeOf(best);
+        best = boxedTtc < strategy.imminentContactS ? { ...best, factor: 0, boxed: true } : { ...best, factor: Math.min(best.factor, 0.3) };
+      }
+      chosen = best;
+    }
+    if (chosen.offset !== state.offset || chosen.factor !== state.factor) state.lastSwitchTick = world.tick;
+    state.offset = chosen.offset;
+    state.factor = chosen.factor;
+    const hardT = baseline.hardT;
+    let reaction = strategy.selectReaction({
+      chosen,
+      clear,
+      threat,
+      hardT,
+      speed: player.speed ?? 0,
+      passing: Boolean(state.pass),
+      commandOffset: state.commandOffset
+    });
+    let reported = threat;
+    if (reaction === "cruising" && gateOnly && vCruise < 1 && (player.speed ?? 0) < 1) {
+      reaction = "junction-hold";
+      reported = { id: gate.zoneId ?? "junction", kind: "junction", ttcS: Infinity, wreck: false };
+      extra = { detail: "Waiting at the junction line for traffic in the junction" };
+    }
+    if (reaction === "emergency-brake") state.emergencyTick = world.tick;
+    const dodging = Math.abs(chosen.offset) >= 0.6 && !chosen.boxed;
+    state.brakeTtcS = Math.min(dodging ? Infinity : hardT, chosen.hardT ?? Infinity, boxedTtc);
+    state.reaction = reaction;
+    state.threat = reported;
+    state.contactT = Math.min(chosen.hardT ?? Infinity, chosen.offRoadT ?? Infinity);
+    state.clear = clear && !state.pass && releaseCap >= 1;
+    state.cache = { candidates: candidates2, ttc: hardT, minGap: chosen.minGap ?? baseline.minGap, boxed: Boolean(chosen.boxed) };
+    return {
+      reaction,
+      threat: reported,
+      ttcS: hardT,
+      offset: state.offset,
+      minGap: state.cache.minGap,
+      factor: state.factor,
+      extra
+    };
+  }
+  function planTrajectory(world, player, perception, strategy, state, baseCommand, hooks = {}) {
+    const { gate, hold } = perception;
+    const { nominal: vNominal, cruise: vCruise } = cruiseSpeed(player, strategy, perception, baseCommand, state);
+    const atHold = Boolean(hold) && (vCruise < 0.5 || (player.speed ?? 0) < 0.5);
+    state.stallTicks = (player.speed ?? 0) < 0.3 && !atHold ? state.stallTicks + 1 : 0;
+    let report = null;
+    if (atHold) report = planHold(world, player, state, hold, hooks);
+    else if (world.tick - state.lastEvalTick >= strategy.evalEveryTicks)
+      report = evaluate(world, player, strategy, perception, state, vCruise, vNominal);
+    if (strategy.transparentWhenClear && state.clear && !gate && state.reaction === "cruising" && !state.pass && state.offset === 0 && state.factor === 1 && Math.abs(state.commandOffset) < 0.02) {
+      state.commandOffset = 0;
+      state.speedTarget = null;
+      return { transparent: true, report, reaction: "cruising", threat: null, steer: baseCommand.steer, targetSpeed: baseCommand.targetSpeed };
+    }
+    const emergency = state.reaction === "emergency-brake";
+    const step = strategy.offsetSlewMps * STEP;
+    state.commandOffset += clamp(state.offset - state.commandOffset, -step, step);
+    const steerOut = aimSteer(player, player.path, player.cursor ?? 0, state.commandOffset, { steer: 0, cursor: 0 });
+    let desired = vCruise * state.factor;
+    const pass = state.pass;
+    if (pass && pass.gapM > -1 && Math.abs(state.commandOffset - pass.offset) > 0.35)
+      desired = Math.min(desired, Math.max((pass.leaderSpeed ?? 0) + 0.4, 1.5));
+    const current = Math.max(player.speed ?? 0, 0);
+    if (state.speedTarget === null) state.speedTarget = current;
+    if (!emergency && desired > 0.5 && Math.abs(desired - state.speedTarget) < 0.3) {
+    } else if (desired > state.speedTarget) {
+      state.speedTarget = Math.min(desired, Math.max(current, state.speedTarget) + strategy.comfortAccelMps2 * STEP);
+    } else {
+      const rate = brakeRate(strategy, current, state.brakeTtcS, emergency);
+      state.speedTarget = Number.isFinite(rate) ? Math.max(desired, Math.min(state.speedTarget, current + 1) - rate * STEP) : desired;
+    }
+    const reaction = state.reaction;
+    const shifted = Math.abs(state.commandOffset) >= 0.4 && reaction !== "junction-hold";
+    let displacedHold = false;
+    if (reaction === "junction-hold") {
+      const at = nearestPathPoint(player.path, player.x, player.z, player.cursor ?? 0);
+      const here = player.path[at];
+      const ahead = player.path[Math.min(player.path.length - 1, at + 4)];
+      const skew = ahead === here ? 0 : Math.abs(angleDelta(player.heading, Math.atan2(ahead.x - here.x, ahead.z - here.z)));
+      displacedHold = Math.hypot(here.x - player.x, here.z - player.z) > 1.2 || skew > 0.25;
+    }
+    return {
+      transparent: false,
+      report,
+      reaction,
+      threat: state.threat,
+      steer: displacedHold ? 0 : steerOut.steer,
+      targetSpeed: Math.max(0, state.speedTarget),
+      shifted,
+      displacedHold,
+      offset: state.offset,
+      factor: state.factor,
+      ttcS: state.cache?.ttc ?? null,
+      minClearanceM: state.cache?.minGap ?? null,
+      contactT: state.contactT
+    };
+  }
+
+  // src/core/driver/safety-shield.js
+  var SHIELD_BRAKE_MPS2 = 6;
+  var SHIELD_STOP_MARGIN_M = 0.4;
+  function stoppingEnvelope(strategy, plan, speed) {
+    if (!strategy.enforceStoppingEnvelope || !(plan.contactT < strategy.imminentContactS)) return Infinity;
+    const room = Math.max(0, speed * plan.contactT - SHIELD_STOP_MARGIN_M);
+    return Math.sqrt(2 * SHIELD_BRAKE_MPS2 * room);
+  }
+  function reportedReaction(plan) {
+    if (plan.reaction === "emergency-brake" && plan.threat?.passing) return "defensive-yield";
+    return plan.reaction;
+  }
+  function applySafetyShield(world, player, perception, plan, strategy) {
+    const dims = playerVehicleDimensions(player);
+    if (plan.transparent) {
+      return {
+        steer: plan.steer,
+        targetSpeed: plan.targetSpeed,
+        reason: plan.baseReason ?? "driving",
+        blockedBy: null,
+        usePlannedPath: true,
+        defensiveState: { reaction: "cruising", enabled: true, offsetM: 0, speedFactor: 1, dims }
+      };
+    }
+    const reaction = reportedReaction(plan);
+    const speed = Math.max(player.speed ?? 0, 0);
+    const targetSpeed = Math.max(0, Math.min(plan.targetSpeed, stoppingEnvelope(strategy, plan, speed)));
+    const quiet = reaction === "cruising";
+    return {
+      steer: plan.steer,
+      targetSpeed,
+      reason: quiet ? plan.baseReason ?? "driving" : reaction,
+      blockedBy: quiet ? null : plan.threat?.id ?? null,
+      usePlannedPath: !(reaction === "evasive-shift" || reaction === "accident-bypass" || plan.shifted || plan.displacedHold),
+      defensiveState: {
+        reaction,
+        enabled: true,
+        offsetM: plan.offset,
+        speedFactor: plan.factor,
+        threatId: plan.threat?.id ?? null,
+        threatKind: plan.threat?.kind ?? null,
+        ttcS: plan.ttcS ?? null,
+        minClearanceM: plan.minClearanceM ?? null,
+        dims
+      }
+    };
+  }
+
+  // src/core/driver/unified-driver.js
+  var STALE_STATE_TICKS = 120;
+  function wideRoadIds(world) {
+    const cache = world._defensiveWideRoads;
+    if (cache?.source === world.district.drivingRoads) return cache.ids;
+    const ids = new Set(world.district.drivingRoads.filter((road4) => road4.width >= 10 && !road4.parkingBay && !road4.supportApron).map((road4) => road4.id));
+    world._defensiveWideRoads = { source: world.district.drivingRoads, ids };
+    return ids;
+  }
+  function cruiseGoals(world, player, sideways = false) {
+    const ids = wideRoadIds(world);
+    const hx = Math.sin(player.heading);
+    const hz = Math.cos(player.heading);
+    const scored = [];
+    for (const goal of world.district.trafficGoals) {
+      if (!ids.has(goal.roadId)) continue;
+      const dx = goal.x - player.x;
+      const dz = goal.z - player.z;
+      const ahead = dx * hx + dz * hz;
+      const dist = Math.hypot(dx, dz);
+      if (ahead < (sideways ? 15 : 70) || dist > 520) continue;
+      const bend = Math.abs(angleDelta(goal.heading, player.heading));
+      const lateral2 = Math.abs(dx * hz - dz * hx);
+      const score = sideways ? bend * 12 + Math.abs(dist - 200) * 0.2 : lateral2 * 1.2 + bend * 55 + Math.abs(dist - 260) * 0.12;
+      scored.push({ goal, score });
+    }
+    scored.sort((a, b) => a.score - b.score);
+    return scored.slice(0, 8).map((row) => row.goal);
+  }
+  function planCruiseRoute(world, player, { avoid = null, limit = 2, start = 0 } = {}) {
+    const frame = laneFrame(world, player, { maxPsi: 1 });
+    let body = player;
+    if (frame && Math.abs(frame.lat + frame.laneOffset) > 0.3) {
+      const ahead = 6;
+      const along2 = frame.d * (frame.s + ahead);
+      const left = frame.d * frame.laneOffset;
+      const road4 = frame.road;
+      const point2 = road4.axis === "z" ? { x: road4.fixed - left, z: along2 } : road4.axis === "x" ? { x: along2, z: road4.fixed + left } : { x: road4.x1 + along2 * road4.ux - left * road4.uz, z: road4.z1 + along2 * road4.uz + left * road4.ux };
+      body = { ...player, x: point2.x, z: point2.z, heading: frame.laneHeading };
+    }
+    const goals = cruiseGoals(world, player, Boolean(avoid));
+    for (let i = 0; i < Math.min(limit, goals.length); i++) {
+      const path = planDistrictRoute(world.district, body, goals[(start + i) % goals.length], world.actors);
+      if (path.length <= 20) continue;
+      if (avoid && path.slice(0, 220).some((p) => Math.hypot(p.x - avoid.x, p.z - avoid.z) < 6)) continue;
+      return path;
+    }
+    return [];
+  }
+  function laneKeepPath(world, player) {
+    const frame = laneFrame(world, player, { maxPsi: 1 });
+    if (!frame) return [];
+    const room = frame.d > 0 ? frame.road.max - frame.along : frame.along - frame.road.min;
+    return straightLanePath(frame, frame.s + 4, -frame.laneOffset, Math.min(160, room - 24));
+  }
+  function keepAvenueForAccident(world, player, lock) {
+    const path = player.path;
+    if (path?.length > 1) {
+      for (let i = player.cursor ?? 0; i < path.length; i++) {
+        const c = coordsOn(lock.road, lock.d, path[i]);
+        if (c.s > lock.sLimit) return false;
+        if (Math.abs(c.lat) > lock.halfW + 0.5) break;
+        if (i === path.length - 1) return false;
+      }
+    }
+    const room = lock.d > 0 ? lock.road.max - lock.d * lock.sEgo : lock.d * lock.sEgo - lock.road.min;
+    const frame = { road: lock.road, d: lock.d };
+    const fresh = straightLanePath(frame, lock.sEgo + 3, -lock.laneOffset, Math.min(220, room - 24));
+    if (fresh.length < 2) return false;
+    player.path = fresh;
+    player.cursor = 0;
+    world.routeRevision++;
+    return true;
+  }
+  function maintainRoute(world, player, strategy, base, state) {
+    const lock = strategy.getRouteLock(world, player);
+    if (lock && world.tick - state.lockTick >= 12) {
+      state.lockTick = world.tick;
+      if (keepAvenueForAccident(world, player, lock)) return player.path;
+    }
+    const remaining = player.path.length > 1 ? base.remaining ?? 0 : 0;
+    const mustPlan = player.path.length < 2 || remaining < 18;
+    const shouldPlan = mustPlan || remaining < 60 && Math.abs(state.offset) < 0.3 && state.reaction === "cruising";
+    if (!shouldPlan || world.tick - state.routeTick < (mustPlan ? 8 : 24)) return null;
+    state.routeTick = world.tick;
+    state.goalCursor += 2;
+    let path = lock ? [] : planCruiseRoute(world, player, { limit: 2, start: state.goalCursor - 2 });
+    if (!path.length && player.path.length < 2) path = laneKeepPath(world, player);
+    if (!path.length) return null;
+    player.path = path;
+    player.cursor = 0;
+    world.routeRevision++;
+    return path;
+  }
+  function rerouteAtHold(world, player, strategy, state, hold) {
+    if (hold.reason === "district-exit-storage" || hold.reason === "district-entry-queue") {
+      state.jamId = hold.blockedBy;
+      state.jamTick = world.tick;
+    }
+    if ((hold.waitS ?? 0) > 8 && world.tick - state.rerouteTick > 360 && strategy.allowRerouteAtHold(world, player, hold)) {
+      state.rerouteTick = world.tick;
+      const jamId = world.tick - (state.jamTick ?? -Infinity) < 900 ? state.jamId : hold.blockedBy;
+      const jam = world.actors.find((actor) => actor.id === jamId);
+      if (jam) {
+        const path = planCruiseRoute(world, player, { avoid: jam, limit: 4 });
+        if (path.length) {
+          player.path = path;
+          player.cursor = 0;
+          world.routeRevision++;
+        }
+      }
+    }
+  }
+  function holdDetail(hold) {
+    const who = typeof hold.blockedBy === "string" ? ` for ${hold.blockedBy}` : "";
+    return `Waiting at the junction line (${hold.reason})${who}, ${Math.round(hold.waitS ?? 0)} s`;
+  }
+  function detailText(reaction, threat, offset2, factor, extra) {
+    const who = threat ? `${threat.kind} ${threat.id}` : "traffic";
+    if (reaction === "junction-hold") return extra?.detail ?? "Waiting at the junction line";
+    if (reaction === "no-route") return "No route ahead; holding the lane";
+    if (reaction === "accident-bypass") return `Shifting ${signed(offset2)} m around ${who}`;
+    if (reaction === "evasive-shift") return extra?.detail ?? `Shifting ${signed(offset2)} m away from ${who}`;
+    if (reaction === "defensive-yield") return `Easing to ${Math.round(factor * 100)}% speed for ${who}`;
+    if (reaction === "emergency-brake") return `Emergency braking for ${who}`;
+    return "Corridor clear";
+  }
+  function publish(world, reaction, threat, ttc, offset2, minGap, factor, extra = null) {
+    const chaos = world.streetChaos;
+    if (!chaos?.active) return;
+    const round = (v, k) => Number.isFinite(v) ? Math.round(v * k) / k : null;
+    chaos.egoReaction = {
+      reaction,
+      threatId: threat?.id ?? null,
+      threatKind: threat?.kind ?? null,
+      ttcS: round(ttc, 100),
+      chosenOffsetM: Math.round(offset2 * 10) / 10,
+      minClearanceM: Math.round(minGap * 100) / 100,
+      reasonDetail: detailText(reaction, threat, offset2, factor, extra),
+      ...Number.isFinite(threat?.squeezeS) ? { squeezeS: round(threat.squeezeS, 100) } : {},
+      ...extra?.holdReason ? { holdReason: extra.holdReason, waitS: extra.waitS } : {}
+    };
+  }
+  function publishReport(world, report) {
+    if (!report) return;
+    const hold = report.extra?.hold;
+    if (hold) {
+      publish(
+        world,
+        "junction-hold",
+        report.threat,
+        Infinity,
+        0,
+        2.6,
+        1,
+        { detail: holdDetail(hold), holdReason: hold.reason, waitS: Math.round((hold.waitS ?? 0) * 10) / 10 }
+      );
+      return;
+    }
+    publish(world, report.reaction, report.threat, report.ttcS, report.offset, report.minGap, report.factor, report.extra);
+  }
+  function stepUnifiedDriver(world, player, baseCommand, strategy, options2 = {}) {
+    let state = driverStateOf(player);
+    if (world.tick - state.lastStepTick > STALE_STATE_TICKS) {
+      resetDriverState(player);
+      state = driverStateOf(player);
+    }
+    state.lastStepTick = world.tick;
+    const disabled = options2.disableLateralAvoidance === true || options2.disableDefensiveAvoidance === true;
+    const routed = strategy.maintainContinuousCruise ? maintainRoute(world, player, strategy, baseCommand, state) : null;
+    let base = baseCommand;
+    if (routed) base = { ...baseCommand, ...followPath(player, player.path, 0) };
+    const perception = perceiveCorridor(world, player, strategy, state, { obstacles: false });
+    state.gateWaitTicks = perception.gateOnly && (player.speed ?? 0) < 0.3 ? state.gateWaitTicks + 1 : 0;
+    if (state.gateWaitTicks > 90) {
+      state.zoneIgnoreUntil = world.tick + 360;
+      state.gateWaitTicks = 0;
+    }
+    if (!player.path || player.path.length < 2) {
+      state.speedTarget = null;
+      state.reaction = "no-route";
+      publish(world, "no-route", null, Infinity, 0, 2.6, 0);
+      return {
+        steer: 0,
+        targetSpeed: 0,
+        reason: "no-route",
+        blockedBy: null,
+        usePlannedPath: true,
+        defensiveState: {
+          reaction: "no-route",
+          enabled: !disabled,
+          offsetM: 0,
+          speedFactor: 0,
+          dims: playerVehicleDimensions(player)
+        }
+      };
+    }
+    if (disabled) {
+      return {
+        steer: base.steer,
+        targetSpeed: base.targetSpeed,
+        reason: base.reason ?? "driving",
+        blockedBy: null,
+        usePlannedPath: true,
+        defensiveState: {
+          reaction: "cruising",
+          enabled: false,
+          offsetM: 0,
+          speedFactor: 1,
+          dims: playerVehicleDimensions(player)
+        }
+      };
+    }
+    const hooks = strategy.maintainContinuousCruise ? { onHoldWait: (hold) => rerouteAtHold(world, player, strategy, state, hold) } : {};
+    const plan = planTrajectory(world, player, perception, strategy, state, base, hooks);
+    plan.baseReason = base.reason;
+    publishReport(world, plan.report);
+    return applySafetyShield(world, player, perception, plan, strategy);
+  }
+
+  // src/core/defensive-driver.js
+  var DEFENSIVE_OFFSETS_M = CAIRO_DEFENSIVE_STRATEGY.offsetsM;
+  var DEFENSIVE_SPEED_FACTORS = CAIRO_DEFENSIVE_STRATEGY.speedFactors;
+  var defensiveAutoCommand = (world, player, baseCommand, options2 = {}) => stepUnifiedDriver(world, player, baseCommand, CAIRO_DEFENSIVE_STRATEGY, options2);
 
   // src/core/pursuit-policy.js
   var PURSUIT_POLICY_VERSION = 2;
@@ -23610,6 +27042,7 @@
           throw new Error("Unsupported City interaction profile");
         if (options2.vehicleDynamics !== "legacy")
           this.config.vehicleDynamics = "city-realism-v1";
+        if (options2.unifiedDriver === false) this.config.unifiedDriver = false;
         if (this.config.vehicleDynamics === "city-realism-v1" && options2.terrainProfile !== "flat")
           this.config.terrainProfile = "cairo-surfaces-v1";
         if (this.config.vehicleDynamics === "city-realism-v1" && this.config.terrainProfile === "cairo-surfaces-v1" && options2.interactionProfile !== "none")
@@ -23958,6 +27391,11 @@
       this.capacity = { traffic: this.config.traffic, pedestrians: this.config.pedestrians };
     }
     assignTrafficRoute(car) {
+      if (this.streetChaos?.active && car.kind === "truck" && car.id.startsWith("chaos-truck-")) {
+        car.path = [];
+        car.cursor = 0;
+        return false;
+      }
       if (this.district) {
         const goals = this.district.trafficGoals;
         const start = Math.floor(this.rng.next() * goals.length);
@@ -24074,9 +27512,43 @@
     }
     command(command, record = true) {
       if (command.type === "player-vehicle") return this.selectPlayerVehicle(command.model, record);
+      if (typeof command.type === "string" && command.type.startsWith("street-chaos-")) {
+        if (this.environment !== "metro") throw new Error("Cairo Traffic is only available in City");
+        let result = true;
+        if (command.type === "street-chaos-start") {
+          beginStreetChaos(this, command);
+          if (this.mode === "auto") {
+            manualControlMap.delete(this);
+            driveNitroMap.delete(this);
+          }
+        } else if (command.type === "street-chaos-stop") {
+          endStreetChaos(this);
+          if (this.mode === "manual") {
+            manualControlMap.delete(this);
+            driveNitroMap.delete(this);
+            this.input = { targetSpeed: 0, steer: 0 };
+          }
+        } else if (command.type === "street-chaos-event") {
+          result = Boolean(triggerStreetChaosEvent(this, command.kind));
+        } else if (command.type === "street-chaos-driver") {
+          const mode = command.mode ?? command.driverMode ?? command.driver;
+          setStreetChaosDriver(this, mode);
+          if (mode === "auto") {
+            manualControlMap.delete(this);
+            driveNitroMap.delete(this);
+          } else {
+            manualControlMap.delete(this);
+            driveNitroMap.delete(this);
+            this.input = { targetSpeed: clamp(this.player.speed, 0, this.player.maxSpeed), steer: 0 };
+          }
+        } else throw new Error("Unknown Cairo Traffic command");
+        if (record) this.events.push({ tick: this.tick, command: structuredClone(command) });
+        return result;
+      }
       if (command.type === "street-pursuit-start" || command.type === "street-pursuit-stop") {
         if (this.environment !== "metro") throw new Error("Street pursuit is only available in City");
         if (command.type === "street-pursuit-start") {
+          if (this.streetChaos?.active) throw new Error("End Cairo Traffic before starting Chase");
           if (this.pursuit?.phase === "running") throw new Error("A street pursuit is already running");
           const pack = isPackPursuit(command.variant);
           const training = pack && !isSurvival(command.variant);
@@ -24625,6 +28097,8 @@
         this.stepPursuitMode(ownMotion, nowS);
         return;
       }
+      const chaosOn = this.streetChaos?.active === true;
+      if (chaosOn) stepStreetChaos(this);
       const metroV5 = this.environment === "metro" && (this.config?.cityVersion ?? 0) >= 5;
       const ambientMetroV5 = metroV5 && !(this.districtCase && this.districtCase.id !== "ambient");
       if (this.district && (!ambientMetroV5 || (this.tick & 3) === 0)) updateDistrictTraffic(this);
@@ -24742,7 +28216,7 @@
                 stCache = { staticIndex: this.staticIndex, x: actor.x, z: actor.z, statics: closeStatics };
                 distantStaticClearCache.set(cacheKey, stCache);
               }
-              const nearRes = reserved.near(actor, 4);
+              const nearRes = reserved.near(actor, chaosOn ? 6.5 : 4);
               const rSelf = actor.radius ?? 0.38;
               let hasCloseBody = stCache.statics.length > 0;
               if (!hasCloseBody) {
@@ -24757,9 +28231,12 @@
                       hasCloseBody = true;
                       break;
                     }
-                  } else if (Math.abs(dx) <= 3.65 && Math.abs(dz) <= 3.65) {
-                    hasCloseBody = true;
-                    break;
+                  } else {
+                    const vReach = chaosOn && other.length > 5.5 ? other.length * 0.5 + 1.55 : 3.65;
+                    if (Math.abs(dx) <= vReach && Math.abs(dz) <= vReach) {
+                      hasCloseBody = true;
+                      break;
+                    }
                   }
                 }
               }
@@ -24800,7 +28277,7 @@
             }) : this.pedestrianMotion(actor);
           }
         } else {
-          const cachedCarEntry = nonStrideTick && actor !== this.player && actorDistSq > 95 * 95 ? distantWorldVehicleCmdCache.get(actor) : null;
+          const cachedCarEntry = nonStrideTick && actor !== this.player && actorDistSq > 95 * 95 && !(chaosOn && streetChaosActorNeedsCommand(this, actor)) ? distantWorldVehicleCmdCache.get(actor) : null;
           if (cachedCarEntry && this.tick - cachedCarEntry.tick <= strideMask && actor.reason !== "road-boundary" && actor.districtSources?.appliedSource !== "physical-guard" && actor.path.length > 2) {
             appliedCommand = cachedCarEntry.cmd;
             if (actor.speed === 0 && appliedCommand.targetSpeed === 0) {
@@ -24885,8 +28362,52 @@
               command.targetSpeed = policySpeed(this, actor, command.targetSpeed);
             if (actor === this.player && this.districtCase && this.districtCase.id !== "ambient")
               command.targetSpeed = this.districtCase.error ? 0 : Math.min(command.targetSpeed, this.districtCase.requestedSpeedMps);
-            if (this.district) command = this.districtDrivingCommand(actor, command, ownMotion, nowS);
-            else {
+            let usePlannedPath = true;
+            let chaosPipeline;
+            if (chaosOn && actor.type === "vehicle") {
+              if (actor === this.player) {
+                if (this.mode === "auto" && !controlledTest) {
+                  const defensive = defensiveAutoCommand(
+                    this,
+                    actor,
+                    command,
+                    { disableDefensiveAvoidance: this.streetChaos.disableDefensiveAvoidance === true }
+                  );
+                  command = {
+                    ...command,
+                    steer: defensive.steer,
+                    targetSpeed: defensive.targetSpeed,
+                    reason: defensive.reason,
+                    blockedBy: defensive.blockedBy,
+                    ...defensive.cursor === void 0 ? {} : { cursor: defensive.cursor }
+                  };
+                  usePlannedPath = defensive.usePlannedPath !== false;
+                }
+              } else {
+                command = streetChaosTrafficCommand(this, actor, command);
+                if (command.chaosPipeline !== void 0 || command.usePlannedPath !== void 0) {
+                  const { chaosPipeline: pipeline, usePlannedPath: planned, ...rest } = command;
+                  chaosPipeline = pipeline;
+                  usePlannedPath = planned !== false;
+                  command = rest;
+                }
+              }
+            } else if (metroV5 && !this.pursuit && actor === this.player && this.mode === "auto" && !controlledTest && this.config?.vehicleDynamics === "city-realism-v1" && this.config.unifiedDriver !== false && !(this.districtCase && this.districtCase.id !== "ambient") && actor.path.length > 1) {
+              const unified = stepUnifiedDriver(this, actor, command, CITY_CRUISE_STRATEGY);
+              command = {
+                ...command,
+                steer: unified.steer,
+                targetSpeed: unified.targetSpeed,
+                reason: unified.reason,
+                blockedBy: unified.blockedBy
+              };
+              usePlannedPath = unified.usePlannedPath !== false;
+            }
+            if (this.district) {
+              if (chaosPipeline === "direct") command = { ...command, reason: command.reason ?? "driving", blockedBy: command.blockedBy ?? null };
+              else if (chaosPipeline === "safe") command = this.safeSpeed(actor, command, false);
+              else command = this.districtDrivingCommand(actor, command, ownMotion, nowS, usePlannedPath);
+            } else {
               const predictedBrake = !controlledTest && actor === this.player && this.visualMode === "vision-first" && this.visualDecision?.available === true && this.visualDecision.brake === true;
               const reactiveCommand = controlledTest ? command : this.safeSpeed(actor, command);
               if (actor === this.player && this.visionLab && reactiveCommand.targetSpeed < command.targetSpeed - 0.1 && this.visionLab.firstReactiveBrakeS === null)
@@ -24972,7 +28493,7 @@
             };
             distantStaticClearCache.set(cacheKey, stCache);
           }
-          const nearRes = reserved.near(actor, 4);
+          const nearRes = reserved.near(actor, chaosOn ? 6.5 : 4);
           const rSelf = actor.radius ?? 0.38;
           nearby = [];
           for (let rIdx = 0; rIdx < nearRes.length; rIdx++) {
@@ -24985,8 +28506,11 @@
               if (Math.abs(dx) <= lim && Math.abs(dz) <= lim && dx * dx + dz * dz <= lim * lim) {
                 nearby.push(other);
               }
-            } else if (Math.abs(dx) <= 3.65 && Math.abs(dz) <= 3.65) {
-              nearby.push(other);
+            } else {
+              const vReach = chaosOn && other.length > 5.5 ? other.length * 0.5 + 1.55 : 3.65;
+              if (Math.abs(dx) <= vReach && Math.abs(dz) <= vReach) {
+                nearby.push(other);
+              }
             }
           }
           for (let sIdx = 0; sIdx < stCache.statics.length; sIdx++) {
@@ -25012,14 +28536,14 @@
             stCache = { staticIndex: this.staticIndex, x: actor.x, z: actor.z, statics: closeStatics };
             distantStaticClearCache.set(actor, stCache);
           }
-          const nearRes = reserved.near(actor, 6);
+          const nearRes = reserved.near(actor, chaosOn ? Math.max(8, selfHalfDiag + 6) : 6);
           nearby = [];
           for (let rIdx = 0; rIdx < nearRes.length; rIdx++) {
             const other = nearRes[rIdx];
             if (other.id === actor.id) continue;
             const dx = other.x - next.x;
             const dz = other.z - next.z;
-            const lim = other.type === "pedestrian" ? selfHalfDiag + (other.radius ?? 0.38) + 0.35 : selfHalfDiag + 3.25;
+            const lim = other.type === "pedestrian" ? selfHalfDiag + (other.radius ?? 0.38) + 0.35 : chaosOn ? selfHalfDiag + Math.max(3.25, Math.hypot(other.width ?? 1.9, other.length ?? 4.5) * 0.5 + 0.5) : selfHalfDiag + 3.25;
             if (Math.abs(dx) <= lim && Math.abs(dz) <= lim && dx * dx + dz * dz <= lim * lim) {
               nearby.push(other);
             }
@@ -25373,7 +28897,8 @@
         pursuit: this.pursuit ? {
           ...pursuitSnapshot(this),
           status: { ...this.pursuit.status }
-        } : null
+        } : null,
+        ...this.streetChaos ? { streetChaos: streetChaosSnapshot(this) } : {}
       };
     }
     snapshot() {
@@ -25470,6 +28995,10 @@
           "street-pursuit-start",
           "street-pursuit-stop",
           "spawn-crowd-ahead",
+          "street-chaos-start",
+          "street-chaos-stop",
+          "street-chaos-event",
+          "street-chaos-driver",
           "manual"
         ].includes(event2.command?.type) || event2.command.type === "vehicle-test" && (data.environment !== "vehicle" || !["run", "reset"].includes(event2.command.operation) || event2.command.heavy !== void 0 && typeof event2.command.heavy !== "boolean") || event2.command.type === "player-vehicle" && (data.environment !== "metro" || !isPlayerVehicleModel(event2.command.model)))
           throw new Error("Invalid replay event");
@@ -26057,7 +29586,7 @@
     }
     return clearance;
   }
-  function evaluate(world, start, observed, action, movementTicks = holdTicks) {
+  function evaluate2(world, start, observed, action, movementTicks = holdTicks) {
     const { roads } = world;
     const cos = Math.cos(start.heading), sin = Math.sin(start.heading);
     const brake2 = { ...action, throttle: 0, brake: 1 };
@@ -26139,7 +29668,7 @@
     };
     const observed = observedSpace(scan, world.player);
     const assessed = guardDispatchAction(world, action);
-    const verdict = world.tick - run.tick > 360 ? { rejectReason: "reverse-budget" } : settle ? { rejectReason: null } : assessed.reason ? { rejectReason: "guard-veto", guardReason: assessed.reason } : !observed ? { rejectReason: "stale-track-metadata" } : evaluate(world, start, observed, action, PURSUIT_SCAN_TICKS);
+    const verdict = world.tick - run.tick > 360 ? { rejectReason: "reverse-budget" } : settle ? { rejectReason: null } : assessed.reason ? { rejectReason: "guard-veto", guardReason: assessed.reason } : !observed ? { rejectReason: "stale-track-metadata" } : evaluate2(world, start, observed, action, PURSUIT_SCAN_TICKS);
     const feasible = verdict.rejectReason === null;
     candidates2.push({
       name: settle ? "reverse-settle" : `reverse-${run.stage}`,
@@ -26200,7 +29729,7 @@
     if (heldMin > 1.6 || movingMin - heldMin < 0.15 || nextGap < 0.2)
       return candidate({ rejectReason: "rear-advantage-unproven" });
     const observed = observedSpace(scan, world.player);
-    const verdict = evaluate(world, start, { ...observed, tracks: [] }, action);
+    const verdict = evaluate2(world, start, { ...observed, tracks: [] }, action);
     return candidate(verdict.rejectReason === null ? { ...verdict, minClearanceM: Math.min(verdict.minClearanceM, nextGap) } : verdict);
   }
   function planDispatchEvasion(world, requestedAction) {
@@ -26265,7 +29794,7 @@
     for (const [name, steer] of alternatives) {
       const action = { ...requestedAction, steer, throttle: Math.min(requestedAction.throttle, 0.65) };
       const checked = guardDispatchAction(world, action);
-      const verdict = checked.reason ? { rejectReason: "guard-veto", guardReason: checked.reason } : !observed ? { rejectReason: "stale-track-metadata" } : evaluate(world, start, observed, action);
+      const verdict = checked.reason ? { rejectReason: "guard-veto", guardReason: checked.reason } : !observed ? { rejectReason: "stale-track-metadata" } : evaluate2(world, start, observed, action);
       const candidate = { name, action, feasible: verdict.rejectReason === null, ...verdict };
       candidates2.push(candidate);
       if (candidate.feasible && (!selected || candidate.minClearanceM > selected.minClearanceM + 1e-6 || Math.abs(candidate.minClearanceM - selected.minClearanceM) <= 1e-6 && Math.abs(steer - requestedAction.steer) < Math.abs(selected.action.steer - requestedAction.steer)))
@@ -32133,12 +35662,61 @@
   // src/rl/pako-smart-escape.js
   var SMART_ESCAPE_CONTROL = "pako-smart-escape-v3";
   var memories = /* @__PURE__ */ new WeakMap();
+  var RAY_STEP2 = Math.PI * 2 / PURSUIT_SCAN_RAYS;
+  function stripNitro2(action) {
+    if (!action || !Object.prototype.hasOwnProperty.call(action, "nitro")) return action;
+    return { steer: action.steer, throttle: action.throttle, brake: action.brake, gear: action.gear };
+  }
+  function initRolloutPose(player) {
+    return {
+      ...vehicleProbe(player, player.speed),
+      spec: player.spec,
+      maxSpeed: player.maxSpeed,
+      gtaSlipMps: player.gtaSlipMps ?? 0,
+      gtaYawRate: player.gtaYawRate ?? 0
+    };
+  }
+  function stepPoseWithSlip(pose5, action, dt) {
+    const next = { ...pose5, ...integrateVehicle(pose5, pursuitCommand(pose5, action, dt), dt) };
+    const slip0 = pose5.gtaSlipMps ?? 0;
+    const yaw0 = pose5.gtaYawRate ?? 0;
+    if (Math.abs(slip0) > 1e-4 || Math.abs(yaw0) > 1e-4) {
+      const slip = slip0 * Math.exp(-3.8 * dt);
+      const yaw = yaw0 * Math.exp(-3 * dt);
+      const avgSlip = (slip0 + slip) * 0.5;
+      const avgYaw = (yaw0 + yaw) * 0.5;
+      next.x += Math.cos(next.heading) * avgSlip * dt;
+      next.z -= Math.sin(next.heading) * avgSlip * dt;
+      next.heading += avgYaw * dt;
+      next.gtaSlipMps = slip;
+      next.gtaYawRate = yaw;
+    } else {
+      next.gtaSlipMps = 0;
+      next.gtaYawRate = 0;
+    }
+    return next;
+  }
+  function computeSightSpeedCap(player, frontSightM) {
+    const braking = Math.max(4, player.spec?.braking ?? VEHICLE.braking);
+    const maxSpeed = player.maxSpeed ?? 28;
+    const heavy = braking < 7;
+    const tReact = heavy ? 0.44 : 0.31;
+    const visM = Math.max(8, Math.min(frontSightM, 48) - (heavy ? 5.5 : 4));
+    const effBrake = heavy ? braking * 0.85 : braking;
+    const cap = Math.sqrt(2 * effBrake * visM + (effBrake * tReact) ** 2) - effBrake * tReact;
+    return Math.min(maxSpeed, Math.max(10, cap));
+  }
   function measuredThreats(scan, ego) {
     const sin = Math.sin(ego.heading), cos = Math.cos(ego.heading);
     return scan.tracks.filter((t) => t.kind === "police" && t.ageS <= 0.3).map((t) => ({
       x: ego.x + t.rightM * cos + t.forwardM * sin,
-      z: ego.z - t.rightM * sin + t.forwardM * cos
+      z: ego.z - t.rightM * sin + t.forwardM * cos,
+      rightM: t.rightM,
+      forwardM: t.forwardM
     }));
+  }
+  function forwardPoliceBlocker(scan) {
+    return scan?.tracks?.filter((t) => t.kind === "police" && t.ageS <= 0.3 && t.forwardM > 8 && t.forwardM < 65 && Math.abs(t.rightM) < 6).sort((a, b) => a.forwardM - b.forwardM)[0] ?? null;
   }
   function selectSensorEscapeGoal(world, scan, previous = null) {
     const { player, district } = world;
@@ -32150,9 +35728,15 @@
       awayX += (player.x - threat.x) / (d * d);
       awayZ += (player.z - threat.z) / (d * d);
     }
+    const blocker = player.vehicleModel === "king-long-microbus" ? null : forwardPoliceBlocker(scan);
     const norm = Math.hypot(awayX, awayZ);
-    const hx = norm > 1e-3 ? awayX / norm : Math.sin(player.heading);
-    const hz = norm > 1e-3 ? awayZ / norm : Math.cos(player.heading);
+    let hx = norm > 1e-3 ? awayX / norm : Math.sin(player.heading);
+    let hz = norm > 1e-3 ? awayZ / norm : Math.cos(player.heading);
+    if (blocker) {
+      const turnSide = Math.abs(blocker.rightM) > 0.8 ? -Math.sign(blocker.rightM) : 1;
+      hx = Math.cos(player.heading) * turnSide;
+      hz = -Math.sin(player.heading) * turnSide;
+    }
     const candidates2 = [];
     for (const road4 of world.drivingRoads ?? district.drivingRoads ?? []) {
       if (road4.parkingBay || road4.supportApron) continue;
@@ -32163,12 +35747,16 @@
         if (d < 80 || d > 480 || previous && distance(previous, pose5) < 35) continue;
         const body = { ...player, ...pose5 };
         if (!bodyOnRoad(body, district.roads) || (district.statics ?? []).some((s) => overlaps(body, s, 0.4))) continue;
-        const advance = (pose5.x - player.x) * hx + (pose5.z - player.z) * hz;
-        const headingCost = Math.abs(angleDelta(pose5.heading, player.heading)) * 8;
+        const dx = pose5.x - player.x, dz = pose5.z - player.z;
+        const advance = dx * hx + dz * hz;
+        const headingDelta = Math.abs(angleDelta(pose5.heading, player.heading));
+        const headingCost = headingDelta * 8;
+        const egoForward = dx * Math.sin(player.heading) + dz * Math.cos(player.heading);
+        const corridorTurnScore = blocker && egoForward > 20 ? headingDelta < 0.48 ? -180 : headingDelta > 0.78 && headingDelta < 2.36 ? 82 : 0 : 0;
         candidates2.push({
           ...pose5,
           roadId: road4.id,
-          score: advance * 1.6 - Math.abs(d - 190) * 1.9 - headingCost
+          score: advance * 1.6 - Math.abs(d - 190) * 1.9 - headingCost + corridorTurnScore
         });
       }
     }
@@ -32208,41 +35796,234 @@
     const motion2 = { x: right * cos + forward2 * sin, z: -right * sin + forward2 * cos };
     return Math.hypot(motion2.x, motion2.z) > (track2.kind === "pedestrian" ? 4.5 : 45) ? { x: 0, z: 0 } : motion2;
   }
+  function boxGapToPoint(pose5, px, pz, halfW, halfL) {
+    const dx = px - pose5.x, dz = pz - pose5.z;
+    const c = Math.cos(pose5.heading), s = Math.sin(pose5.heading);
+    const right = Math.abs(dx * c - dz * s) - halfW;
+    const forward2 = Math.abs(dx * s + dz * c) - halfL;
+    if (right <= 0 && forward2 <= 0) return Math.max(right, forward2);
+    return Math.hypot(Math.max(0, right), Math.max(0, forward2));
+  }
+  function stepRolloutAction(baseAction, startHeading, poseHeading, t, speed = 0, laneChangeTaper = false) {
+    if (baseAction.gear !== 1 || Math.abs(baseAction.steer) <= 0.04) return baseAction;
+    const turned = Math.abs(angleDelta(poseHeading, startHeading));
+    const absSpeed = Math.abs(speed);
+    if (laneChangeTaper && absSpeed > 11 && Math.abs(baseAction.steer) <= 0.55) {
+      const turnOutT = clamp(0.65 - absSpeed * 0.012, 0.32, 0.56);
+      const turnCap = clamp(0.42 - absSpeed * 8e-3, 0.2, 0.36);
+      let scale2 = 1;
+      if (t > turnOutT) scale2 = Math.min(scale2, Math.max(0, 1 - (t - turnOutT) / 0.28));
+      if (turned > turnCap) scale2 = Math.min(scale2, Math.max(0, 1 - (turned - turnCap) / 0.16));
+      if (scale2 >= 0.999) return baseAction;
+      return { ...baseAction, steer: baseAction.steer * scale2 };
+    }
+    if (Math.abs(baseAction.steer) <= 0.12) return baseAction;
+    let scale = 1;
+    if (t > 0.72) scale = Math.min(scale, Math.max(0, 1 - (t - 0.72) / 0.45));
+    if (turned > 0.5) scale = Math.min(scale, Math.max(0, 1 - (turned - 0.5) / 0.35));
+    if (scale >= 0.999) return baseAction;
+    return { ...baseAction, steer: baseAction.steer * scale };
+  }
+  function collectObstacleModel(player, scan) {
+    const sin = Math.sin(player.heading), cos = Math.cos(player.heading);
+    const halfW = (player.width ?? VEHICLE.width) / 2;
+    const halfL = (player.length ?? VEHICLE.length) / 2;
+    const tracks = [];
+    const forwardRayPoints = [];
+    const rearRayPoints = [];
+    const policeThreats = [];
+    let pedCaution = false;
+    let nearestForwardPed = null;
+    let frontLeftClear = 0, frontRightClear = 0;
+    let frontSightM = 48;
+    for (const t of scan.tracks) {
+      if (t.ageS > 0.35) continue;
+      const x = player.x + t.rightM * cos + t.forwardM * sin;
+      const z = player.z - t.rightM * sin + t.forwardM * cos;
+      const motion2 = observedMotion(t, player);
+      const speedMps = Math.hypot(motion2.x, motion2.z);
+      const ux = speedMps > 0.2 ? motion2.x / speedMps : 0;
+      const uz = speedMps > 0.2 ? motion2.z / speedMps : 0;
+      const lateralSpeedMps = Math.abs(motion2.x * cos - motion2.z * sin);
+      const egoForwardMotionMps = motion2.x * sin + motion2.z * cos;
+      const oncoming = t.kind !== "pedestrian" && t.kind !== "static" && t.motionKnown && egoForwardMotionMps < -1.8;
+      const startGap = boxGapToPoint(player, x, z, halfW, halfL);
+      const entry = {
+        track: t,
+        kind: t.kind,
+        x,
+        z,
+        motion: motion2,
+        speedMps,
+        ux,
+        uz,
+        lateralSpeedMps,
+        oncoming,
+        rightM: t.rightM,
+        forwardM: t.forwardM,
+        startGap,
+        sinEgo: sin,
+        cosEgo: cos,
+        allowance: Math.min(0.65, t.positionAllowanceM ?? 0.15)
+      };
+      tracks.push(entry);
+      if (t.kind === "police" && t.ageS <= 0.3) {
+        policeThreats.push({ x, z, rightM: t.rightM, forwardM: t.forwardM });
+      }
+      if (t.kind === "pedestrian") {
+        const dist = Math.hypot(t.rightM, t.forwardM);
+        if (dist <= 18 || t.forwardM >= -2.5 && t.forwardM <= 34 && Math.abs(t.rightM) <= halfW + 6) {
+          pedCaution = true;
+        }
+        if (t.forwardM > -0.5 && t.forwardM <= 34 && Math.abs(t.rightM) <= halfW + 2.6) {
+          if (!nearestForwardPed || t.forwardM < nearestForwardPed.forwardM) {
+            nearestForwardPed = entry;
+          }
+        }
+      }
+    }
+    const nRays = scan.rays.length;
+    for (let i = 0; i < nRays; i++) {
+      const ray = scan.rays[i];
+      const angle = i * RAY_STEP2;
+      const signedAngle = angle > Math.PI ? angle - Math.PI * 2 : angle;
+      const clampedRange = Math.min(ray.rangeM, 38);
+      if (signedAngle > 0.18 && signedAngle < 1.25) {
+        frontRightClear += ray.kind === "pedestrian" ? Math.min(clampedRange, 6) * 0.4 : clampedRange;
+      } else if (signedAngle < -0.18 && signedAngle > -1.25) {
+        frontLeftClear += ray.kind === "pedestrian" ? Math.min(clampedRange, 6) * 0.4 : clampedRange;
+      }
+      if (ray.kind === "none") continue;
+      const sinA = Math.sin(angle), cosA = Math.cos(angle);
+      const rightM = ray.rangeM * sinA, forwardM = ray.rangeM * cosA;
+      if (forwardM > 0 && Math.abs(rightM) <= halfW + 1 && ray.rangeM < frontSightM) {
+        frontSightM = ray.rangeM;
+      }
+      if (ray.kind === "pedestrian") {
+        if (ray.rangeM <= 24 || forwardM >= -2 && forwardM <= 34 && Math.abs(rightM) <= halfW + 5.5) {
+          pedCaution = true;
+        }
+        if (forwardM > 0 && forwardM <= 34 && Math.abs(rightM) <= halfW + 2.5) {
+          if (!nearestForwardPed || forwardM < nearestForwardPed.forwardM) {
+            nearestForwardPed = {
+              kind: "pedestrian",
+              rightM,
+              forwardM,
+              x: player.x + rightM * cos + forwardM * sin,
+              z: player.z - rightM * sin + forwardM * cos,
+              motion: { x: 0, z: 0 }
+            };
+          }
+        }
+      }
+      if (ray.rangeM > 40) continue;
+      const x = player.x + rightM * cos + forwardM * sin;
+      const z = player.z - rightM * sin + forwardM * cos;
+      const pt = {
+        kind: ray.kind,
+        rightM,
+        forwardM,
+        rangeM: ray.rangeM,
+        x,
+        z,
+        startGap: boxGapToPoint(player, x, z, halfW, halfL)
+      };
+      if (forwardM >= -3.5) forwardRayPoints.push(pt);
+      if (forwardM <= 0.8 && ray.rangeM <= 18) rearRayPoints.push(pt);
+    }
+    return {
+      tracks,
+      forwardRayPoints,
+      rearRayPoints,
+      policeThreats,
+      pedCaution,
+      nearestForwardPed,
+      frontLeftClear,
+      frontRightClear,
+      frontSightM,
+      sightSpeedCap: computeSightSpeedCap(player, frontSightM),
+      halfW,
+      halfL
+    };
+  }
+  function trackGapAtTime(pose5, tr, t, halfW, halfL) {
+    const px = tr.x + tr.motion.x * t;
+    const pz = tr.z + tr.motion.z * t;
+    let gap = boxGapToPoint(pose5, px, pz, halfW, halfL);
+    if (tr.kind !== "pedestrian" && tr.kind !== "static") {
+      if (tr.speedMps > 1.8) {
+        const ext = tr.oncoming ? 2.5 : tr.lateralSpeedMps > 1.5 ? 2.25 : 1.55;
+        gap = Math.min(
+          gap,
+          boxGapToPoint(pose5, px + tr.ux * ext, pz + tr.uz * ext, halfW, halfL),
+          boxGapToPoint(pose5, px - tr.ux * ext, pz - tr.uz * ext, halfW, halfL)
+        );
+      } else if (!tr.track?.motionKnown && tr.forwardM > 0 && tr.forwardM < 24 && Math.abs(tr.rightM) <= halfW + 3.2 && t > 0) {
+        const closeDist = Math.min(6.5 * t, 8);
+        gap = Math.min(
+          gap,
+          boxGapToPoint(pose5, tr.x - tr.sinEgo * closeDist, tr.z - tr.cosEgo * closeDist, halfW, halfL)
+        );
+      }
+    }
+    return gap;
+  }
   function predictEscapeConflict(player, scan, action) {
-    if (action.gear !== 1 || player.speed < 0.4) return null;
+    if (action.gear !== 1 || player.speed < 0.4 && action.throttle <= 0.05) return null;
     const speed = Math.abs(player.speed);
-    const braking = player.spec?.braking ?? VEHICLE.braking;
+    const braking = Math.max(4, player.spec?.braking ?? VEHICLE.braking);
     const horizon = clamp(speed / braking + 1.4, 1.5, 4.5);
     const sin = Math.sin(player.heading), cos = Math.cos(player.heading);
-    const points = scan.tracks.filter((t) => t.ageS <= 0.3 && t.forwardM > -3).map((t) => ({
-      track: t,
-      motion: observedMotion(t, player),
-      x: player.x + t.rightM * cos + t.forwardM * sin,
-      z: player.z - t.rightM * sin + t.forwardM * cos
-    }));
-    let pose5 = { ...vehicleProbe(player, player.speed), spec: player.spec, maxSpeed: player.maxSpeed };
-    for (let t = 0.1; t <= horizon; t += 0.1) {
-      pose5 = { ...pose5, ...integrateVehicle(pose5, pursuitCommand(pose5, action, 0.1), 0.1) };
-      const c = Math.cos(pose5.heading), s = Math.sin(pose5.heading);
+    const halfW = (player.width ?? VEHICLE.width) / 2;
+    const halfL = (player.length ?? VEHICLE.length) / 2;
+    const points = scan.tracks.filter((t) => t.ageS <= 0.3 && t.forwardM > -3).map((t) => {
+      const motion2 = observedMotion(t, player);
+      const speedMps = Math.hypot(motion2.x, motion2.z);
+      const x = player.x + t.rightM * cos + t.forwardM * sin;
+      const z = player.z - t.rightM * sin + t.forwardM * cos;
+      return {
+        track: t,
+        kind: t.kind,
+        motion: motion2,
+        speedMps,
+        ux: speedMps > 0.2 ? motion2.x / speedMps : 0,
+        uz: speedMps > 0.2 ? motion2.z / speedMps : 0,
+        lateralSpeedMps: Math.abs(motion2.x * cos - motion2.z * sin),
+        oncoming: t.kind !== "pedestrian" && t.kind !== "static" && t.motionKnown && motion2.x * sin + motion2.z * cos < -1.8,
+        forwardM: t.forwardM,
+        sinEgo: sin,
+        cosEgo: cos,
+        startGap: boxGapToPoint(player, x, z, halfW, halfL),
+        x,
+        z
+      };
+    });
+    if (!points.length) return null;
+    let pose5 = initRolloutPose(player);
+    const cleanAction = stripNitro2(action);
+    for (let t = 0.1; t <= horizon + 1e-6; t += 0.1) {
+      const stepAct = stepRolloutAction(cleanAction, player.heading, pose5.heading, t, pose5.speed);
+      pose5 = stepPoseWithSlip(pose5, stepAct, 0.1);
       for (const point2 of points) {
-        const { track: track2, motion: motion2 } = point2;
-        const dx = point2.x + motion2.x * t - pose5.x;
-        const dz = point2.z + motion2.z * t - pose5.z;
-        const right = Math.abs(dx * c - dz * s) - player.width / 2;
-        const forward2 = Math.abs(dx * s + dz * c) - player.length / 2;
-        const gap = Math.hypot(Math.max(0, right), Math.max(0, forward2));
+        const { track: track2 } = point2;
+        const gap = trackGapAtTime(pose5, point2, t, halfW, halfL);
         const margin = (track2.kind === "pedestrian" ? 0.85 : 0.55) + Math.min(0.65, track2.positionAllowanceM ?? 0.15);
-        if (gap < margin) return {
-          seconds: Number(t.toFixed(2)),
-          kind: track2.kind,
-          trackId: track2.trackId,
-          motionKnown: track2.motionKnown
-        };
+        if (gap < margin) {
+          if (track2.kind !== "pedestrian" && point2.forwardM <= halfL * 0.4 && gap >= point2.startGap - 0.02 && gap >= 0.14) {
+            continue;
+          }
+          return {
+            seconds: Number(t.toFixed(2)),
+            kind: track2.kind,
+            trackId: track2.trackId,
+            motionKnown: track2.motionKnown
+          };
+        }
       }
     }
     return null;
   }
-  function smartRouteAction(world) {
+  function smartRouteAction(world, frontSightM = 48) {
     const { player } = world;
     const path = dispatchRouteGuide(world, CLEARANCE_ROUTE_CONTEXT)?.path;
     if (!path || path.length < 3) return null;
@@ -32254,12 +36035,15 @@
         nearestM = d;
       }
     }
-    if (nearestM > 3 || player.speed < -0.1) return null;
+    if (nearestM > 5.5 || player.speed < -0.15) return null;
     const speed = Math.max(0, player.speed);
-    const lookahead = clamp(5 + speed * 0.5, 5, 17);
+    const lookahead = clamp(5.5 + speed * 0.52, 5.5, 18);
     let target = nearest2, along2 = 0;
-    let targetSpeed = player.maxSpeed ?? 28;
-    const braking = player.spec?.braking ?? VEHICLE.braking;
+    const braking = Math.max(4, player.spec?.braking ?? VEHICLE.braking);
+    const maxSpeed = player.maxSpeed ?? 28;
+    let curveTargetSpeed = maxSpeed;
+    let targetSpeed = computeSightSpeedCap(player, frontSightM);
+    const gripLat = Math.min(5.2, (player.spec?.tireGripMps2 ?? VEHICLE.tireGripMps2 ?? 7.5) * 0.68);
     for (let i = nearest2 + 1; i < path.length && along2 < 70; i++) {
       along2 += distance(path[i - 1], path[i]);
       if (along2 < 70) {
@@ -32278,26 +36062,403 @@
       const first = Math.atan2(path[i].x - before.x, path[i].z - before.z);
       const second = Math.atan2(after.x - path[i].x, after.z - path[i].z);
       const curvature = Math.abs(angleDelta(second, first)) / ((left + right) / 2);
-      const curveSpeed = Math.sqrt(4.5 / Math.max(1e-3, curvature));
-      targetSpeed = Math.min(targetSpeed, Math.sqrt(curveSpeed ** 2 + 2 * braking * Math.max(0, along2 - 9)));
+      const curveSpeed = Math.sqrt(gripLat / Math.max(1e-3, curvature));
+      const approachCurve = Math.sqrt(curveSpeed ** 2 + 2 * braking * Math.max(0, along2 - 9));
+      curveTargetSpeed = Math.min(curveTargetSpeed, approachCurve);
+      targetSpeed = Math.min(targetSpeed, approachCurve);
     }
     target = Math.min(path.length - 1, Math.max(nearest2 + 1, target));
     const targetM = Math.max(2, distance(player, path[target]));
-    const error = angleDelta(Math.atan2(path[target].x - player.x, path[target].z - player.z), player.heading);
-    if (Math.abs(error) > 1.15) return null;
+    const targetHeading = Math.atan2(path[target].x - player.x, path[target].z - player.z);
+    const error = angleDelta(targetHeading, player.heading);
+    if (Math.abs(error) > 1.35) return null;
     const steering = Math.atan2(2 * (player.spec?.wheelbase ?? VEHICLE.wheelbase) * Math.sin(error), targetM);
     const steer = clamp(steering / (player.spec?.maxSteer ?? VEHICLE.maxSteer), -1, 1);
-    const brake2 = speed > targetSpeed + 0.6 ? clamp((speed - targetSpeed) / 3, 0.15, 1) : 0;
+    let throttle = 0, brake2 = 0;
+    if (speed <= targetSpeed + 0.35) {
+      throttle = speed < targetSpeed - 0.6 ? 1 : clamp((targetSpeed - speed + 0.35) / 2.2, 0.35, 1);
+    } else if (speed > targetSpeed + 3.4) {
+      brake2 = clamp((speed - targetSpeed - 3) / 6, 0.12, 0.75);
+    }
     return {
-      action: { steer, gear: 1, throttle: brake2 ? 0 : clamp((targetSpeed - speed) / 3, 0.25, 1), brake: brake2 },
+      action: { steer, gear: 1, throttle, brake: brake2 },
       targetSpeedMps: targetSpeed,
+      curveTargetSpeedMps: curveTargetSpeed,
+      targetHeading,
       remainingPathPoints: path.length - nearest2,
       routeErrorM: nearestM
     };
   }
+  function poseSupported(world, pose5) {
+    const roads = world.roads ?? world.district?.roads;
+    if (!roads || !roads.length) return { supported: true, onAsphalt: true };
+    const onAsphalt = bodyOnRoad(pose5, roads);
+    if (onAsphalt) return { supported: true, onAsphalt: true };
+    const curb = world.pursuit?.gta?.curb;
+    if (curb?.mode === METRO_CITY_CURBS && isPoseSupportedWithCurbs(curb, roads, pose5)) {
+      return { supported: true, onAsphalt: false };
+    }
+    return { supported: false, onAsphalt: false };
+  }
+  function nominalPedestrianClearance(player, model, action) {
+    if (!model.nearestForwardPed) return Infinity;
+    const { halfW, halfL } = model;
+    const speed = Math.max(0, player.speed);
+    const braking = Math.max(4, player.spec?.braking ?? VEHICLE.braking);
+    const horizon = clamp(Math.max(speed, 4) / braking + 1.4, 1.8, 3.2);
+    let pose5 = initRolloutPose(player);
+    const clean = stripNitro2(action);
+    let minPed = Infinity;
+    for (let t = 0.15; t <= horizon + 1e-6; t += 0.15) {
+      const stepAct = stepRolloutAction(clean, player.heading, pose5.heading, t, pose5.speed);
+      pose5 = stepPoseWithSlip(pose5, stepAct, 0.15);
+      for (const tr of model.tracks) {
+        if (tr.kind !== "pedestrian" || tr.forwardM < -1) continue;
+        const d = boxGapToPoint(pose5, tr.x + tr.motion.x * t, tr.z + tr.motion.z * t, halfW, halfL);
+        if (d < minPed) minPed = d;
+      }
+      for (const pt of model.forwardRayPoints) {
+        if (pt.kind !== "pedestrian") continue;
+        const d = boxGapToPoint(pose5, pt.x, pt.z, halfW, halfL);
+        if (d < minPed) minPed = d;
+      }
+    }
+    return minPed;
+  }
+  function evaluateForwardCandidate(world, scan, model, candidate, ctx) {
+    if (guardDispatchAction(world, candidate).reason) return null;
+    if (predictEscapeConflict(world.player, scan, candidate)) return null;
+    const { player } = world;
+    const { halfW, halfL } = model;
+    const speed = Math.max(0, player.speed);
+    const braking = Math.max(4, player.spec?.braking ?? VEHICLE.braking);
+    const horizon = speed < 1.4 ? 1.05 : clamp(speed / braking + 1, 1.45, 3.6);
+    const dt = 0.14;
+    const highSpeedPad = speed > 12 ? 0.14 : 0;
+    let pose5 = initRolloutPose(player);
+    let minPed = Infinity, minVeh = Infinity, minStatic = Infinity;
+    let curbSteps = 0, unsupportedSteps = 0;
+    for (let t = dt; t <= horizon + 1e-6; t += dt) {
+      const stepAct = stepRolloutAction(candidate, player.heading, pose5.heading, t, pose5.speed, true);
+      pose5 = stepPoseWithSlip(pose5, stepAct, dt);
+      const sup = poseSupported(world, pose5);
+      if (!sup.supported) {
+        unsupportedSteps++;
+        if (ctx.startSupported || unsupportedSteps > 1) return null;
+      } else if (!sup.onAsphalt) {
+        curbSteps++;
+      }
+      for (const item of ctx.nearStatics ?? []) {
+        const margin = item.pole ? sup.onAsphalt ? 0.46 : 0.66 : sup.onAsphalt ? 0.24 : 0.38;
+        if (!overlaps(pose5, item.body, margin)) continue;
+        const movingAway = item.overlappingAtStart && distance(pose5, item.body) >= item.startDistanceM + 0.04;
+        if (!movingAway) return null;
+      }
+      for (const tr of model.tracks) {
+        if (tr.forwardM < -2.5) continue;
+        const gap = trackGapAtTime(pose5, tr, t, halfW, halfL);
+        const pullingAway = tr.kind !== "pedestrian" && tr.forwardM <= halfL * 0.4 && gap >= tr.startGap - 0.02 && gap >= 0.14;
+        if (tr.kind === "pedestrian") {
+          if (gap < minPed) minPed = gap;
+          if (gap < 0.96 + tr.allowance * 0.5) return null;
+        } else if (tr.kind === "static") {
+          if (gap < minStatic) minStatic = gap;
+          if (!pullingAway && gap < 0.48 + highSpeedPad) return null;
+        } else {
+          if (gap < minVeh) minVeh = gap;
+          const oncomingPad = tr.oncoming ? 0.45 : 0;
+          const vehMin = (tr.lateralSpeedMps > 1.5 ? 0.9 : 0.46) + highSpeedPad + oncomingPad + tr.allowance * 0.3;
+          if (!pullingAway && gap < vehMin) return null;
+        }
+      }
+      for (const pt of model.forwardRayPoints) {
+        const gap = boxGapToPoint(pose5, pt.x, pt.z, halfW, halfL);
+        const pullingAway = pt.kind !== "pedestrian" && pt.forwardM <= halfL * 0.4 && gap >= pt.startGap - 0.02 && gap >= 0.14;
+        if (pt.kind === "pedestrian") {
+          if (gap < minPed) minPed = gap;
+          if (gap < 0.98) return null;
+        } else if (pt.kind === "static") {
+          if (gap < minStatic) minStatic = gap;
+          if (!pullingAway && gap < 0.44 + highSpeedPad) return null;
+        } else {
+          if (gap < minVeh) minVeh = gap;
+          if (!pullingAway && gap < 0.38 + highSpeedPad) return null;
+        }
+      }
+    }
+    const endDx = pose5.x - player.x, endDz = pose5.z - player.z;
+    const prefSin = Math.sin(ctx.desiredHeading), prefCos = Math.cos(ctx.desiredHeading);
+    const progress = endDx * prefSin + endDz * prefCos;
+    let policeAwayBonus = 0;
+    for (const threat of model.policeThreats) {
+      const beforeD = Math.hypot(player.x - threat.x, player.z - threat.z);
+      const afterD = Math.hypot(pose5.x - threat.x, pose5.z - threat.z);
+      if (beforeD < 35) policeAwayBonus += (afterD - beforeD) * 0.45;
+    }
+    const pedBerth = Number.isFinite(minPed) ? Math.min(minPed, 3.6) * 5.8 - (minPed < 2.2 ? (2.2 - minPed) * 14 : 0) : 12;
+    const vehBerth = Number.isFinite(minVeh) ? Math.min(minVeh, 3) * 2.6 : 6;
+    const staticBerth = Number.isFinite(minStatic) ? Math.min(minStatic, 2.5) * 2 : 4;
+    const steerContinuity = -Math.abs(candidate.steer - ctx.lastSteer) * 2.6;
+    const routeBias = -Math.abs(candidate.steer - ctx.nominalSteer) * 1.1;
+    const sideBonus = ctx.evadeSide !== 0 && Math.abs(candidate.steer - ctx.nominalSteer) > 0.1 ? Math.sign(candidate.steer - ctx.nominalSteer) === ctx.evadeSide ? 2.4 : -2.6 : 0;
+    const pedSideBonus = model.nearestForwardPed && Math.abs(candidate.steer) > 0.08 ? Math.sign(candidate.steer) === -(Math.sign(model.nearestForwardPed.rightM) || (ctx.evadeSide || -1)) ? 1.8 : -0.6 : 0;
+    const poleHazardNearby = (ctx.nearStatics ?? []).some((item) => item.pole && item.startDistanceM < 28);
+    const endAsphaltBonus = poseSupported(world, pose5).onAsphalt ? poleHazardNearby ? 4.2 : 1.5 : 0;
+    const score = pedBerth + vehBerth + staticBerth + progress * 1.45 + policeAwayBonus + candidate.throttle * 4.2 + Math.max(0, pose5.speed) * 0.35 + steerContinuity + routeBias + sideBonus + pedSideBonus + endAsphaltBonus - curbSteps * (poleHazardNearby ? 2.35 : 1.4);
+    return {
+      action: candidate,
+      score,
+      minPedClearance: minPed,
+      minVehClearance: minVeh,
+      minStaticClearance: minStatic,
+      progress,
+      travelM: Math.hypot(endDx, endDz),
+      endSpeed: pose5.speed
+    };
+  }
+  function searchPoweredEvasiveCorridor(world, scan, model, nominalSteer, ctx) {
+    const { player } = world;
+    const speed = Math.max(0, player.speed);
+    const maxSteer = player.spec?.maxSteer ?? VEHICLE.maxSteer;
+    const wheelbase = player.spec?.wheelbase ?? VEHICLE.wheelbase;
+    const gripLat = Math.min(5.6, (player.spec?.tireGripMps2 ?? VEHICLE.tireGripMps2 ?? 7.5) * 0.74);
+    const hasCurbSupport = world.pursuit?.gta?.curb?.mode === METRO_CITY_CURBS;
+    const hasCrossing = model.tracks.some(
+      (tr) => tr.kind !== "static" && tr.kind !== "pedestrian" && tr.lateralSpeedMps > 1.5 && tr.forwardM > -1 && tr.forwardM < 30
+    );
+    const offsets = speed > 14 ? [0, -0.07, 0.07, -0.14, 0.14, -0.24, 0.24, -0.4, 0.4, -0.6, 0.6, -0.84, 0.84] : !hasCurbSupport && !hasCrossing && speed > 4 ? [0, -0.07, 0.07, -0.14, 0.14, -0.26, 0.26, -0.42, 0.42, -0.64, 0.64, -0.86, 0.86] : [0, -0.14, 0.14, -0.28, 0.28, -0.44, 0.44, -0.64, 0.64, -0.86, 0.86];
+    const steers = [];
+    const addSteer = (s) => {
+      const c = clamp(s, -1, 1);
+      if (!steers.some((prev) => Math.abs(prev - c) < 0.035)) steers.push(c);
+    };
+    for (const off of offsets) addSteer(nominalSteer + off);
+    addSteer(ctx.lastSteer);
+    if (speed < 4) {
+      addSteer(-1);
+      addSteer(1);
+    }
+    let best = null;
+    const sightCap = model.sightSpeedCap;
+    for (const steer of steers) {
+      const absSteer = Math.abs(steer);
+      const curvature = Math.abs(Math.tan(steer * maxSteer)) / Math.max(1.5, wheelbase);
+      const safeTurnSpeed = Math.min(
+        sightCap,
+        curvature > 5e-3 ? Math.sqrt(gripLat / curvature) : player.maxSpeed ?? 28
+      );
+      let primaryThrottle = absSteer <= 0.3 ? 1 : absSteer <= 0.6 ? 0.82 : 0.65;
+      if (speed > safeTurnSpeed + 0.6) primaryThrottle = 0.22;
+      if (speed > safeTurnSpeed + 1.6) primaryThrottle = 0;
+      const throttles = speed < 2.2 ? [primaryThrottle, 0.55, 0.35] : primaryThrottle > 0.55 ? [primaryThrottle, 0.48, 0] : primaryThrottle > 0 ? [primaryThrottle, 0] : [0];
+      for (const throttle of throttles) {
+        const cand = { steer, gear: 1, throttle, brake: 0 };
+        const evaluated = evaluateForwardCandidate(world, scan, model, cand, ctx);
+        if (evaluated) {
+          evaluated.safeTurnSpeed = safeTurnSpeed;
+          if (!best || evaluated.score > best.score) best = evaluated;
+          break;
+        }
+      }
+    }
+    return best;
+  }
+  function chooseBestBrakingSteer(world, model, preferredSteer, lastSteer, brakeAmount) {
+    const { player } = world;
+    const { halfW, halfL } = model;
+    const candidates2 = [
+      preferredSteer,
+      lastSteer,
+      0,
+      -0.08,
+      0.08,
+      -0.16,
+      0.16,
+      -0.3,
+      0.3,
+      -0.52,
+      0.52,
+      -0.8,
+      0.8,
+      -1,
+      1
+    ];
+    const startSup = poseSupported(world, player).supported;
+    let best = null;
+    for (const rawSteer of candidates2) {
+      const steer = clamp(rawSteer, -1, 1);
+      const baseAct = { steer, gear: 1, throttle: 0, brake: brakeAmount };
+      let pose5 = initRolloutPose(player);
+      let minPed = Infinity, minOther = Infinity, unsupportedSteps = 0;
+      for (let step = 0; step < 22; step++) {
+        const t = (step + 1) * 0.12;
+        const act2 = stepRolloutAction(baseAct, player.heading, pose5.heading, t, pose5.speed, true);
+        pose5 = stepPoseWithSlip(pose5, act2, 0.12);
+        if (startSup && !poseSupported(world, pose5).supported) {
+          unsupportedSteps++;
+          if (unsupportedSteps > 1) break;
+        }
+        for (const tr of model.tracks) {
+          if (tr.forwardM < -1) continue;
+          const gap = trackGapAtTime(pose5, tr, t, halfW, halfL);
+          if (tr.kind === "pedestrian") minPed = Math.min(minPed, gap);
+          else minOther = Math.min(minOther, gap);
+        }
+        for (const pt of model.forwardRayPoints) {
+          const gap = boxGapToPoint(pose5, pt.x, pt.z, halfW, halfL);
+          if (pt.kind === "pedestrian") minPed = Math.min(minPed, gap);
+          else minOther = Math.min(minOther, gap);
+        }
+        if (Math.abs(pose5.speed) < 0.08) break;
+      }
+      if (unsupportedSteps > 1) continue;
+      const pedScore = Math.min(minPed, 3) * 6 - (minPed < 0.9 ? (0.9 - minPed) * 120 : 0);
+      const otherScore = Math.min(minOther, 2.5) * 3 - (minOther < 0.4 ? (0.4 - minOther) * 65 : 0);
+      const score = pedScore + otherScore - unsupportedSteps * 4 - Math.abs(steer - lastSteer) * 0.35;
+      if (!best || score > best.score) {
+        best = { steer, score, minPed, minOther };
+      }
+    }
+    return best ?? { steer: preferredSteer, score: 0, minPed: Infinity, minOther: Infinity };
+  }
+  function evaluateReverseCandidate(world, model, cand) {
+    const { player } = world;
+    const { halfW, halfL } = model;
+    if (guardDispatchAction(world, cand).reason) return null;
+    const startSup = poseSupported(world, player).supported;
+    const statics = world.staticIndex?.near ? world.staticIndex.near(player, 14) : (world.statics ?? []).filter((s) => distance(player, s) <= 14);
+    const nearStatics = statics.map((s) => ({
+      s,
+      startDist: distance(player, s),
+      closeAtStart: overlaps(player, s, 0.24)
+    }));
+    let pose5 = initRolloutPose(player);
+    let minRear = Infinity, minPed = Infinity;
+    for (let step = 0; step < 10; step++) {
+      const t = (step + 1) * 0.12;
+      const stepAct = step < 7 ? cand : { steer: cand.steer, gear: -1, throttle: 0, brake: 1 };
+      pose5 = stepPoseWithSlip(pose5, stepAct, 0.12);
+      if (startSup && !poseSupported(world, pose5).supported) return null;
+      for (const item of nearStatics) {
+        if (item.closeAtStart) {
+          if (overlaps(pose5, item.s, 0.02) && distance(pose5, item.s) < item.startDist - 0.01) return null;
+        } else if (overlaps(pose5, item.s, 0.18)) {
+          return null;
+        }
+      }
+      for (const tr of model.tracks) {
+        const gap = trackGapAtTime(pose5, tr, t, halfW, halfL);
+        const backingAway = tr.forwardM > 0 && gap >= tr.startGap - 0.01;
+        if (tr.kind === "pedestrian") {
+          minPed = Math.min(minPed, gap);
+          if (!(tr.forwardM > halfL * 0.8 && gap >= tr.startGap + 0.02 && gap >= 0.6) && gap < 1.2) {
+            return null;
+          }
+        } else {
+          minRear = Math.min(minRear, gap);
+          const minReq = tr.kind === "police" ? 0.95 : 0.65;
+          if (!(backingAway && gap >= Math.min(0.08, tr.startGap - 5e-3)) && gap < minReq) {
+            return null;
+          }
+        }
+      }
+      for (const pt of model.rearRayPoints) {
+        const gap = boxGapToPoint(pose5, pt.x, pt.z, halfW, halfL);
+        const backingAway = pt.forwardM > 0 && gap >= pt.startGap - 0.01;
+        if (pt.kind === "pedestrian") {
+          minPed = Math.min(minPed, gap);
+          if (!(pt.forwardM > halfL * 0.8 && gap >= pt.startGap + 0.02 && gap >= 0.6) && gap < 1.2) {
+            return null;
+          }
+        } else {
+          minRear = Math.min(minRear, gap);
+          const minReq = pt.kind === "police" ? 0.85 : 0.58;
+          if (!(backingAway && gap >= Math.min(0.08, pt.startGap - 5e-3)) && gap < minReq) {
+            return null;
+          }
+        }
+      }
+    }
+    const travelM = distance(player, pose5);
+    return { action: cand, minRear, minPed, travelM };
+  }
+  function searchReversePivot(world, model) {
+    const openLeft = model.frontLeftClear >= model.frontRightClear;
+    const preferredSign = openLeft ? 1 : -1;
+    const steerOrder = [
+      preferredSign * 1,
+      preferredSign * 0.7,
+      preferredSign * 0.35,
+      0,
+      -preferredSign * 0.35,
+      -preferredSign * 0.7,
+      -preferredSign * 1
+    ];
+    let best = null;
+    for (const steer of steerOrder) {
+      for (const throttle of [0.78, 0.5]) {
+        const evaluated = evaluateReverseCandidate(world, model, { steer, gear: -1, throttle, brake: 0 });
+        if (!evaluated) continue;
+        const alignBonus = Math.sign(steer) === preferredSign ? 0.9 : 0;
+        const score = evaluated.travelM * 2.4 + Math.min(evaluated.minRear, 4) * 2.5 + Math.min(evaluated.minPed, 3) * 3 + alignBonus;
+        if (!best || score > best.score) best = { action: evaluated.action, score };
+        break;
+      }
+    }
+    return best;
+  }
+  function coastStaysSupported(world, cand, steps = 7) {
+    const { player } = world;
+    if (!poseSupported(world, player).supported) return true;
+    let pose5 = initRolloutPose(player);
+    for (let i = 0; i < steps; i++) {
+      pose5 = stepPoseWithSlip(pose5, cand, 0.12);
+      if (!poseSupported(world, pose5).supported) return false;
+    }
+    return true;
+  }
+  function synthesizeGuardConflict(model, guardReason, speed) {
+    if (!guardReason) return null;
+    let minForward = Infinity;
+    for (const pt of model.forwardRayPoints) {
+      if (pt.kind === guardReason && pt.forwardM > 0 && pt.rangeM < minForward) minForward = pt.rangeM;
+    }
+    for (const tr of model.tracks) {
+      if (tr.kind === guardReason && tr.forwardM > 0 && tr.forwardM < minForward) minForward = tr.forwardM;
+    }
+    const seconds2 = Number(clamp(minForward / Math.max(2, speed), 0.2, 4).toFixed(2));
+    return { seconds: seconds2, kind: guardReason, trackId: null, motionKnown: false };
+  }
+  function smoothGasBrakeTransition(action, lastAction, speed, urgent) {
+    if (!lastAction || action.gear !== lastAction.gear || action.gear !== 1) return action;
+    if (lastAction.brake > 0.15 && action.throttle > 0.15 && action.brake === 0) {
+      return { ...stripNitro2(action), throttle: 0.12, brake: 0 };
+    }
+    if (!urgent && lastAction.throttle > 0.15 && action.brake > 0.15 && action.brake <= 0.45) {
+      return { ...stripNitro2(action), throttle: 0, brake: 0.12 };
+    }
+    return action;
+  }
+  function smoothSteerAction(world, scan, action, memory, emergency) {
+    if (!memory.lastAction || action.gear !== memory.lastAction.gear) return action;
+    const elapsed = Math.max(STEP, (world.tick - memory.tick) * STEP);
+    const maxRate = emergency ? 4 : 2.4;
+    const maxDelta = elapsed * maxRate;
+    const steer = clamp(action.steer, memory.lastAction.steer - maxDelta, memory.lastAction.steer + maxDelta);
+    if (Math.abs(steer - action.steer) < 1e-4) return action;
+    const smooth = { ...action, steer };
+    if (smooth.brake > 0) {
+      return guardDispatchAction(world, smooth).reason ? action : smooth;
+    }
+    if (!predictEscapeConflict(world.player, scan, smooth) && !guardDispatchAction(world, smooth).reason) {
+      return smooth;
+    }
+    return action;
+  }
   function planSmartEscapeAction(world, requestedAction) {
     const scan = requireDispatchScan(world);
-    const key3 = world.pursuit ?? world.player;
+    const { player } = world;
+    const key3 = world.pursuit ?? player;
     let memory = memories.get(key3);
     if (!memory || world.tick < memory.tick) {
       memory = {
@@ -32307,70 +36468,328 @@
         progressTick: world.tick,
         lastAction: null,
         brakeUntil: -1,
-        brakeConflict: null
+        brakeHoldUntil: -1,
+        brakeConflict: null,
+        evadeSide: 0,
+        evadeUntil: -1,
+        lowSpeedTicks: 0,
+        reverseRecovery: null,
+        reverseCooldownUntil: -1,
+        corridorBlocked: false
       };
       memories.set(key3, memory);
     }
-    const remaining = memory.goal ? distance(world.player, memory.goal) : Infinity;
+    const dtTicks = Math.max(1, world.tick - memory.tick);
+    if (world.tick > 30 && Math.abs(player.speed) < 1) {
+      memory.lowSpeedTicks += dtTicks;
+    } else if (Math.abs(player.speed) >= 2.2) {
+      memory.lowSpeedTicks = 0;
+    }
+    const remaining = memory.goal ? distance(player, memory.goal) : Infinity;
     if (remaining < memory.bestDistanceM - 4) {
       memory.bestDistanceM = remaining;
       memory.progressTick = world.tick;
     }
-    if (!memory.goal || remaining < 18 || world.tick - memory.progressTick > Math.round(14 / STEP)) {
+    const corridorBlocker = player.vehicleModel === "king-long-microbus" ? null : forwardPoliceBlocker(scan);
+    const newlyBlockedCorridor = Boolean(corridorBlocker) && !memory.corridorBlocked;
+    memory.corridorBlocked = Boolean(corridorBlocker);
+    if (!memory.goal || remaining < 18 || newlyBlockedCorridor || world.tick - memory.progressTick > Math.round(14 / STEP)) {
       const goal = selectSensorEscapeGoal(world, scan, memory.goal);
       if (goal) {
         memory.goal = goal;
-        memory.bestDistanceM = distance(world.player, goal);
+        memory.bestDistanceM = distance(player, goal);
         memory.progressTick = world.tick;
       }
     }
     if (memory.goal && world.pursuit?.gta) world.pursuit.gta.escapeGoal = memory.goal;
+    const model = collectObstacleModel(player, scan);
     const planned = planPakoEvasiveAction(world, requestedAction);
-    let action = planned.action;
-    const route = smartRouteAction(world);
-    if (route && planned.action.gear === 1 && planned.action.brake === 0 && planned.reason !== "SAFETY_INTERVENTION" && !guardDispatchAction(world, route.action).reason && !predictEscapeConflict(world.player, scan, route.action)) {
-      action = { ...route.action };
-      if (planned.action.nitro && route.targetSpeedMps >= (world.player.maxSpeed ?? 28) - 0.5 && Math.abs(action.steer) < 0.15 && !planned.nitroSuppressedByPedestrian)
-        action.nitro = planned.action.nitro;
+    const route = smartRouteAction(world, model.frontSightM);
+    const closePolicePocket = !route && model.policeThreats.some(
+      (threat) => Math.hypot(player.x - threat.x, player.z - threat.z) < 12
+    );
+    const pedSuppressed = Boolean(planned.nitroSuppressedByPedestrian || model.pedCaution);
+    const desiredHeading = route?.targetHeading ?? (memory.goal ? Math.atan2(memory.goal.x - player.x, memory.goal.z - player.z) : player.heading);
+    const lastSteer = memory.lastAction?.steer ?? (player.steer ?? 0) / (player.spec?.maxSteer ?? VEHICLE.maxSteer);
+    const activeEvadeSide = world.tick < memory.evadeUntil ? memory.evadeSide : 0;
+    const nearbyStatics = world.staticIndex?.near ? world.staticIndex.near(player, 54) : (world.statics ?? []).filter((s) => distance(player, s) <= 54);
+    const nearStatics = nearbyStatics.filter(
+      (s) => SOLID_PROP_KINDS.includes(s.kind)
+    ).map((s) => ({
+      body: s,
+      pole: true,
+      startDistanceM: distance(player, s),
+      overlappingAtStart: overlaps(player, s, 0.18)
+    }));
+    const ctx = {
+      desiredHeading,
+      lastSteer,
+      nominalSteer: route ? route.action.steer : planned.action.steer,
+      evadeSide: activeEvadeSide,
+      startSupported: poseSupported(world, player).supported,
+      nearStatics
+    };
+    if (memory.reverseRecovery) {
+      const rev = memory.reverseRecovery;
+      const revAge = world.tick - rev.startedTick;
+      let exitForward = null;
+      if (world.tick >= (rev.minExitTick ?? rev.startedTick + Math.round(0.35 / STEP))) {
+        const cand = searchPoweredEvasiveCorridor(world, scan, model, ctx.nominalSteer, ctx);
+        if (cand && cand.endSpeed > 1.2 && cand.travelM > 0.9 && cand.minVehClearance > 0.6 && cand.minPedClearance > 1.35 && cand.minStaticClearance > 0.45) {
+          exitForward = cand;
+        }
+      }
+      let revCand = { steer: rev.steer, gear: -1, throttle: rev.throttle ?? 0.72, brake: 0 };
+      let revStillSafe = Boolean(evaluateReverseCandidate(world, model, revCand));
+      if (!revStillSafe && !exitForward && world.tick < rev.untilTick) {
+        const altRev = searchReversePivot(world, model);
+        if (altRev) {
+          rev.steer = altRev.action.steer;
+          rev.throttle = altRev.action.throttle;
+          revCand = altRev.action;
+          revStillSafe = true;
+        }
+      }
+      if (exitForward || world.tick >= rev.untilTick || !revStillSafe) {
+        memory.reverseRecovery = null;
+        const cooldownS = exitForward ? 1.5 : revAge < 18 ? 0.15 : 0.7;
+        memory.reverseCooldownUntil = world.tick + Math.round(cooldownS / STEP);
+        if (exitForward) {
+          memory.lowSpeedTicks = 0;
+          const finalAct = smoothSteerAction(world, scan, exitForward.action, memory, true);
+          const checked2 = guardDispatchAction(world, finalAct);
+          memory.lastAction = checked2.action;
+          memory.tick = world.tick;
+          return {
+            ...planned,
+            controller: SMART_ESCAPE_CONTROL,
+            action: checked2.action,
+            reason: checked2.reason ?? "PREDICTIVE_EVADE_LANE",
+            maneuver: "unstuck-forward-launch",
+            nitroSuppressedByPedestrian: pedSuppressed,
+            escapeDestination: memory.goal,
+            predictedConflict: null,
+            routeTracking: route
+          };
+        }
+      } else {
+        const revChecked = guardDispatchAction(world, revCand);
+        memory.lastAction = revChecked.action;
+        memory.tick = world.tick;
+        return {
+          ...planned,
+          controller: SMART_ESCAPE_CONTROL,
+          action: revChecked.action,
+          reason: "PREDICTIVE_REVERSE_ESCAPE",
+          maneuver: "unstuck-reverse-pivot",
+          nitroSuppressedByPedestrian: pedSuppressed,
+          escapeDestination: memory.goal,
+          predictedConflict: null,
+          routeTracking: route
+        };
+      }
     }
-    const conflict = predictEscapeConflict(world.player, scan, action);
-    if (conflict) {
-      memory.brakeUntil = world.tick + Math.round(0.9 / STEP);
-      memory.brakeConflict = conflict;
+    const speed = Math.max(0, player.speed);
+    const braking = Math.max(4, player.spec?.braking ?? VEHICLE.braking);
+    let nominal = stripNitro2(planned.action);
+    let usingRoute = false;
+    let allowNitro = Boolean(planned.action.nitro) && !pedSuppressed && braking >= 7 && model.frontSightM >= 30;
+    if (route && planned.reason !== "PREDICTIVE_REVERSE_ESCAPE") {
+      nominal = { ...route.action };
+      usingRoute = true;
+      allowNitro = allowNitro && route.action.brake === 0 && route.curveTargetSpeedMps >= (player.maxSpeed ?? 28) - 2 && Math.abs(route.action.steer) < 0.18;
+      if (allowNitro) nominal = { ...nominal, throttle: 1 };
+    } else if (planned.reason === "PREDICTIVE_REVERSE_ESCAPE" && !guardDispatchAction(world, nominal).reason) {
+      allowNitro = false;
     }
-    const yielding = conflict || (world.tick < memory.brakeUntil && world.player.speed > 0.2 ? memory.brakeConflict : null);
-    if (yielding) {
-      const braking = world.player.spec?.braking ?? VEHICLE.braking;
-      const needed = world.player.speed / Math.max(0.25, yielding.seconds - 0.45);
-      action = {
-        steer: action.steer,
-        gear: 1,
-        throttle: 0,
-        brake: clamp(needed / braking, 0.25, 1)
-      };
-    } else if (memory.lastAction && action.gear === memory.lastAction.gear && action.brake === 0) {
-      const elapsed = Math.max(STEP, (world.tick - memory.tick) * STEP);
-      const steer = clamp(
-        action.steer,
-        memory.lastAction.steer - elapsed * 1.8,
-        memory.lastAction.steer + elapsed * 1.8
+    if (!allowNitro && nominal.gear === 1 && nominal.brake === 0 && speed > model.sightSpeedCap + 0.8) {
+      nominal = { ...nominal, throttle: speed > model.sightSpeedCap + 1.8 ? 0 : Math.min(nominal.throttle, 0.25) };
+    }
+    const nominalConflict = nominal.gear === 1 ? predictEscapeConflict(player, scan, nominal) : null;
+    const nominalGuard = guardDispatchAction(world, nominal);
+    const nominalPedGap = nominal.gear === 1 ? nominalPedestrianClearance(player, model, nominal) : Infinity;
+    const pedTooClose = nominalPedGap < 2.25;
+    const wasBraking = Boolean(memory.lastAction && memory.lastAction.brake > 0.15);
+    const needsCorridorSearch = nominal.gear !== 1 || Boolean(nominalConflict) || Boolean(nominalGuard.reason) || pedTooClose || nominal.brake > 0.05 || planned.reason === "SAFETY_INTERVENTION" || activeEvadeSide !== 0 || wasBraking || memory.lowSpeedTicks >= 18;
+    let action = nominal;
+    let reason = nominalGuard.reason ?? (usingRoute ? null : planned.reason);
+    let maneuver = usingRoute ? "route-cruise" : planned.maneuver;
+    let reportedConflict = nominalConflict;
+    let emergencySteer = false;
+    if (!needsCorridorSearch) {
+      memory.brakeUntil = -1;
+      memory.brakeHoldUntil = -1;
+      memory.brakeConflict = null;
+      if (allowNitro) action = { ...action, nitro: planned.action.nitro };
+      action = smoothGasBrakeTransition(action, memory.lastAction, speed, false);
+      action = smoothSteerAction(world, scan, action, memory, false);
+    } else {
+      const powered = searchPoweredEvasiveCorridor(world, scan, model, ctx.nominalSteer, ctx);
+      const stuckWithPoorForward = world.tick >= memory.reverseCooldownUntil && memory.lowSpeedTicks >= 30 && (!powered || powered.travelM < 0.75);
+      const reverseBreakout = stuckWithPoorForward ? searchReversePivot(world, model) : null;
+      const holdBrakeBriefly = Boolean(
+        wasBraking && powered && world.tick < memory.brakeHoldUntil && nominalConflict && speed > 2 && (powered.minVehClearance < 0.72 || powered.minPedClearance < 1.45)
       );
-      const smooth = { ...action, steer };
-      if (!predictEscapeConflict(world.player, scan, smooth) && !guardDispatchAction(world, smooth).reason)
-        action = smooth;
+      if (reverseBreakout) {
+        memory.reverseRecovery = {
+          steer: reverseBreakout.action.steer,
+          throttle: reverseBreakout.action.throttle,
+          startedTick: world.tick,
+          minExitTick: world.tick + Math.round((closePolicePocket ? 2.2 : 0.35) / STEP),
+          untilTick: world.tick + Math.round((closePolicePocket ? 3.2 : 0.75) / STEP)
+        };
+        memory.brakeUntil = -1;
+        memory.brakeHoldUntil = -1;
+        memory.brakeConflict = null;
+        action = reverseBreakout.action;
+        reason = "PREDICTIVE_REVERSE_ESCAPE";
+        maneuver = "unstuck-reverse-pivot";
+      } else if (powered && !holdBrakeBriefly) {
+        const turnOverspeed = powered.safeTurnSpeed !== void 0 && speed > powered.safeTurnSpeed + 1.4;
+        const tightPedSqueeze = nominalConflict?.kind === "pedestrian" && powered.minPedClearance < 1.9 && speed > 7.5;
+        const needTurnInBrake = Boolean(
+          nominalConflict && nominalConflict.seconds >= 0.5 && nominalConflict.seconds <= 2.35 && (turnOverspeed || tightPedSqueeze)
+        );
+        if (needTurnInBrake) {
+          const excess = Math.max(0.8, speed - (powered.safeTurnSpeed ?? 8));
+          const trailBrake = clamp(excess / 6.5, 0.13, 0.36);
+          action = { steer: powered.action.steer, gear: 1, throttle: 0, brake: trailBrake };
+          action = smoothGasBrakeTransition(action, memory.lastAction, speed, nominalConflict.seconds < 1.15);
+          if (action.brake > 0.15) {
+            memory.brakeHoldUntil = Math.max(memory.brakeHoldUntil, world.tick + Math.round(0.18 / STEP));
+          }
+          reason = "PREDICTIVE_TRAFFIC_BRAKE";
+          maneuver = "evasive-turn-in-brake";
+          emergencySteer = true;
+        } else {
+          action = powered.action;
+          if (allowNitro && !nominalConflict && !pedTooClose && Math.abs(action.steer) < 0.15 && action.throttle >= 0.85 && action.brake === 0) {
+            action = { ...action, nitro: planned.action.nitro };
+          }
+          action = smoothGasBrakeTransition(action, memory.lastAction, speed, false);
+          reason = Math.abs(action.steer - ctx.nominalSteer) > 0.12 ? "PREDICTIVE_EVADE_LANE" : planned.reason === "SAFETY_INTERVENTION" ? "PREDICTIVE_EVADE_LANE" : usingRoute ? null : planned.reason;
+          maneuver = pedTooClose ? "early-pedestrian-bypass" : "powered-evade-corridor";
+          emergencySteer = Boolean(nominalConflict || nominalGuard.reason);
+          memory.brakeUntil = -1;
+          memory.brakeHoldUntil = -1;
+          memory.brakeConflict = null;
+        }
+        if (Math.abs(powered.action.steer - ctx.nominalSteer) > 0.12) {
+          memory.evadeSide = Math.sign(powered.action.steer - ctx.nominalSteer);
+          memory.evadeUntil = world.tick + Math.round(0.55 / STEP);
+        } else if (!nominalConflict && !pedTooClose) {
+          memory.evadeSide = 0;
+          memory.evadeUntil = -1;
+        }
+        action = smoothSteerAction(world, scan, action, memory, emergencySteer);
+      } else if (holdBrakeBriefly) {
+        const needed = speed / Math.max(0.25, nominalConflict.seconds - 0.45);
+        const brake2 = clamp(needed / braking, 0.22, 0.75);
+        action = smoothSteerAction(world, scan, { steer: powered.action.steer, gear: 1, throttle: 0, brake: brake2 }, memory, true);
+        reason = "PREDICTIVE_TRAFFIC_BRAKE";
+        maneuver = "anticipatory-yield";
+      } else {
+        const shouldUnstuck = world.tick >= memory.reverseCooldownUntil && (memory.lowSpeedTicks >= 18 || Math.abs(player.speed) < 0.65 && memory.lowSpeedTicks >= 12);
+        const reversePivot = shouldUnstuck ? searchReversePivot(world, model) : null;
+        if (reversePivot) {
+          memory.reverseRecovery = {
+            steer: reversePivot.action.steer,
+            throttle: reversePivot.action.throttle,
+            startedTick: world.tick,
+            minExitTick: world.tick + Math.round((closePolicePocket ? 2.2 : 0.35) / STEP),
+            untilTick: world.tick + Math.round((closePolicePocket ? 3.2 : 0.75) / STEP)
+          };
+          memory.brakeUntil = -1;
+          memory.brakeHoldUntil = -1;
+          memory.brakeConflict = null;
+          action = reversePivot.action;
+          reason = "PREDICTIVE_REVERSE_ESCAPE";
+          maneuver = "unstuck-reverse-pivot";
+        } else if (planned.reason === "PREDICTIVE_REVERSE_ESCAPE" && !nominalGuard.reason && Boolean(searchReversePivot(world, model))) {
+          memory.brakeUntil = -1;
+          memory.brakeHoldUntil = -1;
+          memory.brakeConflict = null;
+          action = nominal;
+          reason = "PREDICTIVE_REVERSE_ESCAPE";
+          maneuver = planned.maneuver;
+        } else {
+          const planned4 = stripNitro2(planned.action);
+          const plannedSafeEscape = memory.lowSpeedTicks >= 18 && planned4.brake === 0 && planned4.throttle > 0.1 && planned.reason !== "SAFETY_INTERVENTION" && !guardDispatchAction(world, planned4).reason && (planned4.gear === -1 ? Boolean(evaluateReverseCandidate(world, model, planned4)) : !predictEscapeConflict(player, scan, planned4));
+          if (plannedSafeEscape) {
+            memory.brakeUntil = -1;
+            memory.brakeHoldUntil = -1;
+            memory.brakeConflict = null;
+            action = smoothGasBrakeTransition(planned4, memory.lastAction, speed, false);
+            action = smoothSteerAction(world, scan, action, memory, true);
+            reason = planned.reason ?? "PREDICTIVE_EVADE_LANE";
+            maneuver = planned.maneuver ?? "evasive-fallback";
+          } else {
+            const guardConflict = nominalGuard.reason ? synthesizeGuardConflict(model, nominalGuard.reason, speed) : null;
+            const bestConflict = nominalConflict || guardConflict;
+            if (bestConflict) {
+              memory.brakeUntil = world.tick + Math.round(0.24 / STEP);
+              memory.brakeConflict = bestConflict;
+            }
+            const activeConflict = bestConflict || (world.tick < memory.brakeUntil && speed > 0.35 ? memory.brakeConflict : null);
+            reportedConflict = activeConflict;
+            if (activeConflict) {
+              const needed = speed / Math.max(0.25, activeConflict.seconds - 0.45);
+              const brake2 = clamp(needed / braking, 0.25, 1);
+              const chosenBrake = chooseBestBrakingSteer(world, model, ctx.nominalSteer, lastSteer, brake2);
+              let brakeAct = { steer: chosenBrake.steer, gear: 1, throttle: 0, brake: brake2 };
+              brakeAct = smoothGasBrakeTransition(
+                brakeAct,
+                memory.lastAction,
+                speed,
+                activeConflict.seconds <= 1.35 || brake2 > 0.45
+              );
+              if (brakeAct.brake > 0.15) {
+                memory.brakeHoldUntil = Math.max(memory.brakeHoldUntil, world.tick + Math.round(0.24 / STEP));
+              }
+              action = chosenBrake.minOther < 0.7 || chosenBrake.minPed < 1.1 ? brakeAct : smoothSteerAction(world, scan, brakeAct, memory, true);
+              reason = "PREDICTIVE_TRAFFIC_BRAKE";
+              maneuver = "anticipatory-yield";
+            } else if (nominal.gear === 1 && !nominalGuard.reason && !nominalConflict && model.frontSightM > 14 && coastStaysSupported(world, { steer: nominal.steer, gear: 1, throttle: 0, brake: 0 })) {
+              const coastAct = speed > 3.5 ? { steer: nominal.steer, gear: 1, throttle: 0, brake: 0 } : planned.action.gear === 1 && !guardDispatchAction(world, stripNitro2(planned.action)).reason ? stripNitro2(planned.action) : { steer: nominal.steer, gear: 1, throttle: 0, brake: 0 };
+              action = smoothGasBrakeTransition(coastAct, memory.lastAction, speed, false);
+              action = smoothSteerAction(world, scan, action, memory, false);
+              reason = null;
+              maneuver = "smooth-coast";
+            } else {
+              const brake2 = speed > 0.5 ? 0.65 : 1;
+              const safeSteer = chooseBestBrakingSteer(world, model, ctx.nominalSteer, lastSteer, brake2).steer;
+              const closestKind = model.forwardRayPoints.reduce(
+                (best, pt) => pt.forwardM > 0 && pt.rangeM < best.rangeM ? pt : best,
+                { kind: "static", rangeM: model.frontSightM }
+              ).kind;
+              reportedConflict = synthesizeGuardConflict(model, nominalGuard.reason ?? closestKind, speed);
+              memory.brakeHoldUntil = Math.max(memory.brakeHoldUntil, world.tick + Math.round(0.24 / STEP));
+              action = smoothSteerAction(world, scan, { steer: safeSteer, gear: 1, throttle: 0, brake: brake2 }, memory, true);
+              reason = nominalGuard.reason ?? "SAFETY_INTERVENTION";
+              maneuver = "guarded-yield";
+            }
+          }
+        }
+      }
+    }
+    if (pedSuppressed || reportedConflict?.kind === "pedestrian") {
+      action = stripNitro2(action);
     }
     const checked = guardDispatchAction(world, action);
+    if (checked.reason && !reportedConflict) {
+      reportedConflict = synthesizeGuardConflict(model, checked.reason, speed);
+    }
     memory.lastAction = checked.action;
     memory.tick = world.tick;
     return {
       ...planned,
       controller: SMART_ESCAPE_CONTROL,
       action: checked.action,
-      reason: yielding ? "PREDICTIVE_TRAFFIC_BRAKE" : checked.reason ?? planned.reason,
-      maneuver: yielding ? "anticipatory-yield" : planned.maneuver,
-      nitroSuppressedByPedestrian: planned.nitroSuppressedByPedestrian || yielding?.kind === "pedestrian",
+      reason: checked.reason ?? reason,
+      maneuver,
+      nitroSuppressedByPedestrian: pedSuppressed || reportedConflict?.kind === "pedestrian",
       escapeDestination: memory.goal,
-      predictedConflict: conflict,
+      predictedConflict: reportedConflict,
       routeTracking: route
     };
   }
@@ -33212,7 +37631,7 @@
     ROUTE_OBSERVATION_SCHEMA,
     CLEARANCE_ROUTE_OBSERVATION_SCHEMA
   ].map((schema) => [schema.version, schema]));
-  var signed = (n, scale) => clamp(n / scale, -1, 1);
+  var signed2 = (n, scale) => clamp(n / scale, -1, 1);
   var unit = (n, scale) => clamp(n / scale, 0, 1);
   var distanceSquared = (a, b) => (a.x - b.x) ** 2 + (a.z - b.z) ** 2;
   var nearest = (bodies, ego) => bodies.sort((a, b) => distanceSquared(a, ego) - distanceSquared(b, ego));
@@ -33228,10 +37647,10 @@
     const { ego, rays, tracks, scales: s, length } = schema;
     const obs = new Float32Array(length);
     obs.set([
-      signed(player.speed, s.speedMps),
-      signed(player.steer, s.steerRad),
-      signed(player.gtaSlipMps, s.slipMps),
-      signed(sensors.imu.yawRateRadS, s.yawRadS),
+      signed2(player.speed, s.speedMps),
+      signed2(player.steer, s.steerRad),
+      signed2(player.gtaSlipMps, s.slipMps),
+      signed2(sensors.imu.yawRateRadS, s.yawRadS),
       // Wanted decay is scored using hidden separation, so it remains UI/metrics only.
       unit(player.health, player.maxHealth),
       unit(tick - scan.tick, s.sampleTicks)
@@ -33247,10 +37666,10 @@
       obs.set([
         1,
         ...scanKinds.map((kind) => Number(track2.kind === kind)),
-        signed(track2.rightM, s.offsetM),
-        signed(track2.forwardM, s.offsetM),
-        signed(track2.rightMps, s.relativeSpeedMps),
-        signed(track2.forwardMps, s.relativeSpeedMps),
+        signed2(track2.rightM, s.offsetM),
+        signed2(track2.forwardM, s.offsetM),
+        signed2(track2.rightMps, s.relativeSpeedMps),
+        signed2(track2.forwardMps, s.relativeSpeedMps),
         unit(track2.ageS, s.ageS),
         Number(track2.motionKnown),
         Number(ttcKnown),
@@ -33266,10 +37685,10 @@
     if (!pursuit?.gta) throw new Error("GTA observation requires a GTA Chase");
     const obs = new Float32Array(GTA_OBSERVATION_SCHEMA.length);
     obs.set([
-      signed(player.speed, scales.speedMps),
-      signed(player.steer, scales.steerRad),
-      signed(player.gtaSlipMps, scales.slipMps),
-      signed(sensors.imu.yawRateRadS, scales.yawRadS),
+      signed2(player.speed, scales.speedMps),
+      signed2(player.steer, scales.steerRad),
+      signed2(player.gtaSlipMps, scales.slipMps),
+      signed2(sensors.imu.yawRateRadS, scales.yawRadS),
       unit(player.health, player.maxHealth),
       unit(pursuit.wantedLevel, 5),
       unit(pursuit.metrics.capturePressureS, GTA_PIN_SECONDS),
@@ -33289,10 +37708,10 @@
       const heading2 = body.heading - player.heading;
       const type = body.aiState === "WRECKED" ? "wrecked" : body.unitType;
       obs.set([
-        signed(right, scales.offsetM),
-        signed(forward2, scales.offsetM),
-        signed(velocity.right, scales.relativeSpeedMps),
-        signed(velocity.forward, scales.relativeSpeedMps),
+        signed2(right, scales.offsetM),
+        signed2(forward2, scales.offsetM),
+        signed2(velocity.right, scales.relativeSpeedMps),
+        signed2(velocity.forward, scales.relativeSpeedMps),
         Math.sin(heading2),
         Math.cos(heading2),
         unit(body.health, body.maxHealth),
@@ -33305,9 +37724,9 @@
       const { right, forward: forward2 } = gtaLocal2(player, body);
       const radius = body.type === "pedestrian" ? body.radius : Math.hypot(body.length, body.width) / 2;
       obs.set([
-        signed(right, scales.offsetM),
-        signed(forward2, scales.offsetM),
-        signed(relativeVelocity(body).forward, scales.relativeSpeedMps),
+        signed2(right, scales.offsetM),
+        signed2(forward2, scales.offsetM),
+        signed2(relativeVelocity(body).forward, scales.relativeSpeedMps),
         unit(radius, scales.radiusM)
       ], hazardOffset + i * hazardFields.length);
     }
@@ -34263,7 +38682,7 @@
       batch = null;
       report({ includeEpisode: true, includeCheckpoint: true, reason, error });
     }
-    function schedule(delay = 0) {
+    function schedule2(delay = 0) {
       if (status !== "running" || timer !== null) return;
       timer = setTimeout(advance, Math.ceil(Math.min(delay, Math.max(0, budgetMs - elapsed()))));
     }
@@ -34362,17 +38781,17 @@
           batch = null;
           if (episodes >= maxEpisodes) return finish("completed", "episode-budget");
           report({ includeCheckpoint: true });
-          return schedule();
+          return schedule2();
         }
         if (training && !batch) batch = planBatch();
         const next = training ? batch.next : allocated;
         if (allocated < maxEpisodes && (!training || next < batchSize) && (!active3.length || next % width !== 0)) {
           startEpisode();
-          return schedule();
+          return schedule2();
         }
         const start = elapsed(), current = active3[0];
         if (!current) return finish("completed", "episode-budget");
-        if (current.due > start) return schedule(current.due - start);
+        if (current.due > start) return schedule2(current.due - start);
         active3.shift();
         const fromTick = current.tick, result = current.cursor.advance();
         const pose5 = current.cursor.pose();
@@ -34414,7 +38833,7 @@
           if (episodes >= maxEpisodes && (!training || batch.completed !== batchSize))
             return finish("completed", "episode-budget");
           report({ includeEpisode: true });
-          return schedule();
+          return schedule2();
         }
         current.due = normal2 ? start + (pose5[0] - fromTick) * STEP * 1e3 : 0;
         active3.push(current);
@@ -34422,7 +38841,7 @@
           progressAt = now2();
           report();
         }
-        schedule(Math.max(0, active3[0].due - elapsed()));
+        schedule2(Math.max(0, active3[0].due - elapsed()));
       } catch (error) {
         finish("fault", void 0, error.message);
       }
@@ -34433,7 +38852,7 @@
         startedAt = now2();
         status = "running";
         report();
-        schedule();
+        schedule2();
       },
       control(action) {
         if (!["running", "paused"].includes(status)) return;
@@ -34449,7 +38868,7 @@
           startedAt = now2();
           status = "running";
           report();
-          schedule();
+          schedule2();
         }
       }
     };

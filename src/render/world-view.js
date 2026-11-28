@@ -12,6 +12,7 @@ import { createPlayerVehicle } from "./player-vehicle.js";
 import { createEgyptStreetLayer, usesCityV4StreetFinish } from "./egypt-streets.js";
 import { createCityPropsView } from "./city-props-view.js";
 import { CITY_PROP_PROFILE } from "../core/city-props.js";
+import { createPedestrianBody } from "../core/pedestrian-body.js";
 import { createPedestrianRig } from "./pedestrian-rig.js";
 import { createDistrictProps } from "./district-props.js";
 import { createPursuitView } from "./pursuit-view.js";
@@ -175,17 +176,19 @@ const METRO_TRAFFIC = {
   suv: [1.84, .88, .70, -.07, .60],
   van: [2.05, .91, .87, -.05, .51],
   tuktuk: [1.79, .84, .64, -.14, .42],
+  truck: [3.35, .96, .74, -.12, .44],
 };
 const proxyKind = (actor) => actor.type === "pedestrian" ? "pedestrian"
   : Object.hasOwn(METRO_TRAFFIC, actor.kind) ? actor.kind : "sedan";
 const metroPalette = (kind) => kind === "taxi" ? [0xddd0ac, 0xd5c49e, 0xe4dbba]
   : kind === "tuktuk" ? [0xbb9142, 0x547868, 0x974d38]
-    : [0x788f98, 0x9b5140, 0xb9b5a2, 0x48677f, 0x8c7358, 0x66796b];
+    : kind === "truck" ? [0xe0ddd0, 0x4c6882, 0xb88649, 0x5d6e62, 0x9c4d3c]
+      : [0x788f98, 0x9b5140, 0xb9b5a2, 0x48677f, 0x8c7358, 0x66796b];
 const metroPalettes = Object.fromEntries(Object.keys(METRO_TRAFFIC).map(kind => [kind, metroPalette(kind)]));
 const paintIndex = (actor, colors) =>
   Math.min(colors.length - 1, Math.max(0, Math.floor((Number.isFinite(actor.phase) ? actor.phase : 0) * colors.length)));
 
-function actorProxyGeometry(kind) {
+export function actorProxyGeometry(kind) {
   const parts = [];
   function add(geometry, tint) {
     const { r, g, b } = new THREE.Color(tint), count = geometry.attributes.position.count;
@@ -215,6 +218,17 @@ function actorProxyGeometry(kind) {
       cube(.29, .45, .55, side * .18, .228, 0, 0x555a59);
       cube(.17, .30, .45, side * .43, .565, 0, 0xa4a69a);
     }
+  } else if (kind === "truck") {
+    cube(1, .62, .72, 0, .69, -.14, 0xffffff);
+    cube(.94, .65, .27, 0, .435, .355, 0xffffff, .96);
+    cube(.82, .16, .015, 0, .625, .4925, 0x52666a);
+    cube(.92, .07, .82, 0, .125, -.05, 0x2d3231);
+    cube(.98, .065, .045, 0, .18, -.46, 0x68706c);
+    for (const side of [-1, 1]) cube(.018, .09, .70, side * .488, .655, -.14, 0xc49b58);
+    for (const axle of [-.30, .34])
+      for (const side of [-1, 1])
+        add(new THREE.CylinderGeometry(1, 1, 1, 8).rotateZ(Math.PI / 2)
+          .scale(.145, .145, axle < 0 ? .095 : .072).translate(side * .405, .145, axle), 0x303432);
   } else {
     const [, roofWidth, roofDepth, roofZ, belt] = METRO_TRAFFIC[kind === "patrol" ? "sedan" : kind];
     const tuk = kind === "tuktuk";
@@ -372,6 +386,32 @@ function animateWheels(record, actor) {
   }
 }
 
+function isStreetChaosWreck(world, actor) {
+  if (!world?.streetChaos?.active || !actor) return false;
+  const ids = world.streetChaos.accidentActorIds;
+  return Boolean(actor.chaosAccident || ids?.has?.(actor.id) || ids?.includes?.(actor.id));
+}
+
+function streetChaosAccidentRole(world, actor) {
+  const roles = world?.streetChaos?.accidentRoles;
+  return roles?.get?.(actor?.id) ?? roles?.[actor?.id] ?? null;
+}
+
+export function streetChaosAccidentDamage(world, actor, recordedDamage = null) {
+  if (!isStreetChaosWreck(world, actor)) return recordedDamage;
+  const role = streetChaosAccidentRole(world, actor);
+  const damage = { ...(recordedDamage ?? {}), wrecked: true };
+  if (role?.role === "lead") {
+    damage.front = Math.min(damage.front ?? 0, .28);
+    damage.rear = Math.max(damage.rear ?? 0, .78);
+  } else {
+    damage.front = Math.max(damage.front ?? 0, role?.role === "follower" ? .85 : .82);
+  }
+  const corner = role?.skewSign < 0 ? "left" : role?.skewSign > 0 ? "right" : null;
+  if (corner) damage[corner] = Math.max(damage[corner] ?? 0, .62);
+  return damage;
+}
+
 function distanceToAnchors2(x, z, anchors) {
   let distance = Infinity;
   for (const point of anchors) distance = Math.min(distance, (x - point.x) ** 2 + (z - point.z) ** 2);
@@ -491,7 +531,7 @@ function surfaceGeometry(rect, height, bottom, tileMetres) {
     geometry = new THREE.BoxGeometry(width, height, length),
     positions = geometry.getAttribute("position"),
     uv = geometry.getAttribute("uv");
-  // BoxGeometry's +Y face is vertices 8–11. World-space UVs make overlapping
+  // BoxGeometry's +Y face is vertices 8â€“11. World-space UVs make overlapping
   // street rectangles sample the same texels at intersections.
   for (let i = 8; i < 12; i++)
     uv.setXY(
@@ -1410,6 +1450,97 @@ export class WorldView {
     this.roots.set(actor.id, record);
     return record;
   }
+  streetChaosFxLayer() {
+    if (!this.crashEffects) return null;
+    if (!this.crashEffects.layer) {
+      const layer = new THREE.Group();
+      layer.name = "street-chaos-crash-effects";
+      this.scene?.add(layer);
+      this.crashEffects.layer = layer;
+      this.ownsStreetChaosFxLayer = true;
+    }
+    return this.crashEffects.layer;
+  }
+  ensureStreetChaosHazards(record, actor) {
+    const fxLayer = this.streetChaosFxLayer();
+    if (!record.hazardFlasher) {
+      this.chaosHazardGeometry ??= new THREE.SphereGeometry(.14, 8, 5);
+      this.chaosHazardHaloGeometry ??= new THREE.SphereGeometry(.19, 9, 6);
+      this.chaosHazardMaterial ??= new THREE.MeshStandardMaterial({
+        color: 0xffb12d, emissive: 0xff7a0c, emissiveIntensity: 4.6,
+        roughness: .32, metalness: 0,
+      });
+      const group = new THREE.Group();
+      group.name = "street-chaos-hazard-flashers";
+      const halfW = (actor.width ?? 1.9) / 2 + .06;
+      const halfL = (actor.length ?? 4.4) / 2 + .05;
+      const y = (actor.height ?? 1.5) * .55;
+      for (const x of [-halfW, halfW]) for (const z of [-halfL, halfL]) {
+        const lamp = new THREE.Mesh(this.chaosHazardGeometry, this.chaosHazardMaterial);
+        lamp.name = "street-chaos-corner-flasher";
+        lamp.position.set(x, y, z);
+        group.add(lamp);
+      }
+      const halo = new THREE.Mesh(this.chaosHazardHaloGeometry, this.chaosHazardMaterial);
+      halo.name = "street-chaos-hazard-halo";
+      halo.position.set(0, (actor.height ?? 1.5) * .72, (actor.length ?? 4.4) * .24);
+      group.add(halo);
+      (fxLayer ?? record.visual).add(group);
+      record.hazardFlasher = group;
+    }
+    if (!record.accidentSmoke) {
+      this.chaosSmokeGeometry ??= new THREE.SphereGeometry(.5, 8, 6);
+      this.chaosSmokeMaterial ??= new THREE.MeshBasicMaterial({
+        color: 0x383d3b, transparent: true, opacity: .48,
+        depthWrite: false, toneMapped: false,
+      });
+      const group = new THREE.Group();
+      group.name = "street-chaos-wreck-smoke";
+      for (let i = 0; i < 9; i++) {
+        const puff = new THREE.Mesh(this.chaosSmokeGeometry, this.chaosSmokeMaterial);
+        puff.name = "street-chaos-smoke-puff";
+        group.add(puff);
+      }
+      (fxLayer ?? record.visual).add(group);
+      record.accidentSmoke = group;
+    }
+  }
+  updateStreetChaosHazards(record, actor, x, y, z, heading, distance2) {
+    this.ensureStreetChaosHazards(record, actor);
+    const role = streetChaosAccidentRole(this.world, actor);
+    const idHash = String(actor.id ?? "").split("").reduce((sum, ch) => sum + ch.charCodeAt(0), 0);
+    const phaseOffset = role?.role === "follower" ? 12 : role?.role === "lead" ? 0 : (idHash % 2) * 12;
+    record.hazardFlasher.visible = (((this.world.tick ?? 0) + phaseOffset) % 24) < 12;
+    const fxLayer = this.crashEffects?.layer;
+    if (record.hazardFlasher.parent === fxLayer) {
+      record.hazardFlasher.position.set(x, y, z);
+      record.hazardFlasher.rotation.y = heading;
+    }
+    const smoke = record.accidentSmoke;
+    if (!smoke) return;
+    smoke.visible = distance2 <= 110 * 110;
+    if (!smoke.visible) return;
+    const front = (actor.length ?? 4.4) * .34;
+    if (smoke.parent === fxLayer)
+      smoke.position.set(x + Math.sin(heading) * front, y + .68, z + Math.cos(heading) * front);
+    for (let i = 0; i < smoke.children.length; i++) {
+      const puff = smoke.children[i];
+      const phase = (((this.world.tick ?? 0) + i * 6) % 54) / 54;
+      const scale = 1.4 + phase * .5;
+      puff.position.set(Math.sin((phase + i) * 5.7) * .28, .18 + phase * 3.2,
+        Math.cos((phase + i) * 4.9) * .22);
+      puff.scale.set(scale, scale * 1.12, scale);
+    }
+  }
+  hideStreetChaosHazards(record) {
+    if (record.hazardFlasher) record.hazardFlasher.visible = false;
+    if (record.accidentSmoke) record.accidentSmoke.visible = false;
+  }
+  clearStreetChaosHazards(record) {
+    record.hazardFlasher?.removeFromParent();
+    record.accidentSmoke?.removeFromParent();
+    record.hazardFlasher = record.accidentSmoke = null;
+  }
   removeMetroActor(id, record) {
     if (
       !this.disposed &&
@@ -1428,11 +1559,15 @@ export class WorldView {
           this.metroPedestrianPool.set(key, list);
         }
         record.visual.removeFromParent();
+        record.visual.rotation.set(0, 0, 0);
+        record.visual.visible = true;
         list.push({ visual: record.visual, rig: record.pedestrianRig });
         this.metroPedestrianPoolCount++;
         record.pedestrianRig = record.visual = null;
       }
     }
+    record.poseTick = record.poseAlpha = undefined;
+    this.clearStreetChaosHazards(record);
     record.pedestrianRig?.dispose();
     disposeSkeletons(record.visual);
     if (record.entry) {
@@ -1660,7 +1795,9 @@ export class WorldView {
       const heading = (previous.heading ?? 0) + angleDelta(actor.heading ?? 0, previous.heading ?? 0) * alpha;
       const nearM = person ? METRO_PERSON_NEAR_M : METRO_NEAR_M;
       const releaseM = person ? METRO_PERSON_RELEASE_M : METRO_RELEASE_M;
-      const reach = (record ? releaseM : nearM) + (person ? .3 : actor.length * .5);
+      const chaosWreck = !person && isStreetChaosWreck(world, actor);
+      const baseReach = (record ? releaseM : nearM) + (person ? .3 : actor.length * .5);
+      const reach = chaosWreck ? Math.max(110, baseReach) : baseReach;
       if (pinned || distance2 <= reach * reach) {
         record ??= this.addMetroActor(actor);
         record.frame = frame;
@@ -1682,8 +1819,8 @@ export class WorldView {
           const yawDelta = angleDelta(actor.heading ?? 0, previous.heading ?? 0);
           const latG = THREE.MathUtils.clamp((actor.speed ?? 0) * yawDelta * 60, -9, 9);
           const accelG = THREE.MathUtils.clamp(((actor.speed ?? 0) - (previous.speed ?? actor.speed ?? 0)) * 60, -10, 10);
-          const maxRoll = actor.pursuitRole === "police" ? 0.065 : 0.052;
-          const targetRoll = THREE.MathUtils.clamp((latG / 9) * maxRoll, -0.065, 0.065);
+          const maxRoll = actor.kind === "truck" ? 0.032 : actor.pursuitRole === "police" ? 0.065 : 0.052;
+          const targetRoll = THREE.MathUtils.clamp((latG / 9) * maxRoll, -maxRoll, maxRoll);
           const targetPitch = THREE.MathUtils.clamp((-accelG / 10) * 0.048, -0.048, 0.048);
           const suspBlend = record.suspTick === undefined ? 0.35 : record.suspTick === world.tick ? 0.14 : 0.26;
           record.suspTick = world.tick;
@@ -1697,7 +1834,10 @@ export class WorldView {
             record.visual.rotation.x = record.pitchRad + impactRx.pitchRad;
             record.visual.position.y = impactRx.heaveM;
             if (actor.pursuitRole !== "police") {
-              const trafficDmg = getPatrolVisualDamage(actor);
+              const recordedDmg = getPatrolVisualDamage(actor);
+              const trafficDmg = chaosWreck
+                ? streetChaosAccidentDamage(world, actor, recordedDmg)
+                : recordedDmg;
               if (trafficDmg) {
                 const fQ = Math.round((trafficDmg.front ?? 0) * 1000);
                 const rQ = Math.round((trafficDmg.rear ?? 0) * 1000);
@@ -1710,7 +1850,12 @@ export class WorldView {
                   record.lastTrafficDmgKey = dmgKey;
                   record.lastTrafficDmgVisual = record.visual;
                 }
+              } else if (record.lastTrafficDmgKey) {
+                applyTrafficCrashDamage(record.visual, { front: 0, rear: 0, left: 0, right: 0, wrecked: false });
+                record.lastTrafficDmgKey = record.lastTrafficDmgVisual = null;
               }
+              if (chaosWreck) this.updateStreetChaosHazards(record, actor, x, y, z, heading, distance2);
+              else this.hideStreetChaosHazards(record);
             }
           }
         } else if (!record.pedestrianRig) {
@@ -1784,9 +1929,10 @@ export class WorldView {
           continue;
         }
         const name = source.name ?? "casual_man";
-        const dummyActor = { id: `pool-${name}`, type: "pedestrian", kind: name, speed: 1.2, phase: 0, body: { heightM: 1.78 } };
+        const dummyActor = { id: `pool-${name}`, type: "pedestrian", kind: name, speed: 1.2, phase: 0 };
+        dummyActor.body = createPedestrianBody(dummyActor);
         try {
-          const visual = fit(source.gltf.scene, Infinity, Infinity, 1.78);
+          const visual = fit(source.gltf.scene, Infinity, Infinity, dummyActor.body.heightM);
           const rig = createPedestrianRig(visual, source.gltf.animations, dummyActor);
           list.push({ visual, rig });
           this.metroPedestrianPoolCount++;
@@ -1862,6 +2008,9 @@ export class WorldView {
     if (pooledList?.length) {
       const pooled = pooledList.pop();
       this.metroPedestrianPoolCount = Math.max(0, (this.metroPedestrianPoolCount ?? 1) - 1);
+      pooled.visual.removeFromParent();
+      pooled.visual.rotation.set(0, 0, 0);
+      pooled.visual.visible = true;
       const base = pooled.visual.userData?.fitBase;
       if (base && base.sizeY > 0) {
         const scale = height / base.sizeY;
@@ -1875,7 +2024,9 @@ export class WorldView {
       record.visual = pooled.visual;
       record.poseTick = this.world.tick;
       record.poseAlpha = alpha;
-      record.fallback.removeFromParent();
+      record.fallback?.removeFromParent();
+      if (actor.impact || record.root.userData.pedestrianImpactPose)
+        applyPedestrianImpact(record.root, actor, this.world.tick, alpha);
       return;
     }
     let visual, rig;
@@ -1888,7 +2039,9 @@ export class WorldView {
       record.visual = visual;
       record.poseTick = this.world.tick;
       record.poseAlpha = alpha;
-      record.fallback.removeFromParent();
+      record.fallback?.removeFromParent();
+      if (actor.impact || record.root.userData.pedestrianImpactPose)
+        applyPedestrianImpact(record.root, actor, this.world.tick, alpha);
     } catch {
       rig?.dispose();
       visual?.removeFromParent();
@@ -2236,6 +2389,12 @@ export class WorldView {
         for (const proto of this.metroSkinnedPrototypes.values()) disposeSkeletons(proto);
         this.metroSkinnedPrototypes.clear();
       }
+      this.chaosHazardGeometry?.dispose();
+      this.chaosHazardHaloGeometry?.dispose();
+      this.chaosHazardMaterial?.dispose();
+      this.chaosSmokeGeometry?.dispose();
+      this.chaosSmokeMaterial?.dispose();
+      if (this.ownsStreetChaosFxLayer) this.crashEffects?.layer?.removeFromParent().clear();
       this.metroModels.dispose();
       this.metroSilhouettes.dispose();
       this.metroAssets.clear();

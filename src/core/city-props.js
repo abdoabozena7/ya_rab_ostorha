@@ -114,11 +114,20 @@ export function registerCityProps(world) {
     width: .41 * p.scale, length: .41 * p.scale, height: 5.52 * p.scale,
     propImpact: freshImpact(),
   }));
+  // Lamp posts and bollards are drawn by the street-surface view; here they only gain physical hulls.
+  const lamps = placements.lamps.map((p, index) => ({
+    ...p, id: `city-lamp-${index}`, type: "static", kind: "city-lamp",
+    width: .36, length: .36, height: 6.2, propImpact: freshImpact(),
+  }));
+  const furniture = placements.furniture.map((p, index) => ({
+    ...p, id: `city-furniture-${index}`, type: "static", kind: "city-furniture",
+    width: .54, length: .54, height: 1, propImpact: freshImpact(),
+  }));
   for (const site of world.statics)
     if (site.kind === "market-stall") site.propImpact = freshImpact();
-  world.statics.push(...trees);
+  world.statics.push(...trees, ...lamps, ...furniture);
   world.cityStreetProps = placements;
-  return trees;
+  return [...trees, ...lamps, ...furniture];
 }
 
 export function recordCityPropImpact(world, obstacle, contact) {

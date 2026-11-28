@@ -11,6 +11,35 @@ const smooth = (value) => {
 };
 const components = ["getX", "getY", "getZ", "getW"];
 
+function normalizePedestrianBody(actor) {
+  const raw = actor?.body;
+  if (
+    raw &&
+    Number.isFinite(raw.walkSpeedMps) && raw.walkSpeedMps > 0 &&
+    Number.isFinite(raw.jogSpeedMps) && raw.jogSpeedMps > raw.walkSpeedMps &&
+    Number.isFinite(raw.heightM) && raw.heightM > 0 &&
+    Number.isFinite(raw.widthM) && raw.widthM > 0 &&
+    Number.isFinite(raw.depthM) && raw.depthM > 0 &&
+    Number.isFinite(raw.massKg) && raw.massKg > 0 &&
+    Number.isFinite(raw.radiusM) && raw.radiusM > 0 &&
+    Number.isFinite(raw.maxAccelerationMps2) &&
+    Number.isFinite(raw.maxDecelerationMps2) &&
+    Number.isFinite(raw.maxTurnRateRadS)
+  ) {
+    return raw;
+  }
+  const defaults = createPedestrianBody(actor);
+  if (!raw || typeof raw !== "object") return defaults;
+  const merged = { ...defaults, ...raw };
+  for (const [key, fallback] of Object.entries(defaults)) {
+    if (typeof fallback === "number" && (!Number.isFinite(merged[key]) || merged[key] <= 0))
+      merged[key] = fallback;
+  }
+  if (merged.jogSpeedMps <= merged.walkSpeedMps)
+    merged.jogSpeedMps = Math.max(defaults.jogSpeedMps, merged.walkSpeedMps + 0.5);
+  return merged;
+}
+
 function footGeometry(visual) {
   const feet = [], skeletons = new Set();
   visual.traverse((part) => {
@@ -43,8 +72,8 @@ export function createPedestrianRig(visual, animations, initialActor = {}) {
       throw new TypeError(`The installed pedestrian asset has no usable ${name} clip`);
     clips[name] = clip;
   }
-  const walkStrideM = visual.userData.walkStride * visual.scale.x;
-  const runStrideM = visual.userData.runStride * visual.scale.x;
+  let walkStrideM = visual.userData.walkStride * visual.scale.x;
+  let runStrideM = visual.userData.runStride * visual.scale.x;
   if (
     !Number.isFinite(walkStrideM) || walkStrideM <= 0 ||
     !Number.isFinite(runStrideM) || runStrideM <= 0
@@ -62,15 +91,33 @@ export function createPedestrianRig(visual, animations, initialActor = {}) {
     return [name, action];
   }));
   const vertex = new THREE.Vector3(), parentInverse = new THREE.Matrix4();
-  const baselineY = visual.position.y;
+  let baselineY = visual.position.y;
+  let lastScaleX = visual.scale.x;
   let actor = initialActor, disposed = false, first = true;
   let lastTimeS = 0, lastFixedTimeS = 0, lastDistanceM = 0;
   let motionWeight = 0, runBlend = 0, reading;
 
   function update(nextActor = actor, alpha = 1) {
     if (disposed) return;
+    const prevActorId = actor?.id ?? null;
+    const nextActorId = nextActor?.id ?? null;
+    const actorIdChanged = !first && (
+      (prevActorId !== null || nextActorId !== null)
+        ? nextActorId !== prevActorId
+        : nextActor !== actor
+    );
     actor = nextActor;
-    const body = actor.body ?? createPedestrianBody(actor);
+    const scaleX = visual.scale.x;
+    const scaleChanged = !first && Math.abs(scaleX - lastScaleX) > 1e-6;
+    if (Number.isFinite(scaleX) && scaleX > 0) {
+      const nextWalkStrideM = visual.userData.walkStride * scaleX;
+      const nextRunStrideM = visual.userData.runStride * scaleX;
+      if (Number.isFinite(nextWalkStrideM) && nextWalkStrideM > 0) walkStrideM = nextWalkStrideM;
+      if (Number.isFinite(nextRunStrideM) && nextRunStrideM > 0) runStrideM = nextRunStrideM;
+      lastScaleX = scaleX;
+    }
+    if (actorIdChanged || scaleChanged) baselineY = visual.position.y;
+    const body = normalizePedestrianBody(actor);
     const blend = clamp(finite(alpha, 1), 0, 1);
     const distanceM = Math.max(0, finite(actor.distance));
     const fixedTimeS = Math.max(0, finite(actor.motionTimeS));
@@ -86,9 +133,10 @@ export function createPedestrianRig(visual, animations, initialActor = {}) {
     const targetMotion = smooth(renderedSpeed / 0.35);
     const targetRun = smooth((renderedSpeed - body.walkSpeedMps - 0.1) /
       Math.max(0.35, body.jogSpeedMps - body.walkSpeedMps - 0.1));
+    const nonFiniteBlend = !Number.isFinite(motionWeight) || !Number.isFinite(runBlend);
     const rewound = fixedTimeS < lastFixedTimeS - 1e-9 ||
       distanceM < lastDistanceM - 1e-9;
-    if (first || rewound) {
+    if (first || rewound || actorIdChanged || nonFiniteBlend) {
       motionWeight = targetMotion;
       runBlend = targetRun;
       lastTimeS = timeS;
@@ -100,6 +148,8 @@ export function createPedestrianRig(visual, animations, initialActor = {}) {
       if (Math.abs(runBlend - targetRun) < 1e-5) runBlend = targetRun;
       lastTimeS = Math.max(lastTimeS, timeS);
     }
+    motionWeight = clamp(finite(motionWeight, targetMotion), 0, 1);
+    runBlend = clamp(finite(runBlend, targetRun), 0, 1);
     first = false;
     lastFixedTimeS = fixedTimeS;
     lastDistanceM = distanceM;
@@ -114,7 +164,7 @@ export function createPedestrianRig(visual, animations, initialActor = {}) {
     for (const name of ["idle", "walk", "run"]) {
       const action = actions[name];
       action.setEffectiveWeight(weights[name]);
-      action.time = name === "idle" ? phase :
+      action.time = name === "idle" ? phase * Math.min(1, clips.idle.duration) :
         (name === "walk" ? walkPhase : runPhase) * clips[name].duration;
     }
     // Clip time is assigned from accepted travel; the mixer never advances a treadmill clock.
@@ -133,7 +183,7 @@ export function createPedestrianRig(visual, animations, initialActor = {}) {
       }
     }
     // Ground actual weighted shoe geometry, without changing the shared mesh or skeleton.
-    const correctionM = -minFootYM;
+    const correctionM = Number.isFinite(minFootYM) ? -minFootYM : 0;
     visual.position.y += correctionM;
     visual.updateMatrixWorld(true);
     for (const skeleton of skeletons) skeleton.update();

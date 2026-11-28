@@ -65,7 +65,8 @@ export function createCityPropsView(scene, world) {
     let dirty = false;
     if (statics !== world.statics) {
       statics = world.statics;
-      sites = statics.filter(s => s.propImpact);
+      // Lamp posts and bollards are drawn by the street-surface view; they only need physics here.
+      sites = statics.filter(s => s.propImpact && (s.kind === "city-tree" || s.kind === "market-stall"));
     }
     const wanted = new Set();
     for (const site of sites) {

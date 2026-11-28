@@ -367,11 +367,27 @@ function getWorldJunctions(world) {
  * Never reads world.player directly — strictly projects from the legal sighting report!
  */
 export function planTacticalInterceptAim(world, car, report, slotIndex = 0) {
-  if (!report) return { x: 0, z: 0, heading: 0, role: "LEAD", horizonS: 0, junctionIntercept: false };
-  const unitsInContact = world?.pursuit?.response?.unitsInContact;
-  if (unitsInContact !== undefined && unitsInContact <= 0) {
-    const order = car?.gtaAI?.order ?? slotIndex;
-    return { ...selectTacticalSearchTarget(world, car, report, order), role: "SEARCH", horizonS: 0, junctionIntercept: false };
+  const unitsInContact = world?.pursuit?.response?.unitsInContact ?? 0;
+  const slot = Math.max(0, Math.trunc(slotIndex || 0));
+  if (!report || !Number.isFinite(report.x) || !Number.isFinite(report.z)) {
+    return {
+      x: Number.isFinite(car?.x) ? car.x : 0,
+      z: Number.isFinite(car?.z) ? car.z : 0,
+      heading: Number.isFinite(car?.heading) ? car.heading : 0,
+      roadId: car?.gtaAI?.beat?.roadId ?? null,
+      role: "HOLD",
+      horizonS: 0,
+      junctionIntercept: false,
+    };
+  }
+  if (unitsInContact <= 0) {
+    const order = car?.gtaAI?.order ?? slot;
+    return {
+      ...selectTacticalSearchTarget(world, car, report, order),
+      role: "SEARCH",
+      horizonS: 0,
+      junctionIntercept: false,
+    };
   }
 
   const rawSpeed = Number.isFinite(report.speed) ? report.speed : 0;
@@ -379,106 +395,172 @@ export function planTacticalInterceptAim(world, car, report, slotIndex = 0) {
   const vz = Number.isFinite(report.vz) ? report.vz : Math.cos(report.heading ?? 0) * rawSpeed;
   const velMag = Math.hypot(vx, vz);
   const heading = velMag > 0.8 ? Math.atan2(vx, vz) : (report.heading ?? 0);
-  const fx = Math.sin(heading);
-  const fz = Math.cos(heading);
-  const rx = Math.cos(heading);
-  const rz = -Math.sin(heading);
+  const fx = Math.sin(heading), fz = Math.cos(heading);
+  const rx = Math.cos(heading), rz = -Math.sin(heading);
+  const reportSpeed = Math.max(velMag, Math.abs(rawSpeed), 9.5);
   const range = car && Number.isFinite(car.x) && Number.isFinite(car.z) ? distance(car, report) : 24;
-  const slot = Math.max(0, Math.trunc(slotIndex || 0));
 
-  // Slot 0 (Lead unit): clean pursuit line on the suspect corridor with closing pressure.
-  if (slot === 0) {
-    const leadHorizonS = clamp(0.34 + range * 0.015, 0.30, 1.08);
-    const leadDist = clamp((velMag > 0.2 ? velMag : rawSpeed) * leadHorizonS, -10, 19);
-    const rawAim = {
-      x: report.x + fx * leadDist,
-      z: report.z + fz * leadDist,
-      heading,
-    };
-    const resolved = resolveTacticalRoadAim(world, car, rawAim, { vx: fx * Math.max(velMag, 10), vz: fz * Math.max(velMag, 10) });
+  if ((world?.pursuit?.wantedLevel ?? 1) < 3) {
+    if (slot === 0) {
+      const horizonS = clamp(0.34 + range * 0.015, 0.30, 1.08);
+      const forwardM = clamp((velMag > 0.2 ? velMag : rawSpeed) * horizonS, -10, 19);
+      const resolved = resolveTacticalRoadAim(world, car, {
+        x: report.x + fx * forwardM,
+        z: report.z + fz * forwardM,
+        heading,
+      }, { vx: fx * Math.max(velMag, 10), vz: fz * Math.max(velMag, 10) });
+      return { x: resolved.x, z: resolved.z, heading: resolved.heading ?? heading,
+        role: "LEAD", horizonS, junctionIntercept: false };
+    }
+
+    const horizonS = slot === 1
+      ? clamp(1.65 + range * 0.006, 1.6, 2.15)
+      : slot === 2
+        ? clamp(2.15 + range * 0.008, 2.05, 2.6)
+        : clamp(1.75 + (slot % 3) * 0.35, 1.6, 2.6);
+    const projectedM = clamp(reportSpeed * horizonS, 15, 86);
+    const projected = { x: report.x + fx * projectedM, z: report.z + fz * projectedM };
+    const side = car?.squadSide || (slot % 2 === 1 ? 1 : -1);
+    let junction = null, junctionScore = Infinity;
+    const minForwardM = Math.max(11, reportSpeed * 0.85);
+    const maxForwardM = Math.max(30, projectedM + 22);
+    for (const candidate of getWorldJunctions(world)) {
+      const dx = candidate.x - report.x, dz = candidate.z - report.z;
+      const forwardM = dx * fx + dz * fz;
+      if (forwardM < minForwardM || forwardM > maxForwardM) continue;
+      const lateralM = Math.abs(dx * rx + dz * rz);
+      if (lateralM > 16.5) continue;
+      const score = Math.hypot(candidate.x - projected.x, candidate.z - projected.z) + lateralM * 0.65;
+      if (score < junctionScore) { junctionScore = score; junction = candidate; }
+    }
+    let rawAim;
+    if (junction) {
+      rawAim = slot === 2 || car?.squadRole === "INTERCEPTOR"
+        ? { x: junction.x + fx * 3.8 + rx * side * 2.8,
+            z: junction.z + fz * 3.8 + rz * side * 2.8, heading }
+        : { x: junction.x - fx * 2.6 + rx * side * 4.5,
+            z: junction.z - fz * 2.6 + rz * side * 4.5, heading };
+    } else {
+      const lateralM = slot === 1 ? side * 4.3 : slot === 2 ? side * 3.4 : side * 4.8;
+      rawAim = { x: projected.x + rx * lateralM, z: projected.z + rz * lateralM, heading };
+    }
+    const resolved = resolveTacticalRoadAim(world, car, rawAim, {
+      vx: fx * reportSpeed, vz: fz * reportSpeed,
+    });
+    return { x: resolved.x, z: resolved.z, heading: resolved.heading ?? heading,
+      role: slot === 1 ? "FLANK" : slot === 2 ? "CUTOFF" : "CONTAIN",
+      horizonS, junctionIntercept: Boolean(junction) };
+  }
+
+  const resolve = (rawAim, role, horizonS, junctionIntercept = false) => {
+    const resolved = resolveTacticalRoadAim(world, car, rawAim, {
+      vx: fx * reportSpeed,
+      vz: fz * reportSpeed,
+    });
     return {
       x: resolved.x,
       z: resolved.z,
       heading: resolved.heading ?? heading,
-      role: "LEAD",
-      horizonS: leadHorizonS,
-      junctionIntercept: false,
+      role,
+      horizonS,
+      junctionIntercept,
     };
+  };
+
+  if (slot === 0) {
+    const horizonS = clamp(0.34 + range * 0.012, 0.30, 0.92);
+    const forwardM = clamp(reportSpeed * horizonS, 6, 18);
+    return resolve({
+      x: report.x + fx * forwardM,
+      z: report.z + fz * forwardM,
+      heading,
+    }, "LEAD", horizonS);
   }
 
-  // Slots 1..2 (Flank / Cutoff units) & outer support: project velocity 1.6..2.6 s ahead toward intersections & parallel lanes.
-  const horizonS = slot === 1
-    ? clamp(1.65 + range * 0.006, 1.6, 2.15)
-    : slot === 2
-      ? clamp(2.15 + range * 0.008, 2.05, 2.6)
-      : clamp(1.75 + (slot % 3) * 0.35, 1.6, 2.6);
-  const projSpeed = Math.max(velMag, Math.abs(rawSpeed), 9.5);
-  const projDist = clamp(projSpeed * horizonS, 15, 86);
-  const projPoint = {
-    x: report.x + fx * projDist,
-    z: report.z + fz * projDist,
-  };
-  const side = car?.squadSide || (slot % 2 === 1 ? 1 : -1);
+  if (slot === 1 || slot === 2) {
+    const side = slot === 1 ? -1 : 1;
+    const forwardM = clamp(18 + range * 0.16 + (slot - 1) * 6, 18, 38);
+    const lateralM = side * clamp(3.6 + range * 0.025, 3.8, 6.2);
+    const fairCity = isFairCityPolice(world?.pursuit);
+    const horizonS = fairCity
+      ? clamp(forwardM / reportSpeed, 0.8, 2.1)
+      : slot === 1
+        ? clamp(1.65 + range * 0.006, 1.6, 2.15)
+        : clamp(2.15 + range * 0.008, 2.05, 2.6);
+    const rawAim = {
+      x: report.x + fx * forwardM + rx * lateralM,
+      z: report.z + fz * forwardM + rz * lateralM,
+      heading: heading - side * 0.18,
+      width: car?.width,
+      length: car?.length,
+    };
+    const role = fairCity
+      ? (slot === 1 ? "PINCER_LEFT" : "PINCER_RIGHT")
+      : (slot === 1 ? "FLANK" : "CUTOFF");
+    if (isTacticalPatrolPoseSupported(world, rawAim)) {
+      return {
+        x: rawAim.x,
+        z: rawAim.z,
+        heading: rawAim.heading,
+        role,
+        horizonS,
+        junctionIntercept: false,
+      };
+    }
+    return resolve(rawAim, role, horizonS);
+  }
 
   const junctions = getWorldJunctions(world);
-  let bestJunction = null;
-  let bestJScore = Infinity;
-  const minFwd = Math.max(11, projSpeed * 0.85);
-  const maxFwd = Math.max(30, projDist + 22);
-  for (let i = 0; i < junctions.length; i++) {
-    const j = junctions[i];
-    const jx = j.x - report.x;
-    const jz = j.z - report.z;
-    const fwd = jx * fx + jz * fz;
-    if (fwd < minFwd || fwd > maxFwd) continue;
-    const lat = Math.abs(jx * rx + jz * rz);
-    if (lat > 16.5) continue;
-    const dProj = Math.hypot(j.x - projPoint.x, j.z - projPoint.z) + lat * 0.65;
-    if (dProj < bestJScore) {
-      bestJScore = dProj;
-      bestJunction = j;
+  const chooseJunction = (targetForwardM, minForwardM, maxForwardM, lateralCapM) => {
+    let best = null, bestScore = Infinity;
+    for (const junction of junctions) {
+      const dx = junction.x - report.x, dz = junction.z - report.z;
+      const forwardM = dx * fx + dz * fz;
+      if (forwardM < minForwardM || forwardM > maxForwardM) continue;
+      const lateralM = Math.abs(dx * rx + dz * rz);
+      if (lateralM > lateralCapM) continue;
+      const score = Math.abs(forwardM - targetForwardM) + lateralM * 0.7;
+      if (score < bestScore) {
+        bestScore = score;
+        best = { ...junction, forwardM, lateralM };
+      }
     }
-  }
-
-  let rawAim;
-  if (bestJunction) {
-    if (slot === 2 || car?.squadRole === "INTERCEPTOR") {
-      // Cutoff throat just past/across the upcoming intersection
-      rawAim = {
-        x: bestJunction.x + fx * 3.8 + rx * (side * 2.8),
-        z: bestJunction.z + fz * 3.8 + rz * (side * 2.8),
-        heading,
-      };
-    } else {
-      // Flanker pinches the parallel / cross approach into the upcoming intersection
-      rawAim = {
-        x: bestJunction.x - fx * 2.6 + rx * (side * 4.5),
-        z: bestJunction.z - fz * 2.6 + rz * (side * 4.5),
-        heading,
-      };
-    }
-  } else {
-    const lateralOffsetM = slot === 1 ? side * 4.3 : slot === 2 ? side * 3.4 : side * 4.8;
-    rawAim = {
-      x: projPoint.x + rx * lateralOffsetM,
-      z: projPoint.z + rz * lateralOffsetM,
-      heading,
-    };
-  }
-
-  const resolved = resolveTacticalRoadAim(world, car, rawAim, {
-    vx: fx * projSpeed,
-    vz: fz * projSpeed,
-  });
-
-  return {
-    x: resolved.x,
-    z: resolved.z,
-    heading: resolved.heading ?? heading,
-    role: slot === 1 ? "FLANK" : slot === 2 ? "CUTOFF" : "CONTAIN",
-    horizonS,
-    junctionIntercept: Boolean(bestJunction),
+    return best;
   };
+
+  if (slot <= 5) {
+    const horizonS = [0, 0, 0, 1.8, 2.45, 3.2][slot];
+    const projectedM = clamp(reportSpeed * horizonS, 35, 95);
+    const junction = chooseJunction(projectedM, 24, 105, 18);
+    const side = slot === 3 ? 0 : slot === 4 ? -1 : 1;
+    const rawAim = junction
+      ? {
+          x: junction.x + rx * side * 2.4,
+          z: junction.z + rz * side * 2.4,
+          heading,
+        }
+      : {
+          x: report.x + fx * projectedM + rx * side * 4.5,
+          z: report.z + fz * projectedM + rz * side * 4.5,
+          heading,
+        };
+    const role = slot === 3 ? "CUTOFF_INTERCEPT" : slot === 4 ? "CROSS_AMBUSH_LEFT" : "CROSS_AMBUSH_RIGHT";
+    return resolve(rawAim, role, horizonS, Boolean(junction));
+  }
+
+  const horizonS = clamp(2.2 + (slot % 4) * 0.24, 2.2, 3.0);
+  const projectedM = clamp(reportSpeed * horizonS + 14, 40, 100);
+  const side = slot % 2 ? -1 : 1;
+  const lateralM = side * (7 + (slot % 3) * 2.5);
+  const junction = chooseJunction(projectedM, 34, 112, 28);
+  const rawAim = junction
+    ? { x: junction.x + rx * lateralM * 0.35, z: junction.z + rz * lateralM * 0.35, heading }
+    : {
+        x: report.x + fx * projectedM + rx * lateralM,
+        z: report.z + fz * projectedM + rz * lateralM,
+        heading,
+      };
+  return resolve(rawAim, "FORWARD_CONTAIN", horizonS, Boolean(junction));
 }
 
 export function canPatrolUseCurbPrivilege(world, car) {

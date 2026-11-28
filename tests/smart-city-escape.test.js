@@ -6,9 +6,15 @@ import { distance, overlaps, roadProject } from "../src/core/geometry.js";
 import { World } from "../src/core/world.js";
 import { spawnCrowdAhead } from "../src/core/pursuit-world.js";
 import { updatePursuitResponse } from "../src/core/pursuit-response.js";
-import { refreshTacticalPatrolSpecs } from "../src/core/pursuit-gta.js";
+import { refreshTacticalPatrolSpecs, DISPATCH_DAMAGE_FEEDBACK, PATROL_TRAFFIC_PREVIEW } from "../src/core/pursuit-gta.js";
+import { METRO_CITY_CURBS } from "../src/core/pako-curb.js";
+import { AGGRESSIVE_CHASE_PRESENCE } from "../src/core/pako-aggressive-police.js";
+import { TACTICAL_PURSUIT_MODE } from "../src/core/pako-tactical-police.js";
+import { PATROL_LATERAL_YIELD } from "../src/core/pako-patrol-yield.js";
+import { KING_LONG_MICROBUS_ID } from "../src/core/vehicle-spec.js";
 import { PursuitScanner } from "../src/signal_processing/pursuit-scanner.js";
-import { planSmartEscapeAction, selectSensorEscapeGoal } from "../src/rl/pako-smart-escape.js";
+import { planSmartEscapeAction, selectSensorEscapeGoal, SMART_ESCAPE_CONTROL } from "../src/rl/pako-smart-escape.js";
+import { applyFrozenDispatchAction } from "../src/rl/pursuit-controller.js";
 import { runSmartEscapeTrial } from "../src/rl/smart-escape-trials.js";
 import { smartEscapeCurriculum, SMART_ESCAPE_SCENARIOS } from "../src/rl/smart-escape-curriculum.js";
 import { pursuitStageVariants } from "../src/rl/pursuit-rollouts.js";
@@ -205,4 +211,85 @@ test("current Chase curriculum schedules gap, crossing and static scenarios with
   assert.deepEqual(pursuitStageVariants(upgraded.stages[0]).map(s => s.scenario), SMART_ESCAPE_SCENARIOS);
   assert.equal(base.stages[0].evasiveControl, undefined, "old saved curriculum is not mutated");
   assert.equal(upgraded.stages[0].evasiveControl, "pako-smart-escape-v3");
+});
+
+test("smart escape smoothly steers around an early pedestrian and avoids chatter/collisions in Level-5 City Chase", () => {
+  const policy = freezePursuitPolicy(JSON.parse(readFileSync(
+    new URL("../public/threejs/pako-chase-ppo.json", import.meta.url), "utf8")));
+  const chaseCfg = {
+    ruleset: "dispatch-v1", damageFeedback: DISPATCH_DAMAGE_FEEDBACK, wantedLevelMax: 5,
+    maxActivePatrols: 14, curbSupport: METRO_CITY_CURBS, chasePresence: AGGRESSIVE_CHASE_PRESENCE,
+    tacticalPursuit: TACTICAL_PURSUIT_MODE, policeFairness: "city-fair-v1",
+    patrolTrafficPreview: PATROL_TRAFFIC_PREVIEW, patrolChainYield: PATROL_LATERAL_YIELD,
+  };
+
+  // 1. Early pedestrian bypass: stationary pedestrian 26m ahead on an open avenue
+  const pedWorld = new World({ seed: "ped-early-evade", cityVersion: 5, traffic: 0, pedestrians: 0 }, "metro");
+  pedWorld.command({ type: "street-pursuit-start", level: 1, variant: "gta",
+    config: { ...chaseCfg, maxActivePatrols: 1 } }, false);
+  pedWorld.pursuit.cityChase = true;
+  pedWorld.pursuit.pako = true;
+  const sinH = Math.sin(pedWorld.player.heading), cosH = Math.cos(pedWorld.player.heading);
+  pedWorld.actors.push({
+    id: "early-ped-target", type: "pedestrian", kind: "man-polo",
+    x: pedWorld.player.x + sinH * 26, z: pedWorld.player.z + cosH * 26,
+    heading: pedWorld.player.heading + Math.PI / 2, speed: 0, walkSpeed: 0,
+    radius: 0.35, width: 0.55, length: 0.4, phase: 0, distance: 0, motionTimeS: 0,
+    previous: { x: pedWorld.player.x + sinH * 26, z: pedWorld.player.z + cosH * 26, heading: 0, speed: 0 },
+  });
+  const pedDriver = {
+    policy, sha256: "shipped", status: "active", lastTick: -1, decisions: 0,
+    recoverStale: true, evasion: true, evasiveControl: SMART_ESCAPE_CONTROL,
+  };
+  pedWorld.pursuit.frozenDriver = pedDriver;
+  let maxLateralM = 0, steeredPast = false, minSpeedAfterAccel = Infinity;
+  const startX = pedWorld.player.x, startZ = pedWorld.player.z;
+  for (let i = 0; i < 360 && pedWorld.pursuit.phase === "running"; i++) {
+    applyFrozenDispatchAction(pedWorld, pedDriver, null);
+    pedWorld.step();
+    const dx = pedWorld.player.x - startX, dz = pedWorld.player.z - startZ;
+    const fwd = dx * sinH + dz * cosH;
+    const lat = Math.abs(dx * cosH - dz * sinH);
+    if (lat > maxLateralM) maxLateralM = lat;
+    if (fwd > 32) steeredPast = true;
+    if (i > 90 && fwd < 36) minSpeedAfterAccel = Math.min(minSpeedAfterAccel, pedWorld.player.speed);
+  }
+  assert.equal(steeredPast, true, "car must steer past the early pedestrian");
+  assert.equal(pedWorld.pursuit.metrics.collisions, 0);
+  assert.equal(pedWorld.pursuit.metrics.pedestrianCollisions, 0);
+  assert.ok(maxLateralM >= 1.2, `expected smooth lateral offset >= 1.2m, got ${maxLateralM}`);
+  assert.ok(minSpeedAfterAccel >= 5.0, `expected rolling bypass speed >= 5 m/s, got ${minSpeedAfterAccel}`);
+
+  // 2. Populated Level-5 City Chase with King Long Microbus: low chatter, high speed, zero player collisions
+  const busWorld = new World({ cityVersion: 5 }, "metro");
+  assert.equal(busWorld.command({ type: "player-vehicle", model: KING_LONG_MICROBUS_ID }).ok, true);
+  busWorld.command({ type: "street-pursuit-start", level: 5, variant: "gta", config: chaseCfg }, false);
+  busWorld.pursuit.cityChase = true;
+  busWorld.pursuit.pako = true;
+  const busDriver = {
+    policy, sha256: "shipped", status: "active", lastTick: -1, decisions: 0,
+    recoverStale: true, evasion: true, evasiveControl: SMART_ESCAPE_CONTROL,
+  };
+  busWorld.pursuit.frozenDriver = busDriver;
+  let prevTh = 0, prevBr = 0, flips = 0, stuckTicks = 0, speedSum = 0;
+  for (let i = 0; i < 1800 && busWorld.pursuit.phase === "running"; i++) {
+    const before = busDriver.decisions;
+    applyFrozenDispatchAction(busWorld, busDriver, null);
+    if (busDriver.decisions > before) {
+      const a = busDriver.lastDecision.submitted;
+      if ((prevTh > 0.15 && a.brake > 0.15) || (prevBr > 0.15 && a.throttle > 0.15)) flips++;
+      prevTh = a.throttle;
+      prevBr = a.brake;
+    }
+    const spd = Math.abs(busWorld.player.speed);
+    speedSum += spd;
+    if (spd < 0.8 && i > 90) stuckTicks++;
+    busWorld.step();
+  }
+  const avgSpeedMps = speedSum / Math.max(1, busWorld.tick);
+  assert.equal(busWorld.pursuit.metrics.collisions, 0);
+  assert.equal(busWorld.pursuit.metrics.pedestrianCollisions, 0);
+  assert.ok(avgSpeedMps >= 7.5, `expected avgSpeedMps >= 7.5, got ${avgSpeedMps.toFixed(2)}`);
+  assert.ok(flips <= 40, `expected gasBrakeFlips <= 40, got ${flips}`);
+  assert.ok(stuckTicks <= 240, `expected stuckTicks <= 240, got ${stuckTicks}`);
 });

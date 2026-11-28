@@ -50,6 +50,7 @@ fails visibly; the launcher never reuses or stops somebody else's server.
 | Camera | Inspect the actual vehicle-front pixels, exact-frame recognition and observed-motion forecast |
 | People | Inspect real human bodies and explicit world-reference walk/jog/stop controls |
 | Self Driving / Chase | Drive autonomously, or pick a pursuit difficulty (`Level 1` to `5 · Max`) and watch the preloaded RL PPO driver evade visible police across roads and clear curbs (or toggle `Manual` / press `I` to drive yourself) |
+| Cairo Traffic | Launch Egyptian aggressive traffic & defensive avoidance inside the live Metro City (`Normal` / `Rush Hour` / `Cairo Max`) with heavy freight trucks (`8.2 × 2.45 × 3.35 m`, `14.5 t`), class-specific vehicle physics, ghorz weaving cut-ins, sudden unsignaled lane changes, off-lane straddlers, dynamic accidents ahead, and Defensive AI avoidance (with instant manual WASD takeover or `I` toggle) |
 | Car's view | See all-around virtual range returns, exact front-camera recognition and translucent pedestrian forecasts |
 | Tools | Open Settings, Decision lab, the Lab or the preserved experimental chase variants |
 | Return to city | Resume the same City after a Lab or inspection visit |
@@ -74,8 +75,13 @@ Historical assets and their notices remain preserved.
 In **Tools → Car → Player vehicle**, choose **King Long · Microbus** to drive
 the white, short-nose Egyptian-market-style microbus. Its white high roof,
 sliding passenger door, dark side windows and road wheels are procedural 3D
-geometry, not a reskin of the Jetour-inspired SUV. Stop in a clear spot to
-switch; the same City, street position and ambient actors remain in place.
+geometry, not a reskin of the Jetour-inspired SUV. Each swept front headlamp
+wraps around the fender with faceted silver reflectors and an integrated amber
+corner marker. The back has a taller smoked window, a shaped plate recess in
+the hatch, and low segmented tail lamps above the white bumper. The virtual
+rear sensor mounts are still visible in **Car → Inspection**.
+Stop in a clear spot to switch; the same City, street position
+and ambient actors remain in place.
 Choose **Jetour T2 · SUV** to return to the original vehicle.
 
 The microbus has a longer and narrower collision footprint (**4.84 × 1.70 m**),
@@ -368,7 +374,9 @@ separate measured prediction comparison, not an achieved escape.
 surface geometry, not an all-knowing world map. Start the installed local
 detector to see boxes on the matching front JPEG; amber pedestrian ghosts
 come from range tracking, mint from fitted camera motion. These are short
-forecast visuals only and never appear in the detector input. A confirmed
+forecast visuals only and never appear in the detector input. The range ghosts
+also appear automatically during **Chase**, without opening the panel. Outside
+Chase, open **Car's view** to display them. A confirmed
 fresh person forecast can add a brake in a PPO test; the independent range
 guard still applies. Missing camera evidence is not proof of an empty road.
 

@@ -728,6 +728,8 @@ export function mountVehiclePanel({ toolbar, onAction }) {
     } else if (result?.ok !== true) {
       showError("The car action was not acknowledged. Please try again.");
       update(latest);
+    } else {
+      update(latest);
     }
   }
   function dispatch(action, value, control) {
@@ -766,6 +768,7 @@ export function mountVehiclePanel({ toolbar, onAction }) {
     if (panel.hidden) {
       panel.hidden = false;
       toggleButton.setAttribute("aria-expanded", "true");
+      update(latest);
     } else close();
   });
   listen(closeButton, "click", () => close());

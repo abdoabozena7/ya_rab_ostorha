@@ -67,6 +67,13 @@ import { createPursuitState, populatePursuit, stepPursuit, pursuitSnapshot,
   beginStreetPursuit, endStreetPursuit, startPackDrill, stepPackReview,
   recordActorVisualCrash, spawnCrowdAhead, getCrowdAheadCount, syncPursuitStatus } from "./pursuit-world.js";
 import {
+  beginStreetChaos, endStreetChaos, setStreetChaosDriver, stepStreetChaos, streetChaosActorNeedsCommand,
+  streetChaosSnapshot, streetChaosTrafficCommand, triggerStreetChaosEvent,
+} from "./street-chaos.js";
+import { defensiveAutoCommand } from "./defensive-driver.js";
+import { CITY_CRUISE_STRATEGY } from "./driver/strategies.js";
+import { stepUnifiedDriver } from "./driver/unified-driver.js";
+import {
   METRO_CITY_CURBS,
   acceptCurbPose,
   surveyMetroCurb,
@@ -326,6 +333,8 @@ export class World {
         throw new Error("Unsupported City interaction profile");
       if (options.vehicleDynamics !== "legacy")
         this.config.vehicleDynamics = "city-realism-v1";
+      // Negative control: false drives the rigid centre line instead of the Unified Driver.
+      if (options.unifiedDriver === false) this.config.unifiedDriver = false;
       if (this.config.vehicleDynamics === "city-realism-v1" && options.terrainProfile !== "flat")
         this.config.terrainProfile = "cairo-surfaces-v1";
       if (this.config.vehicleDynamics === "city-realism-v1" &&
@@ -729,6 +738,12 @@ export class World {
     this.capacity = { traffic: this.config.traffic, pedestrians: this.config.pedestrians };
   }
   assignTrafficRoute(car) {
+    if (this.streetChaos?.active && car.kind === "truck" && car.id.startsWith("chaos-truck-")) {
+      // Freight trucks keep to their straight avenue lane; they never wedge into side streets.
+      car.path = [];
+      car.cursor = 0;
+      return false;
+    }
     if (this.district) {
       const goals = this.district.trafficGoals;
       const start = Math.floor(this.rng.next() * goals.length);
@@ -860,9 +875,43 @@ export class World {
   }
   command(command, record = true) {
     if (command.type === "player-vehicle") return this.selectPlayerVehicle(command.model, record);
+    if (typeof command.type === "string" && command.type.startsWith("street-chaos-")) {
+      if (this.environment !== "metro") throw new Error("Cairo Traffic is only available in City");
+      let result = true;
+      if (command.type === "street-chaos-start") {
+        beginStreetChaos(this, command);
+        if (this.mode === "auto") {
+          manualControlMap.delete(this);
+          driveNitroMap.delete(this);
+        }
+      } else if (command.type === "street-chaos-stop") {
+        endStreetChaos(this);
+        if (this.mode === "manual") {
+          manualControlMap.delete(this);
+          driveNitroMap.delete(this);
+          this.input = { targetSpeed: 0, steer: 0 };
+        }
+      } else if (command.type === "street-chaos-event") {
+        result = Boolean(triggerStreetChaosEvent(this, command.kind));
+      } else if (command.type === "street-chaos-driver") {
+        const mode = command.mode ?? command.driverMode ?? command.driver;
+        setStreetChaosDriver(this, mode);
+        if (mode === "auto") {
+          manualControlMap.delete(this);
+          driveNitroMap.delete(this);
+        } else {
+          manualControlMap.delete(this);
+          driveNitroMap.delete(this);
+          this.input = { targetSpeed: clamp(this.player.speed, 0, this.player.maxSpeed), steer: 0 };
+        }
+      } else throw new Error("Unknown Cairo Traffic command");
+      if (record) this.events.push({ tick: this.tick, command: structuredClone(command) });
+      return result;
+    }
     if (command.type === "street-pursuit-start" || command.type === "street-pursuit-stop") {
       if (this.environment !== "metro") throw new Error("Street pursuit is only available in City");
       if (command.type === "street-pursuit-start") {
+        if (this.streetChaos?.active) throw new Error("End Cairo Traffic before starting Chase");
         if (this.pursuit?.phase === "running") throw new Error("A street pursuit is already running");
         const pack = isPackPursuit(command.variant);
         const training = pack && !isSurvival(command.variant);
@@ -1441,6 +1490,8 @@ export class World {
       this.stepPursuitMode(ownMotion, nowS);
       return;
     }
+    const chaosOn = this.streetChaos?.active === true;
+    if (chaosOn) stepStreetChaos(this);
     const metroV5 = this.environment === "metro" && (this.config?.cityVersion ?? 0) >= 5;
     const ambientMetroV5 = metroV5 && !(this.districtCase && this.districtCase.id !== "ambient");
     if (this.district && (!ambientMetroV5 || (this.tick & 3) === 0)) updateDistrictTraffic(this);
@@ -1585,7 +1636,7 @@ export class World {
               stCache = { staticIndex: this.staticIndex, x: actor.x, z: actor.z, statics: closeStatics };
               distantStaticClearCache.set(cacheKey, stCache);
             }
-            const nearRes = reserved.near(actor, 4);
+            const nearRes = reserved.near(actor, chaosOn ? 6.5 : 4);
             const rSelf = actor.radius ?? 0.38;
             let hasCloseBody = stCache.statics.length > 0;
             if (!hasCloseBody) {
@@ -1600,9 +1651,12 @@ export class World {
                     hasCloseBody = true;
                     break;
                   }
-                } else if (Math.abs(dx) <= 3.65 && Math.abs(dz) <= 3.65) {
-                  hasCloseBody = true;
-                  break;
+                } else {
+                  const vReach = chaosOn && other.length > 5.5 ? other.length * 0.5 + 1.55 : 3.65;
+                  if (Math.abs(dx) <= vReach && Math.abs(dz) <= vReach) {
+                    hasCloseBody = true;
+                    break;
+                  }
                 }
               }
             }
@@ -1651,7 +1705,8 @@ export class World {
         }
       } else {
         const cachedCarEntry =
-          nonStrideTick && actor !== this.player && actorDistSq > 95 * 95
+          nonStrideTick && actor !== this.player && actorDistSq > 95 * 95 &&
+          !(chaosOn && streetChaosActorNeedsCommand(this, actor))
             ? distantWorldVehicleCmdCache.get(actor)
             : null;
         if (
@@ -1766,7 +1821,46 @@ export class World {
         if (actor === this.player && this.districtCase && this.districtCase.id !== "ambient")
           command.targetSpeed = this.districtCase.error ? 0
             : Math.min(command.targetSpeed, this.districtCase.requestedSpeedMps);
-        if (this.district) command = this.districtDrivingCommand(actor, command, ownMotion, nowS);
+        let usePlannedPath = true;
+        let chaosPipeline;
+        if (chaosOn && actor.type === "vehicle") {
+          if (actor === this.player) {
+            if (this.mode === "auto" && !controlledTest) {
+              const defensive = defensiveAutoCommand(this, actor, command,
+                { disableDefensiveAvoidance: this.streetChaos.disableDefensiveAvoidance === true });
+              command = {
+                ...command, steer: defensive.steer, targetSpeed: defensive.targetSpeed,
+                reason: defensive.reason, blockedBy: defensive.blockedBy,
+                ...(defensive.cursor === undefined ? {} : { cursor: defensive.cursor }),
+              };
+              usePlannedPath = defensive.usePlannedPath !== false;
+            }
+          } else {
+            command = streetChaosTrafficCommand(this, actor, command);
+            if (command.chaosPipeline !== undefined || command.usePlannedPath !== undefined) {
+              const { chaosPipeline: pipeline, usePlannedPath: planned, ...rest } = command;
+              chaosPipeline = pipeline;
+              usePlannedPath = planned !== false;
+              command = rest;
+            }
+          }
+        } else if (
+          metroV5 && !this.pursuit && actor === this.player && this.mode === "auto" && !controlledTest &&
+          this.config?.vehicleDynamics === "city-realism-v1" && this.config.unifiedDriver !== false &&
+          !(this.districtCase && this.districtCase.id !== "ambient") && actor.path.length > 1
+        ) {
+          const unified = stepUnifiedDriver(this, actor, command, CITY_CRUISE_STRATEGY);
+          command = {
+            ...command, steer: unified.steer, targetSpeed: unified.targetSpeed,
+            reason: unified.reason, blockedBy: unified.blockedBy,
+          };
+          usePlannedPath = unified.usePlannedPath !== false;
+        }
+        if (this.district) {
+          if (chaosPipeline === "direct") command = { ...command, reason: command.reason ?? "driving", blockedBy: command.blockedBy ?? null };
+          else if (chaosPipeline === "safe") command = this.safeSpeed(actor, command, false);
+          else command = this.districtDrivingCommand(actor, command, ownMotion, nowS, usePlannedPath);
+        }
         else {
         const predictedBrake = !controlledTest && actor === this.player
           && this.visualMode === "vision-first"
@@ -1879,7 +1973,7 @@ export class World {
           };
           distantStaticClearCache.set(cacheKey, stCache);
         }
-        const nearRes = reserved.near(actor, 4);
+        const nearRes = reserved.near(actor, chaosOn ? 6.5 : 4);
         const rSelf = actor.radius ?? 0.38;
         nearby = [];
         for (let rIdx = 0; rIdx < nearRes.length; rIdx++) {
@@ -1892,8 +1986,11 @@ export class World {
             if (Math.abs(dx) <= lim && Math.abs(dz) <= lim && dx * dx + dz * dz <= lim * lim) {
               nearby.push(other);
             }
-          } else if (Math.abs(dx) <= 3.65 && Math.abs(dz) <= 3.65) {
-            nearby.push(other);
+          } else {
+            const vReach = chaosOn && other.length > 5.5 ? other.length * 0.5 + 1.55 : 3.65;
+            if (Math.abs(dx) <= vReach && Math.abs(dz) <= vReach) {
+              nearby.push(other);
+            }
           }
         }
         for (let sIdx = 0; sIdx < stCache.statics.length; sIdx++) {
@@ -1923,7 +2020,7 @@ export class World {
           stCache = { staticIndex: this.staticIndex, x: actor.x, z: actor.z, statics: closeStatics };
           distantStaticClearCache.set(actor, stCache);
         }
-        const nearRes = reserved.near(actor, 6);
+        const nearRes = reserved.near(actor, chaosOn ? Math.max(8, selfHalfDiag + 6) : 6);
         nearby = [];
         for (let rIdx = 0; rIdx < nearRes.length; rIdx++) {
           const other = nearRes[rIdx];
@@ -1932,7 +2029,9 @@ export class World {
           const dz = other.z - next.z;
           const lim = other.type === "pedestrian"
             ? selfHalfDiag + (other.radius ?? 0.38) + 0.35
-            : selfHalfDiag + 3.25;
+            : chaosOn
+              ? selfHalfDiag + Math.max(3.25, Math.hypot(other.width ?? 1.9, other.length ?? 4.5) * 0.5 + 0.5)
+              : selfHalfDiag + 3.25;
           if (Math.abs(dx) <= lim && Math.abs(dz) <= lim && dx * dx + dz * dz <= lim * lim) {
             nearby.push(other);
           }
@@ -2369,6 +2468,7 @@ export class World {
             status: { ...this.pursuit.status },
           }
         : null,
+      ...(this.streetChaos ? { streetChaos: streetChaosSnapshot(this) } : {}),
     };
   }
   snapshot() {
@@ -2472,6 +2572,10 @@ export class World {
           "street-pursuit-start",
           "street-pursuit-stop",
           "spawn-crowd-ahead",
+          "street-chaos-start",
+          "street-chaos-stop",
+          "street-chaos-event",
+          "street-chaos-driver",
           "manual",
         ].includes(event.command?.type) ||
         (event.command.type === "vehicle-test" &&

@@ -268,3 +268,135 @@ test("missing clips, strides or articulated skin fail explicitly instead of crea
   assert.throws(() => createPedestrianRig(clone(gltf.scene),
     gltf.animations.filter((clip) => clip.name !== "run")), /run clip/);
 });
+
+function handSpanM(visual) {
+  visual.updateMatrixWorld(true);
+  const left = visual.getObjectByName("Bip01_L_Hand").getWorldPosition(new THREE.Vector3());
+  const right = visual.getObjectByName("Bip01_R_Hand").getWorldPosition(new THREE.Vector3());
+  return left.distanceTo(right);
+}
+
+test("pooled rig seeded with incomplete body stays finite and leaves A-pose when assigned to a walking pedestrian", async (t) => {
+  const gltf = await template("man-polo");
+  const visual = clone(gltf.scene);
+  const baseBounds = bounds(visual);
+  const baseSize = baseBounds.getSize(new THREE.Vector3());
+  const baseCenter = baseBounds.getCenter(new THREE.Vector3());
+  const seedScale = 1.78 / baseSize.y;
+  visual.scale.setScalar(seedScale);
+  visual.position.set(-baseCenter.x * seedScale, -baseBounds.min.y * seedScale, -baseCenter.z * seedScale);
+
+  const dummyActor = {
+    id: "pool-man-polo", type: "pedestrian", kind: "man-polo",
+    speed: 1.2, phase: 0, body: { heightM: 1.78 },
+  };
+  const pooledRig = createPedestrianRig(visual, gltf.animations, dummyActor);
+  t.after(() => pooledRig.dispose());
+
+  const seededDiag = pooledRig.diagnostics();
+  finiteTree(seededDiag);
+  close(
+    seededDiag.clips.idle.weight + seededDiag.clips.walk.weight + seededDiag.clips.run.weight,
+    1,
+  );
+
+  const realActor = {
+    id: "metro-ped-1", type: "pedestrian", kind: "man-polo", phase: 0.3, walkSpeed: 1.35,
+    x: 24, z: -12, heading: 0.4, speed: 1.35, distance: 14.5, motionTimeS: 10.7,
+    accelerationMps2: 0, turnRateRadS: 0,
+  };
+  realActor.body = createPedestrianBody(realActor);
+  const realScale = realActor.body.heightM / baseSize.y;
+  visual.scale.setScalar(realScale);
+  visual.position.set(-baseCenter.x * realScale, -baseBounds.min.y * realScale, -baseCenter.z * realScale);
+  const parent = new THREE.Group();
+  parent.position.set(realActor.x, 0.12, realActor.z);
+  parent.rotation.y = realActor.heading;
+  parent.add(visual);
+  pooledRig.update(realActor, 1);
+
+  const diag = pooledRig.diagnostics();
+  finiteTree(diag);
+  assert.equal(diag.actorId, realActor.id);
+  close(diag.gait.runBlend, 0);
+  close(diag.gait.motionWeight, 1);
+  close(diag.clips.idle.weight + diag.clips.walk.weight + diag.clips.run.weight, 1);
+  assert.ok(diag.clips.walk.weight > 0.99);
+
+  const pooledSpan = handSpanM(visual);
+  assert.ok(pooledSpan < 0.95, `pooled walking pedestrian hand span ${pooledSpan}m must not stay in A-pose`);
+
+  const fresh = await fixture(t, "man-polo", {
+    id: realActor.id, phase: realActor.phase, walkSpeed: realActor.walkSpeed,
+    x: realActor.x, z: realActor.z, heading: realActor.heading,
+    speed: realActor.speed, distance: realActor.distance, motionTimeS: realActor.motionTimeS,
+  });
+  fresh.update(1);
+  const freshSpan = handSpanM(fresh.visual);
+  close(pooledSpan, freshSpan, 0.01);
+  const pooledPose = pose(visual), freshPose = pose(fresh.visual);
+  assert.deepEqual(pooledPose.bones, freshPose.bones);
+  close(pooledPose.y, freshPose.y, 1e-12);
+});
+
+test("reusing a pooled rig across different actor IDs and heights updates strides and resets blend cleanly", async (t) => {
+  const gltf = await template("man-polo");
+  const visual = clone(gltf.scene);
+  const baseBounds = bounds(visual);
+  const baseSize = baseBounds.getSize(new THREE.Vector3());
+  const baseCenter = baseBounds.getCenter(new THREE.Vector3());
+
+  const tallJogger = {
+    id: "metro-ped-tall", type: "pedestrian", kind: "man-polo", phase: 0.95, walkSpeed: 1.4,
+    x: 4, z: 8, heading: 0, speed: 2.52, distance: 30, motionTimeS: 12,
+    accelerationMps2: 0, turnRateRadS: 0,
+  };
+  tallJogger.body = createPedestrianBody(tallJogger);
+  const tallScale = tallJogger.body.heightM / baseSize.y;
+  visual.scale.setScalar(tallScale);
+  visual.position.set(-baseCenter.x * tallScale, -baseBounds.min.y * tallScale, -baseCenter.z * tallScale);
+  const tallParent = new THREE.Group();
+  tallParent.position.set(tallJogger.x, 0.12, tallJogger.z);
+  tallParent.add(visual);
+  const rig = createPedestrianRig(visual, gltf.animations, tallJogger);
+  t.after(() => rig.dispose());
+
+  const tallDiag = rig.diagnostics();
+  finiteTree(tallDiag);
+  assert.ok(tallDiag.clips.run.weight > 0.99);
+  close(tallDiag.gait.walkStrideM, visual.userData.walkStride * tallScale);
+  close(tallDiag.gait.runStrideM, visual.userData.runStride * tallScale);
+
+  // Return visual to pool and reassign to a shorter walking pedestrian with larger distance/time.
+  visual.removeFromParent();
+  const shortWalker = {
+    id: "metro-ped-short", type: "pedestrian", kind: "man-polo", phase: 0.05, walkSpeed: 1.3,
+    x: -15, z: 32, heading: 1.2, speed: 1.3, distance: 42, motionTimeS: 25,
+    accelerationMps2: 0, turnRateRadS: 0,
+  };
+  shortWalker.body = createPedestrianBody(shortWalker);
+  const shortScale = shortWalker.body.heightM / baseSize.y;
+  assert.ok(shortScale < tallScale);
+  visual.scale.setScalar(shortScale);
+  visual.position.set(-baseCenter.x * shortScale, -baseBounds.min.y * shortScale, -baseCenter.z * shortScale);
+  const shortParent = new THREE.Group();
+  shortParent.position.set(shortWalker.x, 0.07, shortWalker.z);
+  shortParent.rotation.y = shortWalker.heading;
+  shortParent.add(visual);
+  rig.update(shortWalker, 1);
+
+  const shortDiag = rig.diagnostics();
+  finiteTree(shortDiag);
+  assert.equal(shortDiag.actorId, shortWalker.id);
+  close(shortDiag.gait.walkStrideM, visual.userData.walkStride * shortScale);
+  close(shortDiag.gait.runStrideM, visual.userData.runStride * shortScale);
+  assert.ok(shortDiag.gait.walkStrideM < tallDiag.gait.walkStrideM);
+  assert.ok(shortDiag.gait.runStrideM < tallDiag.gait.runStrideM);
+  close(shortDiag.gait.runBlend, 0);
+  close(shortDiag.clips.walk.weight, 1);
+  close(shortDiag.clips.run.weight, 0);
+  close(shortDiag.clips.idle.weight, 0);
+  const b = bounds(shortParent);
+  assert.ok(Math.abs(b.min.y - shortParent.position.y) < 0.004,
+    "reassigned pooled pedestrian must stay grounded at the new support plane");
+});

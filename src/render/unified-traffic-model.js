@@ -4,6 +4,8 @@ import { VEHICLE } from "../core/config.js";
 const STREET_PAINT = [0x788f98, 0x9b5140, 0xb9b5a2, 0x48677f, 0x8c7358, 0x66796b];
 const TAXI_PAINT = [0xddd0ac, 0xd5c49e, 0xe4dbba];
 const TUK_PAINT = [0xbb9142, 0x547868, 0x974d38];
+const TRUCK_PAINT = [0xe0ddd0, 0x4c6882, 0xb88649, 0x5d6e62, 0x9c4d3c];
+const TRUCK_SHELL_HALF_X = .509;
 const RUBBER = 0x292c2c, TRIM = 0x3e4543, GLASS = 0x3d5359;
 const LAMP = 0xf1e3be, AMBER = 0xcd8a37, TAIL = 0xb94335;
 const PLATE = 0xd4cbb0, EXHAUST = 0x757d78, MIRROR_GLASS = 0x8fa6ad;
@@ -38,6 +40,7 @@ const SHAPES = {
     roof: 1, panes: [[.045, .32], [.36, .65], [.69, .941]],
   },
   tuktuk: { height: 1.79, tire: .135, tread: .121 },
+  truck: { height: 3.35, tire: .145, tread: .150, sill: .145 },
 };
 
 const lerp = THREE.MathUtils.lerp;
@@ -342,6 +345,81 @@ function tukTuk(f, arches, paint) {
   fascia(f, -1, -.092, .092, .264, .302, 0xd4cbb0);
 }
 
+
+function heavyTruck(f, arches, paint) {
+  const cargo = paint, cargoShade = new THREE.Color(paint).multiplyScalar(.77).getHex();
+  const stripe = paint === 0xb88649 ? 0xe1d6b3 : 0xc49b58;
+  const steel = 0x68706c, chassis = 0x252a29, rib = 0x343a38;
+
+  // Full-height cargo envelope establishes the registered dimensions. The
+  // cab remains visibly lower and occupies the forward 28% of the wheelbase.
+  box(f, 0, .680, -.137, 1, .590, .714, cargo);
+  box(f, 0, .9835, -.137, .988, .017, .706, cargoShade);
+  box(f, 0, .435, .355, .940, .650, .270, paint);
+  box(f, 0, .125, .090, .720, .070, .810, chassis);
+  for (const side of [-1, 1]) {
+    box(f, side * .355, .175, -.075, .048, .075, .735, chassis);
+    box(f, side * .455, .150, -.165, .040, .045, .510, steel);
+    box(f, side * .5015, .654, -.137, .009, .095, .706, stripe);
+    for (const z of [-.438, -.338, -.238, -.138, -.038, .062, .162])
+      box(f, side * .5035, .700, z, .011, .520, .018, rib);
+    // Cylindrical tanks would require a second shell; a bevel-like faceted
+    // tank remains part of the one opaque vertex-coloured traffic shell.
+    box(f, side * .414, .245, -.020, .145, .165, .315, 0x777b73);
+    box(f, side * .456, .180, .285, .075, .050, .180, steel);
+    box(f, side * .456, .245, .318, .075, .040, .135, steel);
+    box(f, side * .455, .295, .358, .082, .040, .110, steel);
+    box(f, side * .481, .555, .414, .026, .370, .022, chassis);
+    box(f, side * .487, .735, .416, .026, .085, .055, paint);
+    const mirrorX = side * .5015;
+    f.face([[mirrorX, .695, .389], [mirrorX, .695, .444], [mirrorX, .760, .444], [mirrorX, .760, .389]], MIRROR_GLASS, side > 0);
+    box(f, side * .450, .085, -.405, .060, .115, .028, 0x292d2c);
+  }
+
+  // Upright cab-over glazing, sun visor, radiator and rugged lower bumper.
+  fascia(f, 1, -.395, .395, .555, .720, GLASS, .491);
+  box(f, 0, .745, .433, .820, .055, .080, paint);
+  fascia(f, 1, -.330, .330, .300, .455, 0x252b2a, .496, true);
+  for (const y of [.330, .365, .400, .435])
+    fascia(f, 1, -.288, .288, y, y + .012, 0x606864, .499);
+  box(f, 0, .178, .484, .955, .075, .028, steel);
+  fascia(f, 1, -.112, .112, .195, .245, PLATE, .5);
+  for (const side of [-1, 1]) {
+    const a = side < 0 ? [-.410, -.250] : [.250, .410];
+    fascia(f, 1, a[0], a[1], .465, .545, TRIM, .497);
+    fascia(f, 1, a[0] + side * -.012, a[1] + side * .012, .480, .530, LAMP, .5);
+    const b = side < 0 ? [-.447, -.405] : [.405, .447];
+    fascia(f, 1, b[0], b[1], .468, .530, AMBER, .4995);
+  }
+
+  // Contrasting side windows preserve a tall Egyptian cab-over profile.
+  for (const side of [-1, 1]) {
+    const x = side * .471;
+    const xFace = side * .4735;
+    f.face([[xFace, .545, .245], [xFace, .545, .420], [xFace, .706, .420], [xFace, .706, .245]], GLASS, side > 0);
+    box(f, x, .505, .305, .018, .030, .135, TRIM);
+  }
+
+  // Rear double cargo doors, hinges, locking rods, lamp stacks and underride.
+  fascia(f, -1, -.474, -.012, .405, .960, cargoShade, .497);
+  fascia(f, -1, .012, .474, .405, .960, cargoShade, .497);
+  for (const x of [-.250, .250]) {
+    box(f, x, .680, -.498, .026, .475, .002, steel);
+    for (const y of [.445, .700, .910]) box(f, x, y, -.499, .090, .024, .002, rib);
+  }
+  box(f, 0, .175, -.462, .920, .060, .050, steel);
+  for (const side of [-1, 1]) {
+    const x = side * .410;
+    fascia(f, -1, x - .052, x + .052, .230, .340, TRIM, .498);
+    fascia(f, -1, x - .040, x + .040, .285, .328, TAIL, .5);
+    fascia(f, -1, x - .040, x + .040, .238, .278, AMBER, .499);
+  }
+  for (const x of [-.430, 0, .430]) {
+    box(f, x, .996, -.486, .042, .008, .018, x === 0 ? TAIL : AMBER);
+    box(f, x, .996, .205, .042, .008, .018, AMBER);
+  }
+}
+
 function tireGeometry(radius, thickness) {
   const f = facets(), steps = 16;
   const rings = [
@@ -470,17 +548,19 @@ export function createUnifiedTrafficModel(actor) {
   const kind = Object.hasOwn(SHAPES, requested) ? requested : "sedan";
   const p = SHAPES[kind], tuk = kind === "tuktuk";
   const height = Number.isFinite(actor.height) && actor.height > 0 ? actor.height : p.height;
-  const colors = kind === "taxi" ? TAXI_PAINT : tuk ? TUK_PAINT : STREET_PAINT;
+  const colors = kind === "taxi" ? TAXI_PAINT : tuk ? TUK_PAINT : kind === "truck" ? TRUCK_PAINT : STREET_PAINT;
   const phase = Number.isFinite(actor.phase) ? actor.phase : 0;
   const paint = colors[Math.min(colors.length - 1, Math.max(0, Math.floor(phase * colors.length)))];
   const radius = Math.min(height * p.tire, width * .23, length * .09);
   const thickness = Math.min(width * p.tread, radius * .84);
-  const axle = tuk ? [-.321, .334] : [-.310, .310];
+  const truck = kind === "truck";
+  const axle = tuk ? [-.321, .334] : truck ? [-.300, .340] : [-.310, .310];
   const half = (Math.hypot(radius, thickness / 2) + length * .010) / length;
   const peak = 2 * radius / height + .023;
   const arches = (tuk ? [axle[0]] : axle).map((centre) => ({ centre, half, peak }));
-  const f = facets(width, height, length);
+  const f = facets(truck ? width * (.5 / TRUCK_SHELL_HALF_X) : width, height, length);
   if (tuk) tukTuk(f, arches, paint);
+  else if (truck) heavyTruck(f, arches, paint);
   else car(f, p, arches, paint, kind);
 
   const root = new THREE.Group();
@@ -489,7 +569,8 @@ export function createUnifiedTrafficModel(actor) {
   const shell = markOwner(new THREE.Mesh(shellGeometry, matte(.93)));
   shell.name = "traffic-shell";
   shell.userData.crashSignature = "0:0:0:0:0";
-  shell.castShadow = shell.receiveShadow = true;
+  shell.castShadow = true;
+  shell.receiveShadow = kind !== "truck";
   root.add(shell);
   defineHidden(root.userData, "trafficShell", shell);
 

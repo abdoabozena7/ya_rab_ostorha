@@ -23,10 +23,12 @@
           Phone</button
         ><button id="selfDrivingBtn" type="button">Self Driving</button
         ><button id="pakoBtn" type="button" aria-expanded="false" aria-controls="pursuitPanelHost">Chase</button
+        ><button id="cairoChaosBtn" type="button" aria-expanded="false" aria-controls="chaosBar">Cairo Traffic</button
         ><button id="driveSenseBtn" type="button" aria-expanded="false" aria-controls="driveSense">Car's view</button>
         <details id="cityTools">
           <summary>Tools</summary>
           <div id="cityToolItems">
+            <button id="switchCarBtn" type="button">Switch car</button>
             <button id="streetPursuitBtn" aria-expanded="false" aria-controls="pursuitPanelHost">Experiments</button>
             <button id="labBtn">Lab</button>
             <button id="inspectorBtn" aria-expanded="false" aria-controls="inspectorPanel">Decision lab</button>
@@ -61,6 +63,27 @@
         aria-label="Spawn 20 walking pedestrians ahead"
       >+20 Pedestrians Ahead</button>
       <button id="stopChaseBtn" class="chase-bar__stop-btn" type="button" aria-label="End chase">End chase</button>
+    </section>
+    <section id="chaosBar" class="chase-bar chaos-bar" role="region" aria-label="Cairo Traffic HUD" hidden>
+      <strong class="chaos-bar__title">CAIRO TRAFFIC</strong>
+      <label class="chaos-bar__intensity" for="chaosIntensitySelect">Intensity
+        <select id="chaosIntensitySelect">
+          <option value="normal">Normal</option>
+          <option value="rush" selected>Rush Hour</option>
+          <option value="max">Cairo Max</option>
+        </select>
+      </label>
+      <button id="chaosDriverBtn" class="chaos-bar__driver" type="button" aria-pressed="false">Defensive AI</button>
+      <span id="chaosHazardStatus" class="chaos-status chaos-status--hazard" role="status">Road watch</span>
+      <span id="chaosReactionStatus" class="chaos-status chaos-status--reaction chaos-status--safe" role="status">Cruising</span>
+      <span id="chaosStatsText" class="chaos-bar__stats">Trucks 0 &#183; Avoided 0 &#183; Contacts 0</span>
+      <span id="chaosNotice" class="chaos-notice" role="status" aria-live="polite" hidden></span>
+      <div class="chaos-bar__events" aria-label="Cairo Traffic scenario controls">
+        <button id="chaosTriggerGhorzBtn" type="button">+ Ghorz Cut-In</button>
+        <button id="chaosTriggerLaneBtn" type="button">+ Lane Cut</button>
+        <button id="chaosTriggerAccidentBtn" type="button">+ Accident Ahead</button>
+      </div>
+      <button id="stopChaosBtn" class="chaos-bar__stop" type="button">End mode</button>
     </section>
     <div id="loadingStatus" role="status">Loading scene…</div>
     <aside id="pursuitPanelHost" hidden></aside>

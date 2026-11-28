@@ -564,12 +564,34 @@ footer span {
 }
 
 #pakoBtn {
+  color: inherit;
+  border-color: #76857a66;
+  background: var(--panel);
+  font-weight: 700;
+}
+#pakoBtn:hover { background: #ffffff1f; }
+#pakoBtn[aria-expanded="true"],
+body.chase-active #pakoBtn {
   color: #14271d;
   border-color: #bddcc6;
   background: #acd5b9;
-  font-weight: 700;
 }
-#pakoBtn:hover { background: #c9e9d1; }
+#pakoBtn[aria-expanded="true"]:hover,
+body.chase-active #pakoBtn:hover { background: #c9e9d1; }
+body.cairo-active #pakoBtn,
+body.cairo-active #pakoBtn:hover {
+  color: #dce5df;
+  border-color: #76857a66;
+  background: var(--panel);
+}
+#cairoChaosBtn[aria-expanded="true"] {
+  color: #261a08;
+  border-color: #f5bd61;
+  background: #e7a83f;
+  box-shadow: 0 0 0 1px #ffd98a55, 0 5px 18px #a85d183d;
+  font-weight: 800;
+}
+#cairoChaosBtn[aria-expanded="true"]:hover { background: #f3bc5f; }
 .pursuit-arcade dd,
 #pursuitUnitCount {
   font-variant-numeric: tabular-nums;
@@ -1005,4 +1027,149 @@ body[data-city-sense] :is(#minimap, .map-label, #cameraBtn) { visibility: hidden
     opacity: 0.65;
     color: #efd494;
   }
+}
+
+/* Cairo Traffic remains a compact City overlay and never replaces the Chase HUD. */
+.chaos-bar {
+  top: 100px;
+  max-width: min(1180px, calc(100vw - 24px));
+  gap: 7px;
+  padding: 6px 8px 6px 12px;
+  border-color: rgba(245, 174, 65, 0.46);
+  background: rgba(24, 29, 27, 0.90);
+  box-shadow: 0 10px 30px rgba(13, 17, 15, 0.50), inset 0 1px rgba(251, 191, 36, 0.08);
+}
+.chaos-bar__title {
+  color: #f6c66f;
+  font-size: 10px;
+  letter-spacing: .12em;
+}
+.chaos-bar__intensity {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #cbd5ce;
+  font-size: 10px;
+}
+.chaos-bar select {
+  min-height: 28px;
+  padding: 3px 24px 3px 8px;
+  border: 1px solid rgba(245, 174, 65, 0.36);
+  border-radius: 999px;
+  color: #f5ead2;
+  background: #29312d;
+  font: inherit;
+}
+.chaos-bar button {
+  min-height: 28px;
+  padding: 4px 9px;
+  border-radius: 999px;
+  font-size: 10.5px;
+  white-space: nowrap;
+}
+.chaos-bar__driver[aria-pressed="false"] {
+  border-color: rgba(52, 211, 153, 0.48);
+  color: #a7f3d0;
+  background: rgba(8, 70, 55, 0.52);
+}
+.chaos-bar__driver[aria-pressed="true"] {
+  border-color: rgba(103, 232, 249, 0.48);
+  color: #b6eff8;
+  background: rgba(12, 62, 72, 0.62);
+}
+.chaos-status {
+  display: inline-flex;
+  align-items: center;
+  min-height: 25px;
+  padding: 3px 8px;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 999px;
+  color: #ced8d1;
+  background: rgba(255, 255, 255, 0.045);
+  font-weight: 700;
+}
+.chaos-status--hazard.is-active {
+  border-color: rgba(251, 146, 60, 0.66);
+  color: #fed7aa;
+  background: rgba(124, 45, 18, 0.56);
+  box-shadow: 0 0 12px rgba(249, 115, 22, 0.22);
+}
+.chaos-status--safe {
+  border-color: rgba(52, 211, 153, 0.44);
+  color: #a7f3d0;
+  background: rgba(6, 78, 59, 0.48);
+}
+.chaos-status--evasive {
+  border-color: rgba(45, 212, 191, 0.52);
+  color: #99f6e4;
+  background: rgba(17, 94, 89, 0.54);
+}
+.chaos-status--brake {
+  border-color: rgba(251, 146, 60, 0.58);
+  color: #fed7aa;
+  background: rgba(124, 45, 18, 0.52);
+}
+.chaos-status--emergency {
+  border-color: rgba(248, 113, 113, 0.72);
+  color: #fecaca;
+  background: rgba(127, 29, 29, 0.62);
+}
+.chaos-status--caution {
+  border-color: rgba(245, 191, 79, 0.56);
+  color: #fde7ad;
+  background: rgba(103, 72, 18, 0.55);
+}
+.chaos-status--neutral {
+  border-color: rgba(148, 163, 184, 0.35);
+  color: #d5dce0;
+  background: rgba(51, 65, 72, 0.58);
+}
+.chaos-notice {
+  display: inline-flex;
+  align-items: center;
+  min-height: 25px;
+  max-width: 230px;
+  overflow: hidden;
+  padding: 3px 9px;
+  border: 1px solid rgba(251, 191, 36, 0.48);
+  border-radius: 999px;
+  color: #fff1bf;
+  background: rgba(91, 62, 17, 0.72);
+  font-size: 10.5px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+}
+.chaos-notice--rejected { border-color: #fb923c99; color: #fed7aa; background: #7c2d1299; }
+.chaos-notice--expired { border-color: #eab30888; color: #fef3c7; background: #713f1299; }
+body.cairo-active #loadingStatus { top: 150px; }
+.chaos-bar__stats { color: #d7dfd9; font-variant-numeric: tabular-nums; }
+.chaos-bar__events { display: inline-flex; gap: 4px; }
+.chaos-bar__events button {
+  border-color: rgba(245, 174, 65, 0.35);
+  color: #f4dca9;
+  background: rgba(75, 55, 24, 0.52);
+}
+.chaos-bar__stop {
+  border-color: rgba(248, 113, 113, 0.42);
+  color: #fecaca;
+  background: rgba(90, 36, 34, 0.58);
+}
+@media (max-width: 960px) {
+  .chaos-bar {
+    left: 8px;
+    right: 8px;
+    transform: none;
+    max-width: none;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .chaos-bar::-webkit-scrollbar { display: none; }
+}
+@media (max-width: 660px) {
+  .chaos-bar { top: 124px; }
+  .chaos-bar__stats { font-size: 10px; }
+  body.cairo-active #loadingStatus { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .chaos-status--hazard.is-active { box-shadow: none; }
 }

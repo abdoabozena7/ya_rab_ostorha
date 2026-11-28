@@ -73,8 +73,6 @@ test("the player renderer selects a distinct white short-nose shell with the ref
   assert.ok(glassLow.point.z - glassHigh.point.z > 0.29, "windshield is strongly raked");
   for (const [x, y, name] of [
     [0, 0.920, "satin-grille-slats"],
-    [0.45, 0.92, "right-headlight-main"],
-    [0.737, 0.917, "right-headlight-indicator"],
     [0, 0.666, "front-bumper-strip"],
     [0.16, 0.461, "lower-pill-intake"],
     [0.61, 0.47, "right-fog-lamp"],
@@ -88,7 +86,47 @@ test("the player renderer selects a distinct white short-nose shell with the ref
   assert.equal(sideAt(0.52, 1.18), "king-long-right-door-handles");
   const rear = (x, y) => sight(rig.root, [x, y, -4], [x, y, 0])[0].object.name;
   assert.equal(rear(0, 1.62), "king-long-hatch-glass");
-  assert.equal(rear(0.76, 1.28), "king-long-right-vertical-tail-light");
+  assert.equal(rear(0.76, 1.15), "king-long-right-vertical-tail-light");
+});
+
+test("the rear plate well is stamped into the hatch, below the larger glass and between the low lamp stacks", (t) => {
+  const { rig } = fixture(t);
+  const rear = (x, y) => sight(rig.root, [x, y, -4], [x, y, 0])[0];
+  const well = rear(0, 0.91);
+  const shoulder = rear(0.43, 0.91);
+  assert.equal(well.object.name, "king-long-rear-fascia");
+  assert.equal(shoulder.object, well.object, "the stamped shape is part of the painted hatch skin");
+  const recess = well.point.z - shoulder.point.z;
+  assert.ok(recess > 0.030 && recess < 0.065, `plate well depth ${recess.toFixed(3)} m`);
+  assert.ok(rear(0, 1.06).distance < rear(0, 1.013).distance - 0.03, "the pull handle overhangs the well");
+  assert.equal(rear(-0.2, 1.89).object.name, "king-long-hatch-glass");
+  assert.equal(rear(0.2, 1.335).object.name, "king-long-hatch-glass");
+  for (const [side, label] of [[-1, "left"], [1, "right"]]) {
+    for (const [y, band] of [[1.14, "vertical-tail-light"], [1.012, "tail-amber-band"],
+      [0.963, "reverse-light"], [0.888, "vertical-tail-light"]]) {
+      assert.equal(rear(side * 0.765, y).object.name, `king-long-${label}-${band}`);
+    }
+    assert.equal(rear(side * 0.765, 1.25).object.name, "king-long-hatch-glass-white-frame");
+  }
+  assert.equal(rear(0.3, 0.52).object.name, "king-long-rear-bumper");
+});
+
+test("each swept headlight is a single lens from the grille to the side of the fender", (t) => {
+  const { rig } = fixture(t);
+  const headOn = (x, y) => sight(rig.root, [x, y, 4], [x, y, 0])[0].object;
+  for (const [side, label] of [[-1, "left"], [1, "right"]]) {
+    const lens = headOn(side * 0.57, 0.921);
+    assert.equal(lens.name, `king-long-${label}-headlight-lens`, "one continuous housing, not separate lamp inserts");
+    assert.equal(headOn(side * 0.50, 0.834), lens, "low inboard lip meets the grille");
+    assert.equal(headOn(side * 0.445, 0.853), lens, "the rounded inner tip projects farther inboard low down");
+    assert.notEqual(headOn(side * 0.46, 0.970), lens, "the top arcs away from the grille");
+    assert.equal(headOn(side * 0.78, 1.003), lens, "outer shoulder sweeps upward");
+    assert.equal(headOn(side * 0.78, 0.821).name, "king-long-front-fascia", "lower edge sweeps up too");
+    assert.equal(headOn(side * 0.46, 1.007).name, "king-long-front-fascia", "inboard edge stays below the shoulder");
+    const sideOn = sight(rig.root, [side * 2, 0.92, 2.175], [0, 0.92, 2.175])[0];
+    assert.equal(sideOn.object, lens, "the same clear cover continues onto the fender");
+    assert.ok(sideOn.point.x * side > 0.85, "the corner sits just outside the white skin");
+  }
 });
 
 test("real tire geometry fits actual road pivots and signed sampled travel spins the rim, not the caliper", (t) => {
@@ -205,16 +243,26 @@ test("rendered lenses, view poses and ray endpoints agree with the shared vehicl
   close(vec(rig.diagnostics.sensors.telemetry.worldPosition).distanceTo(rig.root.localToWorld(vec(telemetry.position))), 0);
   rig.withSensorOverlayCulling(() => assert.equal(part("vehicle-sensor-rays").visible, false));
   assert.equal(part("vehicle-sensor-rays").visible, true);
+  rig.withExteriorChaseCulling(() => {
+    assert.equal(part("camera-mount-rear-camera").visible, false);
+    assert.equal(part("range-mount-rear-center").visible, false);
+  });
+  assert.equal(part("camera-mount-rear-camera").visible, true);
+  assert.equal(part("range-mount-rear-center").visible, true);
 });
 
 test("impact and brakes affect the procedural parts and a swapped-out rig disposes each shared resource once", (t) => {
   const { actor, rig, part } = fixture(t);
   const nose = part("king-long-front-fascia").geometry.attributes.position;
   const pristine = nose.array.slice();
+  const lens = part("king-long-right-headlight-lens")?.geometry.attributes.position;
+  const intactLens = lens?.array.slice();
   const roof = part("king-long-rounded-white-roof").geometry.attributes.position;
   const intactRoof = roof.array.slice();
   const tail = part("king-long-right-vertical-tail-light").material;
   const idleTail = tail.emissiveIntensity;
+  const centerBrake = part("king-long-high-brake-lamp");
+  assert.equal(centerBrake.visible, false);
   const crashed = { ...actor, speed: 0 };
   crashed.vehicle = advanceVehicleState(actor, crashed, { targetSpeed: 0, steer: 0 }, 1 / 60, {
     freshImpacts: [{ side: "front", closingSpeedMps: 8, energyJ: 33000, lateralOffsetM: 0.15 }],
@@ -225,12 +273,30 @@ test("impact and brakes affect the procedural parts and a swapped-out rig dispos
   assert.ok(rig.diagnostics.damage.deformedVertices > 20);
   assert.ok(rig.diagnostics.damage.maximumDisplacementM > 0.03);
   assert.notDeepEqual(nose.array, pristine);
+  assert.ok(lens, "the front impact has a fitted headlight lens");
+  assert.notDeepEqual(lens.array, intactLens, "the lens follows deformation of the fascia");
   assert.deepEqual(roof.array, intactRoof, "front impact is localized");
   assert.ok(tail.emissiveIntensity > idleTail);
+  assert.equal(centerBrake.visible, true);
   rig.update(actor);
   assert.equal(rig.diagnostics.damage.impactCount, 0);
   assert.deepEqual(nose.array, pristine);
+  assert.deepEqual(lens.array, intactLens);
   close(tail.emissiveIntensity, idleTail);
+  assert.equal(centerBrake.visible, false);
+
+  const hatch = part("king-long-rear-fascia").geometry.attributes.position;
+  const rearLens = part("king-long-right-vertical-tail-light").geometry.attributes.position;
+  const intactHatch = hatch.array.slice(), intactRearLens = rearLens.array.slice();
+  crashed.vehicle = advanceVehicleState(actor, crashed, { targetSpeed: 0, steer: 0 }, 1 / 60, {
+    freshImpacts: [{ side: "rear", closingSpeedMps: 8, energyJ: 33000, lateralOffsetM: 0.68 }],
+  });
+  rig.update(crashed);
+  assert.notDeepEqual(hatch.array, intactHatch);
+  assert.notDeepEqual(rearLens.array, intactRearLens);
+  rig.update(actor);
+  assert.deepEqual(hatch.array, intactHatch);
+  assert.deepEqual(rearLens.array, intactRearLens);
 
   const scene = new THREE.Scene();
   scene.add(rig.root);
@@ -239,7 +305,8 @@ test("impact and brakes affect the procedural parts and a swapped-out rig dispos
     if (!object.geometry) return;
     resources.add(object.geometry);
     resources.add(object.material);
-    if (object.material.map) resources.add(object.material.map);
+    for (const texture of [object.material.map, object.material.aoMap])
+      if (texture) resources.add(texture);
   });
   const released = new Map();
   for (const resource of resources)
@@ -251,4 +318,32 @@ test("impact and brakes affect the procedural parts and a swapped-out rig dispos
   assert.equal(scene.children.length, 0);
   assert.equal(rig.root.children.length, 0);
   assert.equal(rig.diagnostics.disposed, true);
+});
+
+test("King Long exterior includes chrome grille surround, chrome mirrors, badges, rear wiper, sliding track, mudflaps, and underbody spare", (t) => {
+  const { rig, part } = fixture(t);
+  for (const name of [
+    "king-long-grille-chrome-surround",
+    "king-long-front-emblem",
+    "king-long-rear-emblem",
+    "king-long-rear-wordmark",
+    "king-long-rear-wiper",
+    "king-long-right-sliding-track",
+    "king-long-right-window-mullions",
+    "king-long-left-window-mullions",
+    "king-long-mudflaps",
+    "king-long-spare-underbody-tire",
+    "king-long-right-tail-amber-band",
+    "king-long-left-tail-amber-band",
+    "king-long-front-plate-mount",
+  ]) {
+    assert.ok(part(name), `expected reference exterior part ${name}`);
+  }
+  const rightMirror = part("king-long-right-mirror-housing");
+  assert.ok(rightMirror.material.metalness >= 0.85, "mirror caps use chrome finish");
+  const leftMirror = part("king-long-left-mirror-housing");
+  assert.ok(leftMirror.material.metalness >= 0.85, "left mirror cap uses chrome finish");
+  // Verify the rear tailgate plate recess is clean white paint in the center (not dark gray)
+  const rearCenter = sight(rig.root, [0, 0.99, -4], [0, 0.99, 0])[0];
+  assert.equal(rearCenter.object.name, "king-long-rear-fascia");
 });

@@ -195,7 +195,7 @@ test("real Metro curb and flyover runs exercise profile-specific wheel support a
       peakStroke = Math.max(peakStroke, ...Object.values(suspension.wheelOffsetsM).map(Math.abs));
       peakHeight = Math.max(peakHeight, p.y ?? 0);
       if (interaction.scraping.kind === "curb" && first === null) {
-        assert.equal(p.curbSupportId, "tahrir-boulevard:pos:6");
+        assert.equal(p.curbSupportId, "tahrir-boulevard:pos:9");
         assert.equal(interaction.scraping.wheel, "frontLeft");
         first = world.tick;
       }

@@ -940,8 +940,8 @@ export function mountPursuitPanel({ container, onRun, onRestart, onLevel, onCase
     caseSelect.disabled = busy || running || caseField.hidden;
     useLabPolicy.disabled = busy || running || policy.hidden || latest.labPolicyAvailable !== true;
     fire.disabled = busy || !running || latest?.paused || !latest?.survival?.held;
-    driverRl.disabled = !latest?.checkpointReady || latest?.microbus === true || Boolean(pending);
-    driverRl.title = latest?.microbus ? "The RL checkpoint is for the SUV." : "";
+    driverRl.disabled = !latest?.checkpointReady || Boolean(pending);
+    driverRl.title = "";
     driverManual.disabled = Boolean(pending);
     if (pending) controls.setAttribute("aria-busy", "true");
     else controls.removeAttribute("aria-busy");
@@ -1042,7 +1042,7 @@ export function mountPursuitPanel({ container, onRun, onRestart, onLevel, onCase
     const noPatrolDrill = packLab && patrol?.active === 0;
     const arcadeSelected = state.cityPursuitStyle === "survival", survival = state.survival;
     const pako = state.pako === true;
-    const rlMode = !state.microbus && (state.pakoDriverMode ? state.pakoDriverMode === "rl" : Boolean(state.checkpointReady));
+    const rlMode = state.pakoDriverMode ? state.pakoDriverMode === "rl" : Boolean(state.checkpointReady);
     const showArcade = !pako && state.street && (running ? Boolean(survival) : arcadeSelected);
     const frozenSelected = state.street && state.cityPursuitStyle === "dispatch-ppo";
     const hasLiveDispatch = running && Boolean(state.response?.dispatch);
@@ -1093,7 +1093,6 @@ export function mountPursuitPanel({ container, onRun, onRestart, onLevel, onCase
       ? running ? cases.find(({ id }) => id === state.caseId)?.label ?? "" : ""
       : pako
       ? running ? [escapeGuidance, escapeGoalText].filter(Boolean).join(" · ")
-        : state.microbus ? "King Long microbus · Manual Chase. Switch to the SUV for RL AI."
         : rlMode && state.checkpointReady
           ? state.customCheckpoint === true && !state.pakoAvailable
             ? `PPO test · Development checkpoint (${state.ppoSummary || "custom weights"}), not release-verified.`
@@ -1239,7 +1238,7 @@ export function mountPursuitPanel({ container, onRun, onRestart, onLevel, onCase
       if (pako) selectModel.append(modelField);
       else controls.insertBefore(modelField, evasionChoice);
     }
-    modelField.hidden = state.microbus === true || (!pako && !frozenSelected) || running;
+    modelField.hidden = (!pako && !frozenSelected) || (state.microbus === true && !pako) || running;
     evasionChoice.hidden = pako || !frozenSelected || running;
     curbChoice.hidden = pako || state.cityPursuitStyle !== "dispatch" || running;
     workflows.hidden = !pako || running;

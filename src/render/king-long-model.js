@@ -6,6 +6,7 @@ const UP = new THREE.Vector3(0, 1, 0);
 const v = (p) => new THREE.Vector3(...p);
 const mix = THREE.MathUtils.lerp;
 const clamp = THREE.MathUtils.clamp;
+const smoothstep = THREE.MathUtils.smoothstep;
 const ACROSS = [-1, -0.93, -0.83, -0.69, -0.49, -0.24, 0, 0.24, 0.49, 0.69, 0.83, 0.93, 1];
 const sorted = (a) => [...new Set(a)].sort((x, y) => x - y);
 
@@ -133,32 +134,213 @@ function windowFrame(map, outer, inner, flip, bottom = outer.lo, top = outer.hi,
 function tireGeometry(r, w) {
   const profile = [
     [0.184, -0.46], [r * 0.77, -0.5], [r * 0.91, -0.47], [r * 0.977, -0.38],
-    [r, -0.26], [r, -0.178], [r - 0.003, -0.148], [r, -0.116],
-    [r, 0.116], [r - 0.003, 0.148], [r, 0.178], [r, 0.26],
+    [r, -0.26], [r, -0.178], [r - 0.005, -0.148], [r, -0.116],
+    [r, -0.025], [r - 0.005, 0], [r, 0.025],
+    [r, 0.116], [r - 0.005, 0.148], [r, 0.178], [r, 0.26],
     [r * 0.977, 0.38], [r * 0.91, 0.47], [r * 0.77, 0.5], [0.184, 0.46],
   ];
-  return new THREE.LatheGeometry(profile.map(([radius, t]) => new THREE.Vector2(radius, t * w)), 32)
+  // Keep the tire's clean LatheGeometry profile and add subtle recessed tread grooves (strictly inside radius r, keeping wheelFace spokes cleanly ray-hittable)
+  return new THREE.LatheGeometry(profile.map(([radius, t]) => new THREE.Vector2(radius, t * w)), 36)
     .rotateZ(-Math.PI / 2);
 }
 
 function wheelFace(w) {
-  const dish = [[0.185, -0.066], [0.187, w * 0.40], [0.1905, w * 0.453],
-    [0.188, w * 0.488], [0.174, w * 0.49], [0.172, w * 0.423], [0.175, w * 0.39], [0.175, -0.066]];
+  const dish = [[0.185, -0.066], [0.187, w * 0.395], [0.1915, w * 0.448],
+    [0.188, w * 0.486], [0.174, w * 0.488], [0.171, w * 0.42], [0.174, w * 0.385], [0.174, -0.066]];
   const parts = [
-    new THREE.LatheGeometry(dish.map(([r, x]) => new THREE.Vector2(r, x)), 32).rotateZ(-Math.PI / 2),
-    new THREE.CylinderGeometry(0.047, 0.055, 0.041, 16).rotateZ(-Math.PI / 2).translate(w * 0.352, 0, 0),
+    new THREE.LatheGeometry(dish.map(([r, x]) => new THREE.Vector2(r, x)), 36).rotateZ(-Math.PI / 2),
+    // Recessed sculpted center hub dish + raised King Long center cap
+    new THREE.CylinderGeometry(0.068, 0.074, 0.022, 24).rotateZ(-Math.PI / 2).translate(w * 0.365, 0, 0),
+    new THREE.CylinderGeometry(0.036, 0.041, 0.032, 20).rotateZ(-Math.PI / 2).translate(w * 0.415, 0, 0),
   ];
-  for (let i = 0; i < 8; i++) {
-    const a = i * Math.PI / 4;
-    parts.push(softBox(0.021, 0.132, 0.027, 0.004).rotateZ(0.095)
-      .translate(w * 0.383, 0.115, 0.003).rotateX(a));
-  }
+  // 10-spoke (5 split twin-spoke) alloy wheel pattern matching the King Long reference photos
+  // Offset by +0.18 rad so one spoke sits directly at 12 o'clock (y = 0.43) while gaps reveal the dark brake/barrel behind
   for (let i = 0; i < 5; i++) {
-    const a = i * Math.PI * 0.4;
-    parts.push(new THREE.CylinderGeometry(0.0105, 0.011, 0.014, 6)
-      .rotateZ(Math.PI / 2).translate(w * 0.46, 0.061 * Math.cos(a), 0.061 * Math.sin(a)));
+    const baseAngle = i * (Math.PI * 2) / 5;
+    for (const spread of [0, 0.34]) {
+      const a = baseAngle + spread;
+      parts.push(softBox(0.022, 0.128, 0.024, 0.004).rotateZ(0.105)
+        .translate(w * 0.415, 0.115, 0).rotateX(a));
+    }
+  }
+  // 5 recessed lug nuts in chrome finish
+  for (let i = 0; i < 5; i++) {
+    const a = i * (Math.PI * 2) / 5 + Math.PI / 5;
+    parts.push(new THREE.CylinderGeometry(0.0095, 0.0105, 0.016, 6)
+      .rotateZ(Math.PI / 2).translate(w * 0.432, 0.054 * Math.cos(a), 0.054 * Math.sin(a)));
   }
   return merged(parts);
+}
+
+function makeCanvasTexture(width, height, draw) {
+  if (typeof document === "undefined") return null;
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return null;
+  draw(ctx, width, height);
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = 4;
+  tex.needsUpdate = true;
+  return tex;
+}
+
+function makeEmblemTexture() {
+  return makeCanvasTexture(256, 160, (ctx, w, h) => {
+    ctx.clearRect(0, 0, w, h);
+    const cx = w / 2, cy = h / 2, rx = w * 0.44, ry = h * 0.41;
+    // Outer chrome oval bezel
+    const grad = ctx.createLinearGradient(0, cy - ry, 0, cy + ry);
+    grad.addColorStop(0, "#ffffff");
+    grad.addColorStop(0.42, "#b8c0c8");
+    grad.addColorStop(0.55, "#59626a");
+    grad.addColorStop(1, "#e5eaee");
+    ctx.strokeStyle = grad;
+    ctx.lineWidth = 14;
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
+    ctx.stroke();
+    // Stylized King Long chevron-K inside the oval
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.moveTo(cx - rx * 0.56, cy);
+    ctx.lineTo(cx + rx * 0.28, cy - ry * 0.52);
+    ctx.lineTo(cx + rx * 0.48, cy - ry * 0.42);
+    ctx.lineTo(cx - rx * 0.16, cy);
+    ctx.lineTo(cx + rx * 0.52, cy + ry * 0.45);
+    ctx.lineTo(cx + rx * 0.26, cy + ry * 0.54);
+    ctx.closePath();
+    ctx.fill();
+    // Inner secondary wing accent
+    ctx.beginPath();
+    ctx.moveTo(cx - rx * 0.04, cy - ry * 0.05);
+    ctx.lineTo(cx + rx * 0.58, cy - ry * 0.12);
+    ctx.lineTo(cx + rx * 0.48, cy + ry * 0.09);
+    ctx.closePath();
+    ctx.fill();
+  });
+}
+
+function makeWordmarkTexture() {
+  return makeCanvasTexture(512, 96, (ctx, w, h) => {
+    ctx.clearRect(0, 0, w, h);
+    const grad = ctx.createLinearGradient(0, 14, 0, h - 14);
+    grad.addColorStop(0, "#3b4248");
+    grad.addColorStop(0.45, "#15191d");
+    grad.addColorStop(0.58, "#7b848e");
+    grad.addColorStop(1, "#121619");
+    ctx.fillStyle = grad;
+    ctx.font = "italic 900 58px 'Segoe UI', Arial, sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("KING LONG", w / 2, h / 2 + 2);
+  });
+}
+
+function makeModelBadgeTexture() {
+  return makeCanvasTexture(256, 72, (ctx, w, h) => {
+    ctx.clearRect(0, 0, w, h);
+    ctx.fillStyle = "#2b3137";
+    ctx.font = "800 34px 'Segoe UI', Arial, sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("XMQ6520", w / 2, h / 2 + 1);
+  });
+}
+
+// [optical U, bottom across, top across, bottom height, top height].
+// Across 1 is the fender seam; values past it turn rearward along the side skin.
+const HEADLIGHT_PROFILE = [
+  [0, .492, .520, .840, .877],
+  [.032, .505, .543, .821, .915],
+  [.095, .545, .581, .815, .954],
+  [.21, .614, .649, .815, .984],
+  [.39, .714, .736, .818, 1.004],
+  [.58, .820, .839, .823, 1.016],
+  [.72, .918, .926, .827, 1.021],
+  [.84, 1, 1, .831, 1.018],
+  [.94, 1.093, 1.088, .836, 1.013],
+  [.985, 1.130, 1.122, .845, 1.002],
+  [1, 1.144, 1.135, .863, .986],
+];
+
+function headlightGeometry(front, side, cover) {
+  const rows = [0, .17, .39, .62, .84, 1];
+  const geometry = grid(HEADLIGHT_PROFILE, rows, ([u, low, high, bottom, top], row) => {
+    const across = mix(low, high, row) + (cover ? (u === 0 ? .008 : u === 1 ? -.008 : 0) : 0);
+    const y = mix(bottom, top, row) + (cover ? mix(.005, -.005, row) : 0);
+    const fender = Math.min(1, across);
+    const point = front(side * fender, y);
+    const lift = cover ? .007 + .005 * Math.sin(Math.PI * u) * Math.sin(Math.PI * row) : .003;
+    point[0] += side * lift * fender ** 4;
+    point[2] += lift * (1 - .75 * fender ** 6) - Math.max(0, across - 1) * .85;
+    return point;
+  }, side < 0);
+  if (cover) geometry.setAttribute("uv", new THREE.Float32BufferAttribute(
+    rows.flatMap((row) => HEADLIGHT_PROFILE.flatMap(([u]) => [u, row])), 2));
+  return geometry;
+}
+
+function makeHeadlightTexture() {
+  return makeCanvasTexture(512, 256, (ctx, w, h) => {
+    ctx.scale(w, h);
+    const tones = (stops) => {
+      const gradient = ctx.createLinearGradient(0, 0, 0, 1);
+      for (const [at, color] of stops) gradient.addColorStop(at, color);
+      return gradient;
+    };
+    const face = (points, fill) => {
+      ctx.beginPath();
+      points.forEach(([x, y], i) => i ? ctx.lineTo(x, y) : ctx.moveTo(x, y));
+      ctx.closePath();
+      ctx.fillStyle = fill;
+      ctx.fill();
+    };
+    ctx.fillStyle = tones([[0, "#37424a"], [.16, "#75848f"], [.39, "#a9b5be"],
+      [.56, "#505e68"], [.78, "#9aa7ad"], [1, "#3d4952"]]);
+    ctx.fillRect(0, 0, 1, 1);
+    const silver = tones([[.09, "#71818a"], [.30, "#e4ecef"], [.49, "#899aa7"],
+      [.72, "#bec9ce"], [.85, "#5e707b"], [1, "#b8c2c9"]]);
+    face([[.105, .20], [.44, .09], [.70, .16], [.74, .55], [.67, .89], [.26, .88]], silver);
+    face([[.151, .25], [.44, .12], [.67, .18], [.54, .35], [.32, .36]], "#d7dfe2");
+    face([[.27, .44], [.53, .42], [.69, .31], [.68, .55], [.52, .65], [.32, .62]], "#586b7a");
+    face([[.33, .71], [.56, .62], [.70, .59], [.65, .76], [.44, .88]], "#e1e7eb");
+    face([[.775, .12], [.958, .11], [1, .32], [.993, .59], [.792, .62]], tones([
+      [.10, "#667a86"], [.31, "#303f48"], [.49, "#566570"], [.62, "#172830"],
+    ]));
+    face([[.775, .10], [.797, .63], [.775, .88], [.749, .86], [.768, .58], [.754, .10]],
+      "#bac5cc");
+    face([[.788, .595], [.992, .565], [.993, .626], [.791, .654]], "#bac4c8");
+
+    ctx.lineWidth = .004;
+    for (let x = .31; x < .96; x += .035) {
+      ctx.strokeStyle = x < .76 ? "rgba(47,60,69,.20)" : "rgba(210,223,230,.38)";
+      ctx.beginPath();
+      ctx.moveTo(x, x < .76 ? .26 : .16);
+      ctx.lineTo(x - .016, x < .76 ? .81 : .58);
+      ctx.stroke();
+    }
+
+    // The small inboard reflector and the low corner repeater share the same clear cover.
+    const bulb = ctx.createRadialGradient(.104, .656, .012, .121, .684, .099);
+    bulb.addColorStop(0, "#86614c");
+    bulb.addColorStop(.52, "#5a4741");
+    bulb.addColorStop(.81, "#969fa5");
+    bulb.addColorStop(1, "rgba(205,214,220,0)");
+    ctx.fillStyle = bulb;
+    ctx.fillRect(.024, .585, .200, .239);
+    face([[.783, .670], [.974, .640], [.991, .735], [.968, .862],
+      [.821, .899], [.775, .827]], tones([
+      [.64, "#74321a"], [.71, "#c77626"], [.79, "#9f4b1a"], [.89, "#bb6b21"], [1, "#55271d"],
+    ]));
+    ctx.save();
+    ctx.clip();
+    ctx.fillStyle = "rgba(88,36,13,.24)";
+    for (let x = .78; x < .99; x += .015) ctx.fillRect(x, .63, .004, .28);
+    ctx.restore();
+  });
 }
 
 export function createKingLongModel(body = {}) {
@@ -170,6 +352,7 @@ export function createKingLongModel(body = {}) {
   const bodyPanels = [], cutawayParts = [], chaseHidden = [], wheels = [], links = [];
   const ownGeometry = (g) => { geometries.add(g); return g; };
   const ownMaterial = (m) => { materials.add(m); return m; };
+  const ownTexture = (t) => { if (t) textures.add(t); return t; };
   const material = (name, color, options = {}) => ownMaterial(new THREE.MeshStandardMaterial({
     name: `King Long ${name}`, color, roughness: 0.77, ...options,
   }));
@@ -206,30 +389,47 @@ export function createKingLongModel(body = {}) {
     return part;
   };
   const paint = ownMaterial(new THREE.MeshPhysicalMaterial({
-    name: "King Long solid white enamel", color: 0xf6f5ee, vertexColors: true, roughness: 0.42,
-    metalness: 0.04, clearcoat: 0.48, clearcoatRoughness: 0.29, envMapIntensity: 0.64,
+    name: "King Long solid white enamel", color: 0xfbfbfa, vertexColors: true, roughness: 0.24,
+    metalness: 0.05, clearcoat: 0.88, clearcoatRoughness: 0.12, envMapIntensity: 0.88,
   }));
-  const black = material("black molded trim", 0x171b1e, { roughness: 0.86 });
-  const well = material("wheelhouse liner", 0x25292b, { side: THREE.DoubleSide });
-  const seam = material("recessed seams", 0x67696a, { roughness: 0.91 });
-  const satin = material("satin silver", 0xc3c8cc, { roughness: 0.32, metalness: 0.46, envMapIntensity: 0.76 });
-  const reflector = material("lamp reflector", 0xd7e3e8, { roughness: 0.26, metalness: 0.29 });
-  const amber = material("indicator lens", 0xf2a544, { roughness: 0.35, emissive: 0x85490c, emissiveIntensity: 0.25 });
-  const rubber = material("road tire", 0x252729, { roughness: 0.91 });
-  const gearMetal = material("galvanized running gear", 0x929a9c, { metalness: 0.38, roughness: 0.58 });
-  const lining = material("cabin headliner", 0xa9a59a);
-  const dash = material("dashboard charcoal", 0x333739);
-  const upholstery = material("blue-gray seating cloth", 0x4d565a);
-  const inserts = material("weave panels", 0x778389);
+  const black = material("black molded trim", 0x15181b, { roughness: 0.68, metalness: 0.06 });
+  const mudflapMat = material("rubber mudflap", 0x181b1e, { roughness: 0.88, side: THREE.DoubleSide });
+  const well = material("wheelhouse liner", 0x1d2023, { roughness: 0.92, side: THREE.DoubleSide });
+  const seam = material("recessed seams", 0xc8ccd0, { roughness: 0.62 });
+  const deepCrease = material("deep panel shutline", 0x9aa0a6, { roughness: 0.78 });
+  const chrome = ownMaterial(new THREE.MeshPhysicalMaterial({
+    name: "King Long mirror chrome", color: 0xe9eef2, roughness: 0.09, metalness: 0.94,
+    clearcoat: 0.6, clearcoatRoughness: 0.08, envMapIntensity: 1.35,
+  }));
+  const satin = ownMaterial(new THREE.MeshPhysicalMaterial({
+    name: "King Long alloy silver", color: 0xd5dce2, roughness: 0.24, metalness: 0.68,
+    clearcoat: 0.38, clearcoatRoughness: 0.18, envMapIntensity: 0.95,
+  }));
+  const reflector = ownMaterial(new THREE.MeshPhysicalMaterial({
+    name: "King Long lamp reflector", color: 0xe6eff4, roughness: 0.14, metalness: 0.76,
+    clearcoat: 0.72, clearcoatRoughness: 0.1, envMapIntensity: 1.15,
+  }));
+  const amber = material("rear indicator lens", 0xca812e, { roughness: 0.27, metalness: 0.16 });
+  const reverseLens = material("clear reverse lens", 0xc3cdd0, { roughness: 0.24, metalness: 0.24 });
+  const rubber = material("road tire", 0x1c1e20, { roughness: 0.89 });
+  const gearMetal = material("galvanized running gear", 0x767e84, { metalness: 0.45, roughness: 0.52 });
+  const lining = material("cabin headliner", 0xb3afa5);
+  const dash = material("dashboard charcoal", 0x2a2e32, { roughness: 0.78 });
+  const upholstery = material("blue-gray seating cloth", 0x454e54);
+  const inserts = material("weave panels", 0x6f7b82);
   const glass = (label, color, opacity) => ownMaterial(new THREE.MeshPhysicalMaterial({
     name: `King Long ${label}`, color, opacity, transparent: true, depthWrite: false,
-    side: THREE.FrontSide, roughness: 0.26, metalness: 0.08,
-    clearcoat: 0.77, clearcoatRoughness: 0.25, envMapIntensity: 0.54,
+    side: THREE.FrontSide, roughness: 0.09, metalness: 0.12,
+    clearcoat: 0.96, clearcoatRoughness: 0.07, envMapIntensity: 1.05,
   }));
-  const windshield = glass("smoke windshield", 0x26373e, 0.73);
-  const frontSideGlass = glass("smoke front side glass", 0x253137, 0.82);
-  const privacyGlass = glass("passenger privacy glass", 0x18272d, 0.92);
-  const hatchGlass = glass("dark hatch glass", 0x18242a, 0.94);
+  const windshield = glass("smoke windshield", 0x162126, 0.66);
+  const frontSideGlass = glass("smoke front side glass", 0x152025, 0.74);
+  const privacyGlass = glass("passenger privacy glass", 0x10181d, 0.84);
+  const hatchGlass = glass("dark hatch glass", 0x253b43, 0.89);
+  Object.assign(hatchGlass, {
+    roughness: 0.40, metalness: 0.02, specularIntensity: 0.24, clearcoat: 0.02,
+    clearcoatRoughness: 0.34, envMapIntensity: 0.12,
+  });
   const root = group(null, "player-vehicle");
   const chassis = group(root, "player-chassis");
   const shell = section(group(chassis, "king-long-shell"));
@@ -240,7 +440,7 @@ export function createKingLongModel(body = {}) {
       geometry.setAttribute("color", new THREE.Float32BufferAttribute(new Float32Array(count * 3).fill(1), 3));
     }
     const part = mesh(geometry, m, shell, name);
-    part.castShadow = m === paint;
+    part.castShadow = m === paint || (deform && m.vertexColors);
     if (deform) {
       const { position, normal } = geometry.attributes;
       const mobility = Float32Array.from({ length: position.count },
@@ -276,16 +476,60 @@ export function createKingLongModel(body = {}) {
   const front = end(false), rear = end(true);
   const yStops = frontRows.map(([y]) => y);
   const full = () => [-1, 1];
+  const plateWell = panelShape(0, 0.909, 0.835, 0.262, 0.073, 0.045);
+  const plateInset = (across, y) => smoothstep(plateWell.limits(y)[1] - across, 0, 0.082) *
+    smoothstep(y, plateWell.lo, 0.819) * (1 - smoothstep(y, 1.008, plateWell.hi));
+  const hatchShoulder = y => smoothstep(y, 0.704, 0.766) * (1 - smoothstep(y, 0.797, 0.819));
+  const rearSkin = (u, y, lift = 0) => {
+    const across = Math.abs(u);
+    const sideBlend = 1 - smoothstep(across, 0.82, 1);
+    const lowerHatch = 0.032 * smoothstep(y, 0.552, 0.601) * (1 - smoothstep(y, 0.78, 0.826)) +
+      0.016 * hatchShoulder(y);
+    return rear(u, y, lift - lowerHatch * sideBlend - 0.057 * plateInset(across, y));
+  };
   function patch(name, map, flip, label, m, lift = 0.004, deform = true) {
     const s = panelShape(...label);
     return panel(name, endBand((u, y) => map(u, y, lift), s.rows, s.limits, flip), m, deform);
   }
 
-  for (const [label, map, flip] of [["front", front, false], ["rear", rear, true]]) {
-    panel(`king-long-${label}-bumper`, endBand(map, yStops.slice(0, 6), full, flip), paint, true);
-    panel(`king-long-${label}-fascia`, endBand(map, yStops.slice(5), full, flip), paint, true);
-    patch(`king-long-${label}-bumper-strip`, map, flip, [0, 0.667, 2, 0.045, 0.004, 0.012], black);
+  panel("king-long-front-bumper", endBand(front, yStops.slice(0, 6), full, false), paint, true);
+  panel("king-long-front-fascia", endBand(front, yStops.slice(5), full, false), paint, true);
+  patch("king-long-front-bumper-strip", front, false, [0, 0.667, 2, 0.044, 0.004, 0.011], black);
+
+  // Both panels sample the same boundary so the stamped hatch stays closed against the bumper.
+  const rearColumns = sorted([...ACROSS, ...[-1, 1].flatMap(side =>
+    [0.27, 0.315, 0.35, 0.38, 0.41, 0.44, 0.53, 0.73, 0.805, 0.86, 0.89, 0.96].map(u => side * u))]);
+  const bumperJoint = 0.575;
+  const hatchRows = sorted([bumperJoint, ...yStops.filter(y => y > bumperJoint),
+    0.578, 0.601, 0.62, 0.704, 0.74, 0.766, 0.78, 0.797, 0.81, 0.819, 0.826,
+    0.963, 1.008, 1.027, ...plateWell.rows]);
+  panel("king-long-rear-bumper", grid(rearColumns, [...yStops.filter(y => y < bumperJoint), bumperJoint],
+    (u, y) => {
+      const point = rearSkin(u, y);
+      point[1] += 0.044 * (1 - smoothstep(y, sill, 0.485)) * (1 - smoothstep(Math.abs(u), 0.84, 1));
+      return point;
+    }, true), paint, true);
+  const hatch = grid(rearColumns, hatchRows, rearSkin, true);
+  const hatchV = y => (y - bumperJoint) / (belt - bumperJoint);
+  hatch.setAttribute("uv", new THREE.Float32BufferAttribute(hatchRows.flatMap(y =>
+    rearColumns.flatMap(u => [(u + 1) / 2, hatchV(y)])), 2));
+  // Bake just the skylight blocked by the plate well's upper lip, independently of damage colors.
+  const aoSize = 64;
+  const aoValues = new Uint8Array(aoSize ** 2 * 4);
+  for (let index = 0; index < aoSize ** 2; index++) {
+    const u = (index % aoSize + 0.5) / aoSize * 2 - 1;
+    const y = mix(bumperJoint, belt, (Math.floor(index / aoSize) + 0.5) / aoSize);
+    const inset = plateInset(Math.abs(u), y);
+    const shoulderShade = 0.17 * hatchShoulder(y) * (1 - smoothstep(Math.abs(u), 0.75, 0.88));
+    const value = Math.round(255 * (1 - inset * mix(0.12, 0.49, smoothstep(y, 0.862, 1.008)) - shoulderShade));
+    aoValues.set([value, value, value, 255], index * 4);
   }
+  const hatchAO = ownTexture(new THREE.DataTexture(aoValues, aoSize, aoSize));
+  hatchAO.magFilter = hatchAO.minFilter = THREE.LinearFilter;
+  hatchAO.needsUpdate = true;
+  const hatchPaint = ownMaterial(paint.clone());
+  hatchPaint.aoMap = hatchAO;
+  panel("king-long-rear-fascia", hatch, hatchPaint, true);
 
   function endGlass(name, map, flip, outer, inner, glassMaterial) {
     panel(`king-long-${name}-white-frame`, windowFrame(map, outer, outer, flip, belt, shoulder, true));
@@ -297,9 +541,13 @@ export function createKingLongModel(body = {}) {
   endGlass("windshield", front, false,
     panelShape(0, 1.579, 1.917, 0.629, 0.106, 0.054),
     panelShape(0, 1.579, 1.873, 0.602, 0.106, 0.046), windshield);
+  function taperedHatchWindow(...dimensions) {
+    const shape = panelShape(...dimensions);
+    return { ...shape, limits: y => shape.limits(y).map(u => u * mix(1, 0.94, (y - shape.lo) / (shape.hi - shape.lo))) };
+  }
   endGlass("hatch-glass", rear, true,
-    panelShape(0, 1.593, 1.69, 0.511, 0.073, 0.055),
-    panelShape(0, 1.593, 1.641, 0.484, 0.066, 0.05), hatchGlass);
+    taperedHatchWindow(0, 1.6165, 1.821, 0.605, 0.117, 0.102),
+    taperedHatchWindow(0, 1.616, 1.773, 0.58, 0.106, 0.091), hatchGlass);
 
   const roofSteps = [0, 0.008, 0.022, 0.044, 0.072, 0.14, 0.5, 0.86, 0.928, 0.956, 0.978, 0.992, 1];
   const roof = (u, t, inside = false) => {
@@ -364,81 +612,309 @@ export function createKingLongModel(body = {}) {
         polygon(opening.inner, [], (z, y) => map(z, y, 0.0035), flip), opening.m);
     }
     const sideLine = (p, width, lift) => stroke(p, width, (z, y) => map(z, y, lift), flip);
-    const molding = [[-2.155, side > 0 ? -0.58 : 0.703], ...(side > 0 ? [[-0.57, 0.703]] : []),
-      [0.715, 2.066]].map(([a, b]) => sideLine([[a, 0.784], [b, 0.784]], 0.038, 0.006));
-    molding.push(sideLine([[rear(1, 0.667)[2], 0.667], [-2.064, 0.667]], 0.044, 0.005),
-      sideLine([[1.985, 0.667], [front(1, 0.667)[2], 0.667]], 0.044, 0.005));
+    // Subtle sculpted side swage / character crease along the waist (soft shadow line, matching Ref 1 & 3)
+    panel(`king-long-${label}-character-lines`, merged([
+      sideLine([[-2.16, 0.965], [1.96, 0.965]], 0.0045, 0.0012),
+      sideLine([[-2.16, 0.695], [1.98, 0.695]], 0.005, 0.0012),
+    ]), seam, true);
+    // Vertical sliding-window dividers inside the middle and rear passenger bays (Ref 1 & 3)
+    panel(`king-long-${label}-window-mullions`, merged([
+      sideLine([[-0.06, 1.355], [-0.06, 1.852]], 0.016, 0.0055),
+      sideLine([[-1.46, 1.355], [-1.46, 1.852]], 0.016, 0.0055),
+    ]), black, false);
+    // Crisp black front bumper corner wrap & slender trim accents (Ref 1)
+    const molding = [
+      sideLine([[1.94, 0.667], [front(1, 0.667)[2], 0.667]], 0.042, 0.005),
+      sideLine([[1.96, 0.415], [front(1, 0.415)[2], 0.415]], 0.022, 0.004),
+    ];
     panel(`king-long-${label}-slender-rubbing-strips`, merged(molding), black, true);
+    // Subtle wheel-arch lip brow lines above front & rear arches (Ref 1 & 3)
+    const archBrows = archProfile.map(({ z, r }) => {
+      const a = Math.acos((0.52 - wheelRadiusM) / (r + 0.026));
+      const pts = Array.from({ length: 13 }, (_, i) => {
+        const ang = mix(-a, a, i / 12);
+        return [z + (r + 0.026) * Math.sin(ang), wheelRadiusM + (r + 0.026) * Math.cos(ang)];
+      });
+      return sideLine(pts, 0.0055, 0.0015);
+    });
+    panel(`king-long-${label}-arch-brows`, merged(archBrows), seam, true);
     panel(`king-long-${label}-front-door-shutline`, sideLine([
       [0.695, 1.246], [0.695, 0.506], [0.729, 0.438], [1.115, 0.438],
       [1.131, 0.54], [1.195, 0.686], [1.366, 0.758], [1.62, 0.769], [1.875, 0.776],
       [1.945, 0.902], [1.974, 1.214],
-    ], 0.0045, 0.001), seam, true);
+    ], 0.004, 0.0012), deepCrease, true);
     if (side > 0) {
       panel("king-long-sliding-door-shutline", sideLine([
         [0.681, 1.328], [0.681, 1.06], [0.681, 0.478], [0.642, 0.431], [-0.543, 0.431],
         [-0.575, 0.467], [-0.575, 0.578], [-0.78, 0.753], [-0.812, 0.991], [-0.822, 1.329],
-      ], 0.005, 0.0015), seam, true);
+      ], 0.0045, 0.0014), deepCrease, true);
+      // Iconic bold black horizontal sliding-door track along the right rear quarter (Ref 1)
+      panel("king-long-right-sliding-track", sideLine(
+        [[-2.07, 1.085], [-0.84, 1.085]], 0.044, 0.006), black, true);
       panel("king-long-sliding-door-guide-channel", sideLine(
-        [[-2.01, 1.129], [-1.97, 1.137], [-0.846, 1.137]], 0.012, 0.002), seam, true);
+        [[-2.05, 1.085], [-0.85, 1.085]], 0.015, 0.008), deepCrease, true);
+      // Small black square B-pillar latch / fuel-cap trim detail behind the front right door (Ref 1)
+      box(shell, "king-long-right-pillar-vent", [0.014, 0.078, 0.068],
+        map(0.76, 1.085, 0.003), black, 0.004);
     }
-    const handles = [softBox(0.018, 0.035, 0.146, 0.007).translate(...map(0.864, 1.181, 0.004))];
-    if (side > 0) handles.push(softBox(0.018, 0.036, 0.162, 0.007).translate(...map(0.522, 1.181, 0.004)));
+    // Front door horizontal handle + vertical sliding-door grab handle on right side (Ref 1)
+    const handles = [softBox(0.02, 0.036, 0.146, 0.007).translate(...map(0.864, 1.181, 0.005))];
+    if (side > 0) {
+      handles.push(softBox(0.022, 0.145, 0.046, 0.008).translate(...map(0.522, 1.181, 0.005)));
+    }
     panel(`king-long-${label}-door-handles`, merged(handles), black);
+    // Chrome-capped wing mirrors with black base bracket & reflective mirror face (Ref 1 & 3)
     const mirror = group(shell, `king-long-${label}-mirror`);
-    const stalk = rod(mirror, `king-long-${label}-mirror-stalk`, 0.022, black,
-      [side * 0.801, 1.326, 1.895], [side * 0.9, 1.374, 1.878]);
+    const mirrorBase = box(mirror, `king-long-${label}-mirror-base`, [0.032, 0.092, 0.088],
+      [side * 0.808, 1.335, 1.892], black, 0.008);
+    mirrorBase.castShadow = true;
+    const stalk = rod(mirror, `king-long-${label}-mirror-stalk`, 0.018, black,
+      [side * 0.805, 1.332, 1.892], [side * 0.905, 1.368, 1.874]);
     stalk.castShadow = true;
-    const housing = box(mirror, `king-long-${label}-mirror-housing`, [0.132, 0.138, 0.075],
-      [side * 0.902, 1.408, 1.877], black, 0.025);
+    const housing = box(mirror, `king-long-${label}-mirror-housing`, [0.148, 0.122, 0.072],
+      [side * 0.916, 1.404, 1.878], chrome, 0.026);
     housing.castShadow = true;
-    box(mirror, `king-long-${label}-mirror-glass`, [0.113, 0.107, 0.008],
-      [side * 0.902, 1.408, 1.838], satin, 0.002);
+    // Lower black bezel trim on mirror housing
+    box(mirror, `king-long-${label}-mirror-bezel`, [0.142, 0.036, 0.070],
+      [side * 0.916, 1.356, 1.874], black, 0.009);
+    box(mirror, `king-long-${label}-mirror-glass`, [0.122, 0.094, 0.008],
+      [side * 0.916, 1.404, 1.838], reflector, 0.002);
   }
 
-  patch("king-long-slim-black-grille", front, false, [0, 0.920, 0.766, 0.122, 0.055, 0.023], black);
-  const grilleSlats = [0.884, 0.920, 0.956].map((y) => {
-    const shape = panelShape(0, y, 0.675, 0.009, 0.017, 0.0028);
-    return endBand((u, yy) => front(u, yy, 0.006), shape.rows, shape.limits, false);
+  const grilleOuter = panelShape(0, 0.920, 0.973, 0.172, 0.088, 0.044);
+  const grilleInner = panelShape(0, 0.920, 0.899, 0.132, 0.068, 0.032);
+  const grilleFace = (u, y, lift) => {
+    const t = (y - grilleOuter.lo) / (grilleOuter.hi - grilleOuter.lo);
+    return front(u * mix(.88, 1.12, t), y + .018 * (1 - t) * (2 * u) ** 2, lift);
+  };
+  panel("king-long-grille-chrome-surround",
+    windowFrame((u, y) => grilleFace(u, y, 0.008), grilleOuter, grilleInner, false), chrome, true);
+  patch("king-long-slim-black-grille", grilleFace, false, [0, 0.920, 0.897, 0.130, 0.065, 0.030], black, 0.005);
+  const grilleSlats = [0.878, 0.905, 0.920, 0.935, 0.962].map((y) => {
+    const shape = panelShape(0, y, 0.848, 0.0095, 0.022, 0.0028);
+    return endBand((u, yy) => grilleFace(u, yy, 0.009), shape.rows, shape.limits, false);
   });
-  panel("king-long-satin-grille-slats", merged(grilleSlats), satin, true);
-  patch("king-long-lower-pill-intake", front, false, [0, 0.466, 0.935, 0.131, 0.091, 0.065], black);
-  for (const y of [0.445, 0.482])
-    patch(`king-long-lower-intake-vane-${y}`, front, false, [0, y, 0.709, 0.007, 0.014, 0.0025], dash, 0.006);
+  panel("king-long-satin-grille-slats", merged(grilleSlats), chrome, true);
+  // Subtle vertical black louver bars behind the chrome grille slats
+  const grilleRibs = [-0.32, -0.16, 0, 0.16, 0.32].map((u) => {
+    const shape = panelShape(u, 0.920, 0.014, 0.122, 0.003, 0.006);
+    return endBand((uu, yy) => grilleFace(uu, yy, 0.007), shape.rows, shape.limits, false);
+  });
+  panel("king-long-grille-inner-ribs", merged(grilleRibs), dash, true);
+
+  // Lower bumper intake grille with twin horizontal dividers & center plate mount (Ref 1 & 3)
+  patch("king-long-lower-pill-intake", front, false, [0, 0.466, 0.945, 0.136, 0.088, 0.056], black, 0.004);
+  const bumperTrimWhite = ownMaterial(new THREE.MeshPhysicalMaterial({
+    name: "King Long bumper intake trim", color: 0xfbfbfa, roughness: 0.26,
+    metalness: 0.05, clearcoat: 0.85, clearcoatRoughness: 0.14, envMapIntensity: 0.85,
+  }));
+  const intakeBar = panelShape(0, 0.494, 0.895, 0.022, 0.024, 0.006);
+  panel("king-long-lower-intake-divider", endBand((u, y) => front(u, y, 0.007), intakeBar.rows, intakeBar.limits, false), bumperTrimWhite, true);
+  for (const y of [0.432, 0.478])
+    patch(`king-long-lower-intake-vane-${y}`, front, false, [0, y, 0.785, 0.007, 0.014, 0.0025], dash, 0.006);
+  // Center white license-plate bracket pad inside lower intake (matches Ref 1 & 3!)
+  patch("king-long-front-plate-mount", front, false, [0, 0.448, 0.195, 0.105, 0.014, 0.012], bumperTrimWhite, 0.008, true);
+  for (const u of [-0.045, 0.045]) {
+    patch(`king-long-front-plate-bolt-${u}`, front, false, [u, 0.472, 0.014, 0.012, 0.003, 0.003], black, 0.013, false);
+  }
+  patch("king-long-front-tow-port", front, false, [0, 0.422, 0.032, 0.026, 0.008, 0.008], black, 0.013, false);
+
+  // Authentic King Long oval chrome front & rear emblems + rear KING LONG wordmark & model badge (Ref 1, 2, 3)
+  const emblemTex = ownTexture(makeEmblemTexture());
+  const emblemMat = ownMaterial(new THREE.MeshPhysicalMaterial({
+    name: "King Long oval emblem",
+    color: emblemTex ? 0xffffff : 0xd5dce2,
+    map: emblemTex,
+    transparent: Boolean(emblemTex),
+    alphaTest: emblemTex ? 0.18 : 0,
+    roughness: 0.16,
+    metalness: 0.78,
+    clearcoat: 0.65,
+    polygonOffset: true,
+    polygonOffsetFactor: -2,
+  }));
+  const frontEmblemPos = front(0, 1.078, 0.012);
+  const frontEmblemTop = front(0, 1.11, 0.012);
+  const frontEmblemPitch = Math.atan2(frontEmblemPos[2] - frontEmblemTop[2], frontEmblemTop[1] - frontEmblemPos[1]);
+  const frontEmblem = mesh(new THREE.PlaneGeometry(0.118, 0.074), emblemMat, shell, "king-long-front-emblem", frontEmblemPos);
+  frontEmblem.rotation.x = -frontEmblemPitch;
+  // Subtle raised 3D chrome oval rim underneath emblem so it reads crisply even in Node/offline tests
+  const frontEmblemRim = mesh(new THREE.TorusGeometry(0.046, 0.0055, 8, 24), chrome, shell, "king-long-front-emblem-rim", [frontEmblemPos[0], frontEmblemPos[1], frontEmblemPos[2] - 0.002]);
+  frontEmblemRim.scale.set(1.22, 0.76, 0.55);
+  frontEmblemRim.rotation.x = -frontEmblemPitch;
+
+  const rearEmblemPos = rearSkin(0, 1.187, 0.011);
+  const rearEmblem = mesh(new THREE.PlaneGeometry(0.096, 0.060), emblemMat, shell, "king-long-rear-emblem", rearEmblemPos);
+  rearEmblem.rotation.y = Math.PI;
+  const rearEmblemRim = mesh(new THREE.TorusGeometry(0.038, 0.0045, 8, 24), gearMetal, shell,
+    "king-long-rear-emblem-rim", [rearEmblemPos[0], rearEmblemPos[1], rearEmblemPos[2] + 0.002]);
+  rearEmblemRim.scale.set(1.22, 0.76, 0.55);
+  rearEmblemRim.rotation.y = Math.PI;
+
+  const wordmarkTex = ownTexture(makeWordmarkTexture());
+  const wordmarkMat = ownMaterial(new THREE.MeshStandardMaterial({
+    name: "King Long rear wordmark",
+    color: wordmarkTex ? 0xffffff : 0x2c3238,
+    map: wordmarkTex,
+    transparent: Boolean(wordmarkTex),
+    alphaTest: wordmarkTex ? 0.14 : 0,
+    roughness: 0.25,
+    metalness: 0.65,
+    polygonOffset: true,
+    polygonOffsetFactor: -2,
+  }));
+  const wordmarkRows = [0, 0.4, 0.75, 1];
+  const wordmark = grid(ACROSS, wordmarkRows, (u, t) =>
+    rearSkin(-0.58 - 0.249 * u, mix(0.655, 0.738, t), 0.004));
+  wordmark.setAttribute("uv", new THREE.Float32BufferAttribute(
+    wordmarkRows.flatMap(t => ACROSS.flatMap(u => [(u + 1) / 2, t])), 2));
+  panel("king-long-rear-wordmark", wordmark, wordmarkMat, true);
+
+  const modelBadgeTex = ownTexture(makeModelBadgeTexture());
+  const modelBadgeMat = ownMaterial(new THREE.MeshStandardMaterial({
+    name: "King Long model badge",
+    color: modelBadgeTex ? 0xffffff : 0x3b4248,
+    map: modelBadgeTex,
+    transparent: Boolean(modelBadgeTex),
+    alphaTest: modelBadgeTex ? 0.14 : 0,
+    roughness: 0.28,
+    metalness: 0.6,
+    polygonOffset: true,
+    polygonOffsetFactor: -2,
+  }));
+  const modelBadgePos = rearSkin(-0.744, 1.085, 0.010);
+  const modelBadgeMesh = mesh(new THREE.PlaneGeometry(0.165, 0.044), modelBadgeMat, shell, "king-long-rear-model-badge", modelBadgePos);
+  modelBadgeMesh.rotation.y = Math.PI;
+
+  const headOpticsTex = ownTexture(makeHeadlightTexture());
   const lamps = {
     head: new Map(), tail: new Map(),
-    high: material("high brake lens", 0xbd2023, { emissive: 0x8c1414, emissiveIntensity: 0.4 }),
+    high: ownMaterial(new THREE.MeshPhysicalMaterial({
+      name: "King Long high brake lens", color: 0xbd1d20, roughness: 0.18, clearcoat: 0.8,
+      emissive: 0x8c1414, emissiveIntensity: 0.42,
+    })),
   };
   for (const side of [-1, 1]) {
     const part = side < 0 ? "Left" : "Right", label = part.toLowerCase();
-    const head = material(`${label} clear lens`, 0xe7f0f3,
-      { roughness: 0.23, metalness: 0.24, emissive: 0x9ba9aa, emissiveIntensity: 0.58 });
-    const stop = material(`${label} red tail lens`, 0xbd2023,
-      { roughness: 0.3, emissive: 0xb41720, emissiveIntensity: 0.53 });
+    const head = ownMaterial(new THREE.MeshPhysicalMaterial({
+      name: `King Long ${label} clear lens`, color: 0xd7e2e8,
+      map: headOpticsTex,
+      roughness: 0.18, metalness: 0.28, clearcoat: 0.8, clearcoatRoughness: 0.12,
+      emissive: 0x78858c, emissiveIntensity: 0.11,
+    }));
+    const stop = ownMaterial(new THREE.MeshPhysicalMaterial({
+      name: `King Long ${label} red tail lens`, color: 0xb8161d,
+      roughness: 0.16, metalness: 0.12, clearcoat: 0.92, clearcoatRoughness: 0.08,
+      emissive: 0xa4131c, emissiveIntensity: 0.26,
+    }));
     lamps.head.set(`headlamp${part}`, head);
     lamps.tail.set(`tailLamp${part}`, stop);
-    patch(`king-long-${label}-headlight-seal`, front, false, [side * 0.658, 0.914, 0.535, 0.181, 0.061, 0.039], black);
-    patch(`king-long-${label}-headlight-reflector`, front, false, [side * 0.636, 0.914, 0.448, 0.154, 0.038, 0.028], reflector, 0.008);
-    patch(`king-long-${label}-headlight-main`, front, false, [side * 0.535, 0.920, 0.21, 0.128, 0.026, 0.019], head, 0.011);
-    patch(`king-long-${label}-headlight-secondary`, front, false, [side * 0.729, 0.920, 0.149, 0.128, 0.028, 0.018], head, 0.01);
-    patch(`king-long-${label}-headlight-indicator`, front, false, [side * 0.871, 0.917, 0.091, 0.123, 0.026, 0.028], amber, 0.009);
-    patch(`king-long-${label}-fog-pocket`, front, false, [side * 0.712, 0.472, 0.193, 0.087, 0.034, 0.021], black);
-    patch(`king-long-${label}-fog-lamp`, front, false, [side * 0.712, 0.473, 0.129, 0.048, 0.015, 0.011], reflector, 0.008);
+    panel(`king-long-${label}-headlight-seal`, headlightGeometry(front, side, false), black, true);
+    panel(`king-long-${label}-headlight-lens`, headlightGeometry(front, side, true), head, true);
+    // Recessed square fog lamp pocket with chrome inner bezel & bright reflector (Ref 1 & 3)
+    patch(`king-long-${label}-fog-pocket`, front, false, [side * 0.712, 0.472, 0.198, 0.092, 0.030, 0.018], black, 0.004);
+    patch(`king-long-${label}-fog-bezel`, front, false, [side * 0.712, 0.473, 0.148, 0.062, 0.018, 0.012], chrome, 0.007);
+    patch(`king-long-${label}-fog-lamp`, front, false, [side * 0.712, 0.473, 0.126, 0.048, 0.014, 0.010], reflector, 0.009);
 
-    patch(`king-long-${label}-vertical-tail-light-seal`, rear, true, [side * 0.921, 1.256, 0.144, 0.405, 0.034, 0.048], black, 0.005);
-    patch(`king-long-${label}-vertical-tail-light`, rear, true, [side * 0.921, 1.283, 0.105, 0.314, 0.02, 0.032], stop, 0.01);
-    patch(`king-long-${label}-reverse-light`, rear, true, [side * 0.921, 1.099, 0.094, 0.043, 0.019, 0.011], reflector, 0.01);
+    const tailCenter = side * 0.904, tailWidth = 0.145;
+    patch(`king-long-${label}-vertical-tail-light-seal`, rearSkin, true,
+      [tailCenter, 1.013, 0.166, 0.367, 0.045, 0.04], black, 0.005);
+    const tail = panelShape(tailCenter, 1.013, tailWidth, 0.342, 0.035, 0.03);
+    const tailBand = (lo, hi) => endBand(
+      (u, y) => rearSkin(u, y, 0.008 + 0.008 * (1 - (2 * (u - tailCenter) / tailWidth) ** 2)),
+      sorted([lo, ...tail.rows.filter(y => y > lo && y < hi), hi]), tail.limits, true);
+    panel(`king-long-${label}-vertical-tail-light`, merged([
+      tailBand(tail.lo, 0.945), tailBand(1.047, tail.hi),
+    ]), stop, true);
+    panel(`king-long-${label}-tail-amber-band`, tailBand(0.994, 1.044), amber, true);
+    panel(`king-long-${label}-reverse-light`, tailBand(0.949, 0.992), reverseLens, true);
   }
-  patch("king-long-high-brake-lamp", rear, true, [0, 1.875, 0.291, 0.025, 0.014, 0.007], lamps.high, 0.005, false);
-  patch("king-long-tailgate-handle", rear, true, [0, 1.144, 0.275, 0.039, 0.023, 0.012], black);
-  patch("king-long-blank-tailgate-recess", rear, true, [0, 0.867, 0.47, 0.114, 0.034, 0.018], dash);
-  const tailgate = soften([[-0.812, 1.883], [0.812, 1.883], [0.873, 0.771], [-0.873, 0.771]], 0.09);
-  tailgate.push(tailgate[0]);
-  panel("king-long-tailgate-shutline", stroke(tailgate, 0.004, (u, y) => rear(u, y, 0.005), true), seam, true);
-  panel("king-long-windscreen-wipers", merged([
-    stroke([[-0.23, 1.259], [-0.58, 1.344], [-0.91, 1.371]], 0.016, (u, y) => front(u, y, 0.012), false),
-    stroke([[0.605, 1.263], [0.235, 1.336], [-0.172, 1.357]], 0.016, (u, y) => front(u, y, 0.012), false),
+  const centerBrake = patch("king-long-high-brake-lamp", rear, true,
+    [0, 1.857, 0.265, 0.018, 0.012, 0.006], lamps.high, 0.006, false);
+  centerBrake.visible = false;
+  const handleShape = new THREE.Shape();
+  handleShape.moveTo(-0.368, -0.024);
+  handleShape.quadraticCurveTo(-0.356, 0.026, -0.282, 0.032);
+  handleShape.lineTo(0.282, 0.032);
+  handleShape.quadraticCurveTo(0.356, 0.026, 0.368, -0.024);
+  handleShape.closePath();
+  const handle = new THREE.ExtrudeGeometry(handleShape, {
+    curveSegments: 8, bevelSegments: 2, bevelSize: 0.004, bevelThickness: 0.004, depth: 0.056,
+  }).translate(0, 1.061, -0.027);
+  const handleVertices = handle.attributes.position;
+  for (let i = 0; i < handleVertices.count; i++) {
+    const x = handleVertices.getX(i), y = handleVertices.getY(i);
+    handleVertices.setZ(i, rear(x / widthAt(y), y, 0.005 - handleVertices.getZ(i))[2]);
+  }
+  handle.computeVertexNormals();
+  panel("king-long-tailgate-handle", handle, black, true);
+  patch("king-long-tailgate-keyhole", rear, true, [-0.24, 1.066, 0.017, 0.015, 0.006, 0.006], chrome, 0.039);
+  for (const u of [-0.085, 0.085]) {
+    patch(`king-long-rear-plate-bolt-${u}`, rearSkin, true, [u, 0.987, 0.014, 0.012, 0.003, 0.003], seam, 0.003);
+  }
+  const garnishCrease = rearColumns.filter(u => u >= 0.44 && u <= 0.805);
+  panel("king-long-tailgate-garnish-crease", merged([-1, 1].map(side =>
+    stroke(garnishCrease.map(u => [side * u, 1.043]), 0.0045, (u, y) => rearSkin(u, y, 0.002), true))),
+  deepCrease, true);
+  // The blade parks low across the glass with its arm attached to the painted hatch.
+  panel("king-long-rear-wiper", merged([
+    stroke([[0.185, 1.31], [0.112, 1.361], [-0.137, 1.436]], 0.016, (u, y) => rear(u, y, 0.014), true),
+    stroke([[-0.015, 1.415], [-0.215, 1.445], [-0.468, 1.471]], 0.013, (u, y) => rear(u, y, 0.016), true),
   ]), black);
+  patch("king-long-rear-wiper-pivot", rear, true, [0.185, 1.31, 0.05, 0.039, 0.015, 0.014], black, 0.016, false);
+  patch("king-long-rear-washer-nozzle", rear, true, [0, 1.914, 0.022, 0.012, 0.006, 0.004], black, 0.004, false);
+
+  const hatchSide = hatchRows.filter(y => y >= 0.65 && y <= 1.235).map(y =>
+    [mix(-0.86, -0.812, (y - 0.65) / (1.235 - 0.65)), y]).reverse();
+  hatchSide.push([-0.854, 0.638], [-0.838, 0.611], [-0.812, 0.59], [-0.782, 0.581]);
+  const tailgate = [...hatchSide, ...rearColumns.filter(u => Math.abs(u) <= 0.73).map(u => [u, 0.578]),
+    ...hatchSide.slice().reverse().map(([u, y]) => [-u, y])];
+  panel("king-long-tailgate-shutline", stroke(tailgate, 0.009, (u, y) => rearSkin(u, y, 0.003), true), deepCrease, true);
+  // Front windshield wipers + twin washer nozzles along lower cowl (Ref 1 & 3)
+  panel("king-long-windscreen-wipers", merged([
+    stroke([[-0.23, 1.259], [-0.58, 1.344], [-0.91, 1.371]], 0.017, (u, y) => front(u, y, 0.012), false),
+    stroke([[0.605, 1.263], [0.235, 1.336], [-0.172, 1.357]], 0.017, (u, y) => front(u, y, 0.012), false),
+  ]), black);
+  for (const u of [-0.36, 0.32]) {
+    patch(`king-long-front-washer-${u}`, front, false, [u, 1.248, 0.022, 0.016, 0.005, 0.005], black, 0.011, false);
+  }
+
+  // Molded black rubber mudflaps behind all 4 wheels + visible rear underbody spare tire (Ref 1 & 2)
+  const mudflapParts = [];
+  for (const side of [-1, 1]) {
+    // Rear mudflaps hang cleanly behind rear wheel arch (prominent in Ref 2, extending subtly below bumper!)
+    mudflapParts.push(
+      softBox(0.245, 0.30, 0.022, 0.005)
+        .rotateX(0.05)
+        .translate(side * (trackM / 2 + 0.018), 0.255, rearAxle - wheelRadiusM - 0.058),
+    );
+    // Front mudflaps tucked neatly behind front wheel arch (Ref 1)
+    mudflapParts.push(
+      softBox(0.205, 0.225, 0.018, 0.004)
+        .rotateX(0.07)
+        .translate(side * (trackM / 2 + 0.010), 0.275, frontAxle - wheelRadiusM - 0.070),
+    );
+  }
+  const mudflapsMesh = mesh(merged(mudflapParts), mudflapMat, shell, "king-long-mudflaps");
+  mudflapsMesh.castShadow = true;
+
+  // Underbody mounted full-size spare tire & carrier bracket visible from rear view (Ref 2!)
+  const spareGroup = group(shell, "king-long-spare-underbody", [0, 0.292, -1.79]);
+  const spareTire = mesh(
+    new THREE.TorusGeometry(0.255, 0.092, 12, 24).rotateX(Math.PI / 2),
+    rubber, spareGroup, "king-long-spare-underbody-tire",
+  );
+  spareTire.scale.set(1, 0.72, 1);
+  spareTire.castShadow = true;
+  mesh(
+    new THREE.CylinderGeometry(0.16, 0.16, 0.09, 16),
+    dash, spareGroup, "king-long-spare-underbody-hub",
+  );
+  // Leaf-spring shackles & U-bolt brackets visible beneath rear bumper (Ref 2)
+  for (const side of [-1, 1]) {
+    box(shell, `king-long-rear-leaf-bracket-${side < 0 ? "left" : "right"}`,
+      [0.062, 0.175, 0.12], [side * 0.495, 0.245, -1.82], dash, 0.008);
+  }
 
   const cabin = group(chassis, "king-long-cabin");
   box(cabin, "king-long-cabin-floor", [1.28, 0.072, 4.248], [0, 0.697, -0.033], dash, 0.023);
@@ -463,6 +939,10 @@ export function createKingLongModel(body = {}) {
       softBox(0.377, 0.022, 0.288, 0.008).translate(x, 0.995, 0.013),
       softBox(0.374, 0.295, 0.023, 0.008).rotateX(-0.135).translate(x, 1.14, -0.091),
     ])), inserts, row, "king-long-bench-cushion-insets");
+    // Three prominent headrests per passenger bench visible through the tinted side & rear glass (Ref 1 & 2)
+    mesh(merged([-0.415, 0, 0.415].map((x) =>
+      softBox(0.245, 0.165, 0.095, 0.036).translate(x, 1.435, -0.175),
+    )), upholstery, row, "king-long-bench-headrests");
   }
   mesh(merged(seatBases), dash, cabin, "king-long-front-seat-pedestals");
   mesh(merged(cushions), upholstery, cabin, "king-long-front-seats");
@@ -536,6 +1016,12 @@ export function createKingLongModel(body = {}) {
     mesh(tire, rubber, spin, `${name}-tire`).castShadow = true;
     const face = mesh(rim, satin, spin, `${name}-rim`);
     face.scale.x = side;
+    // Dark painted wheel-pocket backing behind the 10-spoke alloy face so spoke voids read with realistic shadow depth
+    const pocket = mesh(
+      new THREE.CylinderGeometry(0.168, 0.168, 0.006, 28).rotateZ(-Math.PI / 2),
+      black, spin, `${name}-rim-pocket`, [side * (wheelWidthM * 0.305), 0, 0],
+    );
+    pocket.receiveShadow = true;
     mesh(disc, gearMetal, spin, `${name}-disc`, [side * 0.033, 0, 0]);
     mesh(padGeometry, dash, caliper, `${name}-brake-pad`, [side * 0.021, 0.041, -0.134]);
     const upper = v([side * 0.501, 0.744, z]), lower = v([side * 0.636, 0.347, z]);
@@ -570,8 +1056,9 @@ export function createKingLongModel(body = {}) {
     const lens = mesh(rangeLens, sensorLens, anchor, `sensor-range-${id}`);
     const side = id.startsWith("side-");
     const face = side ? [Math.sign(p.x) * (widthAt(p.y) - 0.009), p.y, p.z]
-      : (p.z > 0 ? front : rear)(p.x / widthAt(p.y), p.y, -0.008);
-    section(rod(root, `range-support-${id}`, 0.011, black, face, [p.x, p.y, p.z]));
+      : (p.z > 0 ? front : rearSkin)(p.x / widthAt(p.y), p.y, -0.008);
+    const support = section(rod(root, `range-support-${id}`, 0.011, black, face, [p.x, p.y, p.z]));
+    if (id.startsWith("rear-")) chaseHidden.push(anchor, support);
     ranges.push({ ...mount, lens });
   }
   const cameraHousing = softBox(0.054, 0.039, 0.050, 0.008).translate(0, 0, -0.027);
@@ -584,7 +1071,8 @@ export function createKingLongModel(body = {}) {
     const lens = mesh(cameraLens, sensorLens, anchor, `sensor-${id}`);
     const tip = id === "front-camera" ? [0, 1.916, front(0, 1.916)[2] - 0.065]
       : [0, p.y, rear(0, p.y)[2] + 0.007];
-    section(rod(root, `${id}-support`, 0.012, black, tip, [p.x, p.y, p.z]));
+    const support = section(rod(root, `${id}-support`, 0.012, black, tip, [p.x, p.y, p.z]));
+    if (id === "rear-camera") chaseHidden.push(anchor, support);
     cameras.push({ ...mount, lens });
   }
   const telemetryPoint = mounts.telemetry.position;
@@ -597,15 +1085,16 @@ export function createKingLongModel(body = {}) {
   function updateLights(states, brake) {
     for (const [key, lamp] of lamps.head) {
       const state = states[key];
-      lamp.color.setHex(state === "shattered" ? 0x303435 : state === "cracked" ? 0x8e8477 : 0xe7f0f3);
-      lamp.emissiveIntensity = state === "shattered" ? 0 : state === "cracked" ? 0.16 : 0.58;
+      lamp.color.setHex(state === "shattered" ? 0x303435 : state === "cracked" ? 0x8e8477 : 0xd7e2e8);
+      lamp.emissiveIntensity = state === "shattered" ? 0 : state === "cracked" ? 0.05 : 0.11;
     }
     for (const [key, lamp] of lamps.tail) {
       const state = states[key];
-      lamp.color.setHex(state === "shattered" ? 0x392020 : state === "cracked" ? 0x863330 : 0xbd2023);
-      lamp.emissiveIntensity = state === "shattered" ? 0 : state === "cracked" ? 0.17 + brake * 0.3 : 0.53 + brake * 1.25;
+      lamp.color.setHex(state === "shattered" ? 0x392020 : state === "cracked" ? 0x863330 : 0xb8161d);
+      lamp.emissiveIntensity = state === "shattered" ? 0 : state === "cracked" ? 0.13 + brake * 0.3 : 0.26 + brake * 1.25;
     }
-    lamps.high.emissiveIntensity = 0.4 + brake * 1.4;
+    centerBrake.visible = brake > 0.02;
+    lamps.high.emissiveIntensity = 0.42 + brake * 1.4;
   }
 
   return {

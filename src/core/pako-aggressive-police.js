@@ -56,9 +56,13 @@ export function aggressiveDeploymentBounds(state, opening) {
   const minSpawn = state?.gta?.config?.minSpawnRadius ?? 16;
   const count = state?.patrols?.size ?? 0;
   if (opening) {
-    return count < 2
-      ? { minRange: Math.max(17.5, minSpawn), maxRange: 33 }
-      : { minRange: 36, maxRange: 66 };
+    if (count < 2) return { minRange: Math.max(17.5, minSpawn), maxRange: 33 };
+    if (isTacticalPursuit(state)) {
+      return count < 5
+        ? { minRange: Math.max(28, minSpawn), maxRange: 68 }
+        : { minRange: Math.max(35, minSpawn), maxRange: 95 };
+    }
+    return { minRange: 36, maxRange: 66 };
   }
   return { minRange: 26, maxRange: 58 };
 }
@@ -87,6 +91,11 @@ export function scoreAggressiveDeploymentSlots(
     const absRight = Math.abs(right);
 
     if (forwardOnly && forward <= 2) {
+      slot.score = Infinity;
+      continue;
+    }
+    const tacticalOpening = opening && isTacticalPursuit(state);
+    if (tacticalOpening && forward > 0 && forward < 34) {
       slot.score = Infinity;
       continue;
     }
@@ -134,6 +143,32 @@ export function scoreAggressiveDeploymentSlots(
         score += Math.min(rearBerthScore, crossBerthScore + 4);
       } else {
         score += Math.min(crossBerthScore, rearBerthScore + 6);
+      }
+    } else if (opening && isTacticalPursuit(state)) {
+      const towardPlayer =
+        ((player.x - slot.position.x) * Math.sin(slot.position.heading) +
+          (player.z - slot.position.z) * Math.cos(slot.position.heading)) /
+        Math.max(1, range);
+      const opposingLane = alignment < -0.65 && absRight >= 2.4 && absRight <= 8.5;
+      const forwardCrossApproach = crossStreet && towardPlayer > 0.15;
+      if (count < 5) {
+        score +=
+          bandPenalty(forward, 34, 72, 1.9) +
+          bandPenalty(range, 28, 68, 1.35) +
+          Math.abs(range - (38 + (count - 2) * 8)) * 0.32 +
+          (forwardCrossApproach ? -22 : crossStreet ? -10 : opposingLane ? -16 : 18) +
+          (sameForwardCorridor && !opposingLane ? 16 : 0) +
+          (tactic === "intercept" && forwardCrossApproach ? -8 : 0) +
+          (tactic === "flank" && right * side < 0 ? 5 : 0);
+      } else {
+        const parallelFlank = absRight >= 8 || crossStreet;
+        score +=
+          bandPenalty(forward, 35, 95, 1.35) +
+          bandPenalty(range, 35, 95, 1.1) +
+          Math.abs(range - Math.min(88, 58 + (count - 5) * 5)) * 0.28 +
+          (parallelFlank ? -8 : opposingLane ? -6 : 12) +
+          (tactic === "intercept" && forwardCrossApproach ? -7 : 0) +
+          (tactic === "flank" && right * side < 0 ? 4 : 0);
       }
     } else if (opening) {
       if (sameForwardCorridor) score += 65;

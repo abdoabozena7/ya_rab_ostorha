@@ -876,9 +876,36 @@ function openingTravel(speed, acceleration, cap) {
 
 function deployGtaPatrol(world, state, tactic, unitType, forwardOnly = false) {
   if (isFairCityPolice(state)) {
+    // Fair patrol identities are created once, before the pursuit becomes live. They are never
+    // replaced later; only their fixed opening beats are chosen more tactically here.
     if (world.pursuit === state) return null;
     const car = newGtaPatrol(world, state, unitType);
     const lanes = car.gtaAI.lanes.filter(lane => lane.high - lane.low >= 45);
+    const player = world.player;
+    const setOpeningBeat = lane => {
+      const a = lanePoint(lane, lane.low + 8);
+      const b = lanePoint(lane, lane.high - 8);
+      car.gtaAI.beat = { roadId: lane.road.id, a, b, target: lane.sign > 0 ? b : a };
+      car.aiState = "PATROL";
+      car.speed = aggressiveInitialSpeed(car, true, state.wantedLevel);
+      return registerGtaPatrol(world, state, car);
+    };
+
+    if (isAggressiveChase(state) && state.wantedLevel >= 3 &&
+        playerVehicleDimensions(player) !== KING_LONG_MICROBUS) {
+      const bounds = aggressiveDeploymentBounds(state, true);
+      const slots = deploymentSlots({ lanes }, player, tactic, bounds.minRange, bounds.maxRange);
+      scoreAggressiveDeploymentSlots(world, state, car, player, slots, tactic, true, forwardOnly);
+      for (const { lane, position, score } of slots) {
+        if (!Number.isFinite(score)) break;
+        Object.assign(car, position);
+        if (!isFree(world, car, .65) || !bodyOnRoad(car, world.drivingRoads) ||
+            [...state.patrols].some(other => distance(other, car) < 17.5) ||
+            (state.patrols.size < 2 && !gtaInSight({ ...world, pursuit: state }, car, player))) continue;
+        return setOpeningBeat(lane);
+      }
+    }
+
     const openingBeat = car.gtaAI.order === 1
       ? lanes.find(lane => lane.road.id === "tahrir-boulevard" && lane.sign === 1) : null;
     for (let n = 0; n < lanes.length; n++) {
@@ -887,13 +914,8 @@ function deployGtaPatrol(world, state, tactic, unitType, forwardOnly = false) {
         const position = lanePoint(lane, lane.low + (lane.high - lane.low) * fraction);
         Object.assign(car, position);
         if (!isFree(world, car, 1) || !bodyOnRoad(car, world.drivingRoads) ||
-            [...state.patrols].some(other => distance(other, car) < 22)) continue;
-        const a = lanePoint(lane, lane.low + 8);
-        const b = lanePoint(lane, lane.high - 8);
-        car.gtaAI.beat = { roadId: lane.road.id, a, b, target: lane.sign > 0 ? b : a };
-        car.aiState = "PATROL";
-        car.speed = 0;
-        return registerGtaPatrol(world, state, car);
+            [...state.patrols].some(other => distance(other, car) < 17.5)) continue;
+        return setOpeningBeat(lane);
       }
     }
     return null;
@@ -2872,13 +2894,18 @@ function motionPlan(world, actor, action, streetHooks) {
         if (report) {
           const egoDimensions = playerVehicleDimensions(world.player);
           const relative = gtaLocal(actor, report);
-          if (relative.forward > 0 && Math.abs(relative.right) < (actor.width + egoDimensions.widthM) / 2 + .5) {
+          const fairApproachWidth = (actor.width + egoDimensions.widthM) / 2 +
+            4.5 + Math.max(0, actor.speed) * 0.08;
+          if (relative.forward > 0 && Math.abs(relative.right) < fairApproachWidth) {
             const braking = actor.spec?.braking ?? VEHICLE.braking;
             const leadSpeed = Math.max(0, (report.vx ?? 0) * Math.sin(actor.heading) +
               (report.vz ?? 0) * Math.cos(actor.heading));
             const gap = relative.forward - (actor.length + egoDimensions.lengthM) / 2;
-            const room = Math.max(0, gap - 4 - Math.max(0, actor.speed) * .4);
-            const pace = Math.sqrt(leadSpeed * leadSpeed + 2 * braking * room);
+            const desiredGap = 5.5 + Math.max(0, actor.speed) * 0.42;
+            const room = Math.max(0, gap - desiredGap);
+            const compressed = Math.max(0, desiredGap - gap);
+            const safeLeadSpeed = Math.max(0, leadSpeed - compressed * 1.35);
+            const pace = Math.sqrt(safeLeadSpeed * safeLeadSpeed + 2 * braking * room);
             if (pace < command.targetSpeed) command = { ...command, targetSpeed: pace,
               decelerationMps2: braking, reason: "fair-follow" };
           }

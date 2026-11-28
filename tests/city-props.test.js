@@ -8,11 +8,11 @@ import { createCityPropsView } from "../src/render/city-props-view.js";
 
 const create = options => new World({ cityVersion: 5, seed: "solid-city-props", traffic: 0, pedestrians: 0, ...options }, "metro");
 
-function stage(world, site, speed, grazing = false) {
-  const p = world.player, heading = grazing ? -.16 : 0;
+function stage(world, site, speed, grazing = false, side = 1) {
+  const p = world.player, heading = grazing ? -.16 * side : 0;
   Object.assign(p, {
-    x: site.x + (grazing ? site.width / 2 + p.width / 2 * Math.cos(heading) +
-      p.length / 2 * Math.abs(Math.sin(heading)) + .005 : 0),
+    x: site.x + (grazing ? side * (site.width / 2 + p.width / 2 * Math.cos(heading) +
+      p.length / 2 * Math.abs(Math.sin(heading)) + .005) : 0),
     z: site.z - (grazing ? p.length / 2 : 6),
     heading, speed, steer: 0,
   });
@@ -21,10 +21,17 @@ function stage(world, site, speed, grazing = false) {
 }
 
 function impact(world, kind, speed, grazing = false) {
-  const site = kind === "city-tree" ? world.statics.find(s => s.id === "city-tree-4")
-    : world.statics.find(s => s.kind === kind);
+  const candidates = kind === "city-tree" ? world.statics.filter(s => s.id === "city-tree-4")
+    : world.statics.filter(s => s.kind === kind);
+  // The approach must not start inside a neighbouring lamp, bollard or other prop hull.
+  let side = 1;
+  const site = candidates.find(candidate => [1, -1].some(candidateSide => {
+    stage(world, candidate, speed, grazing, candidateSide);
+    side = candidateSide;
+    return !world.statics.some(s => overlaps(world.player, s));
+  }));
   assert.ok(site);
-  stage(world, site, speed, grazing);
+  stage(world, site, speed, grazing, side);
   assert.equal(world.statics.some(s => overlaps(world.player, s)), false,
     "controlled impact must begin outside every existing static hull");
   const start = { x: world.player.x, z: world.player.z };
@@ -102,6 +109,48 @@ for (const kind of ["city-tree", "market-stall"]) {
     });
   }
 }
+
+test("street lamp posts and bollards are solid hulls beside the road, not ghosts", () => {
+  const world = create(), legacy = create({ cityPropProfile: "none" });
+  const lamps = world.statics.filter(s => s.kind === "city-lamp");
+  const furniture = world.statics.filter(s => s.kind === "city-furniture");
+  assert.ok(lamps.length > 300, `${lamps.length} lamp posts`);
+  assert.ok(furniture.length > 200, `${furniture.length} bollards and cabinets`);
+  assert.ok([...lamps, ...furniture].every(s => s.propImpact && s.type === "static"));
+  assert.equal(world.cityStreetProps.lamps.length, lamps.length);
+  assert.equal(legacy.statics.some(s => s.kind === "city-lamp" || s.kind === "city-furniture"), false);
+  assert.ok(world.statics.findIndex(s => s.kind === "city-tree") < world.statics.findIndex(s => s.kind === "city-lamp"),
+    "trees keep their original registration order");
+});
+
+test("a car driving into a lamp post collides and is damaged, while the legacy profile passes through", () => {
+  for (const kind of ["city-lamp", "city-furniture"]) {
+    const world = create();
+    const site = impact(world, kind, 8);
+    assert.ok(world.player.vehicle.damage.total > 0);
+    const legacy = create({ cityPropProfile: "none" });
+    stage(legacy, site, 8);
+    for (let i = 0; i < 90; i++) legacy.step();
+    assert.equal(legacy.player.vehicle.contact, null, `legacy ${kind} must stay a ghost`);
+    assert.ok(legacy.player.z > site.z + 2, "legacy car drives through the former hull");
+  }
+});
+
+test("range sensors and the speed governor see lamp posts and slow for them", () => {
+  const world = create();
+  const lamp = world.statics.find(s => s.kind === "city-lamp" &&
+    world.statics.every(o => o === s || Math.hypot(o.x - s.x, o.z - s.z) > 12));
+  assert.ok(lamp, "an isolated lamp post");
+  world.step();
+  stage(world, lamp, 0);
+  world.updateSensors();
+  assert.ok(world.sensors.rays.some(ray => ray.hitId === lamp.id), "mounted range sensor must see the lamp");
+  world.player.z = lamp.z - 4;
+  world.player.speed = 3;
+  const planned = world.safeSpeed(world.player, { targetSpeed: 6, steer: 0 }, false);
+  assert.equal(planned.blockedBy, lamp.id);
+  assert.ok(planned.targetSpeed < 6, "autonomous planning must avoid the lamp post");
+});
 
 test("legacy decorative-tree negative control crosses the same physical location", () => {
   const solid = create(), world = create({ cityPropProfile: "none" });

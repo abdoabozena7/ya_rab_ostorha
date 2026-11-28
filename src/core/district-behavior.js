@@ -1300,8 +1300,12 @@ export function updateDistrictTraffic(world) {
         });
       state.metrics.peakWaitS = Math.max(state.metrics.peakWaitS, entry.waitS);
     }
+    // Cairo Traffic: the Defensive AI ego moves up the ticket queue, so ordinary FIFO ahead of it
+    // cannot starve the player; a reservation owner or an occupant still always finishes first.
+    const egoBonusTicks = world.streetChaos?.active && world.mode === "auto" ? Math.ceil(60 / STEP) : 0;
+    const queuedAt = (entry) => entry.arrivedTick - (egoBonusTicks && entry.actorId === world.player.id ? egoBonusTicks : 0);
     queue.sort((a, b) => {
-      const arrival = a.arrivedTick - b.arrivedTick;
+      const arrival = queuedAt(a) - queuedAt(b);
       if (arrival || zone.kind !== "single-lane") return arrival || a.ticket - b.ticket;
       // Simultaneous arrivals should not inherit an actor-array priority.
       const aExit = routes.get(`${zone.id}:${a.actorId}`).exitDistanceM;
