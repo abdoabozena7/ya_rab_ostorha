@@ -18,6 +18,7 @@ import { createDistrictProps } from "./district-props.js";
 import { createPursuitView } from "./pursuit-view.js";
 import { createCrashEffects } from "./crash-effects.js";
 import { createCinematicRoadTextures, createStreetSurfacesView } from "./street-surfaces-view.js";
+import { createMetroMaterialDetail } from "./metro-material-detail.js";
 import { buildTerrainRoadParts } from "./elevated-roads.js";
 import { terrainGradientAt } from "../core/city-surfaces.js";
 import { getActorImpactReaction } from "../core/wheel-interaction-physics.js";
@@ -878,6 +879,7 @@ export class WorldView {
     this.trafficBatches = world.environment === "egypt" ? new TrafficBatches(scene) : null;
     const grandCity = (world.config?.cityVersion ?? 0) >= 5;
     this.grandCity = grandCity;
+    this.metroMaterialDetail = this.metro && grandCity ? createMetroMaterialDetail() : null;
     this.sunOffset = grandCity ? SUN_OFFSET_V5 : SUN_OFFSET;
     this.sunRight = grandCity ? SUN_RIGHT_V5 : SUN_RIGHT;
     this.sunUp = grandCity ? SUN_UP_V5 : SUN_UP;
@@ -1156,7 +1158,8 @@ export class WorldView {
       mesh.material.roughness = 0.92;
       mesh.material.metalness = 0.04;
       mesh.material.envMapIntensity = 0.56;
-      mesh.material.needsUpdate = true;
+      if (this.metroMaterialDetail) this.metroMaterialDetail.apply(mesh.material);
+      else mesh.material.needsUpdate = true;
     }
     for (const mesh of this.surfaces.pavement) {
       const isRetaining = mesh.name === "road-retaining-walls";
@@ -1168,7 +1171,8 @@ export class WorldView {
       mesh.material.roughness = 0.94;
       mesh.material.metalness = 0.02;
       mesh.material.envMapIntensity = 0.48;
-      mesh.material.needsUpdate = true;
+      if (this.metroMaterialDetail) this.metroMaterialDetail.apply(mesh.material, isRetaining);
+      else mesh.material.needsUpdate = true;
     }
   }
   async loadSurfaces() {
@@ -1741,7 +1745,8 @@ export class WorldView {
             if (material?.name !== "egypt-authored-facade-atlas" || this.reliefMaterials.has(material)) return;
             material.bumpMap = material.roughnessMap = this.facadeRelief;
             material.bumpScale = .035;
-            material.needsUpdate = true;
+            if (this.metroMaterialDetail) this.metroMaterialDetail.apply(material, true);
+            else material.needsUpdate = true;
             this.reliefMaterials.add(material);
           });
         }
@@ -2370,6 +2375,7 @@ export class WorldView {
     this.scene.remove(this.egyptStreets.root);
     this.egyptStreets.dispose();
     this.facadeRelief?.dispose();
+    this.metroMaterialDetail?.dispose();
     if (this.metro) {
       this.sun.shadow.dispose();
       for (const [id, record] of this.roots)

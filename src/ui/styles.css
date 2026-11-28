@@ -258,6 +258,81 @@ select:focus-visible {
   border-radius: 5px;
   font: inherit;
 }
+.graphics-settings {
+  margin-top: 16px;
+  padding-block: 4px 12px;
+  border-block: 1px solid #76857a66;
+}
+#settingsPanel {
+  scrollbar-color: #70837a #263630;
+}
+.graphics-settings summary {
+  padding-block: 9px;
+  cursor: pointer;
+  font-weight: 650;
+}
+.graphics-settings summary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+#graphicsSummaryValue {
+  float: right;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 500;
+}
+.graphics-settings p {
+  margin: 0 0 12px;
+}
+.graphics-settings summary + p {
+  margin-top: 4px;
+}
+.graphics-settings select {
+  margin-block: 5px 8px;
+}
+.graphics-grid,
+.graphics-slider {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 12px;
+}
+.drawer .graphics-check {
+  display: flex;
+  align-items: center;
+  align-self: end;
+  gap: 7px;
+  min-height: 36px;
+  margin-bottom: 8px;
+}
+.drawer .graphics-check input {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+}
+.graphics-slider {
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  padding-block: 6px;
+}
+.graphics-slider output {
+  font: inherit;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+.graphics-slider input {
+  grid-column: 1 / -1;
+  min-height: 24px;
+}
+#graphicsReset {
+  margin-top: 8px;
+}
+#graphicsStatus {
+  margin: 8px 0 0;
+  color: #f4c38d;
+}
+#graphicsStatus:empty {
+  margin: 0;
+}
 #districtControls {
   margin-block: 20px;
   padding-block: 4px 14px;
@@ -516,7 +591,7 @@ footer span {
   .drawer {
     left: 12px;
     top: 72px;
-    width: 310px;
+    width: min(310px, calc(100vw - 24px));
   }
   .phone {
     right: 12px;
@@ -558,8 +633,17 @@ footer span {
     right: 14px;
     max-width: calc(100vw - 28px);
   }
+  #settingsPanel:not([data-pako-workspace]) {
+    top: 108px;
+  }
   .pursuit-panel {
     top: 145px;
+  }
+}
+
+@media (max-width: 430px) {
+  #settingsPanel:not([data-pako-workspace]) {
+    top: 126px;
   }
 }
 

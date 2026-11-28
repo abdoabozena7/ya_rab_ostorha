@@ -10,6 +10,7 @@ import { FixedClock } from "./core/clock.js";
 import { WorldView } from "./render/world-view.js";
 import { createPursuitCamera } from "./render/pursuit-camera.js";
 import { CITY_CLEAR_CINEMATIC_GRADE, createCinematicPost } from "./render/cinematic-post.js";
+import { createMetroPlanarReflections } from "./render/metro-planar-reflections.js";
 import { createPakoPerspective } from "./render/pako-perspective.js";
 import { createPedestrianForecastView } from "./render/pedestrian-forecast-view.js";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
@@ -18,6 +19,7 @@ import { mountPhone } from "./ui/phone.js";
 import { createBridge, createVisualClient } from "./integration/bridge.js";
 import { createPerceptionOverlay } from "./ui/perception-overlay.js";
 import { createDecisionInspector } from "./ui/decision-inspector.js";
+import { mountGraphicsSettings } from "./ui/graphics-settings.js";
 import { bodyOnRoad, distance, isDiagonalRoad } from "./core/geometry.js";
 import { mountVehiclePanel } from "./ui/vehicle-panel.js";
 import { mountVisionPanel } from "./ui/vision-panel.js";
@@ -67,6 +69,11 @@ const graphicsAdapter = hardwareInfo ? gl.getParameter(hardwareInfo.UNMASKED_REN
 const isIntegratedApu = /Radeon\(TM\) Graphics|Intel|UHD|Iris|SwiftShader|Basic Render/i.test(
   graphicsAdapter ?? "",
 );
+const supportsLiveReflections =
+  renderer.capabilities.isWebGL2 && renderer.extensions.has("EXT_color_buffer_float");
+const maxDisplayEdge = Math.min(renderer.capabilities.maxTextureSize, gl.getParameter(gl.MAX_RENDERBUFFER_SIZE));
+const maxViewport = gl.getParameter(gl.MAX_VIEWPORT_DIMS);
+const MAX_METRO_DISPLAY_PIXELS = 3840 * 2160;
 renderer.domElement.className = "scene";
 document.body.prepend(renderer.domElement);
 renderer.shadowMap.enabled = true;
@@ -113,6 +120,7 @@ const cinematicPost = createCinematicPost(renderer, {
   samples: isIntegratedApu ? 0 : 4,
   grade: CITY_CLEAR_CINEMATIC_GRADE,
 });
+const metroReflections = createMetroPlanarReflections(renderer);
 let lastImpactWorld = null, lastImpactCount = 0, cameraImpactPulse = 0;
 const worlds = { metro: new World({ cityVersion: 5 }, "metro") };
 worlds.metro.command({ type: "player-vehicle", model: KING_LONG_MICROBUS_ID });
@@ -169,6 +177,7 @@ let lastPerspectiveReplay = null;
 let packDrillWorld = null, labPackCheckpoint = null, cityPackCheckpoint = null;
 let cityDriver = "vision-first", cameraStartup = null, cityCameraError = null;
 const hasCityCameraDriver = (target) => target.environment === "metro" && target.config.cityVersion >= 3;
+const hasMetroGraphics = (target) => target.environment === "metro" && target.config.cityVersion >= 5;
 const isCity = (id) => id === "city" || id === "metro";
 const isPursuing = () => environment === "pursuit" || world.pursuit?.phase === "running" ||
   Boolean(world.pursuit?.reviewUntilTick);
@@ -437,6 +446,7 @@ function activate(next) {
   cancelReplayLoad();
   if (next !== "lab" && labPpoWorker) stopLabPpo("Update stopped. Completed checkpoints are retained.");
   const nextWorld = worlds[next] ?? new World(world.config, next);
+  const graphicsChanged = hasMetroGraphics(world) !== hasMetroGraphics(nextWorld);
   const sceneTransition = next !== environment;
   if (sceneTransition) {
     rememberPackPractice(world);
@@ -446,6 +456,11 @@ function activate(next) {
   phone?.reset();
   environment = next;
   world = worlds[next] = nextWorld;
+  graphics.show(hasMetroGraphics(world));
+  if (graphicsChanged) {
+    metroReflections.clear();
+    resize();
+  }
   senseWorld = senseScan = null;
   senseForecasts = [];
   if (next !== "metro") cityPerception?.show(false);
@@ -762,14 +777,27 @@ function prewarmSceneShaders(scene, activeView) {
     }
   }
 }
+const graphics = mountGraphicsSettings(document, {
+  lowPower: isIntegratedApu,
+  supportsLiveReflections,
+  onChange(next, current) {
+    if (hasMetroGraphics(world) && next.renderScale !== current.renderScale) resize();
+  },
+});
 function resize() {
   const bounds = renderer.domElement.getBoundingClientRect();
   viewportWidth = Math.round(bounds.width);
   viewportHeight = Math.round(bounds.height);
-  const pixelRatio = Math.min(
+  const nativeRatio = Math.min(
     Math.round(devicePixelRatio * 1000) / 1000,
     isIntegratedApu ? 1.0 : 1.5,
   );
+  const width = Math.max(1, viewportWidth), height = Math.max(1, viewportHeight);
+  const pixelRatio = hasMetroGraphics(world)
+    ? Math.min(nativeRatio * graphics.value.renderScale / 100, 2,
+      maxDisplayEdge / Math.max(width, height), maxViewport[0] / width, maxViewport[1] / height,
+      Math.sqrt(MAX_METRO_DISPLAY_PIXELS / (width * height)))
+    : nativeRatio;
   renderer.setPixelRatio(pixelRatio);
   renderer.setSize(viewportWidth, viewportHeight, false);
   cinematicPost.setSize(viewportWidth, viewportHeight, pixelRatio);
@@ -948,13 +976,23 @@ document.addEventListener("click", event => {
 const isEditing = (target) =>
   ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName);
 addEventListener("keydown", (event) => {
+  const inSettings = event.target.closest?.("#settingsPanel:not([hidden]):not([data-pako-workspace])");
+  const openTools = event.target.closest?.("#cityTools[open]");
   if (event.code === "Escape") {
-    $("settingsPanel").hidden = true;
-    $("settingsBtn").setAttribute("aria-expanded", "false");
+    if (inSettings) {
+      closeSettingsFromDrawer();
+      return;
+    }
+    if (openTools) {
+      openTools.open = false;
+      openTools.querySelector("summary").focus();
+      return;
+    }
+    settingsOpen(false);
     $("inspectorPanel").hidden = true;
     $("inspectorBtn").setAttribute("aria-expanded", "false");
   }
-  if (isEditing(event.target)) return;
+  if (inSettings || openTools || isEditing(event.target)) return;
   if (event.code === "Space" && event.target.closest?.("button, summary, a[href]")) return;
   if (
     ["Space", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(
@@ -1129,10 +1167,21 @@ function settingsOpen(open, pako = false) {
     $("phoneToggleBtn").setAttribute("aria-expanded", "false");
     $("inspectorPanel").hidden = true;
     $("inspectorBtn").setAttribute("aria-expanded", "false");
+    if (!pako) {
+      keys.clear();
+      touchPursuit.clear();
+      const section = $("graphicsSettings");
+      (section.hidden ? $("closeSettings") : section.querySelector("summary")).focus();
+    }
   }
 }
+function closeSettingsFromDrawer() {
+  const pako = $("settingsPanel").hasAttribute("data-pako-workspace");
+  settingsOpen(false);
+  if (!pako) $("cityTools").querySelector("summary").focus();
+}
 $("settingsBtn").onclick = () => settingsOpen($("settingsPanel").hidden);
-$("closeSettings").onclick = () => settingsOpen(false);
+$("closeSettings").onclick = closeSettingsFromDrawer;
 $("cityDriver").onchange = (event) => {
   cityDriver = event.target.value;
   if (world.mode === "auto") requestCityDriver(world);
@@ -2632,7 +2681,7 @@ function frame(time) {
   forward.set(Math.sin(player.rotation.y), 0, Math.cos(player.rotation.y));
   const personRoot = focusedPersonId ? view.roots.get(focusedPersonId)?.root : null;
   const pursuitShot = cinematic && !personRoot && cameraMode === "chase" ? cinematic : null;
-  const grandCityMetro = environment === "metro" && (world.config.cityVersion ?? 0) >= 5;
+  const grandCityMetro = hasMetroGraphics(world);
   const currentImpacts = world.player?.vehicle?.damage?.impactCount ?? 0;
   if (world !== lastImpactWorld) {
     lastImpactWorld = world;
@@ -2883,6 +2932,9 @@ function frame(time) {
       : (fn) => fn();
   if (grandCityMetro) {
     const camDiag = pursuitCamera.diagnostics();
+    const settings = graphics.value;
+    const streetSurfaces = view.streetSurfaces;
+    const baseExposure = renderer.toneMappingExposure;
     const apuBounceRed = isIntegratedApu ? sceneOverlayNodes.bounceRed : null;
     const apuBounceBlue = isIntegratedApu ? sceneOverlayNodes.bounceBlue : null;
     const apuStreetPt = isIntegratedApu ? sceneOverlayNodes.streetPt : null;
@@ -2896,6 +2948,18 @@ function frame(time) {
     if (apuStreetPt) apuStreetPt.visible = false;
     if (apuSculptPt) apuSculptPt.visible = false;
     try {
+      const reflectionPlanes = streetSurfaces?.reflectionPlanes;
+      if (settings.reflections === "live" && supportsLiveReflections && reflectionPlanes?.length) {
+        const reflection = metroReflections.capture(view.scene, camera, reflectionPlanes, time, [
+          view.route, pedestrianForecastView.group, view.crashEffects?.layer,
+          streetSurfaces.fxGroup, rigOverlayNodes?.debugRays, sceneOverlayNodes.pursuitHalos,
+        ]);
+        streetSurfaces.setLiveReflection(reflection);
+      } else {
+        metroReflections.clear();
+      }
+      view.metroMaterialDetail?.setEnabled(settings.detail === "fine");
+      renderer.toneMappingExposure = baseExposure * settings.exposure / 100;
       withChaseSuvCull(() => {
         cinematicPost.render(view.scene, camera, {
           speedNorm: cameraMode === "chase" ? camDiag.speedNorm : Math.min(1, Math.abs(world.player.speed ?? 0) / 19),
@@ -2903,10 +2967,16 @@ function frame(time) {
           impactPulse: cameraImpactPulse,
           timeS: time * 0.001,
           reducedMotion: Boolean(reducedMotion?.matches),
+          color: settings.color,
+          lensEffects: settings.lensEffects,
+          edgeSmoothing: settings.edgeSmoothing,
           enabled: true,
         });
       });
     } finally {
+      renderer.toneMappingExposure = baseExposure;
+      view.metroMaterialDetail?.setEnabled(false);
+      streetSurfaces?.setLiveReflection(null);
       if (apuBounceRed) apuBounceRed.visible = prevRedVis;
       if (apuBounceBlue) apuBounceBlue.visible = prevBlueVis;
       if (apuStreetPt) apuStreetPt.visible = prevStreetPtVis;
@@ -2929,8 +2999,9 @@ function frame(time) {
   if (preview) {
     frontPreviewFrames++;
     const { x, y, width, height } = previewViewport;
+    let activePreviewTarget = frontPreviewTarget;
     if (didVisionCaptureThisFrame && sensorCamera === "front" && visualClient?.previewTexture) {
-      previewBlitMat.map = visualClient.previewTexture;
+      activePreviewTarget = visualClient.previewTarget;
     } else {
       const shadowJustUpdated = lastShadowFrame === renderedFrames - 1;
       const forceFreshPreview =
@@ -2961,8 +3032,8 @@ function frame(time) {
         lastPreviewSensorCam = sensorCamera;
         lastPreviewRenderFrame = renderedFrames;
       }
-      previewBlitMat.map = frontPreviewTarget.texture;
     }
+    previewBlitMat.map = activePreviewTarget.texture;
     renderer.setScissorTest(true);
     renderer.setScissor(x, y, width, height);
     renderer.setViewport(x, y, width, height);
@@ -2971,7 +3042,7 @@ function frame(time) {
     perceptionOverlay.setViewport(previewViewport);
     if (time - lastFrame > 1000) {
       const asyncB64 = sensorCamera === "front" ? visualClient?.latestFrame?.imageJpegBase64 ?? null : null;
-      bridge.sendFrame(previewViewport, asyncB64);
+      bridge.sendFrame(activePreviewTarget, asyncB64);
       lastFrame = time;
     }
     renderer.setScissorTest(false);
@@ -3037,6 +3108,17 @@ window.sim = {
     post: cinematicPost.diagnostics(),
     atmosphere: view?.atmosphereDiagnostics?.() ?? null,
   }),
+  graphicsDiagnostics: () => ({
+    settings: { ...graphics.value },
+    supportsLiveReflections,
+    reflection: metroReflections.diagnostics(),
+  }),
+  readCameraPreviewPixels() {
+    const { width, height } = frontPreviewTarget;
+    const pixels = new Uint8Array(width * height * 4);
+    renderer.readRenderTargetPixels(frontPreviewTarget, 0, 0, width, height, pixels);
+    return { width, height, pixels };
+  },
   cameraFrame(streamId, frameId) {
     return visualClient.getFrame(streamId, frameId);
   },

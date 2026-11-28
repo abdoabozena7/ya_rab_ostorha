@@ -61900,7 +61900,6 @@
       color: 16514042,
       vertexColors: true,
       roughness: 0.24,
-      metalness: 0.05,
       clearcoat: 0.88,
       clearcoatRoughness: 0.12,
       envMapIntensity: 0.88
@@ -61945,29 +61944,23 @@
     const dash = material2("dashboard charcoal", 2764338, { roughness: 0.78 });
     const upholstery = material2("blue-gray seating cloth", 4542036);
     const inserts = material2("weave panels", 7306114);
-    const glass = (label, color, opacity) => ownMaterial(new MeshPhysicalMaterial({
+    const glass = (label, color, { opacity = 1, ...finish } = {}) => ownMaterial(new MeshPhysicalMaterial({
       name: `King Long ${label}`,
       color,
       opacity,
-      transparent: true,
-      depthWrite: false,
+      transparent: opacity < 1,
+      depthWrite: opacity === 1,
       side: FrontSide,
       roughness: 0.09,
-      metalness: 0.12,
-      clearcoat: 0.96,
-      clearcoatRoughness: 0.07,
-      envMapIntensity: 1.05
+      envMapIntensity: 1.05,
+      ...finish
     }));
-    const windshield = glass("smoke windshield", 1450278, 0.66);
-    const frontSideGlass = glass("smoke front side glass", 1384485, 0.74);
-    const privacyGlass = glass("passenger privacy glass", 1054749, 0.84);
-    const hatchGlass = glass("dark hatch glass", 2440003, 0.89);
-    Object.assign(hatchGlass, {
+    const windshield = glass("smoke windshield", 1450278, { opacity: 0.66 });
+    const frontSideGlass = glass("smoke front side glass", 1384485, { opacity: 0.74 });
+    const privacyGlass = glass("passenger privacy glass", 1054749);
+    const hatchGlass = glass("dark hatch glass", 2440003, {
       roughness: 0.4,
-      metalness: 0.02,
       specularIntensity: 0.24,
-      clearcoat: 0.02,
-      clearcoatRoughness: 0.34,
       envMapIntensity: 0.12
     });
     const root = group(null, "player-vehicle");
@@ -62369,7 +62362,7 @@
       const shape2 = panelShape(0, y, 0.848, 95e-4, 0.022, 28e-4);
       return endBand((u, yy) => grilleFace(u, yy, 9e-3), shape2.rows, shape2.limits, false);
     });
-    panel("king-long-satin-grille-slats", merged(grilleSlats), chrome, true);
+    panel("king-long-satin-grille-slats", merged(grilleSlats), satin, true);
     const grilleRibs = [-0.32, -0.16, 0, 0.16, 0.32].map((u) => {
       const shape2 = panelShape(u, 0.92, 0.014, 0.122, 3e-3, 6e-3);
       return endBand((uu, yy) => grilleFace(uu, yy, 7e-3), shape2.rows, shape2.limits, false);
@@ -62380,7 +62373,6 @@
       name: "King Long bumper intake trim",
       color: 16514042,
       roughness: 0.26,
-      metalness: 0.05,
       clearcoat: 0.85,
       clearcoatRoughness: 0.14,
       envMapIntensity: 0.85
@@ -63170,6 +63162,11 @@
       }),
       dark: material2("SUV recesses", 1976612)
     };
+    let rigidCladding = palette2.cladding;
+    if (!matteLabFinish) {
+      rigidCladding = ownMaterial(palette2.cladding.clone());
+      rigidCladding.vertexColors = false;
+    }
     const mesh = (g, m, parent, name, position2) => {
       const part = new Mesh(ownGeometry(g), m);
       part.name = name;
@@ -63280,14 +63277,14 @@
       );
       if (side < 0) section(doors);
       doorRecords[label] = capturePose(doorPivot, [doors], side < 0);
-      box5(chassis, `suv-${label}-sill`, [0.16, 0.12, 1.55], [side * 0.83, 0.34, 0], palette2.cladding);
+      box5(chassis, `suv-${label}-sill`, [0.16, 0.12, 1.55], [side * 0.83, 0.34, 0], rigidCladding);
       box5(chassis, `suv-${label}-step`, [0.18, 0.06, 1.33], [side * 0.83, 0.29, 0], palette2.metal, 0.015);
       const doorCladding = box5(
         chassis,
         `suv-${label}-door-cladding`,
         [0.085, 0.22, 1.45],
         [side * 0.881, 0.56, 0],
-        palette2.cladding
+        rigidCladding
       );
       claddingRecords[label] = capturePose(doorCladding);
       const fenderVent = mesh(
@@ -63333,7 +63330,7 @@
         ];
         mesh(
           archTrimGeometry(arch, side * 0.879),
-          palette2.cladding,
+          rigidCladding,
           chassis,
           `suv-${label}-arch-${axle}`
         );
@@ -67876,6 +67873,63 @@
   }
 
   // src/render/city-props-view.js
+  function createTreeCrownGeometry() {
+    const segments = 10;
+    const rings = [
+      [1.84, 0.69, 0, -0.025, 0.13],
+      [2.29, 1.1, 0.1, 0.018, 0.42],
+      [2.91, 0.77, -0.08, 0.1, 0.73]
+    ];
+    const positions = [], colors3 = [], indices = [];
+    const shade = new Color(3491122), tip = new Color(7636050);
+    const color = new Color();
+    const vertex2 = (x, y, z, tone) => {
+      positions.push(x, y, z);
+      color.copy(shade).lerp(tip, tone);
+      colors3.push(color.r, color.g, color.b);
+    };
+    vertex2(0, 1.67, 0, 0);
+    for (const [height, radius, phase, lean, tone] of rings) {
+      for (let i = 0; i < segments; i++) {
+        const angle = i * (2 * Math.PI / segments) + phase;
+        const lobe = Math.cos(3 * angle + 0.65);
+        const r = radius * (1 + 0.076 * lobe + 0.031 * Math.sin(2 * angle - 0.8));
+        const y = height + 0.04 * Math.cos(2 * angle + 0.3) + 0.022 * lobe;
+        const mottling = 0.075 * Math.sin(3 * angle + 6 * height) + 0.035 * Math.cos(4 * angle);
+        vertex2(lean + r * Math.cos(angle), y, r * Math.sin(angle), tone + mottling);
+      }
+    }
+    const top = 1 + rings.length * segments;
+    vertex2(0.12, 3.17, -0.04, 1);
+    for (let i = 0; i < segments; i++) {
+      const next = (i + 1) % segments;
+      indices.push(0, 1 + i, 1 + next);
+      for (let r = 0; r < rings.length - 1; r++) {
+        const row = 1 + r * segments;
+        indices.push(
+          row + i,
+          row + i + segments,
+          row + next,
+          row + next,
+          row + i + segments,
+          row + next + segments
+        );
+      }
+      indices.push(top, top - segments + next, top - segments + i);
+    }
+    const geometry = new BufferGeometry();
+    geometry.setAttribute("position", new Float32BufferAttribute(positions, 3));
+    geometry.setAttribute("color", new Float32BufferAttribute(colors3, 3));
+    geometry.setIndex(indices);
+    geometry.computeVertexNormals();
+    return geometry;
+  }
+  function treeCrownSeed(id2) {
+    let hash2 = 2166136261;
+    for (let i = 0; i < id2.length; i++) hash2 = Math.imul(hash2 ^ id2.charCodeAt(i), 16777619);
+    hash2 = Math.imul(hash2 ^ hash2 >>> 16, 2146121005);
+    return (hash2 ^ hash2 >>> 15) >>> 0;
+  }
   function createCityPropsView(scene, world2) {
     const root = new Group();
     root.name = "city-solid-reactive-props";
@@ -67888,9 +67942,11 @@
     };
     const bark = material2(5653299), leaf = material2(3425069), stone = material2(8222054);
     const timber = material2(9530437), canvas = material2(7877160), dark = material2(3489084);
+    const foliage = new MeshStandardMaterial({ vertexColors: true, roughness: 0.93 });
+    materials.add(foliage);
     const box5 = new BoxGeometry(1, 1, 1);
     const cylinder = new CylinderGeometry(1, 1, 1, 7);
-    const crown = new ConeGeometry(1, 1, 8);
+    const crown = createTreeCrownGeometry();
     [box5, cylinder, crown].forEach((g) => geometries.add(g));
     const add = (parent, geometry, mat, x, y, z, width, height, length) => {
       const mesh = new Mesh(geometry, mat);
@@ -67912,8 +67968,9 @@
         add(group, cylinder, bark, 0, 1.175 * s, 0, 0.205 * s, 2.35 * s, 0.205 * s);
         moving.position.y = 2.35 * s;
         add(moving, cylinder, bark, 0, s, 0, 0.142 * s, 2 * s, 0.142 * s);
-        add(moving, crown, leaf, 0, 2.42 * s, 0, 1.24 * s, 1.5 * s, 1.24 * s);
-        add(moving, crown, leaf, 0, 2.91 * s, 0, 0.82 * s, 0.52 * s, 0.82 * s);
+        const seed = treeCrownSeed(site.id);
+        const squash = 0.84 + 0.14 * (seed & 255) / 255;
+        add(moving, crown, foliage, 0, 0, 0, s, s, s * squash).rotation.y = (seed >>> 8) * (2 * Math.PI / 16777216);
       } else {
         group.rotation.y = site.heading ?? 0;
         add(group, box5, timber, 0, 0.45, 0, site.width, 0.9, site.length);
@@ -73843,6 +73900,30 @@
       haloGeometry: haloBatch.build()
     };
   }
+  function waterReflectionPlanes(puddles, world2) {
+    const planes = [];
+    for (const zone of puddles) {
+      if (!Number.isFinite(zone?.x) || !Number.isFinite(zone?.z)) continue;
+      const { x, z, cos, sin, halfWidth, halfLength } = zoneExtents(zone);
+      const level = elevAt(world2, x, z);
+      const samples = [
+        [x + cos * halfWidth, z - sin * halfWidth],
+        [x - cos * halfWidth, z + sin * halfWidth],
+        [x + sin * halfLength, z + cos * halfLength],
+        [x - sin * halfLength, z - cos * halfLength]
+      ];
+      if (samples.some(([cx, cz]) => Math.abs(elevAt(world2, cx, cz) - level) > 0.075)) continue;
+      planes.push({
+        id: zone.id,
+        x,
+        z,
+        y: level + WATER_CORE_Y,
+        radius: 1.25 * Math.hypot(halfWidth, halfLength),
+        area: Math.PI * halfWidth * halfLength
+      });
+    }
+    return planes;
+  }
   function shapeZoneGridPoint(uNorm, vNorm, ext, fadeBand = 0.3) {
     if (ext.shape === "ellipse") {
       const ex = uNorm * Math.sqrt(Math.max(0, 1 - 0.5 * vNorm * vNorm));
@@ -74785,29 +74866,42 @@
   }
   function attachFresnelPuddleShader(material2) {
     const uniforms = {
-      uWaveTime: { value: 0 }
+      uWaveTime: { value: 0 },
+      uPuddleLive: { value: 0 },
+      tPuddleReflection: { value: null },
+      uPuddleTextureMatrix: { value: new Matrix4() },
+      uPuddleCaptureTexel: { value: new Vector2() },
+      uPuddlePlaneHeight: { value: 0 }
     };
-    material2.customProgramCacheKey = () => "fresnel-puddle-v1";
+    material2.customProgramCacheKey = () => "fresnel-puddle-live-v2";
     material2.userData.uWaveTime = uniforms.uWaveTime;
     material2.userData.uniforms = uniforms;
     material2.userData.hasFresnelWaterShader = true;
     material2.onBeforeCompile = (shader) => {
-      shader.uniforms.uWaveTime = uniforms.uWaveTime;
+      Object.assign(shader.uniforms, uniforms);
       shader.vertexShader = shader.vertexShader.replace(
         "#include <common>",
-        "#include <common>\nvarying vec2 vPuddleWorldUv;\nvarying float vPuddleCamDist;"
+        "#include <common>\nvarying vec3 vPuddleWorldPosition;\nvarying float vPuddleCamDist;"
       ).replace(
         "#include <project_vertex>",
-        "#include <project_vertex>\nvPuddleWorldUv = ( modelMatrix * vec4( transformed, 1.0 ) ).xz;\nvPuddleCamDist = length( mvPosition.xyz );"
+        "#include <project_vertex>\nvPuddleWorldPosition = ( modelMatrix * vec4( transformed, 1.0 ) ).xyz;\nvPuddleCamDist = length( mvPosition.xyz );"
       );
       shader.fragmentShader = shader.fragmentShader.replace(
         "#include <common>",
-        "#include <common>\nuniform float uWaveTime;\nvarying vec2 vPuddleWorldUv;\nvarying float vPuddleCamDist;"
+        `#include <common>
+        uniform float uWaveTime;
+        uniform float uPuddleLive;
+        uniform sampler2D tPuddleReflection;
+        uniform mat4 uPuddleTextureMatrix;
+        uniform vec2 uPuddleCaptureTexel;
+        uniform float uPuddlePlaneHeight;
+        varying vec3 vPuddleWorldPosition;
+        varying float vPuddleCamDist;`
       ).replace(
         "#include <normal_fragment_maps>",
         `#include <normal_fragment_maps>
-        vec2 wWaveA = vPuddleWorldUv * 1.55 + vec2( uWaveTime * 0.24, uWaveTime * 0.16 );
-        vec2 wWaveB = vPuddleWorldUv * 2.65 + vec2( -uWaveTime * 0.19, uWaveTime * 0.22 );
+        vec2 wWaveA = vPuddleWorldPosition.xz * 1.55 + vec2( uWaveTime * 0.24, uWaveTime * 0.16 );
+        vec2 wWaveB = vPuddleWorldPosition.xz * 2.65 + vec2( -uWaveTime * 0.19, uWaveTime * 0.22 );
         float microDx = sin( wWaveA.x * 6.2831853 + cos( wWaveA.y * 4.712389 ) ) * 0.022
                       + cos( wWaveB.x * 6.2831853 - sin( wWaveB.y * 5.497787 ) ) * 0.017;
         float microDz = cos( wWaveA.y * 6.2831853 - sin( wWaveA.x * 4.712389 ) ) * 0.022
@@ -74828,7 +74922,31 @@
         vec3 absorbedBed = mix( deepRainwaterAbsorption, totalDiffuse * 0.14, 0.22 ) * ( 1.0 - 0.78 * puddleFresnel );
         vec3 clampedEnvSpec = min( totalSpecular * mix( 0.32, 1.0, puddleFresnel ), vec3( 0.20, 0.23, 0.27 ) ) * mix( 0.22, 1.0, nearSheenMask );
         vec3 twilightFresnelTint = skyZenithHdr * puddleFresnel * mix( 0.20, 1.0, nearSheenMask );
-        outgoingLight = absorbedBed + clampedEnvSpec + twilightFresnelTint + totalEmissiveRadiance;
+        vec3 reflection = clampedEnvSpec + twilightFresnelTint;
+        if ( uPuddleLive > 0.5 ) {
+          float planeMatch = 1.0 - smoothstep( 0.025, 0.10, abs( vPuddleWorldPosition.y - uPuddlePlaneHeight ) );
+          if ( planeMatch * nearSheenMask > 0.001 ) {
+            vec3 planePoint = vec3( vPuddleWorldPosition.x, uPuddlePlaneHeight, vPuddleWorldPosition.z );
+            vec4 stq = uPuddleTextureMatrix * vec4( planePoint, 1.0 );
+            if ( stq.w > 0.0 ) {
+              vec2 uv = stq.xy / stq.w + vec2( microDx, microDz ) * 0.12;
+              vec2 border = min( uv, vec2( 1.0 ) - uv );
+              float captureFade = smoothstep( 0.002, 0.035, min( border.x, border.y ) );
+              if ( captureFade > 0.0 ) {
+                vec2 tap = uPuddleCaptureTexel * ( 0.6 + 24.0 * roughnessFactor );
+                vec3 mirror = texture2D( tPuddleReflection, uv ).rgb * 0.40;
+                mirror += texture2D( tPuddleReflection, uv + vec2( tap.x, 0.0 ) ).rgb * 0.15;
+                mirror += texture2D( tPuddleReflection, uv - vec2( tap.x, 0.0 ) ).rgb * 0.15;
+                mirror += texture2D( tPuddleReflection, uv + vec2( 0.0, tap.y ) ).rgb * 0.15;
+                mirror += texture2D( tPuddleReflection, uv - vec2( 0.0, tap.y ) ).rgb * 0.15;
+                float waterFresnel = 0.0204 + 0.9796 * pow( 1.0 - waveNdotV, 5.0 );
+                reflection = mix( reflection, mirror * waterFresnel + reflectedLight.directSpecular,
+                  planeMatch * captureFade * nearSheenMask );
+              }
+            }
+          }
+        }
+        outgoingLight = absorbedBed + reflection + totalEmissiveRadiance;
         diffuseColor.a = mix( 0.56, 0.88, puddleFresnel ) * puddleEdgeMask;
         #include <output_fragment>`
       );
@@ -75349,6 +75467,12 @@
         get sandGrit() {
           return promoted?.sandGrit ?? null;
         },
+        get reflectionPlanes() {
+          return promoted?.reflectionPlanes;
+        },
+        setLiveReflection(sample) {
+          promoted?.setLiveReflection(sample);
+        },
         resolveSurfaceAt(x, z, liveWorld = world2) {
           const p = maybePromote(liveWorld);
           return p ? p.resolveSurfaceAt(x, z, liveWorld) : resolveSurfaceAt(x, z, liveWorld);
@@ -75434,6 +75558,15 @@
       })
     );
     const waterUniforms = attachFresnelPuddleShader(waterMaterial);
+    let reflectionPlanes = waterReflectionPlanes(waterPuddles, world2);
+    function setLiveReflection(sample) {
+      waterUniforms.uPuddleLive.value = sample ? 1 : 0;
+      waterUniforms.tPuddleReflection.value = sample?.texture ?? null;
+      if (!sample) return;
+      waterUniforms.uPuddleTextureMatrix.value.copy(sample.matrix);
+      waterUniforms.uPuddleCaptureTexel.value.copy(sample.texelSize);
+      waterUniforms.uPuddlePlaneHeight.value = sample.planeY;
+    }
     const haloMaps = createWaterHaloTextures(trackTex);
     const waterHaloMaterial = trackMat(
       new MeshStandardMaterial({
@@ -75562,6 +75695,7 @@
         const { coreGeometry, haloGeometry } = wArr.length > 0 ? buildWaterPuddleGeometries(wArr, liveWorld) : { coreGeometry: null, haloGeometry: null };
         waterHaloSurfaceMesh = replaceSurfaceMeshGeometry(waterHaloSurfaceMesh, haloGeometry, waterHaloMaterial, "street-water-halos", 1);
         waterCoreSurfaceMesh = replaceSurfaceMeshGeometry(waterCoreSurfaceMesh, coreGeometry, waterMaterial, "street-water-puddles", 2);
+        reflectionPlanes = waterReflectionPlanes(wArr, liveWorld);
         indexedWaterSnap = snapshotViewZones(terrain.waterPuddles);
       }
       if (sandChanged) {
@@ -77110,6 +77244,10 @@
       sandTireRuts: sandRutBuffer.mesh,
       sandDust: sandDustMesh,
       sandGrit: sandGritMesh,
+      get reflectionPlanes() {
+        return reflectionPlanes;
+      },
+      setLiveReflection,
       resolveSurfaceAt,
       setSensorCleanMode,
       setPreviewThumbnailMode,
@@ -77117,6 +77255,96 @@
       diagnostics,
       reset: reset2,
       dispose
+    };
+  }
+
+  // src/render/metro-material-detail.js
+  var DETAIL_TEXTURE_SIZE = 128;
+  function noise(x, y, period) {
+    const hash2 = (i, j) => {
+      const h = Math.imul(i % period + 17, 374761393) ^ Math.imul(j % period + 29, 668265263);
+      return (Math.imul(h ^ h >>> 13, 1274126177) >>> 8 & 16777215) / 16777215;
+    };
+    const ix = Math.floor(x), iy = Math.floor(y);
+    const fx = x - ix, fy = y - iy;
+    const sx = fx * fx * (3 - 2 * fx), sy = fy * fy * (3 - 2 * fy);
+    const a = MathUtils.lerp(hash2(ix, iy), hash2(ix + 1, iy), sx);
+    const b = MathUtils.lerp(hash2(ix, iy + 1), hash2(ix + 1, iy + 1), sx);
+    return MathUtils.lerp(a, b, sy);
+  }
+  function makeDetailTexture() {
+    const size = DETAIL_TEXTURE_SIZE;
+    const data = new Uint8Array(size * size * 4);
+    for (let y = 0; y < size; y++) for (let x = 0; x < size; x++) {
+      const i = (y * size + x) * 4;
+      data[i] = Math.round(255 * (0.65 * noise(x, y, size) + 0.35 * noise(x / 4, y / 4, 32)));
+      data[i + 1] = Math.round(255 * (0.66 * noise(x / 16, y / 16, 8) + 0.34 * noise(x / 4, y / 4, 32)));
+      data[i + 2] = 0;
+      data[i + 3] = 255;
+    }
+    const texture = new DataTexture(data, size, size);
+    texture.name = "metro-mineral-and-grit-detail";
+    texture.wrapS = texture.wrapT = RepeatWrapping;
+    texture.minFilter = LinearMipmapLinearFilter;
+    texture.magFilter = LinearFilter;
+    texture.generateMipmaps = true;
+    texture.needsUpdate = true;
+    return texture;
+  }
+  function createMetroMaterialDetail() {
+    let texture;
+    const enabled = { value: 0 };
+    function apply(material2, vertical = false) {
+      texture ??= makeDetailTexture();
+      const originalCompile = material2.onBeforeCompile;
+      const originalKey = material2.customProgramCacheKey();
+      material2.customProgramCacheKey = () => `${originalKey}:metro-material-detail:${vertical ? "wall" : "ground"}`;
+      material2.onBeforeCompile = function(shader, renderer2) {
+        originalCompile.call(this, shader, renderer2);
+        shader.uniforms.uMetroDetail = enabled;
+        shader.uniforms.tMetroDetail = { value: texture };
+        shader.vertexShader = shader.vertexShader.replace("#include <common>", "#include <common>\nvarying vec3 vMetroDetailWorld;").replace("#include <project_vertex>", `#include <project_vertex>
+          vMetroDetailWorld = ( modelMatrix * vec4( transformed, 1.0 ) ).xyz;`);
+        shader.fragmentShader = shader.fragmentShader.replace("#include <common>", `#include <common>
+          varying vec3 vMetroDetailWorld;
+          uniform sampler2D tMetroDetail;
+          uniform float uMetroDetail;`).replace("#include <normal_fragment_maps>", `#include <normal_fragment_maps>
+          if ( uMetroDetail > 0.5 ) {
+            float detailDistance = length( vViewPosition );
+            vec2 detailUv = vMetroDetailWorld.xz;
+            ${vertical ? `
+              vec3 wallNormal = inverseTransformDirection( geometryNormal, viewMatrix );
+              vec2 wallTangent = wallNormal.zx * vec2( 1.0, -1.0 );
+              vec2 wallUv = vec2( dot( detailUv, wallTangent ), vMetroDetailWorld.y );
+              // Keep the weathering repeat off the facade's panel grid.
+              detailUv = mat2( 0.94, 0.34, -0.34, 0.94 ) * wallUv;
+            ` : ""}
+            float mineral = texture2D( tMetroDetail, detailUv * ${vertical ? "vec2( 0.18, 0.12 )" : "0.31"} ).g;
+            vec2 grainUv = detailUv * 1.4;
+            // Oblique surfaces can minify grit even close to the camera.
+            vec2 grainFootprint = fwidth( grainUv ) * ${DETAIL_TEXTURE_SIZE}.0;
+            float projectedGrain = 1.0 - smoothstep( 1.0, 5.0, max( grainFootprint.x, grainFootprint.y ) );
+            float nearGrain = 1.0 - smoothstep( 10.0, 40.0, detailDistance );
+            float grain = ( texture2D( tMetroDetail, grainUv ).r - 0.5 ) * nearGrain * projectedGrain;
+            float patchFade = 1.0 - smoothstep( 45.0, 130.0, detailDistance );
+            float weather = smoothstep( 0.43, 0.81, mineral );
+            ${vertical ? "weather *= mix( 1.0, 0.62, smoothstep( 0.4, 3.4, vMetroDetailWorld.y ) );" : ""}
+            vec3 stain = ${vertical ? "vec3( 0.70, 0.65, 0.58 )" : "vec3( 0.78, 0.80, 0.83 )"};
+            diffuseColor.rgb *= mix( vec3( 1.0 ), stain, weather * patchFade ) *
+              ( 1.0 + grain * ${vertical ? "0.14" : "0.08"} );
+            roughnessFactor = clamp( roughnessFactor + weather * patchFade * 0.10 + grain * 0.11, 0.08, 1.0 );
+          }`);
+      };
+      material2.needsUpdate = true;
+    }
+    return {
+      apply,
+      setEnabled(value) {
+        enabled.value = value ? 1 : 0;
+      },
+      dispose() {
+        texture?.dispose();
+      }
     };
   }
 
@@ -78361,15 +78589,15 @@
   }
   function surfaceRoughness(smooth2, coarse) {
     const size = 128, data = new Uint8Array(size * size * 4);
-    const noise = (x, z) => detailNoise(x & 7, z & 7);
+    const noise2 = (x, z) => detailNoise(x & 7, z & 7);
     for (let z = 0; z < size; z++) for (let x = 0; x < size; x++) {
       const grain = detailNoise(x, z);
       const u = x / 16, v3 = z / 16, ix = Math.floor(u), iz = Math.floor(v3);
       const fx = u - ix, fz = v3 - iz;
       const sx = fx * fx * (3 - 2 * fx), sz = fz * fz * (3 - 2 * fz);
       const patches = MathUtils.lerp(
-        MathUtils.lerp(noise(ix, iz), noise(ix + 1, iz), sx),
-        MathUtils.lerp(noise(ix, iz + 1), noise(ix + 1, iz + 1), sx),
+        MathUtils.lerp(noise2(ix, iz), noise2(ix + 1, iz), sx),
+        MathUtils.lerp(noise2(ix, iz + 1), noise2(ix + 1, iz + 1), sx),
         sz
       );
       const value = Math.round(255 * MathUtils.lerp(smooth2, coarse, 0.75 * patches + 0.25 * grain));
@@ -79107,6 +79335,7 @@
       this.trafficBatches = world2.environment === "egypt" ? new TrafficBatches(scene) : null;
       const grandCity = (world2.config?.cityVersion ?? 0) >= 5;
       this.grandCity = grandCity;
+      this.metroMaterialDetail = this.metro && grandCity ? createMetroMaterialDetail() : null;
       this.sunOffset = grandCity ? SUN_OFFSET_V5 : SUN_OFFSET;
       this.sunRight = grandCity ? SUN_RIGHT_V5 : SUN_RIGHT;
       this.sunUp = grandCity ? SUN_UP_V5 : SUN_UP;
@@ -79386,7 +79615,8 @@
         mesh.material.roughness = 0.92;
         mesh.material.metalness = 0.04;
         mesh.material.envMapIntensity = 0.56;
-        mesh.material.needsUpdate = true;
+        if (this.metroMaterialDetail) this.metroMaterialDetail.apply(mesh.material);
+        else mesh.material.needsUpdate = true;
       }
       for (const mesh of this.surfaces.pavement) {
         const isRetaining = mesh.name === "road-retaining-walls";
@@ -79398,7 +79628,8 @@
         mesh.material.roughness = 0.94;
         mesh.material.metalness = 0.02;
         mesh.material.envMapIntensity = 0.48;
-        mesh.material.needsUpdate = true;
+        if (this.metroMaterialDetail) this.metroMaterialDetail.apply(mesh.material, isRetaining);
+        else mesh.material.needsUpdate = true;
       }
     }
     async loadSurfaces() {
@@ -79946,7 +80177,8 @@
               if (material2?.name !== "egypt-authored-facade-atlas" || this.reliefMaterials.has(material2)) return;
               material2.bumpMap = material2.roughnessMap = this.facadeRelief;
               material2.bumpScale = 0.035;
-              material2.needsUpdate = true;
+              if (this.metroMaterialDetail) this.metroMaterialDetail.apply(material2, true);
+              else material2.needsUpdate = true;
               this.reliefMaterials.add(material2);
             });
           }
@@ -80556,6 +80788,7 @@
       this.scene.remove(this.egyptStreets.root);
       this.egyptStreets.dispose();
       this.facadeRelief?.dispose();
+      this.metroMaterialDetail?.dispose();
       if (this.metro) {
         this.sun.shadow.dispose();
         for (const [id2, record] of this.roots)
@@ -81067,6 +81300,9 @@ uniform float uFringe;
 uniform vec2 uCenter;
 uniform float uTime;
 uniform float uLinearInput;
+uniform float uFilmGrade;
+uniform float uEdgeSmoothing;
+uniform vec2 uTexelSize;
 
 varying vec2 vUv;
 
@@ -81112,14 +81348,55 @@ float evaluateFilmicToneScalar(float v) {
   return clamp(curved, 0.0, 1.0);
 }
 
+float edgeLuma(vec3 color) {
+  float luma = clamp(dot(color, LUMA_WEIGHTS), 0.0, 1.0);
+  return uLinearInput > 0.5 ? sqrt(luma) : luma;
+}
+
+vec2 edgeSmoothingOffset(vec2 uv, vec3 center) {
+  vec2 dx = vec2(uTexelSize.x, 0.0);
+  vec2 dy = vec2(0.0, uTexelSize.y);
+  float mid = edgeLuma(center);
+  float left = edgeLuma(texture2D(tDiffuse, uv - dx).rgb);
+  float right = edgeLuma(texture2D(tDiffuse, uv + dx).rgb);
+  float bottom = edgeLuma(texture2D(tDiffuse, uv - dy).rgb);
+  float top = edgeLuma(texture2D(tDiffuse, uv + dy).rgb);
+  float low = min(mid, min(min(left, right), min(bottom, top)));
+  float high = max(mid, max(max(left, right), max(bottom, top)));
+  float contrast = high - low;
+  if (contrast < max(0.0312, high * 0.125)) return vec2(0.0);
+
+  vec2 gradient = vec2(right - left, top - bottom);
+  vec2 strength = abs(gradient);
+  float major = max(strength.x, strength.y);
+  float minor = min(strength.x, strength.y);
+  if (minor <= 1e-5) return vec2(0.0);
+
+  // Soften stair steps rather than straight edges, by shifting at most half a texel.
+  float diagonal = min(1.0, 2.0 * minor / major);
+  float bias = (left + right + bottom + top) * 0.25 - mid;
+  float subpixel = smoothstep(0.0, 0.5, abs(bias) / contrast);
+  vec2 direction = strength.x >= strength.y
+    ? vec2(sign(gradient.x * bias), 0.0)
+    : vec2(0.0, sign(gradient.y * bias));
+  return direction * uTexelSize * (0.5 * diagonal * subpixel);
+}
+
 vec3 sampleSceneRadial(vec2 uv) {
   vec2 radialVec = uCenter - uv;
   float radialDist = length(radialVec);
   float edgeWeight = smoothstep(0.30, 0.96, radialDist);
   float streakAmt = uStreak * edgeWeight;
   float fringeAmt = uFringe * edgeWeight;
+  bool noLensShift = streakAmt <= 1e-5 && fringeAmt <= 1e-5;
 
-  if (streakAmt <= 1e-5 && fringeAmt <= 1e-5) {
+  if (uEdgeSmoothing > 0.5) {
+    vec3 center = texture2D(tDiffuse, uv).rgb;
+    vec2 offset = edgeSmoothingOffset(uv, center);
+    if (noLensShift && offset == vec2(0.0)) return center;
+    uv += offset;
+  }
+  if (noLensShift) {
     return texture2D(tDiffuse, uv).rgb;
   }
 
@@ -81149,6 +81426,10 @@ vec3 sampleSceneRadial(vec2 uv) {
 void main() {
   vec3 rawSample = sampleSceneRadial(vUv);
   vec3 col = uLinearInput > 0.5 ? linearToSrgbSafe(rawSample) : clamp(rawSample, 0.0, 1.0);
+  if (uFilmGrade < 0.5) {
+    gl_FragColor = vec4(col, 1.0);
+    return;
+  }
   // Preserve white-hot additive sparks (sRGB > 0.96) across film exposure & shoulder roll-off
   float incandescentSpark = smoothstep(0.96, 0.999, col.r) * smoothstep(0.86, 0.995, col.g);
 
@@ -81243,7 +81524,10 @@ void main() {
       uFringe: { value: 0 },
       uCenter: { value: new Vector2(0.5, 0.52) },
       uTime: { value: 0 },
-      uLinearInput: { value: outputColorSpace === SRGBColorSpace ? 1 : 0 }
+      uLinearInput: { value: outputColorSpace === SRGBColorSpace ? 1 : 0 },
+      uFilmGrade: { value: 1 },
+      uEdgeSmoothing: { value: 0 },
+      uTexelSize: { value: new Vector2(1 / width, 1 / height) }
     };
     const material2 = new ShaderMaterial({
       name: "CinematicPostGradeMaterial",
@@ -81281,7 +81565,8 @@ void main() {
       impactPulse: 0,
       timeS: 0,
       reducedMotion: false,
-      enabled
+      enabled,
+      edgeSmoothing: false
     };
     function setSize(nextWidthCss, nextHeightCss, pixelRatio = 1) {
       if (disposed) return;
@@ -81293,6 +81578,7 @@ void main() {
       height = nextH;
       target2.setSize(width, height);
       uniforms.tDiffuse.value = target2.texture;
+      uniforms.uTexelSize.value.set(1 / width, 1 / height);
     }
     function measureSceneRender(scene, camera2) {
       const renderInfo = renderer2?.info?.render;
@@ -81313,6 +81599,9 @@ void main() {
       const turnNorm = clamp8(Number.isFinite(state.turnNorm) ? state.turnNorm : 0, -1, 1);
       const impactPulse = clamp8(Number.isFinite(state.impactPulse) ? state.impactPulse : 0, 0, 1);
       const timeS = Number.isFinite(state.timeS) ? state.timeS : 0;
+      const naturalColor = state.color === "natural";
+      const lensEffects = !reducedMotion2 && state.lensEffects !== false;
+      const edgeSmoothing = state.edgeSmoothing === true;
       enabled = nextEnabled;
       lastState = {
         speedNorm,
@@ -81320,12 +81609,17 @@ void main() {
         impactPulse,
         timeS,
         reducedMotion: reducedMotion2,
-        enabled
+        enabled,
+        color: naturalColor ? "natural" : "cinematic",
+        lensEffects,
+        edgeSmoothing
       };
       const speedRamp = smoothstep5(0.18, 1, speedNorm);
-      uniforms.uStreak.value = reducedMotion2 ? 0 : gradeConfig.maxSpeedStreak * speedRamp;
-      uniforms.uGrain.value = reducedMotion2 ? 0 : gradeConfig.grain;
-      uniforms.uFringe.value = reducedMotion2 ? 0 : gradeConfig.maxChromaticFringe * clamp8(speedNorm * 0.75 + impactPulse * 0.85, 0, 1.5);
+      uniforms.uStreak.value = lensEffects ? gradeConfig.maxSpeedStreak * speedRamp : 0;
+      uniforms.uGrain.value = lensEffects && !naturalColor ? gradeConfig.grain : 0;
+      uniforms.uFringe.value = lensEffects ? gradeConfig.maxChromaticFringe * clamp8(speedNorm * 0.75 + impactPulse * 0.85, 0, 1.5) : 0;
+      uniforms.uFilmGrade.value = naturalColor ? 0 : 1;
+      uniforms.uEdgeSmoothing.value = edgeSmoothing ? 1 : 0;
       uniforms.uCenter.value.set(0.5 + turnNorm * 0.06, 0.52);
       uniforms.uTime.value = timeS;
       uniforms.uLinearInput.value = (renderer2?.outputColorSpace ?? SRGBColorSpace) === SRGBColorSpace ? 1 : 0;
@@ -81387,6 +81681,327 @@ void main() {
       target: target2,
       material: material2,
       uniforms
+    };
+  }
+
+  // node_modules/three/examples/jsm/objects/Reflector.js
+  var Reflector = class _Reflector extends Mesh {
+    constructor(geometry, options2 = {}) {
+      super(geometry);
+      this.isReflector = true;
+      this.type = "Reflector";
+      this.camera = new PerspectiveCamera();
+      const scope = this;
+      const color = options2.color !== void 0 ? new Color(options2.color) : new Color(8355711);
+      const textureWidth = options2.textureWidth || 512;
+      const textureHeight = options2.textureHeight || 512;
+      const clipBias = options2.clipBias || 0;
+      const shader = options2.shader || _Reflector.ReflectorShader;
+      const multisample = options2.multisample !== void 0 ? options2.multisample : 4;
+      const reflectorPlane = new Plane();
+      const normal2 = new Vector3();
+      const reflectorWorldPosition = new Vector3();
+      const cameraWorldPosition = new Vector3();
+      const rotationMatrix = new Matrix4();
+      const lookAtPosition = new Vector3(0, 0, -1);
+      const clipPlane = new Vector4();
+      const view2 = new Vector3();
+      const target2 = new Vector3();
+      const q = new Vector4();
+      const textureMatrix = new Matrix4();
+      const virtualCamera = this.camera;
+      const renderTarget = new WebGLRenderTarget(textureWidth, textureHeight, { samples: multisample, type: HalfFloatType });
+      const material2 = new ShaderMaterial({
+        uniforms: UniformsUtils.clone(shader.uniforms),
+        fragmentShader: shader.fragmentShader,
+        vertexShader: shader.vertexShader
+      });
+      material2.uniforms["tDiffuse"].value = renderTarget.texture;
+      material2.uniforms["color"].value = color;
+      material2.uniforms["textureMatrix"].value = textureMatrix;
+      this.material = material2;
+      this.onBeforeRender = function(renderer2, scene, camera2) {
+        reflectorWorldPosition.setFromMatrixPosition(scope.matrixWorld);
+        cameraWorldPosition.setFromMatrixPosition(camera2.matrixWorld);
+        rotationMatrix.extractRotation(scope.matrixWorld);
+        normal2.set(0, 0, 1);
+        normal2.applyMatrix4(rotationMatrix);
+        view2.subVectors(reflectorWorldPosition, cameraWorldPosition);
+        if (view2.dot(normal2) > 0) return;
+        view2.reflect(normal2).negate();
+        view2.add(reflectorWorldPosition);
+        rotationMatrix.extractRotation(camera2.matrixWorld);
+        lookAtPosition.set(0, 0, -1);
+        lookAtPosition.applyMatrix4(rotationMatrix);
+        lookAtPosition.add(cameraWorldPosition);
+        target2.subVectors(reflectorWorldPosition, lookAtPosition);
+        target2.reflect(normal2).negate();
+        target2.add(reflectorWorldPosition);
+        virtualCamera.position.copy(view2);
+        virtualCamera.up.set(0, 1, 0);
+        virtualCamera.up.applyMatrix4(rotationMatrix);
+        virtualCamera.up.reflect(normal2);
+        virtualCamera.lookAt(target2);
+        virtualCamera.far = camera2.far;
+        virtualCamera.updateMatrixWorld();
+        virtualCamera.projectionMatrix.copy(camera2.projectionMatrix);
+        textureMatrix.set(
+          0.5,
+          0,
+          0,
+          0.5,
+          0,
+          0.5,
+          0,
+          0.5,
+          0,
+          0,
+          0.5,
+          0.5,
+          0,
+          0,
+          0,
+          1
+        );
+        textureMatrix.multiply(virtualCamera.projectionMatrix);
+        textureMatrix.multiply(virtualCamera.matrixWorldInverse);
+        textureMatrix.multiply(scope.matrixWorld);
+        reflectorPlane.setFromNormalAndCoplanarPoint(normal2, reflectorWorldPosition);
+        reflectorPlane.applyMatrix4(virtualCamera.matrixWorldInverse);
+        clipPlane.set(reflectorPlane.normal.x, reflectorPlane.normal.y, reflectorPlane.normal.z, reflectorPlane.constant);
+        const projectionMatrix = virtualCamera.projectionMatrix;
+        q.x = (Math.sign(clipPlane.x) + projectionMatrix.elements[8]) / projectionMatrix.elements[0];
+        q.y = (Math.sign(clipPlane.y) + projectionMatrix.elements[9]) / projectionMatrix.elements[5];
+        q.z = -1;
+        q.w = (1 + projectionMatrix.elements[10]) / projectionMatrix.elements[14];
+        clipPlane.multiplyScalar(2 / clipPlane.dot(q));
+        projectionMatrix.elements[2] = clipPlane.x;
+        projectionMatrix.elements[6] = clipPlane.y;
+        projectionMatrix.elements[10] = clipPlane.z + 1 - clipBias;
+        projectionMatrix.elements[14] = clipPlane.w;
+        scope.visible = false;
+        const currentRenderTarget = renderer2.getRenderTarget();
+        const currentXrEnabled = renderer2.xr.enabled;
+        const currentShadowAutoUpdate = renderer2.shadowMap.autoUpdate;
+        const currentOutputColorSpace = renderer2.outputColorSpace;
+        const currentToneMapping = renderer2.toneMapping;
+        renderer2.xr.enabled = false;
+        renderer2.shadowMap.autoUpdate = false;
+        renderer2.outputColorSpace = LinearSRGBColorSpace;
+        renderer2.toneMapping = NoToneMapping;
+        renderer2.setRenderTarget(renderTarget);
+        renderer2.state.buffers.depth.setMask(true);
+        if (renderer2.autoClear === false) renderer2.clear();
+        renderer2.render(scene, virtualCamera);
+        renderer2.xr.enabled = currentXrEnabled;
+        renderer2.shadowMap.autoUpdate = currentShadowAutoUpdate;
+        renderer2.outputColorSpace = currentOutputColorSpace;
+        renderer2.toneMapping = currentToneMapping;
+        renderer2.setRenderTarget(currentRenderTarget);
+        const viewport = camera2.viewport;
+        if (viewport !== void 0) {
+          renderer2.state.viewport(viewport);
+        }
+        scope.visible = true;
+      };
+      this.getRenderTarget = function() {
+        return renderTarget;
+      };
+      this.dispose = function() {
+        renderTarget.dispose();
+        scope.material.dispose();
+      };
+    }
+  };
+  Reflector.ReflectorShader = {
+    uniforms: {
+      "color": {
+        value: null
+      },
+      "tDiffuse": {
+        value: null
+      },
+      "textureMatrix": {
+        value: null
+      }
+    },
+    vertexShader: (
+      /* glsl */
+      `
+		uniform mat4 textureMatrix;
+		varying vec4 vUv;
+
+		#include <common>
+		#include <logdepthbuf_pars_vertex>
+
+		void main() {
+
+			vUv = textureMatrix * vec4( position, 1.0 );
+
+			gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+
+			#include <logdepthbuf_vertex>
+
+		}`
+    ),
+    fragmentShader: (
+      /* glsl */
+      `
+		uniform vec3 color;
+		uniform sampler2D tDiffuse;
+		varying vec4 vUv;
+
+		#include <logdepthbuf_pars_fragment>
+
+		float blendOverlay( float base, float blend ) {
+
+			return( base < 0.5 ? ( 2.0 * base * blend ) : ( 1.0 - 2.0 * ( 1.0 - base ) * ( 1.0 - blend ) ) );
+
+		}
+
+		vec3 blendOverlay( vec3 base, vec3 blend ) {
+
+			return vec3( blendOverlay( base.r, blend.r ), blendOverlay( base.g, blend.g ), blendOverlay( base.b, blend.b ) );
+
+		}
+
+		void main() {
+
+			#include <logdepthbuf_fragment>
+
+			vec4 base = texture2DProj( tDiffuse, vUv );
+			gl_FragColor = vec4( blendOverlay( base.rgb, color ), 1.0 );
+
+			#include <tonemapping_fragment>
+			#include <encodings_fragment>
+
+		}`
+    )
+  };
+
+  // src/render/metro-planar-reflections.js
+  var CAPTURE_INTERVAL_MS = 84;
+  var MAX_CAPTURE_EDGE = 640;
+  var MAX_PUDDLE_DISTANCE_M = 64;
+  var PLANE_SWITCH_SCORE_RATIO = 1.15;
+  var MAX_CAPTURE_SCALE_DRIFT = 0.1;
+  function pickReflectionPlane(planes, eye, frustum, sphere, incumbent = null) {
+    let best = null, bestScore = 0, incumbentScore = 0;
+    for (const plane of planes) {
+      const height = eye.y - plane.y;
+      if (height <= 0.08) continue;
+      sphere.center.set(plane.x, plane.y, plane.z);
+      sphere.radius = plane.radius;
+      const distanceSq = eye.distanceToSquared(sphere.center);
+      if (distanceSq > (MAX_PUDDLE_DISTANCE_M + plane.radius) ** 2 || !frustum.intersectsSphere(sphere)) continue;
+      const score2 = plane.area * Math.min(height / Math.sqrt(distanceSq), 1) / Math.max(distanceSq, 1);
+      if (plane === incumbent) incumbentScore = score2;
+      if (score2 <= bestScore) continue;
+      best = plane;
+      bestScore = score2;
+    }
+    return incumbentScore > 0 && bestScore <= incumbentScore * PLANE_SWITCH_SCORE_RATIO ? incumbent : best;
+  }
+  function createMetroPlanarReflections(renderer2) {
+    const frustum = new Frustum();
+    const sphere = new Sphere();
+    const viewProjection = new Matrix4();
+    const inversePlane = new Matrix4();
+    const eye = new Vector3();
+    const captureEye = new Vector3();
+    const heading2 = new Quaternion();
+    const captureHeading = new Quaternion();
+    const viewport = new Vector4();
+    const scissor = new Vector4();
+    const sample = {
+      texture: null,
+      matrix: new Matrix4(),
+      texelSize: new Vector2(),
+      planeY: 0
+    };
+    let reflector, lastScene, lastPlane, capturedAt = -Infinity;
+    let captureProjectionScale = 0;
+    let captures = 0;
+    function clear() {
+      lastScene = lastPlane = null;
+    }
+    function capture(scene, camera2, planes, timeMs, excluded) {
+      camera2.updateMatrixWorld();
+      viewProjection.multiplyMatrices(camera2.projectionMatrix, camera2.matrixWorldInverse);
+      frustum.setFromProjectionMatrix(viewProjection);
+      eye.setFromMatrixPosition(camera2.matrixWorld);
+      const plane = pickReflectionPlane(planes, eye, frustum, sphere, scene === lastScene ? lastPlane : null);
+      if (!plane) {
+        clear();
+        return null;
+      }
+      heading2.setFromRotationMatrix(camera2.matrixWorld);
+      const projectionScale = camera2.projectionMatrix.elements[5];
+      const width = Math.max(1, Math.round(MAX_CAPTURE_EDGE * Math.min(camera2.aspect, 1)));
+      const height = Math.max(1, Math.round(MAX_CAPTURE_EDGE / Math.max(camera2.aspect, 1)));
+      if (!reflector) {
+        reflector = new Reflector(new BufferGeometry(), { clipBias: 5e-4, multisample: 0 });
+        reflector.rotation.x = -Math.PI / 2;
+      }
+      const target2 = reflector.getRenderTarget();
+      const resized = target2.width !== width || target2.height !== height;
+      if (!resized && scene === lastScene && plane === lastPlane && timeMs - capturedAt < CAPTURE_INTERVAL_MS && eye.distanceToSquared(captureEye) < 4 && heading2.angleTo(captureHeading) < 0.13 && Math.abs(projectionScale - captureProjectionScale) < captureProjectionScale * MAX_CAPTURE_SCALE_DRIFT) return sample;
+      if (resized) target2.setSize(width, height);
+      reflector.position.y = plane.y;
+      reflector.updateMatrixWorld();
+      const hidden = excluded.filter((object2) => object2?.visible);
+      const previous = {
+        target: renderer2.getRenderTarget(),
+        cubeFace: renderer2.getActiveCubeFace(),
+        mipLevel: renderer2.getActiveMipmapLevel(),
+        toneMapping: renderer2.toneMapping,
+        outputColorSpace: renderer2.outputColorSpace,
+        xr: renderer2.xr.enabled,
+        shadowAutoUpdate: renderer2.shadowMap.autoUpdate,
+        shadowNeedsUpdate: renderer2.shadowMap.needsUpdate,
+        scissorTest: renderer2.getScissorTest()
+      };
+      renderer2.getViewport(viewport);
+      renderer2.getScissor(scissor);
+      for (const object2 of hidden) object2.visible = false;
+      renderer2.shadowMap.needsUpdate = false;
+      try {
+        reflector.onBeforeRender(renderer2, scene, camera2);
+      } finally {
+        for (const object2 of hidden) object2.visible = true;
+        renderer2.toneMapping = previous.toneMapping;
+        renderer2.outputColorSpace = previous.outputColorSpace;
+        renderer2.xr.enabled = previous.xr;
+        renderer2.shadowMap.autoUpdate = previous.shadowAutoUpdate;
+        renderer2.shadowMap.needsUpdate = previous.shadowNeedsUpdate;
+        renderer2.setRenderTarget(previous.target, previous.cubeFace, previous.mipLevel);
+        if (!previous.target) {
+          renderer2.setViewport(viewport);
+          renderer2.setScissor(scissor);
+          renderer2.setScissorTest(previous.scissorTest);
+        }
+      }
+      sample.texture = target2.texture;
+      inversePlane.copy(reflector.matrixWorld).invert();
+      sample.matrix.multiplyMatrices(reflector.material.uniforms.textureMatrix.value, inversePlane);
+      sample.texelSize.set(1 / width, 1 / height);
+      sample.planeY = plane.y;
+      lastScene = scene;
+      lastPlane = plane;
+      captureEye.copy(eye);
+      captureHeading.copy(heading2);
+      captureProjectionScale = projectionScale;
+      capturedAt = timeMs;
+      captures++;
+      return sample;
+    }
+    return {
+      capture,
+      clear,
+      diagnostics() {
+        const target2 = reflector?.getRenderTarget();
+        return { captures, puddle: lastPlane?.id ?? null, width: target2?.width ?? 0, height: target2?.height ?? 0 };
+      }
     };
   }
 
@@ -82638,6 +83253,9 @@ void main() {
     capture.width = 480;
     capture.height = 270;
     const context = capture.getContext("2d");
+    const source = document.createElement("canvas");
+    const sourceContext = source.getContext("2d");
+    let previewPixels, previewImage;
     async function checkHealth() {
       try {
         const response = await fetch("/api/health", { cache: "no-store" });
@@ -82659,7 +83277,7 @@ void main() {
         enabled = false;
       }
     }
-    function sendFrame(viewport, preEncodedJpegBase64 = null) {
+    function sendFrame(previewTarget, preEncodedJpegBase64 = null) {
       if (!enabled || framePending) return;
       framePending = true;
       if (typeof preEncodedJpegBase64 === "string" && preEncodedJpegBase64.length > 0 && preEncodedJpegBase64.length < 52e4) {
@@ -82683,20 +83301,26 @@ void main() {
         });
         return;
       }
-      const bounds2 = renderer2.domElement.getBoundingClientRect();
-      const ratio = renderer2.domElement.width / bounds2.width;
-      const sourceTop = bounds2.height - viewport.y - viewport.height;
-      context.drawImage(
-        renderer2.domElement,
-        viewport.x * ratio,
-        sourceTop * ratio,
-        viewport.width * ratio,
-        viewport.height * ratio,
-        0,
-        0,
-        capture.width,
-        capture.height
-      );
+      try {
+        const { width, height } = previewTarget;
+        if (previewImage?.width !== width || previewImage?.height !== height) {
+          source.width = width;
+          source.height = height;
+          previewPixels = new Uint8Array(width * height * 4);
+          previewImage = sourceContext.createImageData(width, height);
+        }
+        renderer2.readRenderTargetPixels(previewTarget, 0, 0, width, height, previewPixels);
+        const row = width * 4;
+        for (let y = 0; y < height; y++) {
+          const from = (height - 1 - y) * row;
+          previewImage.data.set(previewPixels.subarray(from, from + row), y * row);
+        }
+        sourceContext.putImageData(previewImage, 0, 0);
+        context.drawImage(source, 0, 0, capture.width, capture.height);
+      } catch (error) {
+        framePending = false;
+        throw error;
+      }
       capture.toBlob(async (blob) => {
         try {
           if (!blob) return;
@@ -83028,6 +83652,9 @@ void main() {
       get previewTexture() {
         return target2.texture;
       },
+      get previewTarget() {
+        return target2;
+      },
       get streamId() {
         return streamId;
       },
@@ -83246,6 +83873,138 @@ void main() {
       );
     }
     return { update };
+  }
+
+  // src/ui/graphics-settings.js
+  var GRAPHICS_STORAGE_KEY = "ya-rab-metro-graphics-v1";
+  var balanced = Object.freeze({
+    renderScale: 100,
+    reflections: "environment",
+    detail: "fine",
+    color: "natural",
+    exposure: 100,
+    lensEffects: false,
+    edgeSmoothing: false
+  });
+  var presets = Object.freeze({
+    performance: Object.freeze({ ...balanced, renderScale: 67, detail: "standard" }),
+    balanced,
+    ultra: Object.freeze({ ...balanced, renderScale: 125, reflections: "live", edgeSmoothing: true })
+  });
+  function graphicsPreset(preset, lowPower) {
+    if (preset === "auto") {
+      return { ...balanced, preset, renderScale: lowPower ? 83 : balanced.renderScale };
+    }
+    if (!Object.hasOwn(presets, preset)) throw new RangeError(`Unknown graphics preset: ${preset}`);
+    return { ...presets[preset], preset };
+  }
+  function isIntegerInRange(value, min, max) {
+    return Number.isInteger(value) && value >= min && value <= max;
+  }
+  function decodeGraphicsSettings(raw, lowPower) {
+    if (raw === null) return graphicsPreset("auto", lowPower);
+    const saved = JSON.parse(raw);
+    if (!saved || typeof saved !== "object" || typeof saved.preset !== "string") {
+      throw new TypeError("Invalid graphics settings");
+    }
+    if (saved.preset !== "custom") return graphicsPreset(saved.preset, lowPower);
+    const { preset, renderScale, reflections, detail, color, exposure, lensEffects, edgeSmoothing = false } = saved;
+    if (!isIntegerInRange(renderScale, 50, 150) || !isIntegerInRange(exposure, 70, 130) || !["environment", "live"].includes(reflections) || !["standard", "fine"].includes(detail) || !["natural", "cinematic"].includes(color) || typeof lensEffects !== "boolean" || typeof edgeSmoothing !== "boolean") {
+      throw new RangeError("Invalid custom graphics settings");
+    }
+    return { preset, renderScale, reflections, detail, color, exposure, lensEffects, edgeSmoothing };
+  }
+  function mountGraphicsSettings(doc, { lowPower, supportsLiveReflections: supportsLiveReflections2, onChange }) {
+    const byId = (id2) => doc.getElementById(id2);
+    const root = byId("graphicsSettings");
+    const quality = byId("graphicsPreset");
+    const renderScale = byId("graphicsScale");
+    const reflections = byId("graphicsReflections");
+    const detail = byId("graphicsDetail");
+    const color = byId("graphicsColor");
+    const exposure = byId("graphicsExposure");
+    const lensEffects = byId("graphicsLens");
+    const edgeSmoothing = byId("graphicsEdgeSmoothing");
+    const status = byId("graphicsStatus");
+    const note = byId("graphicsReflectionNote");
+    const reflectionOption = reflections.querySelector('option[value="live"]');
+    reflectionOption.disabled = !supportsLiveReflections2;
+    note.hidden = supportsLiveReflections2;
+    let settings2 = graphicsPreset("auto", lowPower);
+    let raw = null;
+    let canSave = true;
+    try {
+      raw = doc.defaultView.localStorage.getItem(GRAPHICS_STORAGE_KEY);
+    } catch (error) {
+      if (!(error instanceof doc.defaultView.DOMException) || error.name !== "SecurityError") throw error;
+      canSave = false;
+      status.textContent = "Graphics storage is unavailable. Changes apply for this visit.";
+    }
+    if (raw !== null) {
+      try {
+        settings2 = decodeGraphicsSettings(raw, lowPower);
+      } catch (error) {
+        if (!(error instanceof SyntaxError || error instanceof TypeError || error instanceof RangeError)) throw error;
+        status.textContent = "Saved graphics settings were invalid. Using Auto.";
+      }
+    }
+    function sync() {
+      quality.value = settings2.preset;
+      byId("graphicsSummaryValue").textContent = quality.selectedOptions[0].textContent;
+      renderScale.value = settings2.renderScale;
+      byId("graphicsScaleValue").textContent = `${settings2.renderScale}%`;
+      reflections.value = supportsLiveReflections2 ? settings2.reflections : "environment";
+      detail.value = settings2.detail;
+      color.value = settings2.color;
+      exposure.value = settings2.exposure;
+      byId("graphicsExposureValue").textContent = `${settings2.exposure}%`;
+      lensEffects.checked = settings2.lensEffects;
+      edgeSmoothing.checked = settings2.edgeSmoothing;
+    }
+    function save() {
+      if (!canSave) return;
+      try {
+        const saved = settings2.preset === "custom" ? settings2 : { preset: settings2.preset };
+        doc.defaultView.localStorage.setItem(GRAPHICS_STORAGE_KEY, JSON.stringify(saved));
+        status.textContent = "";
+      } catch (error) {
+        if (!(error instanceof doc.defaultView.DOMException) || !["SecurityError", "QuotaExceededError"].includes(error.name)) throw error;
+        status.textContent = "Graphics storage is unavailable. Changes apply for this visit.";
+      }
+    }
+    function apply(next, persist) {
+      const previous = settings2;
+      settings2 = next;
+      sync();
+      onChange(settings2, previous);
+      if (persist) save();
+    }
+    function edit(name, value, persist = true) {
+      if (settings2[name] !== value) apply({ ...settings2, preset: "custom", [name]: value }, persist);
+    }
+    quality.addEventListener("change", () => apply(graphicsPreset(quality.value, lowPower), true));
+    for (const [field, input2] of [["reflections", reflections], ["detail", detail], ["color", color]]) {
+      input2.addEventListener("change", () => edit(field, input2.value));
+    }
+    for (const [field, input2] of [["renderScale", renderScale], ["exposure", exposure]]) {
+      input2.addEventListener("input", () => edit(field, input2.valueAsNumber, false));
+      input2.addEventListener("change", () => {
+        edit(field, input2.valueAsNumber, false);
+        save();
+      });
+    }
+    lensEffects.addEventListener("change", () => edit("lensEffects", lensEffects.checked));
+    edgeSmoothing.addEventListener("change", () => edit("edgeSmoothing", edgeSmoothing.checked));
+    byId("graphicsReset").addEventListener("click", () => apply(graphicsPreset("auto", lowPower), true));
+    sync();
+    return {
+      get value() {
+        return settings2;
+      },
+      show(visible2) {
+        root.hidden = !visible2;
+      }
+    };
   }
 
   // src/ui/vehicle-panel.js
@@ -87587,16 +88346,16 @@ void main() {
       const limit = ctx.createDynamicsCompressor();
       this.master.connect(limit).connect(ctx.destination);
       this.voices = [this.loop("triangle", 72), this.loop("sine", 490)];
-      const noise = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate);
-      const data = noise.getChannelData(0);
+      const noise2 = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate);
+      const data = noise2.getChannelData(0);
       let word = 54981;
       for (let i = 0; i < data.length; i++) {
         word = Math.imul(word, 1664525) + 1013904223 >>> 0;
         data[i] = word / 2147483648 - 1;
       }
-      this.noise = noise;
+      this.noise = noise2;
       const tire = ctx.createBufferSource();
-      tire.buffer = noise;
+      tire.buffer = noise2;
       tire.loop = true;
       const band2 = ctx.createBiquadFilter();
       band2.type = "bandpass";
@@ -96374,6 +97133,10 @@ void main() {
   var isIntegratedApu = /Radeon\(TM\) Graphics|Intel|UHD|Iris|SwiftShader|Basic Render/i.test(
     graphicsAdapter ?? ""
   );
+  var supportsLiveReflections = renderer.capabilities.isWebGL2 && renderer.extensions.has("EXT_color_buffer_float");
+  var maxDisplayEdge = Math.min(renderer.capabilities.maxTextureSize, gl.getParameter(gl.MAX_RENDERBUFFER_SIZE));
+  var maxViewport = gl.getParameter(gl.MAX_VIEWPORT_DIMS);
+  var MAX_METRO_DISPLAY_PIXELS = 3840 * 2160;
   renderer.domElement.className = "scene";
   document.body.prepend(renderer.domElement);
   renderer.shadowMap.enabled = true;
@@ -96420,6 +97183,7 @@ void main() {
     samples: isIntegratedApu ? 0 : 4,
     grade: CITY_CLEAR_CINEMATIC_GRADE
   });
+  var metroReflections = createMetroPlanarReflections(renderer);
   var lastImpactWorld = null;
   var lastImpactCount = 0;
   var cameraImpactPulse = 0;
@@ -96502,6 +97266,7 @@ void main() {
   var cameraStartup = null;
   var cityCameraError = null;
   var hasCityCameraDriver = (target2) => target2.environment === "metro" && target2.config.cityVersion >= 3;
+  var hasMetroGraphics = (target2) => target2.environment === "metro" && target2.config.cityVersion >= 5;
   var isCity = (id2) => id2 === "city" || id2 === "metro";
   var isPursuing = () => environment === "pursuit" || world.pursuit?.phase === "running" || Boolean(world.pursuit?.reviewUntilTick);
   var placesForWorld = () => environment === "pursuit" ? [] : world.district?.places ?? (environment === "city" ? PLACES : LAB_PLACES);
@@ -96777,6 +97542,7 @@ void main() {
     cancelReplayLoad();
     if (next !== "lab" && labPpoWorker) stopLabPpo("Update stopped. Completed checkpoints are retained.");
     const nextWorld = worlds[next] ?? new World(world.config, next);
+    const graphicsChanged = hasMetroGraphics(world) !== hasMetroGraphics(nextWorld);
     const sceneTransition = next !== environment;
     if (sceneTransition) {
       rememberPackPractice(world);
@@ -96786,6 +97552,11 @@ void main() {
     phone?.reset();
     environment = next;
     world = worlds[next] = nextWorld;
+    graphics.show(hasMetroGraphics(world));
+    if (graphicsChanged) {
+      metroReflections.clear();
+      resize();
+    }
     senseWorld = senseScan = null;
     senseForecasts = [];
     if (next !== "metro") cityPerception?.show(false);
@@ -97078,14 +97849,30 @@ void main() {
       }
     }
   }
+  var graphics = mountGraphicsSettings(document, {
+    lowPower: isIntegratedApu,
+    supportsLiveReflections,
+    onChange(next, current) {
+      if (hasMetroGraphics(world) && next.renderScale !== current.renderScale) resize();
+    }
+  });
   function resize() {
     const bounds2 = renderer.domElement.getBoundingClientRect();
     viewportWidth = Math.round(bounds2.width);
     viewportHeight = Math.round(bounds2.height);
-    const pixelRatio = Math.min(
+    const nativeRatio = Math.min(
       Math.round(devicePixelRatio * 1e3) / 1e3,
       isIntegratedApu ? 1 : 1.5
     );
+    const width = Math.max(1, viewportWidth), height = Math.max(1, viewportHeight);
+    const pixelRatio = hasMetroGraphics(world) ? Math.min(
+      nativeRatio * graphics.value.renderScale / 100,
+      2,
+      maxDisplayEdge / Math.max(width, height),
+      maxViewport[0] / width,
+      maxViewport[1] / height,
+      Math.sqrt(MAX_METRO_DISPLAY_PIXELS / (width * height))
+    ) : nativeRatio;
     renderer.setPixelRatio(pixelRatio);
     renderer.setSize(viewportWidth, viewportHeight, false);
     cinematicPost.setSize(viewportWidth, viewportHeight, pixelRatio);
@@ -97278,13 +98065,23 @@ void main() {
   });
   var isEditing = (target2) => ["INPUT", "TEXTAREA", "SELECT"].includes(target2.tagName);
   addEventListener("keydown", (event2) => {
+    const inSettings = event2.target.closest?.("#settingsPanel:not([hidden]):not([data-pako-workspace])");
+    const openTools = event2.target.closest?.("#cityTools[open]");
     if (event2.code === "Escape") {
-      $2("settingsPanel").hidden = true;
-      $2("settingsBtn").setAttribute("aria-expanded", "false");
+      if (inSettings) {
+        closeSettingsFromDrawer();
+        return;
+      }
+      if (openTools) {
+        openTools.open = false;
+        openTools.querySelector("summary").focus();
+        return;
+      }
+      settingsOpen(false);
       $2("inspectorPanel").hidden = true;
       $2("inspectorBtn").setAttribute("aria-expanded", "false");
     }
-    if (isEditing(event2.target)) return;
+    if (inSettings || openTools || isEditing(event2.target)) return;
     if (event2.code === "Space" && event2.target.closest?.("button, summary, a[href]")) return;
     if (["Space", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(
       event2.code
@@ -97458,10 +98255,21 @@ void main() {
       $2("phoneToggleBtn").setAttribute("aria-expanded", "false");
       $2("inspectorPanel").hidden = true;
       $2("inspectorBtn").setAttribute("aria-expanded", "false");
+      if (!pako) {
+        keys.clear();
+        touchPursuit.clear();
+        const section = $2("graphicsSettings");
+        (section.hidden ? $2("closeSettings") : section.querySelector("summary")).focus();
+      }
     }
   }
+  function closeSettingsFromDrawer() {
+    const pako = $2("settingsPanel").hasAttribute("data-pako-workspace");
+    settingsOpen(false);
+    if (!pako) $2("cityTools").querySelector("summary").focus();
+  }
   $2("settingsBtn").onclick = () => settingsOpen($2("settingsPanel").hidden);
-  $2("closeSettings").onclick = () => settingsOpen(false);
+  $2("closeSettings").onclick = closeSettingsFromDrawer;
   $2("cityDriver").onchange = (event2) => {
     cityDriver = event2.target.value;
     if (world.mode === "auto") requestCityDriver(world);
@@ -98883,7 +99691,7 @@ void main() {
     forward2.set(Math.sin(player.rotation.y), 0, Math.cos(player.rotation.y));
     const personRoot = focusedPersonId ? view.roots.get(focusedPersonId)?.root : null;
     const pursuitShot = cinematic && !personRoot && cameraMode === "chase" ? cinematic : null;
-    const grandCityMetro = environment === "metro" && (world.config.cityVersion ?? 0) >= 5;
+    const grandCityMetro = hasMetroGraphics(world);
     const currentImpacts = world.player?.vehicle?.damage?.impactCount ?? 0;
     if (world !== lastImpactWorld) {
       lastImpactWorld = world;
@@ -99123,6 +99931,9 @@ void main() {
     const withChaseSuvCull = cameraMode === "chase" && !cutaway && !sensorView && view.playerRig?.withExteriorChaseCulling ? view.playerRig.withExteriorChaseCulling : (fn) => fn();
     if (grandCityMetro) {
       const camDiag = pursuitCamera.diagnostics();
+      const settings2 = graphics.value;
+      const streetSurfaces = view.streetSurfaces;
+      const baseExposure = renderer.toneMappingExposure;
       const apuBounceRed = isIntegratedApu ? sceneOverlayNodes.bounceRed : null;
       const apuBounceBlue = isIntegratedApu ? sceneOverlayNodes.bounceBlue : null;
       const apuStreetPt = isIntegratedApu ? sceneOverlayNodes.streetPt : null;
@@ -99136,6 +99947,22 @@ void main() {
       if (apuStreetPt) apuStreetPt.visible = false;
       if (apuSculptPt) apuSculptPt.visible = false;
       try {
+        const reflectionPlanes = streetSurfaces?.reflectionPlanes;
+        if (settings2.reflections === "live" && supportsLiveReflections && reflectionPlanes?.length) {
+          const reflection = metroReflections.capture(view.scene, camera, reflectionPlanes, time, [
+            view.route,
+            pedestrianForecastView.group,
+            view.crashEffects?.layer,
+            streetSurfaces.fxGroup,
+            rigOverlayNodes?.debugRays,
+            sceneOverlayNodes.pursuitHalos
+          ]);
+          streetSurfaces.setLiveReflection(reflection);
+        } else {
+          metroReflections.clear();
+        }
+        view.metroMaterialDetail?.setEnabled(settings2.detail === "fine");
+        renderer.toneMappingExposure = baseExposure * settings2.exposure / 100;
         withChaseSuvCull(() => {
           cinematicPost.render(view.scene, camera, {
             speedNorm: cameraMode === "chase" ? camDiag.speedNorm : Math.min(1, Math.abs(world.player.speed ?? 0) / 19),
@@ -99143,10 +99970,16 @@ void main() {
             impactPulse: cameraImpactPulse,
             timeS: time * 1e-3,
             reducedMotion: Boolean(reducedMotion?.matches),
+            color: settings2.color,
+            lensEffects: settings2.lensEffects,
+            edgeSmoothing: settings2.edgeSmoothing,
             enabled: true
           });
         });
       } finally {
+        renderer.toneMappingExposure = baseExposure;
+        view.metroMaterialDetail?.setEnabled(false);
+        streetSurfaces?.setLiveReflection(null);
         if (apuBounceRed) apuBounceRed.visible = prevRedVis;
         if (apuBounceBlue) apuBounceBlue.visible = prevBlueVis;
         if (apuStreetPt) apuStreetPt.visible = prevStreetPtVis;
@@ -99169,8 +100002,9 @@ void main() {
     if (preview) {
       frontPreviewFrames++;
       const { x, y, width, height } = previewViewport;
+      let activePreviewTarget = frontPreviewTarget;
       if (didVisionCaptureThisFrame && sensorCamera === "front" && visualClient?.previewTexture) {
-        previewBlitMat.map = visualClient.previewTexture;
+        activePreviewTarget = visualClient.previewTarget;
       } else {
         const shadowJustUpdated = lastShadowFrame === renderedFrames - 1;
         const forceFreshPreview = !grandCityMetro || lastPreviewTargetWorld !== world || lastPreviewSensorCam !== sensorCamera || renderedFrames - lastPreviewRenderFrame >= 2;
@@ -99197,8 +100031,8 @@ void main() {
           lastPreviewSensorCam = sensorCamera;
           lastPreviewRenderFrame = renderedFrames;
         }
-        previewBlitMat.map = frontPreviewTarget.texture;
       }
+      previewBlitMat.map = activePreviewTarget.texture;
       renderer.setScissorTest(true);
       renderer.setScissor(x, y, width, height);
       renderer.setViewport(x, y, width, height);
@@ -99207,7 +100041,7 @@ void main() {
       perceptionOverlay.setViewport(previewViewport);
       if (time - lastFrame > 1e3) {
         const asyncB64 = sensorCamera === "front" ? visualClient?.latestFrame?.imageJpegBase64 ?? null : null;
-        bridge.sendFrame(previewViewport, asyncB64);
+        bridge.sendFrame(activePreviewTarget, asyncB64);
         lastFrame = time;
       }
       renderer.setScissorTest(false);
@@ -99280,6 +100114,17 @@ void main() {
       post: cinematicPost.diagnostics(),
       atmosphere: view?.atmosphereDiagnostics?.() ?? null
     }),
+    graphicsDiagnostics: () => ({
+      settings: { ...graphics.value },
+      supportsLiveReflections,
+      reflection: metroReflections.diagnostics()
+    }),
+    readCameraPreviewPixels() {
+      const { width, height } = frontPreviewTarget;
+      const pixels = new Uint8Array(width * height * 4);
+      renderer.readRenderTargetPixels(frontPreviewTarget, 0, 0, width, height, pixels);
+      return { width, height, pixels };
+    },
     cameraFrame(streamId, frameId) {
       return visualClient.getFrame(streamId, frameId);
     },

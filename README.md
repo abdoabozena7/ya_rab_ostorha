@@ -53,6 +53,7 @@ fails visibly; the launcher never reuses or stops somebody else's server.
 | Cairo Traffic | Launch Egyptian aggressive traffic & defensive avoidance inside the live Metro City (`Normal` / `Rush Hour` / `Cairo Max`) with heavy freight trucks (`8.2 × 2.45 × 3.35 m`, `14.5 t`), class-specific vehicle physics, ghorz weaving cut-ins, sudden unsignaled lane changes, off-lane straddlers, dynamic accidents ahead, and Defensive AI avoidance (with instant manual WASD takeover or `I` toggle) |
 | Car's view | See all-around virtual range returns, exact front-camera recognition and translucent pedestrian forecasts |
 | Tools | Open Settings, Decision lab, the Lab or the preserved experimental chase variants |
+| Tools → Settings → Graphics | Choose a quality preset or adjust Metro's display without restarting the current drive |
 | Return to city | Resume the same City after a Lab or inspection visit |
 | Pause / Resume | Pause and resume the browser world |
 
@@ -62,6 +63,39 @@ view is a rendered game camera, not real-world sensor footage. No model or
 training process is started by the default server. Microphone input is not
 needed. The game is an unfinished prototype, not a validated physical simulator
 or a road-safety guarantee.
+
+### Graphics settings
+
+Open **Tools → Settings → Graphics** in Grand Metro City. Changes apply
+immediately to the driving view and save in this browser. **Reset to Auto**
+restores the recommended settings. The current drive, replay state and
+front-camera RGB input to the driver do not change.
+
+| Preset | What it changes |
+| --- | --- |
+| Auto | Fine materials and environment reflections, with lower render scale on detected integrated or software graphics |
+| Performance | Lower render scale, standard materials and environment reflections |
+| Balanced | Native render scale (within the device cap), fine materials and environment reflections |
+| Ultra | Higher render scale, edge smoothing, fine materials and live puddle reflections on supported GPUs |
+
+Change **Render scale**, **Surface detail**, **Water reflections**, **Color**,
+**Exposure**, **Edge smoothing**, or **Lens effects** to make your own preset. Render scale is
+relative to the capped device pixel ratio; the backing buffer is limited
+by the GPU and a 4K pixel budget. Natural color uses the scene's
+lighting with filmic tone mapping; Cinematic adds the original City color
+grade. Edge smoothing softens jagged geometry edges without changing render
+resolution. Fine detail adds fine grit, larger wear patterns and roughness
+variation to the existing road, sidewalk and facade materials.
+The same City also has rounded, varied tree crowns and refined vehicle finishes
+without changing vehicle or tree collision shapes.
+
+Live reflections mirror nearby rendered City geometry in visible,
+nearly flat puddles. A bounded, lower-resolution reflection pass uses
+the camera's mirrored view; water roughness, small ripples and the view
+angle affect the result. Steep, distant or unsupported puddles use
+environment reflections instead. This is a planar approximation, not
+ray tracing or a change to tire grip. Select **Balanced** or
+**Performance** if Ultra slows your browser.
 
 ## Player car
 
@@ -180,12 +214,11 @@ budget. Streets and sidewalks use `512×512` procedural PBR dark coarse bitumen
 asphalt (tire-wear polish ruts, tar crack seams, cast-iron manholes) and
 recessed-mortar Cairo sidewalk tiles, bordered by 3D segmented weathered
 charcoal-and-stone Egyptian curb blocks (`بلدورة الرصيف`) and storm-drain
-grates. A moody twilight Cairo sky dome, low-fill raking sun shadows, and a
-single-pass MSAA WebGL film grade (`src/render/cinematic-post.js` — dark
-exposure, filmic S-curve contrast, selective desaturation preserving police
-strobes, cold-shadow/warm-highlight split-toning, anamorphic vignette, and
-peripheral speed streaks) grade the main display viewport while leaving AI
-`visionCamera` / `frontCamera` RGB streams ungraded. Both **Behind car** and
+grates. A twilight Cairo sky dome and low-fill raking sun shadows light the
+scene. The optional Cinematic color grade adds filmic S-curve contrast,
+selective desaturation, split-toning and a vignette to the main viewport
+only. Lens effects are optional too, and neither affects the AI
+`visionCamera` / `frontCamera` RGB streams. Both **Behind car** and
 **Chasing cam** drive speed/G-force reactive FOV, horizon Dutch-angle banking,
 throttle/brake boom inertia, and road-roughness micro-vibration alongside
 sub-frame `alpha`-interpolated SUV suspension and projected headlamp/brake road

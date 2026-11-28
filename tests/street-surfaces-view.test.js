@@ -170,7 +170,6 @@ test("builds genuine 256x256 PBR DataTextures, Schlick-Fresnel puddle optics, 3D
   assert.ok(waterMesh.material.metalness <= 0.1, "dielectric rainwater puddle avoids liquid-metal banding");
   assert.ok(waterMesh.material.opacity <= 0.60, "semi-transparent normal-incidence rainwater opacity <= 0.60");
   assert.ok(waterMesh.material.envMapIntensity <= 0.85, "overhead sky envMapIntensity capped <= 0.85");
-  assert.equal(waterMesh.material.customProgramCacheKey(), "fresnel-puddle-v1");
   assert.equal(typeof waterMesh.material.onBeforeCompile, "function");
 
   const mockPuddleShader = {
@@ -181,10 +180,26 @@ test("builds genuine 256x256 PBR DataTextures, Schlick-Fresnel puddle optics, 3D
   waterMesh.material.onBeforeCompile(mockPuddleShader);
   assert.ok(mockPuddleShader.uniforms.uWaveTime, "onBeforeCompile binds uWaveTime uniform");
   assert.equal(mockPuddleShader.uniforms.uWaveTime.value, 0);
-  assert.match(mockPuddleShader.vertexShader, /varying vec2 vPuddleWorldUv;/);
+  assert.match(mockPuddleShader.vertexShader, /vPuddleWorldPosition\s*=\s*\(\s*modelMatrix\s*\*/);
   assert.match(mockPuddleShader.fragmentShader, /uniform float uWaveTime;/);
   assert.match(mockPuddleShader.fragmentShader, /pow\(\s*1\.0\s*-\s*puddleNdotV,\s*5\.0\s*\)/);
   assert.match(mockPuddleShader.fragmentShader, /mix\(\s*0\.56,\s*0\.88,\s*puddleFresnel\s*\)/);
+
+  const reflectionTarget = new THREE.WebGLRenderTarget(640, 360);
+  const reflectionMatrix = new THREE.Matrix4().makeTranslation(0.5, 0.5, 0.25);
+  const texelSize = new THREE.Vector2(1 / 640, 1 / 360);
+  const { uniforms } = mockPuddleShader;
+  assert.equal(uniforms.uPuddleLive.value, 0, "sensor and environment passes start without live reflections");
+  assert.equal(uniforms.tPuddleReflection.value, null);
+  view.setLiveReflection({ texture: reflectionTarget.texture, matrix: reflectionMatrix, texelSize, planeY: 0.12 });
+  assert.equal(uniforms.uPuddleLive.value, 1);
+  assert.equal(uniforms.tPuddleReflection.value, reflectionTarget.texture);
+  assert.deepEqual(uniforms.uPuddleTextureMatrix.value.elements, reflectionMatrix.elements);
+  assert.deepEqual(uniforms.uPuddleCaptureTexel.value.toArray(), texelSize.toArray());
+  view.setLiveReflection(null);
+  assert.equal(uniforms.uPuddleLive.value, 0, "the next camera pass does not inherit live reflections");
+  assert.equal(uniforms.tPuddleReflection.value, null);
+  reflectionTarget.dispose();
 
   view.update(world, 0.05);
   assert.ok(

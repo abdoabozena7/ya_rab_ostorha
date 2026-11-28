@@ -154,9 +154,67 @@
         <h2 id="settingsTitle">Simulation settings</h2>
         <button id="closeSettings" aria-label="Close settings">×</button>
       </div>
+      <details id="graphicsSettings" class="graphics-settings">
+        <summary><span>Graphics</span><span id="graphicsSummaryValue">Auto</span></summary>
+        <p>Applies instantly. The current drive and camera sensing stay unchanged.</p>
+        <label for="graphicsPreset">Quality preset</label>
+        <select id="graphicsPreset" aria-describedby="graphicsQualityNote">
+          <option value="auto">Auto</option>
+          <option value="performance">Performance</option>
+          <option value="balanced">Balanced</option>
+          <option value="ultra">Ultra</option>
+          <option value="custom" hidden>Custom</option>
+        </select>
+        <p id="graphicsQualityNote">Try Performance for smoother play or Ultra for live puddle reflections.</p>
+        <div class="graphics-grid">
+          <label for="graphicsReflections">Water reflections
+            <select id="graphicsReflections">
+              <option value="environment">Environment</option>
+              <option value="live">Live</option>
+            </select>
+          </label>
+          <label for="graphicsDetail">Surface detail
+            <select id="graphicsDetail">
+              <option value="standard">Standard</option>
+              <option value="fine">Fine</option>
+            </select>
+          </label>
+        </div>
+        <p id="graphicsReflectionNote" hidden>This device doesn't support live reflections. Water still reflects the environment.</p>
+        <div class="graphics-grid">
+          <label for="graphicsColor">Color
+            <select id="graphicsColor">
+              <option value="natural">Natural</option>
+              <option value="cinematic">Cinematic</option>
+            </select>
+          </label>
+          <label class="graphics-check" for="graphicsEdgeSmoothing">
+            <input id="graphicsEdgeSmoothing" type="checkbox" />
+            Edge smoothing
+          </label>
+        </div>
+        <div class="graphics-grid">
+          <label class="graphics-check" for="graphicsLens">
+            <input id="graphicsLens" type="checkbox" />
+            Lens effects
+          </label>
+        </div>
+        <div class="graphics-slider">
+          <label for="graphicsScale">Render scale</label>
+          <output id="graphicsScaleValue" for="graphicsScale">100%</output>
+          <input id="graphicsScale" type="range" min="50" max="150" value="100" />
+        </div>
+        <div class="graphics-slider">
+          <label for="graphicsExposure">Exposure</label>
+          <output id="graphicsExposureValue" for="graphicsExposure">100%</output>
+          <input id="graphicsExposure" type="range" min="70" max="130" value="100" />
+        </div>
+        <button id="graphicsReset" type="button">Reset to Auto</button>
+        <p id="graphicsStatus" role="status"></p>
+      </details>
       <p>
-        The same seed and commands reproduce the same simulation. Applying
-        settings starts a new run in this environment.
+        The same seed and commands reproduce the same simulation. Starting
+        with new simulation settings begins a new run in this environment.
       </p>
       <p id="settingsError" role="alert"></p>
       <p id="streetEncounterStatus" class="muted" hidden></p>

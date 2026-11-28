@@ -233,6 +233,9 @@ uniform float uFringe;
 uniform vec2 uCenter;
 uniform float uTime;
 uniform float uLinearInput;
+uniform float uFilmGrade;
+uniform float uEdgeSmoothing;
+uniform vec2 uTexelSize;
 
 varying vec2 vUv;
 
@@ -278,14 +281,55 @@ float evaluateFilmicToneScalar(float v) {
   return clamp(curved, 0.0, 1.0);
 }
 
+float edgeLuma(vec3 color) {
+  float luma = clamp(dot(color, LUMA_WEIGHTS), 0.0, 1.0);
+  return uLinearInput > 0.5 ? sqrt(luma) : luma;
+}
+
+vec2 edgeSmoothingOffset(vec2 uv, vec3 center) {
+  vec2 dx = vec2(uTexelSize.x, 0.0);
+  vec2 dy = vec2(0.0, uTexelSize.y);
+  float mid = edgeLuma(center);
+  float left = edgeLuma(texture2D(tDiffuse, uv - dx).rgb);
+  float right = edgeLuma(texture2D(tDiffuse, uv + dx).rgb);
+  float bottom = edgeLuma(texture2D(tDiffuse, uv - dy).rgb);
+  float top = edgeLuma(texture2D(tDiffuse, uv + dy).rgb);
+  float low = min(mid, min(min(left, right), min(bottom, top)));
+  float high = max(mid, max(max(left, right), max(bottom, top)));
+  float contrast = high - low;
+  if (contrast < max(0.0312, high * 0.125)) return vec2(0.0);
+
+  vec2 gradient = vec2(right - left, top - bottom);
+  vec2 strength = abs(gradient);
+  float major = max(strength.x, strength.y);
+  float minor = min(strength.x, strength.y);
+  if (minor <= 1e-5) return vec2(0.0);
+
+  // Soften stair steps rather than straight edges, by shifting at most half a texel.
+  float diagonal = min(1.0, 2.0 * minor / major);
+  float bias = (left + right + bottom + top) * 0.25 - mid;
+  float subpixel = smoothstep(0.0, 0.5, abs(bias) / contrast);
+  vec2 direction = strength.x >= strength.y
+    ? vec2(sign(gradient.x * bias), 0.0)
+    : vec2(0.0, sign(gradient.y * bias));
+  return direction * uTexelSize * (0.5 * diagonal * subpixel);
+}
+
 vec3 sampleSceneRadial(vec2 uv) {
   vec2 radialVec = uCenter - uv;
   float radialDist = length(radialVec);
   float edgeWeight = smoothstep(0.30, 0.96, radialDist);
   float streakAmt = uStreak * edgeWeight;
   float fringeAmt = uFringe * edgeWeight;
+  bool noLensShift = streakAmt <= 1e-5 && fringeAmt <= 1e-5;
 
-  if (streakAmt <= 1e-5 && fringeAmt <= 1e-5) {
+  if (uEdgeSmoothing > 0.5) {
+    vec3 center = texture2D(tDiffuse, uv).rgb;
+    vec2 offset = edgeSmoothingOffset(uv, center);
+    if (noLensShift && offset == vec2(0.0)) return center;
+    uv += offset;
+  }
+  if (noLensShift) {
     return texture2D(tDiffuse, uv).rgb;
   }
 
@@ -315,6 +359,10 @@ vec3 sampleSceneRadial(vec2 uv) {
 void main() {
   vec3 rawSample = sampleSceneRadial(vUv);
   vec3 col = uLinearInput > 0.5 ? linearToSrgbSafe(rawSample) : clamp(rawSample, 0.0, 1.0);
+  if (uFilmGrade < 0.5) {
+    gl_FragColor = vec4(col, 1.0);
+    return;
+  }
   // Preserve white-hot additive sparks (sRGB > 0.96) across film exposure & shoulder roll-off
   float incandescentSpark = smoothstep(0.96, 0.999, col.r) * smoothstep(0.86, 0.995, col.g);
 
@@ -371,9 +419,9 @@ void main() {
  * - With `colorSpace: SRGBColorSpace` on WebGL2, `target` allocates `SRGB8_ALPHA8` so MSAA resolve
  *   and 8-bit storage happen in perceptual sRGB without shadow banding, and `texture2D(tDiffuse)`
  *   hardware-decodes back to linear RGB (on WebGL1 `RGBA8` stores and samples linear RGB directly).
- * - Our fullscreen shader blends the 5-tap speed streak in linear light, converts once to sRGB via
- *   `linearToSrgbSafe`, applies the exact `0..1` sRGB film grade, and writes directly to the canvas
- *   with `material.toneMapped = false` (zero double-ACES and zero gamma wash-out/double-darkening).
+ * - Our fullscreen shader smooths edges and blends the 5-tap speed streak in linear light, converts
+ *   once to sRGB via `linearToSrgbSafe`, applies the `0..1` sRGB film grade, and writes directly to
+ *   the canvas with `material.toneMapped = false` (zero double-ACES and no double gamma).
  */
 export function createCinematicPost(renderer, options = {}) {
   const gradeConfig = resolveGradeConfig(options.grade ?? options.config ?? options);
@@ -432,6 +480,9 @@ export function createCinematicPost(renderer, options = {}) {
     uCenter: { value: new THREE.Vector2(0.5, 0.52) },
     uTime: { value: 0 },
     uLinearInput: { value: outputColorSpace === THREE.SRGBColorSpace ? 1.0 : 0.0 },
+    uFilmGrade: { value: 1 },
+    uEdgeSmoothing: { value: 0 },
+    uTexelSize: { value: new THREE.Vector2(1 / width, 1 / height) },
   };
 
   const material = new THREE.ShaderMaterial({
@@ -475,6 +526,7 @@ export function createCinematicPost(renderer, options = {}) {
     timeS: 0,
     reducedMotion: false,
     enabled,
+    edgeSmoothing: false,
   };
 
   function setSize(nextWidthCss, nextHeightCss, pixelRatio = 1) {
@@ -487,6 +539,7 @@ export function createCinematicPost(renderer, options = {}) {
     height = nextH;
     target.setSize(width, height);
     uniforms.tDiffuse.value = target.texture;
+    uniforms.uTexelSize.value.set(1 / width, 1 / height);
   }
 
   function measureSceneRender(scene, camera) {
@@ -512,6 +565,9 @@ export function createCinematicPost(renderer, options = {}) {
     const turnNorm = clamp(Number.isFinite(state.turnNorm) ? state.turnNorm : 0, -1, 1);
     const impactPulse = clamp(Number.isFinite(state.impactPulse) ? state.impactPulse : 0, 0, 1);
     const timeS = Number.isFinite(state.timeS) ? state.timeS : 0;
+    const naturalColor = state.color === "natural";
+    const lensEffects = !reducedMotion && state.lensEffects !== false;
+    const edgeSmoothing = state.edgeSmoothing === true;
 
     enabled = nextEnabled;
     lastState = {
@@ -521,14 +577,18 @@ export function createCinematicPost(renderer, options = {}) {
       timeS,
       reducedMotion,
       enabled,
+      color: naturalColor ? "natural" : "cinematic",
+      lensEffects,
+      edgeSmoothing,
     };
 
     const speedRamp = smoothstep(0.18, 1.0, speedNorm);
-    uniforms.uStreak.value = reducedMotion ? 0 : gradeConfig.maxSpeedStreak * speedRamp;
-    uniforms.uGrain.value = reducedMotion ? 0 : gradeConfig.grain;
-    uniforms.uFringe.value = reducedMotion
-      ? 0
-      : gradeConfig.maxChromaticFringe * clamp(speedNorm * 0.75 + impactPulse * 0.85, 0, 1.5);
+    uniforms.uStreak.value = lensEffects ? gradeConfig.maxSpeedStreak * speedRamp : 0;
+    uniforms.uGrain.value = lensEffects && !naturalColor ? gradeConfig.grain : 0;
+    uniforms.uFringe.value = lensEffects
+      ? gradeConfig.maxChromaticFringe * clamp(speedNorm * 0.75 + impactPulse * 0.85, 0, 1.5) : 0;
+    uniforms.uFilmGrade.value = naturalColor ? 0 : 1;
+    uniforms.uEdgeSmoothing.value = edgeSmoothing ? 1 : 0;
     uniforms.uCenter.value.set(0.5 + turnNorm * 0.06, 0.52);
     uniforms.uTime.value = timeS;
     uniforms.uLinearInput.value =

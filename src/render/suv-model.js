@@ -284,6 +284,12 @@ export function createSuvModel(body = {}) {
     }),
     dark: material("SUV recesses", 0x1e2924),
   };
+  let rigidCladding = palette.cladding;
+  if (!matteLabFinish) {
+    // Unlike the scuffable bumpers, rigid cladding has no vertex color stream.
+    rigidCladding = ownMaterial(palette.cladding.clone());
+    rigidCladding.vertexColors = false;
+  }
   const mesh = (g, m, parent, name, position) => {
     const part = new THREE.Mesh(ownGeometry(g), m);
     part.name = name;
@@ -376,11 +382,11 @@ export function createSuvModel(body = {}) {
     );
     if (side < 0) section(doors);
     doorRecords[label] = capturePose(doorPivot, [doors], side < 0);
-    box(chassis, `suv-${label}-sill`, [0.16, 0.12, 1.55], [side * 0.83, 0.34, 0], palette.cladding);
+    box(chassis, `suv-${label}-sill`, [0.16, 0.12, 1.55], [side * 0.83, 0.34, 0], rigidCladding);
     box(chassis, `suv-${label}-step`, [0.18, 0.06, 1.33], [side * 0.83, 0.29, 0], palette.metal, 0.015);
     const doorCladding = box(
       chassis, `suv-${label}-door-cladding`, [0.085, 0.22, 1.45],
-      [side * 0.881, 0.56, 0], palette.cladding,
+      [side * 0.881, 0.56, 0], rigidCladding,
     );
     claddingRecords[label] = capturePose(doorCladding);
     const fenderVent = mesh(
@@ -405,7 +411,7 @@ export function createSuvModel(body = {}) {
         [center - 0.34, 0.88], [center + 0.34, 0.88],
         [center + 0.52, 0.65], [center + 0.52, 0.37],
       ];
-      mesh(archTrimGeometry(arch, side * 0.879), palette.cladding,
+      mesh(archTrimGeometry(arch, side * 0.879), rigidCladding,
         chassis, `suv-${label}-arch-${axle}`);
     }
     const pillars = [

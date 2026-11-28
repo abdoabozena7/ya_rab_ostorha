@@ -7,6 +7,9 @@ export function createBridge({ renderer, readState }) {
   capture.width = 480;
   capture.height = 270;
   const context = capture.getContext("2d");
+  const source = document.createElement("canvas");
+  const sourceContext = source.getContext("2d");
+  let previewPixels, previewImage;
   async function checkHealth() {
     try {
       const response = await fetch("/api/health", { cache: "no-store" });
@@ -23,7 +26,7 @@ export function createBridge({ renderer, readState }) {
       if (!response.ok) enabled = false;
     } catch { enabled = false; }
   }
-  function sendFrame(viewport, preEncodedJpegBase64 = null) {
+  function sendFrame(previewTarget, preEncodedJpegBase64 = null) {
     if (!enabled || framePending) return;
     framePending = true;
     if (typeof preEncodedJpegBase64 === "string" && preEncodedJpegBase64.length > 0 && preEncodedJpegBase64.length < 520000) {
@@ -43,13 +46,26 @@ export function createBridge({ renderer, readState }) {
       });
       return;
     }
-    const bounds = renderer.domElement.getBoundingClientRect();
-    const ratio = renderer.domElement.width / bounds.width;
-    const sourceTop = bounds.height - viewport.y - viewport.height;
-    context.drawImage(renderer.domElement,
-      viewport.x * ratio, sourceTop * ratio,
-      viewport.width * ratio, viewport.height * ratio,
-      0, 0, capture.width, capture.height);
+    try {
+      const { width, height } = previewTarget;
+      if (previewImage?.width !== width || previewImage?.height !== height) {
+        source.width = width;
+        source.height = height;
+        previewPixels = new Uint8Array(width * height * 4);
+        previewImage = sourceContext.createImageData(width, height);
+      }
+      renderer.readRenderTargetPixels(previewTarget, 0, 0, width, height, previewPixels);
+      const row = width * 4;
+      for (let y = 0; y < height; y++) {
+        const from = (height - 1 - y) * row;
+        previewImage.data.set(previewPixels.subarray(from, from + row), y * row);
+      }
+      sourceContext.putImageData(previewImage, 0, 0);
+      context.drawImage(source, 0, 0, capture.width, capture.height);
+    } catch (error) {
+      framePending = false;
+      throw error;
+    }
     capture.toBlob(async (blob) => {
       try {
         if (!blob) return;
@@ -354,6 +370,7 @@ export function createVisualClient({ renderer, onResult, onStatus, onFrame }) {
     },
     get latestFrame() { return latestFrame; },
     get previewTexture() { return target.texture; },
+    get previewTarget() { return target; },
     get streamId() { return streamId; },
     get status() { return status; },
     get enabled() { return enabled; },

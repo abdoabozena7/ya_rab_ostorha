@@ -390,7 +390,7 @@ export function createKingLongModel(body = {}) {
   };
   const paint = ownMaterial(new THREE.MeshPhysicalMaterial({
     name: "King Long solid white enamel", color: 0xfbfbfa, vertexColors: true, roughness: 0.24,
-    metalness: 0.05, clearcoat: 0.88, clearcoatRoughness: 0.12, envMapIntensity: 0.88,
+    clearcoat: 0.88, clearcoatRoughness: 0.12, envMapIntensity: 0.88,
   }));
   const black = material("black molded trim", 0x15181b, { roughness: 0.68, metalness: 0.06 });
   const mudflapMat = material("rubber mudflap", 0x181b1e, { roughness: 0.88, side: THREE.DoubleSide });
@@ -417,18 +417,16 @@ export function createKingLongModel(body = {}) {
   const dash = material("dashboard charcoal", 0x2a2e32, { roughness: 0.78 });
   const upholstery = material("blue-gray seating cloth", 0x454e54);
   const inserts = material("weave panels", 0x6f7b82);
-  const glass = (label, color, opacity) => ownMaterial(new THREE.MeshPhysicalMaterial({
-    name: `King Long ${label}`, color, opacity, transparent: true, depthWrite: false,
-    side: THREE.FrontSide, roughness: 0.09, metalness: 0.12,
-    clearcoat: 0.96, clearcoatRoughness: 0.07, envMapIntensity: 1.05,
+  // A single dielectric lobe for glass; keep the driver's panes translucent.
+  const glass = (label, color, { opacity = 1, ...finish } = {}) => ownMaterial(new THREE.MeshPhysicalMaterial({
+    name: `King Long ${label}`, color, opacity, transparent: opacity < 1, depthWrite: opacity === 1,
+    side: THREE.FrontSide, roughness: 0.09, envMapIntensity: 1.05, ...finish,
   }));
-  const windshield = glass("smoke windshield", 0x162126, 0.66);
-  const frontSideGlass = glass("smoke front side glass", 0x152025, 0.74);
-  const privacyGlass = glass("passenger privacy glass", 0x10181d, 0.84);
-  const hatchGlass = glass("dark hatch glass", 0x253b43, 0.89);
-  Object.assign(hatchGlass, {
-    roughness: 0.40, metalness: 0.02, specularIntensity: 0.24, clearcoat: 0.02,
-    clearcoatRoughness: 0.34, envMapIntensity: 0.12,
+  const windshield = glass("smoke windshield", 0x162126, { opacity: 0.66 });
+  const frontSideGlass = glass("smoke front side glass", 0x152025, { opacity: 0.74 });
+  const privacyGlass = glass("passenger privacy glass", 0x10181d);
+  const hatchGlass = glass("dark hatch glass", 0x253b43, {
+    roughness: 0.40, specularIntensity: 0.24, envMapIntensity: 0.12,
   });
   const root = group(null, "player-vehicle");
   const chassis = group(root, "player-chassis");
@@ -694,8 +692,8 @@ export function createKingLongModel(body = {}) {
     const shape = panelShape(0, y, 0.848, 0.0095, 0.022, 0.0028);
     return endBand((u, yy) => grilleFace(u, yy, 0.009), shape.rows, shape.limits, false);
   });
-  panel("king-long-satin-grille-slats", merged(grilleSlats), chrome, true);
-  // Subtle vertical black louver bars behind the chrome grille slats
+  panel("king-long-satin-grille-slats", merged(grilleSlats), satin, true);
+  // Subtle vertical black louver bars behind the satin grille slats
   const grilleRibs = [-0.32, -0.16, 0, 0.16, 0.32].map((u) => {
     const shape = panelShape(u, 0.920, 0.014, 0.122, 0.003, 0.006);
     return endBand((uu, yy) => grilleFace(uu, yy, 0.007), shape.rows, shape.limits, false);
@@ -706,7 +704,7 @@ export function createKingLongModel(body = {}) {
   patch("king-long-lower-pill-intake", front, false, [0, 0.466, 0.945, 0.136, 0.088, 0.056], black, 0.004);
   const bumperTrimWhite = ownMaterial(new THREE.MeshPhysicalMaterial({
     name: "King Long bumper intake trim", color: 0xfbfbfa, roughness: 0.26,
-    metalness: 0.05, clearcoat: 0.85, clearcoatRoughness: 0.14, envMapIntensity: 0.85,
+    clearcoat: 0.85, clearcoatRoughness: 0.14, envMapIntensity: 0.85,
   }));
   const intakeBar = panelShape(0, 0.494, 0.895, 0.022, 0.024, 0.006);
   panel("king-long-lower-intake-divider", endBand((u, y) => front(u, y, 0.007), intakeBar.rows, intakeBar.limits, false), bumperTrimWhite, true);

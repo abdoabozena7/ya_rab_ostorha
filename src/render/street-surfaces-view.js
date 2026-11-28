@@ -1278,6 +1278,26 @@ function buildWaterPuddleGeometries(puddles, world) {
   };
 }
 
+function waterReflectionPlanes(puddles, world) {
+  const planes = [];
+  for (const zone of puddles) {
+    if (!Number.isFinite(zone?.x) || !Number.isFinite(zone?.z)) continue;
+    const { x, z, cos, sin, halfWidth, halfLength } = zoneExtents(zone);
+    const level = elevAt(world, x, z);
+    const samples = [
+      [x + cos * halfWidth, z - sin * halfWidth], [x - cos * halfWidth, z + sin * halfWidth],
+      [x + sin * halfLength, z + cos * halfLength], [x - sin * halfLength, z - cos * halfLength],
+    ];
+    if (samples.some(([cx, cz]) => Math.abs(elevAt(world, cx, cz) - level) > 0.075)) continue;
+    planes.push({
+      id: zone.id, x, z, y: level + WATER_CORE_Y,
+      radius: 1.25 * Math.hypot(halfWidth, halfLength),
+      area: Math.PI * halfWidth * halfLength,
+    });
+  }
+  return planes;
+}
+
 function shapeZoneGridPoint(uNorm, vNorm, ext, fadeBand = 0.30) {
   if (ext.shape === "ellipse") {
     // Fernández-Guasti squircle-to-ellipse disc mapping: every vertex obeys (lx/hw)^2 + (lz/hl)^2 <= 1!
@@ -2402,35 +2422,48 @@ function actorWheelBaseElevation(actor, world, wx, wz) {
 function attachFresnelPuddleShader(material) {
   const uniforms = {
     uWaveTime: { value: 0 },
+    uPuddleLive: { value: 0 },
+    tPuddleReflection: { value: null },
+    uPuddleTextureMatrix: { value: new THREE.Matrix4() },
+    uPuddleCaptureTexel: { value: new THREE.Vector2() },
+    uPuddlePlaneHeight: { value: 0 },
   };
-  material.customProgramCacheKey = () => "fresnel-puddle-v1";
+  material.customProgramCacheKey = () => "fresnel-puddle-live-v2";
   material.userData.uWaveTime = uniforms.uWaveTime;
   material.userData.uniforms = uniforms;
   material.userData.hasFresnelWaterShader = true;
 
   material.onBeforeCompile = (shader) => {
-    shader.uniforms.uWaveTime = uniforms.uWaveTime;
+    Object.assign(shader.uniforms, uniforms);
 
     shader.vertexShader = shader.vertexShader
       .replace(
         "#include <common>",
-        "#include <common>\nvarying vec2 vPuddleWorldUv;\nvarying float vPuddleCamDist;",
+        "#include <common>\nvarying vec3 vPuddleWorldPosition;\nvarying float vPuddleCamDist;",
       )
       .replace(
         "#include <project_vertex>",
-        "#include <project_vertex>\nvPuddleWorldUv = ( modelMatrix * vec4( transformed, 1.0 ) ).xz;\nvPuddleCamDist = length( mvPosition.xyz );",
+        "#include <project_vertex>\nvPuddleWorldPosition = ( modelMatrix * vec4( transformed, 1.0 ) ).xyz;\nvPuddleCamDist = length( mvPosition.xyz );",
       );
 
     shader.fragmentShader = shader.fragmentShader
       .replace(
         "#include <common>",
-        "#include <common>\nuniform float uWaveTime;\nvarying vec2 vPuddleWorldUv;\nvarying float vPuddleCamDist;",
+        `#include <common>
+        uniform float uWaveTime;
+        uniform float uPuddleLive;
+        uniform sampler2D tPuddleReflection;
+        uniform mat4 uPuddleTextureMatrix;
+        uniform vec2 uPuddleCaptureTexel;
+        uniform float uPuddlePlaneHeight;
+        varying vec3 vPuddleWorldPosition;
+        varying float vPuddleCamDist;`,
       )
       .replace(
         "#include <normal_fragment_maps>",
         `#include <normal_fragment_maps>
-        vec2 wWaveA = vPuddleWorldUv * 1.55 + vec2( uWaveTime * 0.24, uWaveTime * 0.16 );
-        vec2 wWaveB = vPuddleWorldUv * 2.65 + vec2( -uWaveTime * 0.19, uWaveTime * 0.22 );
+        vec2 wWaveA = vPuddleWorldPosition.xz * 1.55 + vec2( uWaveTime * 0.24, uWaveTime * 0.16 );
+        vec2 wWaveB = vPuddleWorldPosition.xz * 2.65 + vec2( -uWaveTime * 0.19, uWaveTime * 0.22 );
         float microDx = sin( wWaveA.x * 6.2831853 + cos( wWaveA.y * 4.712389 ) ) * 0.022
                       + cos( wWaveB.x * 6.2831853 - sin( wWaveB.y * 5.497787 ) ) * 0.017;
         float microDz = cos( wWaveA.y * 6.2831853 - sin( wWaveA.x * 4.712389 ) ) * 0.022
@@ -2452,7 +2485,31 @@ function attachFresnelPuddleShader(material) {
         vec3 absorbedBed = mix( deepRainwaterAbsorption, totalDiffuse * 0.14, 0.22 ) * ( 1.0 - 0.78 * puddleFresnel );
         vec3 clampedEnvSpec = min( totalSpecular * mix( 0.32, 1.0, puddleFresnel ), vec3( 0.20, 0.23, 0.27 ) ) * mix( 0.22, 1.0, nearSheenMask );
         vec3 twilightFresnelTint = skyZenithHdr * puddleFresnel * mix( 0.20, 1.0, nearSheenMask );
-        outgoingLight = absorbedBed + clampedEnvSpec + twilightFresnelTint + totalEmissiveRadiance;
+        vec3 reflection = clampedEnvSpec + twilightFresnelTint;
+        if ( uPuddleLive > 0.5 ) {
+          float planeMatch = 1.0 - smoothstep( 0.025, 0.10, abs( vPuddleWorldPosition.y - uPuddlePlaneHeight ) );
+          if ( planeMatch * nearSheenMask > 0.001 ) {
+            vec3 planePoint = vec3( vPuddleWorldPosition.x, uPuddlePlaneHeight, vPuddleWorldPosition.z );
+            vec4 stq = uPuddleTextureMatrix * vec4( planePoint, 1.0 );
+            if ( stq.w > 0.0 ) {
+              vec2 uv = stq.xy / stq.w + vec2( microDx, microDz ) * 0.12;
+              vec2 border = min( uv, vec2( 1.0 ) - uv );
+              float captureFade = smoothstep( 0.002, 0.035, min( border.x, border.y ) );
+              if ( captureFade > 0.0 ) {
+                vec2 tap = uPuddleCaptureTexel * ( 0.6 + 24.0 * roughnessFactor );
+                vec3 mirror = texture2D( tPuddleReflection, uv ).rgb * 0.40;
+                mirror += texture2D( tPuddleReflection, uv + vec2( tap.x, 0.0 ) ).rgb * 0.15;
+                mirror += texture2D( tPuddleReflection, uv - vec2( tap.x, 0.0 ) ).rgb * 0.15;
+                mirror += texture2D( tPuddleReflection, uv + vec2( 0.0, tap.y ) ).rgb * 0.15;
+                mirror += texture2D( tPuddleReflection, uv - vec2( 0.0, tap.y ) ).rgb * 0.15;
+                float waterFresnel = 0.0204 + 0.9796 * pow( 1.0 - waveNdotV, 5.0 );
+                reflection = mix( reflection, mirror * waterFresnel + reflectedLight.directSpecular,
+                  planeMatch * captureFade * nearSheenMask );
+              }
+            }
+          }
+        }
+        outgoingLight = absorbedBed + reflection + totalEmissiveRadiance;
         diffuseColor.a = mix( 0.56, 0.88, puddleFresnel ) * puddleEdgeMask;
         #include <output_fragment>`,
       );
@@ -3083,6 +3140,12 @@ export function createStreetSurfacesView(scene, world, _mountTargets = null) {
       get sandGrit() {
         return promoted?.sandGrit ?? null;
       },
+      get reflectionPlanes() {
+        return promoted?.reflectionPlanes;
+      },
+      setLiveReflection(sample) {
+        promoted?.setLiveReflection(sample);
+      },
       resolveSurfaceAt(x, z, liveWorld = world) {
         const p = maybePromote(liveWorld);
         return p ? p.resolveSurfaceAt(x, z, liveWorld) : resolveSurfaceAt(x, z, liveWorld);
@@ -3170,6 +3233,16 @@ export function createStreetSurfacesView(scene, world, _mountTargets = null) {
     }),
   );
   const waterUniforms = attachFresnelPuddleShader(waterMaterial);
+  let reflectionPlanes = waterReflectionPlanes(waterPuddles, world);
+
+  function setLiveReflection(sample) {
+    waterUniforms.uPuddleLive.value = sample ? 1 : 0;
+    waterUniforms.tPuddleReflection.value = sample?.texture ?? null;
+    if (!sample) return;
+    waterUniforms.uPuddleTextureMatrix.value.copy(sample.matrix);
+    waterUniforms.uPuddleCaptureTexel.value.copy(sample.texelSize);
+    waterUniforms.uPuddlePlaneHeight.value = sample.planeY;
+  }
 
   const haloMaps = createWaterHaloTextures(trackTex);
   const waterHaloMaterial = trackMat(
@@ -3309,6 +3382,7 @@ export function createStreetSurfacesView(scene, world, _mountTargets = null) {
         : { coreGeometry: null, haloGeometry: null };
       waterHaloSurfaceMesh = replaceSurfaceMeshGeometry(waterHaloSurfaceMesh, haloGeometry, waterHaloMaterial, "street-water-halos", 1);
       waterCoreSurfaceMesh = replaceSurfaceMeshGeometry(waterCoreSurfaceMesh, coreGeometry, waterMaterial, "street-water-puddles", 2);
+      reflectionPlanes = waterReflectionPlanes(wArr, liveWorld);
       indexedWaterSnap = snapshotViewZones(terrain.waterPuddles);
     }
     if (sandChanged) {
@@ -4986,6 +5060,8 @@ export function createStreetSurfacesView(scene, world, _mountTargets = null) {
     sandTireRuts: sandRutBuffer.mesh,
     sandDust: sandDustMesh,
     sandGrit: sandGritMesh,
+    get reflectionPlanes() { return reflectionPlanes; },
+    setLiveReflection,
     resolveSurfaceAt,
     setSensorCleanMode,
     setPreviewThumbnailMode,
